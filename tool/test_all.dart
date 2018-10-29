@@ -75,7 +75,7 @@ Future testFirestoreTest() async {
 
 Future main() async {
   await testFirestore();
-  // await testFirestoreBrowser();
+  await testFirestoreBrowser();
   await testFirestoreSembast();
   /*
   await testFirestoreSim();

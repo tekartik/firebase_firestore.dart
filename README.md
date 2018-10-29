@@ -8,7 +8,7 @@ Firestore dart common interface and implementation for Browser, VM, node and flu
 ### Usage in browser
 
 ```dart
-import 'package:tekartik_firebase_browser/firebase_browser.dart';
+import 'firestore_browser';
 
 void main() {
   var firebase = firebaseNode;
