@@ -5,7 +5,7 @@ import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 import 'package:json_rpc_2/src/server.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_sim/rpc_message.dart';
+//import 'package:tekartik_firebase_sim/rpc_message.dart';
 import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
@@ -20,52 +20,47 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
   final transactionLock = Lock();
 
   DocumentReference requestDocumentReference(Map<String, dynamic> params) {
-    var firestorePathData = FirestorePathData()
-      ..fromMap(params);
+    var firestorePathData = FirestorePathData()..fromMap(params);
     var ref = firestore.doc(firestorePathData.path);
     return ref;
   }
 
   FirestireSimPluginClient(this.firestore, Server rpcServer) {
-
     rpcServer.registerMethod(methodFirestoreAdd,
-            (json_rpc.Parameters parameters) async {
-          return await handleFirestoreAddRequest(rpcParams(parameters));
-        });
+        (json_rpc.Parameters parameters) async {
+      return await handleFirestoreAddRequest(rpcParams(parameters));
+    });
     rpcServer.registerMethod(methodFirestoreSet,
-            (json_rpc.Parameters parameters) async {
-          return await handleFirestoreSetRequest(rpcParams(parameters));
-        });
+        (json_rpc.Parameters parameters) async {
+      return await handleFirestoreSetRequest(rpcParams(parameters));
+    });
     rpcServer.registerMethod(methodFirestoreDelete,
-            (json_rpc.Parameters parameters) async {
-          return await handleFirestoreDeleteRequest(rpcParams(parameters));
-        });
+        (json_rpc.Parameters parameters) async {
+      return await handleFirestoreDeleteRequest(rpcParams(parameters));
+    });
 
     rpcServer.registerMethod(methodFirestoreGet,
-            (json_rpc.Parameters parameters) async {
-          return await handleFirestoreGetRequest(rpcParams(parameters));
-        });
+        (json_rpc.Parameters parameters) async {
+      return await handleFirestoreGetRequest(rpcParams(parameters));
+    });
   }
 
   Future handleFirestoreAddRequest(Map<String, dynamic> params) async {
     var firestoreSetData = FirestoreSetData()..fromMap(params);
     var documentData =
-    documentDataFromJsonMap(firestore, firestoreSetData.data);
+        documentDataFromJsonMap(firestore, firestoreSetData.data);
 
     return await transactionLock.synchronized(() async {
       var docRef = await firestore
           .collection(firestoreSetData.path)
           .add(documentData.asMap());
 
-      return (FirestorePathData()
-        ..path = docRef.path).toMap();
+      return (FirestorePathData()..path = docRef.path).toMap();
     });
   }
 
-
   Future handleFirestoreGetRequest(Map<String, dynamic> params) async {
-    var firestoreGetRequesthData = FirestoreGetRequestData()
-      ..fromMap(params);
+    var firestoreGetRequesthData = FirestoreGetRequestData()..fromMap(params);
     var ref = requestDocumentReference(params);
     var transactionId = firestoreGetRequesthData.transactionId;
 
@@ -80,24 +75,23 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
       });
     }
     var snapshotData = DocumentGetSnapshotData.fromSnapshot(documentSnapshot);
-return snapshotData.toMap();
+    return snapshotData.toMap();
   }
 
   Future handleFirestoreSetRequest(Map<String, dynamic> params) async {
     var firestoreSetData = FirestoreSetData()..fromMap(params);
     var documentData =
-    documentDataFromJsonMap(firestore, firestoreSetData.data);
+        documentDataFromJsonMap(firestore, firestoreSetData.data);
     SetOptions options;
     if (firestoreSetData.merge != null) {
       options = SetOptions(merge: firestoreSetData.merge);
     }
 
     await transactionLock.synchronized(() async {
-      var result = await firestore
+      await firestore
           .doc(firestoreSetData.path)
           .set(documentData.asMap(), options);
     });
-
   }
 
   Future handleFirestoreDeleteRequest(Map<String, dynamic> params) async {
@@ -108,8 +102,8 @@ return snapshotData.toMap();
     });
   }
 
-
   Future handleFirestoreGetStream(Map<String, dynamic> params) async {
+    /*
     var pathData = FirestorePathData()..fromMap(params);
     var ref = firestore.doc(pathData.path);
     int streamId = ++lastSubscriptionId;
@@ -139,14 +133,15 @@ return snapshotData.toMap();
 
       sendMessage(response);
     });
+    */
   }
 
   @override
   Future close() async {
     // TODO: implement close
   }
-
 }
+
 class FirestoreSimServer implements FirebaseSimPlugin {
   final FirestoreServiceProvider firestoreServiceProvider;
   final FirebaseSimServer firebaseSimServer;
@@ -168,7 +163,6 @@ class FirestoreSimServer implements FirebaseSimPlugin {
     var client = FirestireSimPluginClient(firestore, rpcServer);
     return client;
   }
-
 }
 
 class SimSubscription<T> {

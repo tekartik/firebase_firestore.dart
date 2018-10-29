@@ -1,7 +1,6 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
-
 const methodFirestoreSet = 'firestore/set';
 const methodFirestoreUpdate = 'firestore/update';
 const methodFirestoreAdd = 'firestore/add';
