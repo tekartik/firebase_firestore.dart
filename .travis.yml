@@ -13,11 +13,11 @@ jobs:
       dart: dev
     - stage: analyzer_and_format
       script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="firebase_sembast"
+      env: PKG="firestore_sembast"
       dart: dev
     - stage: analyzer_and_format
       script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="firebase"
+      env: PKG="firestore"
       dart: dev
     - stage: analyzer_and_format
       script: ./tool/travis.sh dartfmt dartanalyzer
@@ -29,7 +29,7 @@ jobs:
       dart: dev
     - stage: analyzer_and_format
       script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="firebase_sim"
+      env: PKG="firestore_sim"
       dart: dev
     - stage: analyzer_and_format
       script: ./tool/travis.sh dartfmt dartanalyzer
@@ -41,15 +41,15 @@ jobs:
       dart: dev
     - stage: test_vm
       script: ./tool/travis.sh test_vm
-      env: PKG="firebase"
+      env: PKG="firestore"
       dart: dev
     - stage: test_vm
       script: ./tool/travis.sh test_vm
-      env: PKG="firebase_sembast"
+      env: PKG="firestore_sembast"
       dart: dev
     - stage: test_vm
       script: ./tool/travis.sh test_vm
-      env: PKG="firebase_sim"
+      env: PKG="firestore_sim"
       dart: dev
     - stage: test_vm
       script: ./tool/travis.sh test_vm
@@ -57,7 +57,7 @@ jobs:
       dart: dev
     - stage: test_browser
       script: ./tool/travis.sh test_browser
-      env: PKG="firebase_sim"
+      env: PKG="firestore_sim"
       dart: dev
     - stage: test_browser
       script: ./tool/travis.sh test_browser
@@ -69,11 +69,11 @@ jobs:
       dart: stable
     - stage: analyzer_and_format
       script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="firebase_sembast"
+      env: PKG="firestore_sembast"
       dart: stable
     - stage: analyzer_and_format
       script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="firebase"
+      env: PKG="firestore"
       dart: stable
     - stage: analyzer_and_format
       script: ./tool/travis.sh dartfmt dartanalyzer
@@ -85,7 +85,7 @@ jobs:
       dart: stable
     - stage: analyzer_and_format
       script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="firebase_sim"
+      env: PKG="firestore_sim"
       dart: stable
     - stage: analyzer_and_format
       script: ./tool/travis.sh dartfmt dartanalyzer
@@ -97,15 +97,15 @@ jobs:
       dart: stable
     - stage: test_vm
       script: ./tool/travis.sh test_vm
-      env: PKG="firebase"
+      env: PKG="firestore"
       dart: stable
     - stage: test_vm
       script: ./tool/travis.sh test_vm
-      env: PKG="firebase_sembast"
+      env: PKG="firestore_sembast"
       dart: stable
     - stage: test_vm
       script: ./tool/travis.sh test_vm
-      env: PKG="firebase_sim"
+      env: PKG="firestore_sim"
       dart: stable
     - stage: test_vm
       script: ./tool/travis.sh test_vm
@@ -113,7 +113,7 @@ jobs:
       dart: stable
     - stage: test_browser
       script: ./tool/travis.sh test_browser
-      env: PKG="firebase_sim"
+      env: PKG="firestore_sim"
       dart: stable
     - stage: test_browser
       script: ./tool/travis.sh test_browser
