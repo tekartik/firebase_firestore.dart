@@ -19,7 +19,7 @@ void main() {
 ### Usage on node
 
 ```dart
-import 'package:tekartik_firebase_node/firebase_node.dart';
+import 'firestore_node';
 
 void main() {
   var firebase = firebaseNode;

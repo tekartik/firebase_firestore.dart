@@ -81,7 +81,9 @@ Future main() async {
   await testFirestoreSim();
   await testFirestoreSimBrowser();
   await testFirestoreSimIo();
+  */
   await testFirestoreNode();
+  /*
   await testFirestoreFlutter();
   */
   await testFirestoreTest();

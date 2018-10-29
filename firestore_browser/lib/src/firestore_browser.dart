@@ -17,9 +17,9 @@ class FirestoreServiceProviderBrowser implements FirestoreServiceProvider {
   }
 }
 
-FirestoreServiceProviderBrowser _firebaseFirestoreSembastProviderBrowser;
-FirestoreServiceProviderBrowser get firebaseFirestoreSembastProviderBrowser =>
-    _firebaseFirestoreSembastProviderBrowser ??
+FirestoreServiceProviderBrowser _firebaseFirestoreServiceProviderBrowser;
+FirestoreServiceProviderBrowser get firebaseFirestoreServiceProviderBrowser =>
+    _firebaseFirestoreServiceProviderBrowser ??
     FirestoreServiceProviderBrowser();
 
 class FirestoreServiceBrowser implements FirestoreService {
