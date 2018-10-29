@@ -63,10 +63,11 @@ class FirestoreServiceProviderSembast implements FirestoreServiceProvider {
       firestoreServiceSembast;
 }
 
-FirestoreServiceProviderSembast _firebaseFirestoreSembastProviderMemory;
-FirestoreServiceProviderSembast get firebaseFirestoreSembastProviderMemory =>
-    _firebaseFirestoreSembastProviderMemory ??
-    FirestoreServiceProviderSembast();
+FirestoreServiceProviderSembast _firebaseFirestoreServiceProviderSembastMemory;
+FirestoreServiceProviderSembast
+    get firebaseFirestoreServiceProviderSembastMemory =>
+        _firebaseFirestoreServiceProviderSembastMemory ??
+        FirestoreServiceProviderSembast();
 
 const revKey = r'$rev';
 

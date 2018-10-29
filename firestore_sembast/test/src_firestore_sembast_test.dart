@@ -12,7 +12,7 @@ import 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast.dart';
 import 'package:test/test.dart';
 
 void main() {
-  var provider = firebaseFirestoreSembastProviderIo;
+  var provider = firebaseFirestoreServiceProviderSembastIo;
   var firebase = FirebaseLocal();
   var service = provider.firestoreService(firebase);
   var app = firebase.initializeApp(name: 'test');
