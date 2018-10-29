@@ -161,7 +161,7 @@ runApp(
         expect(snapshot.exists, isTrue);
       });
 
-      test('time', () async {
+      test('documentTime', () async {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('time');
         await docRef.delete();
@@ -767,7 +767,7 @@ runApp(
         expect(list.length, 0);
       });
 
-      test('onSnapshot', () async {
+      test('onQuerySnapshot', () async {
         var testsRef = getTestsRef();
         var collRef = testsRef.doc('query_test').collection('onSnapshot');
 

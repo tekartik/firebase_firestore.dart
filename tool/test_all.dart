@@ -77,14 +77,13 @@ Future main() async {
   await testFirestore();
   await testFirestoreBrowser();
   await testFirestoreSembast();
-  /*
+
   await testFirestoreSim();
   await testFirestoreSimBrowser();
   await testFirestoreSimIo();
-  */
+
   await testFirestoreNode();
-  /*
+
   await testFirestoreFlutter();
-  */
   await testFirestoreTest();
 }

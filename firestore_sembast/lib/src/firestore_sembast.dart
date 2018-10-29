@@ -533,15 +533,6 @@ class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
     });
     transaction.notify(results);
   }
-
-  @override
-  void settings(FirestoreSettings settings) {
-    if (this.firestoreSettings != null) {
-      throw StateError(
-          'firestore settings already set to $firestoreSettings cannot set to $settings');
-    }
-    this.firestoreSettings = settings;
-  }
 }
 
 class WriteBatchSembast extends WriteBatchBase implements WriteBatch {

@@ -1,12 +1,19 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
+const paramPath = 'path';
+const paramSubscriptionId = 'subscriptionId';
+
 const methodFirestoreSet = 'firestore/set';
 const methodFirestoreUpdate = 'firestore/update';
 const methodFirestoreAdd = 'firestore/add';
 const methodFirestoreGet = 'firestore/get';
+const methodFirestoreGetListen =
+    'firestore/get/listen'; // first query then next
 const methodFirestoreGetStream =
-    'firestore/get/stream'; // query and notification
+    'firestore/get/stream'; // first query then next
+const methodFirestoreGetCancel =
+    'firestore/get/cancel'; // query and notification
 const methodFirestoreDelete = 'firestore/delete';
 const methodFirestoreQuery = 'firestore/query';
 const methodFirestoreBatch = 'firestore/batch';
@@ -15,9 +22,11 @@ const methodFirestoreTransactionCommit =
     'firestore/transaction/commit'; // batch data
 const methodFirestoreTransactionCancel =
     'firestore/transaction/cancel'; // transactionId
+const methodFirestoreQueryListen =
+    'firestore/query/listen'; // query from client and notification from server
 const methodFirestoreQueryStream =
     'firestore/query/stream'; // query from client and notification from server
-const methodFirestoreQueryStreamCancel = 'firestore/query/stream/cancel';
+const methodFirestoreQueryCancel = 'firestore/query/cancel';
 
 class RawData {
   fromMap(Map<String, dynamic> map) {}
@@ -74,14 +83,18 @@ class FirestoreDocumentSnapshotDataImpl extends FirestoreSetData
 
 abstract class FirestoreDocumentSnapshotData {
   String get path;
+
   Map<String, dynamic> get data;
+
   Timestamp get createTime;
+
   Timestamp get updateTime;
 }
 
 class DocumentGetSnapshotData extends DocumentSnapshotData {
   DocumentGetSnapshotData.fromSnapshot(DocumentSnapshot snapshot)
       : super.fromSnapshot(snapshot);
+
   // optional for stream only
   int streamId;
 
@@ -112,6 +125,7 @@ class DocumentSnapshotData extends FirestorePathData
     createTime = snapshot.createTime;
     updateTime = snapshot.updateTime;
   }
+
   DocumentSnapshotData.fromMessageMap(Map<String, dynamic> map) {
     fromMap(map);
   }
