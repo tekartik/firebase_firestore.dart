@@ -38,7 +38,7 @@ class FirestoreServiceSembast implements FirestoreService {
   Firestore firestore(App app) {
     var firestore = _firestores[app];
     if (firestore == null) {
-      firestore = FirestoreSembast(this, app as AppLocal);
+      firestore = FirestoreSembast(this, app);
       _firestores[app] = firestore;
     }
     return firestore;

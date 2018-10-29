@@ -1,0 +1,38 @@
+name: tekartik_firebase_firestore_sim
+description: Firebase simulation
+version: 0.3.5
+#homepage: https://www.example.com
+#author: alex <email@example.com>
+
+environment:
+  sdk: '>=2.0.0-dev.54 <3.0.0'
+
+dependencies:
+  tekartik_firebase_sim:
+    git:
+      url: git://github.com/tekartik/firebase.dart
+      path: firebase_sim
+      ref: dart2
+    version: 0.3.5
+  tekartik_firebase_firestore:
+    git:
+      url: git://github.com/tekartik/firestore.dart
+      path: firestore
+      ref: dart2
+    version: 0.3.5
+  meta: any
+  synchronized: '>=1.5.0-dev.2'
+  logging: any
+
+dev_dependencies:
+  test: "^1.0.0"
+  dev_test: '>=0.12.0-dev.1'
+  build_runner: ">=0.9.1"
+  build_web_compilers: ">=0.4.0+4"
+  build_test: ">=0.10.3"
+
+dependency_overrides:
+  tekartik_firebase_firestore:
+    path: ../firestore
+  tekartik_firebase_sim:
+    path: ../../firebase.dart/firebase_sim

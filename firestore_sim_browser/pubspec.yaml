@@ -1,0 +1,36 @@
+name: tekartik_firebase_firestore_sim_browser
+description: Firebase simulation browser client
+version: 0.3.5
+#homepage: https://www.example.com
+#author: alex <email@example.com>
+
+environment:
+  sdk: '>=2.0.0-dev.54 <3.0.0'
+
+dependencies:
+  tekartik_firebase_sim_browser:
+    git:
+      url: git://github.com/tekartik/firebase.dart
+      path: firebase_sim_browser
+      ref: dart2
+    version: 0.3.5
+  tekartik_firebase_firestore_sim:
+    git:
+      url: git://github.com/tekartik/firestore.dart
+      path: firestore_sim
+      ref: dart2
+    version: 0.3.5
+
+dev_dependencies:
+  test: ">=0.12.37"
+  dev_test: '>=0.12.0-dev.1'
+  build_runner: ">=0.9.1"
+  build_web_compilers: ">=0.4.0+4"
+
+dependency_overrides:
+  tekartik_firebase_firestore_test:
+    path: ../firestore_test
+  tekartik_firebase_firestore_sim:
+    path: ../firestore_sim
+  tekartik_firebase_firestore:
+    path: ../firestore
