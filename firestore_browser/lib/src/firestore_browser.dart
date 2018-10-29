@@ -12,8 +12,8 @@ class FirestoreServiceProviderBrowser implements FirestoreServiceProvider {
   @override
   FirestoreService firestoreService(Firebase firebase) {
     assert(firebase is FirebaseBrowser, 'invalid firebase type');
-    FirebaseBrowser firestoreBrowser = firebase;
-    return FirestoreServiceBrowser(firestoreBrowser);
+    FirebaseBrowser firebaseBrowser = firebase;
+    return FirestoreServiceBrowser(firebaseBrowser);
   }
 }
 

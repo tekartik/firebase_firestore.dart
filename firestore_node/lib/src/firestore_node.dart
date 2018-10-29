@@ -13,8 +13,8 @@ class FirestoreServiceProviderNode implements FirestoreServiceProvider {
   @override
   FirestoreService firestoreService(Firebase firebase) {
     assert(firebase is FirebaseNode, 'invalid firebase type');
-    FirebaseNode firestoreNode = firebase;
-    return FirestoreServiceNode(firestoreNode);
+    FirebaseNode firebaseNode = firebase;
+    return FirestoreServiceNode(firebaseNode);
   }
 }
 
