@@ -9,13 +9,13 @@ dependencies:
     sdk: flutter
   tekartik_firebase_firestore:
     git:
-      url: git://github.com/tekartik/firestore.dart
+      url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
       ref: dart2
     version: 0.3.6
   tekartik_firebase_flutter:
     git:
-      url: git://github.com/tekartik/firebase.dart
+      url: git://github.com/tekartik/firebase_firebase.dart
       path: firebase_flutter
       ref: dart2
     version: 0.3.6

@@ -16,13 +16,13 @@ dependencies:
     version: 0.3.6
   tekartik_firebase_firestore_sim:
     git:
-      url: git://github.com/tekartik/firestore.dart
+      url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore_sim
       ref: dart2
     version: 0.3.6
   tekartik_firebase_firestore_sembast:
     git:
-      url: git://github.com/tekartik/firestore.dart
+      url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore_sembast
       ref: dart2
     version: 0.3.6
