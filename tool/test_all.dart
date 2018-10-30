@@ -28,7 +28,7 @@ Future testFirestoreSim() async {
 Future testFirestoreSimIo() async {
   var dir = 'firestore_sim_io';
   await runCmd(PubCmd(pubGetArgs())..workingDirectory = dir);
-  await runCmd(DartAnalyzerCmd(['lib', 'test'])..workingDirectory = dir);
+  await runCmd(DartAnalyzerCmd(['test'])..workingDirectory = dir);
   await runCmd(
       PubCmd(pubRunTestArgs(platforms: ['vm']))..workingDirectory = dir);
 }
@@ -46,7 +46,7 @@ Future testFirestoreBrowser() async {
 Future testFirestoreSimBrowser() async {
   var dir = 'firestore_sim_browser';
   await runCmd(PubCmd(pubGetArgs())..workingDirectory = dir);
-  await runCmd(DartAnalyzerCmd(['lib', 'test'])..workingDirectory = dir);
+  await runCmd(DartAnalyzerCmd(['test'])..workingDirectory = dir);
   /*
   await runCmd(
       PubCmd(pubRunTestArgs(platforms: ['chrome']))..workingDirectory = dir);
@@ -74,6 +74,7 @@ Future testFirestoreTest() async {
 }
 
 Future main() async {
+
   await testFirestore();
   await testFirestoreBrowser();
   await testFirestoreSembast();
@@ -82,8 +83,8 @@ Future main() async {
   await testFirestoreSimBrowser();
   await testFirestoreSimIo();
 
-  await testFirestoreNode();
+  //await testFirestoreNode();
 
-  await testFirestoreFlutter();
+  //await testFirestoreFlutter();
   await testFirestoreTest();
 }
