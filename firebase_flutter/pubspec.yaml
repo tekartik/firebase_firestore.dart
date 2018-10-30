@@ -15,7 +15,7 @@ dependencies:
     version: 0.3.6
   tekartik_firebase_flutter:
     git:
-      url: git://github.com/tekartik/firebase_firebase.dart
+      url: git://github.com/tekartik/firebase_firestore.dart
       path: firebase_flutter
       ref: dart2
     version: 0.3.6
