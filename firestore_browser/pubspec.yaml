@@ -10,7 +10,7 @@ environment:
 dependencies:
   tekartik_firebase_firestore:
     git:
-      url: git://github.com/tekartik/firestore.dart
+      url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
       ref: dart2
     version: 0.3.6
