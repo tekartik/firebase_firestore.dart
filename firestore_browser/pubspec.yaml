@@ -1,6 +1,6 @@
 name: tekartik_firebase_firestore_browser
 description: Firebase firestore browser
-version: 0.3.5
+version: 0.3.6
 #homepage: https://www.example.com
 #author: alex <email@example.com>
 
@@ -13,13 +13,13 @@ dependencies:
       url: git://github.com/tekartik/firestore.dart
       path: firestore
       ref: dart2
-    version: 0.3.5
+    version: 0.3.6
   tekartik_firebase_browser:
     git:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_browser
       ref: dart2
-    version: '>=0.3.5'
+    version: '>=0.3.6'
   firebase: '>=5.0.2'
   tekartik_browser_utils:
     git:
