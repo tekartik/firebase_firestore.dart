@@ -38,7 +38,7 @@ class Timestamp implements Comparable<Timestamp> {
       var dateTime = DateTime.tryParse(text);
 
       // remove after the seconds part
-      int subSecondsStart = text.lastIndexOf('.');
+      var subSecondsStart = text.lastIndexOf('.');
       if (subSecondsStart == -1) {
         if (dateTime == null) {
           return null;
@@ -51,7 +51,7 @@ class Timestamp implements Comparable<Timestamp> {
 
       // Read the sun seconds part
       var nanosString = StringBuffer();
-      int i = subSecondsStart + 1;
+      var i = subSecondsStart + 1;
       for (; i < text.length; i++) {
         var char = text[i];
         if (isDigit(char)) {
@@ -79,8 +79,8 @@ class Timestamp implements Comparable<Timestamp> {
         }
       }
 
-      int seconds = dateTime.millisecondsSinceEpoch ~/ 1000;
-      int nanoseconds = int.tryParse(nanosString.toString());
+      var seconds = (dateTime.millisecondsSinceEpoch / 1000).floor();
+      var nanoseconds = int.tryParse(nanosString.toString());
       return Timestamp(seconds, nanoseconds);
     }
     return null;
@@ -88,16 +88,16 @@ class Timestamp implements Comparable<Timestamp> {
 
   /// Creates a new [Timestamp] instance from the given date
   factory Timestamp.fromDateTime(DateTime dateTime) {
-    final int seconds = dateTime.millisecondsSinceEpoch ~/ 1000;
-    final int nanoseconds = (dateTime.microsecondsSinceEpoch % 1000000) * 1000;
+    final seconds = (dateTime.millisecondsSinceEpoch / 1000).floor();
+    final nanoseconds = (dateTime.microsecondsSinceEpoch % 1000000) * 1000;
     return Timestamp(seconds, nanoseconds);
   }
 
   /// Constructs a new [Timestamp] instance
   /// with the given [millisecondsSinceEpoch].
   factory Timestamp.fromMillisecondsSinceEpoch(int millisecondsSinceEpoch) {
-    final int seconds = millisecondsSinceEpoch ~/ 1000;
-    final int nanoseconds = (millisecondsSinceEpoch % 1000) * 1000000;
+    final seconds = (millisecondsSinceEpoch / 1000).floor();
+    final nanoseconds = (millisecondsSinceEpoch % 1000) * 1000000;
     return Timestamp(seconds, nanoseconds);
   }
 
@@ -110,7 +110,7 @@ class Timestamp implements Comparable<Timestamp> {
       return true;
     }
     if (other is Timestamp) {
-      Timestamp typedOther = other;
+      var typedOther = other;
       return seconds == typedOther.seconds &&
           nanoseconds == typedOther.nanoseconds;
     }
@@ -139,13 +139,13 @@ class Timestamp implements Comparable<Timestamp> {
   }
 
   static String _threeDigits(int n) {
-    if (n >= 100) return "${n}";
-    if (n >= 10) return "0${n}";
-    return "00${n}";
+    if (n >= 100) return "$n";
+    if (n >= 10) return "0$n";
+    return "00$n";
   }
 
   static String _formatNanos(int nanoseconds) {
-    int ns = nanoseconds % 1000;
+    var ns = nanoseconds % 1000;
     if (ns != 0) {
       return '${_threeDigits(nanoseconds ~/ 1000000)}${_threeDigits((nanoseconds ~/ 1000) % 1000)}${_threeDigits(ns)}';
     } else {
@@ -154,7 +154,7 @@ class Timestamp implements Comparable<Timestamp> {
   }
 
   static String _formatMicros(int microseconds) {
-    int us = microseconds % 1000;
+    var us = microseconds % 1000;
     return '${_formatMillis(microseconds ~/ 1000)}${us == 0 ? '' : _threeDigits(us)}';
   }
 
@@ -168,7 +168,7 @@ class Timestamp implements Comparable<Timestamp> {
     // Use DateTime without the sub second part
     var text = Timestamp(seconds, 0).toDateTime(isUtc: true).toIso8601String();
     // Then add the nano part to it
-    int nanosStart = text.lastIndexOf('.') + 1;
+    var nanosStart = text.lastIndexOf('.') + 1;
     return '${text.substring(0, nanosStart)}${_formatNanos(nanoseconds)}Z';
   }
 
