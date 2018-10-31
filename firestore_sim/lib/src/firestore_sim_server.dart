@@ -5,52 +5,28 @@ import 'package:json_rpc_2/json_rpc_2.dart' as rpc;
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_sim/src/firebase_sim_server.dart';
+import 'package:tekartik_common_utils/stream/stream_poller.dart';
 //import 'package:tekartik_firebase_sim/rpc_message.dart';
 
 class SimSubscription<T> {
-  final int id;
-  final StreamSubscription<T> _firestoreSubscription;
-  final List<T> _list = [];
+  StreamPoller<T> _poller;
 
-  void add(T data) {
-    _list.add(data);
-    if (completer != null) {
-      completer.complete();
-    }
+  Future<StreamPollerEvent<T>> getNext() => _poller.getNext();
+
+  SimSubscription(Stream<T> stream) {
+    _poller = StreamPoller<T>(stream);
   }
-
-  bool cancelled = false;
-  Completer<T> completer;
-
-  Future<T> get next async {
-    if (cancelled) {
-      return null;
-    }
-    if (_list.isNotEmpty) {
-      var data = _list.first;
-      _list.removeAt(0);
-      return data;
-    }
-    completer = Completer();
-    await completer.future;
-    return await next;
-  }
-
-  SimSubscription(this.id, this._firestoreSubscription);
 
   // Make sure to cancel the pending completer
-  cancel() {
-    cancelled = true;
-    _firestoreSubscription.cancel();
-    if (!completer.isCompleted) {
-      completer.complete(null);
-    }
-  }
+  Future cancel() => _poller.cancel();
 }
 
 class FirestireSimPluginClient implements FirebaseSimPluginClient {
@@ -217,14 +193,8 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     return await transactionLock.synchronized(() async {
       var ref = firestore.doc(path);
 
-      SimSubscription subscription;
-      // ignore: cancel_subscriptions
-      StreamSubscription<DocumentSnapshot> streamSubscription =
-          ref.onSnapshot().listen((DocumentSnapshot snapshot) {
-        subscription.add(snapshot);
-      });
       subscriptions[subscriptionId] =
-          subscription = SimSubscription(subscriptionId, streamSubscription);
+          SimSubscription<DocumentSnapshot>(ref.onSnapshot());
       return {paramSubscriptionId: subscriptionId};
     });
   }
@@ -239,12 +209,17 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
   Future handleFirestoreGetStream(rpc.Parameters parameters) async {
     // New stream?
     var subscriptionId = parameters[paramSubscriptionId].value as int;
-    var subscription = subscriptions[subscriptionId];
-    try {
-      DocumentSnapshot snapshot = await subscription.next;
-      var data = DocumentSnapshotData.fromSnapshot(snapshot);
-      return data.toMap();
-    } catch (_) {}
+    SimSubscription<DocumentSnapshot> subscription =
+        subscriptions[subscriptionId];
+    var event = await subscription?.getNext();
+    var map = {};
+    if (event == null || event.done) {
+      map[paramDone] = event.done;
+    } else {
+      map[paramSnapshot] =
+          DocumentSnapshotData.fromSnapshot(event.data).toMap();
+    }
+    return map;
   }
 
   Future handleFirestoreQuery(rpc.Parameters parameters) async {
@@ -271,14 +246,9 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     return await transactionLock.synchronized(() async {
       Query query = await getQuery(queryData);
 
-      SimSubscription subscription;
-      // ignore: cancel_subscriptions
-      StreamSubscription<QuerySnapshot> streamSubscription =
-          query.onSnapshot().listen((QuerySnapshot querySnapshot) {
-        subscription.add(querySnapshot);
-      });
       subscriptions[subscriptionId] =
-          subscription = SimSubscription(subscriptionId, streamSubscription);
+          SimSubscription<QuerySnapshot>(query.onSnapshot());
+
       return {paramSubscriptionId: subscriptionId};
     });
   }
@@ -293,9 +263,15 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
   Future handleFirestoreQueryStream(rpc.Parameters parameters) async {
     // New stream?
     var subscriptionId = parameters[paramSubscriptionId].value as int;
-    var subscription = subscriptions[subscriptionId];
+    SimSubscription<QuerySnapshot> subscription = subscriptions[subscriptionId];
     try {
-      QuerySnapshot querySnapshot = await subscription.next;
+      var event = await subscription?.getNext();
+      var map = {};
+      if (event == null || event.done) {
+        map[paramDone] = event.done;
+        return map;
+      }
+      QuerySnapshot querySnapshot = event.data;
       var data = FirestoreQuerySnapshotData();
       data.list = <DocumentSnapshotData>[];
       for (DocumentSnapshot doc in querySnapshot.docs) {
@@ -312,7 +288,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
         // need data?
         var path = change.document.ref.path;
 
-        _find() {
+        bool _find() {
           for (var doc in querySnapshot.docs) {
             if (doc.ref.path == path) {
               return true;
@@ -327,7 +303,8 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
         }
         data.changes.add(documentChangeData);
       }
-      return data.toMap();
+      map[paramSnapshot] = data.toMap();
+      return map;
     } catch (_) {}
   }
 
@@ -509,172 +486,3 @@ class FirestoreSimServer implements FirebaseSimPlugin {
     return client;
   }
 }
-
-/*
-
-class FirebaseSimServerClient extends Object with FirebaseSimMixin {
-  final FirestoreServiceSim firestoreServiceSim;
-  final FirebaseSimServer server;
-  final WebSocketChannel<String> webSocketChannel;
-  App app;
-  int appId;
-  Completer transactionCompleter;
-
-  Firestore get firestore => firestoreServiceSim.firestore(app);
-
-  final Map<int, SimSubscription> subscriptions = {};
-
-  FirebaseSimServerClient(this.server, this.webSocketChannel) {
-    init();
-  }
-
-  @override
-  Future close() async {
-    // Close any pending transaction
-    if (transactionCompleter != null) {
-      if (!transactionCompleter.isCompleted) {
-        transactionCompleter.completeError('database closed');
-      }
-    }
-    await closeMixin();
-    List<SimSubscription> subscriptions = this.subscriptions.values.toList();
-    for (var subscription in subscriptions) {
-      await cancelSubscription(subscription);
-    }
-  }
-  */
-
-/*
-
-  void handleRequest(Map<String, dynamic> params) async {
-    try {
-      if (request.method == methodPing) {
-        var response = Response(request.id, null);
-        sendMessage(response);
-
-      }
-      } else if (request.method == methodFirestoreAdd) {
-        await handleFirestoreAddRequest(request);
-      } else if (request.method == methodFirestoreGet) {
-        await handleFirestoreGet(request);
-      } else if (request.method == methodFirestoreGetStream) {
-        await handleFirestoreGetStream(request);
-      } else if (request.method == methodFirestoreQuery) {
-        await handleFirestoreQuery(request);
-      } else if (request.method == methodFirestoreQueryStream) {
-        await handleFirestoreQueryStream(request);
-      } else if (request.method == methodFirestoreQueryStreamCancel) {
-        await handleFirestoreQueryStreamCancel(request);
-      } else if (request.method == methodFirestoreBatch) {
-        await handleFirestoreBatch(request);
-      } else if (request.method == methodFirestoreTransaction) {
-        await handleFirestoreTransaction(request);
-      } else if (request.method == methodFirestoreTransactionCommit) {
-        await handleFirestoreTransactionCommit(request);
-      } else if (request.method == methodFirestoreTransactionCancel) {
-        await handleFirestoreTransactionCancel(request);
-      } else if (request.method == methodFirestoreDelete) {
-        await handleFirestoreDeleteRequest(request);
-      } else {
-        var errorResponse = ErrorResponse(
-            request.id,
-            Error(errorCodeMethodNotFound,
-                "unsupported method ${request.method}"));
-        sendMessage(errorResponse);
-      }
-    } catch (e, st) {
-      print(e);
-      print(st);
-      var errorResponse = ErrorResponse(
-          request.id,
-          Error(errorCodeExceptionThrown,
-              "${e} thrown from method ${request.method}\n$st"));
-      sendMessage(errorResponse);
-    }
-  }
-
-  Future handleFirestoreDeleteRequest(Map<String, dynamic> params) async {
-    var response = Response(request.id, null);
-
-    var firestoreDeleteData = FirestorePathData()
-      ..fromMap(params);
-
-    await server.transactionLock.synchronized(() async {
-      await firestore.doc(firestoreDeleteData.path).delete();
-    });
-
-    sendMessage(response);
-  }
-
-  Future handleFirestoreAddRequest(Map<String, dynamic> params) async {
-    var firestoreSetData = FirestoreSetData()..fromMap(params);
-    var documentData =
-        documentDataFromJsonMap(firestore, firestoreSetData.data);
-
-    await server.transactionLock.synchronized(() async {
-      var docRef = await app
-          .firestore()
-          .collection(firestoreSetData.path)
-          .add(documentData.asMap());
-
-      var response = Response(
-          request.id, (FirestorePathData()..path = docRef.path).toMap());
-      sendMessage(response);
-    });
-  }
-
-
-
-
-    /*
-
-Map<String, dynamic> snapshotToJsonMap(DocumentSnapshot snapshot) {
-  if (snapshot?.exists == true) {
-    var map = documentDataToJsonMap(documentDataFromSnapshot(snapshot));
-    if (snapshot.createTime != null) {
-      map[createTimeKey] = snapshot.createTime;
-      map[updateTimeKey] = snapshot.updateTime;
-    }
-    return map;
-  } else {
-    return null;
-  }
-}
-     */
-
-
-    sendMessage(response);
-  }
-
-
-  Future cancelSubscription(SimSubscription simSubscription) async {
-    // remove right away
-    if (subscriptions.containsKey(simSubscription.id)) {
-      subscriptions.remove(simSubscription.id);
-      await simSubscription.firestoreSubscription.cancel();
-    }
-  }
-
-  // Cancel subscription
-  Future handleFirestoreQueryStreamCancel(Map<String, dynamic> params) async {
-    var cancelData = FirestoreQueryStreamCancelData()
-      ..fromMap(params);
-    int streamId = cancelData.streamId;
-
-    var simSubscription = subscriptions[streamId];
-    if (simSubscription != null) {
-      await cancelSubscription(simSubscription);
-      var response = Response(request.id, null);
-      sendMessage(response);
-    } else {
-      var errorResponse = ErrorResponse(
-          request.id,
-          Error(errorCodeSubscriptionNotFound,
-              "subscription $streamId not found method ${request.method}"));
-      sendMessage(errorResponse);
-    }
-  }
-
-
-
-*/

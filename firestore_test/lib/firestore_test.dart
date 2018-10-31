@@ -519,6 +519,13 @@ runApp(
         expect(docRef.parent.id, "tests");
       });
 
+      test('simpleOnSnapshot', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('simple_onSnapshot');
+        await docRef.set({'test': 1});
+        expect((await docRef.onSnapshot().first).data, {'test': 1});
+      });
+
       test('onSnapshot', () async {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('onSnapshot');

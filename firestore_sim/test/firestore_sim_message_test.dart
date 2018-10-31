@@ -1,7 +1,7 @@
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:test/test.dart';
 
-main() {
+void main() {
   group("message", () {
     test('DocumentSnapshotData', () {
       var snapshotData = DocumentSnapshotData.fromMessageMap({
