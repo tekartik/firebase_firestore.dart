@@ -1,7 +1,7 @@
 @TestOn('vm')
 library tekartik_firebase_firestore_sim_io.firestore_sim_io_test;
 
-import 'package:tekartik_firebase_firestore_sembast/firestore_sembast_io.dart';
+import 'package:tekartik_firebase_firestore_sim/firestore_sim.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 import 'package:test/test.dart';
 
@@ -12,8 +12,7 @@ main() async {
   skipConcurrentTransactionTests = true;
   var testContext = await initTestContextSimIo();
   var firebase = testContext.firebase;
-  var provider = firestoreServiceProvider;
-  run(firebase: firebase, provider: provider);
+  run(firebase: firebase, firestoreService: firestoreService);
 
   tearDownAll(() async {
     await close(testContext);

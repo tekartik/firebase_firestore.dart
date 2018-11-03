@@ -5,3 +5,4 @@ FirestoreServiceProvider get firebaseFirestoreServiceProviderBrowser =>
     _.firebaseFirestoreServiceProviderBrowser;
 FirestoreServiceProvider get firestoreServiceProvider =>
     firebaseFirestoreServiceProviderBrowser;
+FirestoreService get firestoreService => _.firestoreService;

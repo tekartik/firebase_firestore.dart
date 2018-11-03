@@ -11,11 +11,10 @@ bool skipConcurrentTransactionTests = false;
 
 void run(
     {@required Firebase firebase,
-    @required FirestoreServiceProvider provider,
+    @required FirestoreService firestoreService,
     AppOptions options}) {
   App app = firebase.initializeApp(options: options);
 
-  var firestoreService = provider.firestoreService(firebase);
   tearDownAll(() {
     return app.delete();
   });

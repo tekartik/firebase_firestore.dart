@@ -14,6 +14,14 @@ void main() async {
     return;
   }
   var firebase = firebaseBrowser;
-  var provider = firestoreServiceProvider;
-  run(firebase: firebase, provider: provider, options: options);
+
+  group('browser', () {
+    test('factory', () {
+      expect(firestoreService.supportsQuerySelect, isFalse);
+    });
+    run(
+        firebase: firebase,
+        firestoreService: firestoreService,
+        options: options);
+  });
 }

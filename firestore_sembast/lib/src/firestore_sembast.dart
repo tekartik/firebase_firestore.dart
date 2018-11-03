@@ -17,10 +17,11 @@ import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:uuid/uuid.dart';
 
 class FirestoreServiceSembast implements FirestoreService {
-  final FirestoreServiceProviderSembast provider;
+  final sembast.DatabaseFactory databaseFactory;
   Map<App, FirestoreSembast> _firestores = <App, FirestoreSembast>{};
 
-  FirestoreServiceSembast(this.provider);
+  FirestoreServiceSembast(sembast.DatabaseFactory databaseFactory)
+      : this.databaseFactory = databaseFactory;
 
   @override
   bool get supportsQuerySelect => true;
@@ -55,7 +56,7 @@ class FirestoreServiceProviderSembast implements FirestoreServiceProvider {
 
   FirestoreServiceProviderSembast({sembast.DatabaseFactory databaseFactory})
       : databaseFactory = databaseFactory ?? sembast.memoryDatabaseFactory {
-    firestoreServiceSembast = FirestoreServiceSembast(this);
+    firestoreServiceSembast = FirestoreServiceSembast(databaseFactory);
   }
 
   @override
@@ -69,6 +70,11 @@ FirestoreServiceProviderSembast
         _firebaseFirestoreServiceProviderSembastMemory ??
         FirestoreServiceProviderSembast();
 
+FirestoreServiceSembast _firestoreServiceSembastMemory;
+
+FirestoreServiceSembast get firestoreServiceSembastMemory =>
+    _firestoreServiceSembastMemory ??=
+        FirestoreServiceSembast(sembast.memoryDatabaseFactory);
 const revKey = r'$rev';
 
 // Stored as timestamp
@@ -350,7 +356,7 @@ class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
 
         String name = dbPath;
         print('opening database ${name}');
-        var db = await firestoreService.provider.databaseFactory
+        var db = await firestoreService.databaseFactory
             .openDatabase(name, version: firestoreSembastDatabaseVersion,
                 onVersionChanged: (db, oldVersion, newVersion) async {
           if (oldVersion == null) {

@@ -12,8 +12,7 @@ class FirestoreServiceProviderBrowser implements FirestoreServiceProvider {
   @override
   FirestoreService firestoreService(Firebase firebase) {
     assert(firebase is FirebaseBrowser, 'invalid firebase type');
-    FirebaseBrowser firebaseBrowser = firebase;
-    return FirestoreServiceBrowser(firebaseBrowser);
+    return FirestoreServiceBrowser();
   }
 }
 
@@ -23,10 +22,6 @@ FirestoreServiceProviderBrowser get firebaseFirestoreServiceProviderBrowser =>
     FirestoreServiceProviderBrowser();
 
 class FirestoreServiceBrowser implements FirestoreService {
-  final FirebaseBrowser firebaseBrowser;
-
-  FirestoreServiceBrowser(this.firebaseBrowser);
-
   @override
   bool get supportsQuerySelect => false;
 
@@ -46,6 +41,10 @@ class FirestoreServiceBrowser implements FirestoreService {
     return FirestoreBrowser(appBrowser.nativeApp.firestore());
   }
 }
+
+FirestoreServiceBrowser _firebaseFirestoreServiceBrowser;
+FirestoreService get firestoreService =>
+    _firebaseFirestoreServiceBrowser ??= FirestoreServiceBrowser();
 
 class FirestoreBrowser implements Firestore {
   final native.Firestore nativeInstance;

@@ -6,3 +6,5 @@ FirestoreServiceProvider get firebaseFirestoreServiceProviderSim =>
     impl.firebaseFirestoreServiceProviderSim;
 FirestoreServiceProvider get firestoreServiceProvider =>
     firebaseFirestoreServiceProviderSim;
+
+FirestoreService get firestoreService => impl.firestoreServiceSim;

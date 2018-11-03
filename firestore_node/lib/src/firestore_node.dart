@@ -13,8 +13,7 @@ class FirestoreServiceProviderNode implements FirestoreServiceProvider {
   @override
   FirestoreService firestoreService(Firebase firebase) {
     assert(firebase is FirebaseNode, 'invalid firebase type');
-    FirebaseNode firebaseNode = firebase;
-    return FirestoreServiceNode(firebaseNode);
+    return FirestoreServiceNode();
   }
 }
 
@@ -29,10 +28,6 @@ js.FirestoreSettings _unwrapSettings(FirestoreSettings settings) {
 }
 
 class FirestoreServiceNode implements FirestoreService {
-  final FirebaseNode firebaseNode;
-
-  FirestoreServiceNode(this.firebaseNode);
-
   @override
   bool get supportsQuerySelect => true;
 
@@ -52,6 +47,11 @@ class FirestoreServiceNode implements FirestoreService {
     return FirestoreNode(appNode.nativeInstance.firestore());
   }
 }
+
+FirestoreServiceNode _firestoreServiceNode;
+FirestoreServiceNode get firestoreServiceNode =>
+    _firestoreServiceNode ??= FirestoreServiceNode();
+FirestoreService get firestoreService => firestoreServiceNode;
 
 class FirestoreNode implements Firestore {
   final node.Firestore nativeInstance;

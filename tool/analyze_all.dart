@@ -11,7 +11,8 @@ Future analyzeAll(List<String> packages) async {
         .map((fse) => basename(fse.path))
         .toList()
           ..remove('.dart_tool');
-    futures.add(runCmd(DartAnalyzerCmd(['--fatal-warnings']..addAll(dirs))..workingDirectory = package));
+    futures.add(runCmd(DartAnalyzerCmd(['--fatal-warnings']..addAll(dirs))
+      ..workingDirectory = package));
   }
   await Future.wait(futures);
 }

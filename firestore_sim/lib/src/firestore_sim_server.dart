@@ -461,19 +461,17 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
 }
 
 class FirestoreSimServer implements FirebaseSimPlugin {
-  final FirestoreServiceProvider firestoreServiceProvider;
+  final FirestoreService firestoreService;
   final FirebaseSimServer firebaseSimServer;
   final Firebase firebase;
   final Map<Firestore, Lock> _locks = <Firestore, Lock>{};
 
   Lock transactionLock(Firestore firestore) => _locks[firestore];
   // App app;
-  FirestoreService firestoreService;
   Firestore firestore;
 
   FirestoreSimServer(
-      this.firestoreServiceProvider, this.firebaseSimServer, this.firebase) {
-    firestoreService = firestoreServiceProvider.firestoreService(firebase);
+      this.firestoreService, this.firebaseSimServer, this.firebase) {
     firebaseSimServer.addPlugin(this);
   }
 

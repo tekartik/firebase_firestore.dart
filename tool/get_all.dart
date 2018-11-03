@@ -13,8 +13,7 @@ Future flutterGetAll(List<String> packages) async {
   if (isFlutterSupported) {
     var futures = <Future>[];
     for (var package in packages) {
-      await runCmd(FlutterCmd(['packages', 'get'])
-        ..workingDirectory = package);
+      await runCmd(FlutterCmd(['packages', 'get'])..workingDirectory = package);
     }
     await Future.wait(futures);
   }

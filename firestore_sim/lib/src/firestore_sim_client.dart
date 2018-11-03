@@ -20,12 +20,7 @@ import 'package:tekartik_firebase_sim/src/firebase_sim_client.dart';
 import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart';
 
 class FirestoreServiceSim implements FirestoreService {
-  final FirestoreServiceProviderSim provider;
-  final FirebaseSim firebaseSim;
-
   Map<App, FirestoreSim> _firestores = <App, FirestoreSim>{};
-
-  FirestoreServiceSim(this.provider, this.firebaseSim);
 
   @override
   bool get supportsQuerySelect => true;
@@ -58,7 +53,7 @@ class FirestoreServiceProviderSim implements FirestoreServiceProvider {
   @override
   FirestoreService firestoreService(Firebase firebase) {
     assert(firebase is FirebaseSim, 'firebase not compatible');
-    return FirestoreServiceSim(this, firebase as FirebaseSim);
+    return FirestoreServiceSim();
   }
 }
 
@@ -66,6 +61,11 @@ FirestoreServiceProviderSim _firebaseFirestoreServiceProviderSim;
 
 FirestoreServiceProviderSim get firebaseFirestoreServiceProviderSim =>
     _firebaseFirestoreServiceProviderSim ?? FirestoreServiceProviderSim();
+
+FirestoreServiceSim _firestoreServiceSim;
+
+FirestoreServiceSim get firestoreServiceSim =>
+    _firestoreServiceSim ?? FirestoreServiceSim();
 
 class DocumentDataSim extends DocumentDataMap {}
 

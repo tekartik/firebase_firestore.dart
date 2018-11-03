@@ -6,3 +6,4 @@ FirestoreServiceProvider get firebaseFirestoreServiceProviderSembastIo =>
     _.firestoreServiceProviderSembastIo;
 FirestoreServiceProvider get firestoreServiceProvider =>
     firebaseFirestoreServiceProviderSembastIo;
+FirestoreService get firestoreServiceIo => _.firestoreServiceSembastIo;

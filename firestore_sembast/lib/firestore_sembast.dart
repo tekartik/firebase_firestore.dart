@@ -6,3 +6,4 @@ FirestoreServiceProvider get firebaseFirestoreServiceProviderSembastMemory =>
     _.firebaseFirestoreServiceProviderSembastMemory;
 FirestoreServiceProvider get firestoreServiceProvider =>
     firebaseFirestoreServiceProviderSembastMemory;
+FirestoreService get firestoreServiceMemory => _.firestoreServiceSembastMemory;

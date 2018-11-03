@@ -5,3 +5,4 @@ FirestoreServiceProvider get firebaseFirestoreServiceProviderNode =>
     _.firestoreServiceProviderNode;
 FirestoreServiceProvider get firestoreServiceProvider =>
     firebaseFirestoreServiceProviderNode;
+FirestoreService get firestoreService => _.firestoreService;

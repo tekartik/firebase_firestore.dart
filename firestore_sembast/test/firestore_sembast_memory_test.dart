@@ -7,6 +7,5 @@ import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 void main() {
   skipConcurrentTransactionTests = true;
   var firebase = FirebaseLocal();
-  var provider = firestoreServiceProvider;
-  run(firebase: firebase, provider: provider);
+  run(firebase: firebase, firestoreService: firestoreServiceMemory);
 }
