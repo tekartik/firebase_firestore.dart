@@ -1,4 +1,4 @@
-import 'package:tekartik_firebase/utils/timestamp_utils.dart';
+import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:test/test.dart';
 
 main() {
