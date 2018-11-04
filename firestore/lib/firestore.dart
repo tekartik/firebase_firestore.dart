@@ -10,10 +10,6 @@ export 'package:tekartik_firebase_firestore/src/firestore.dart'
     show FirestoreSettings;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
 
-abstract class FirestoreServiceProvider {
-  FirestoreService firestoreService(Firebase firebase);
-}
-
 abstract class FirestoreService {
   bool get supportsQuerySelect;
   bool get supportsDocumentSnapshotTime;

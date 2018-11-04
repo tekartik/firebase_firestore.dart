@@ -49,19 +49,6 @@ class FirestoreServiceSim implements FirestoreService {
   Future deleteApp(App app) async {}
 }
 
-class FirestoreServiceProviderSim implements FirestoreServiceProvider {
-  @override
-  FirestoreService firestoreService(Firebase firebase) {
-    assert(firebase is FirebaseSim, 'firebase not compatible');
-    return FirestoreServiceSim();
-  }
-}
-
-FirestoreServiceProviderSim _firebaseFirestoreServiceProviderSim;
-
-FirestoreServiceProviderSim get firebaseFirestoreServiceProviderSim =>
-    _firebaseFirestoreServiceProviderSim ?? FirestoreServiceProviderSim();
-
 FirestoreServiceSim _firestoreServiceSim;
 
 FirestoreServiceSim get firestoreServiceSim =>

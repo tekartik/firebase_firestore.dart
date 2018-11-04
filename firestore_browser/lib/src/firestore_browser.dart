@@ -8,19 +8,6 @@ import 'package:tekartik_firebase_browser/src/firebase_browser.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 
-class FirestoreServiceProviderBrowser implements FirestoreServiceProvider {
-  @override
-  FirestoreService firestoreService(Firebase firebase) {
-    assert(firebase is FirebaseBrowser, 'invalid firebase type');
-    return FirestoreServiceBrowser();
-  }
-}
-
-FirestoreServiceProviderBrowser _firebaseFirestoreServiceProviderBrowser;
-FirestoreServiceProviderBrowser get firebaseFirestoreServiceProviderBrowser =>
-    _firebaseFirestoreServiceProviderBrowser ??
-    FirestoreServiceProviderBrowser();
-
 class FirestoreServiceBrowser implements FirestoreService {
   @override
   bool get supportsQuerySelect => false;

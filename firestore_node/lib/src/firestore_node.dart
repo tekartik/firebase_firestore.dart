@@ -9,18 +9,6 @@ import 'package:tekartik_firebase_node/src/firebase_node.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:firebase_admin_interop/src/bindings.dart' as js;
 
-class FirestoreServiceProviderNode implements FirestoreServiceProvider {
-  @override
-  FirestoreService firestoreService(Firebase firebase) {
-    assert(firebase is FirebaseNode, 'invalid firebase type');
-    return FirestoreServiceNode();
-  }
-}
-
-FirestoreServiceProviderNode _firestoreServiceProviderNode;
-FirestoreServiceProviderNode get firestoreServiceProviderNode =>
-    _firestoreServiceProviderNode ?? FirestoreServiceProviderNode();
-
 js.FirestoreSettings _unwrapSettings(FirestoreSettings settings) {
   var nativeSettings = js.FirestoreSettings(
       timestampsInSnapshots: settings.timestampsInSnapshots);

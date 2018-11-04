@@ -49,27 +49,6 @@ class FirestoreServiceSembast implements FirestoreService {
   Future deleteApp(App app) async {}
 }
 
-class FirestoreServiceProviderSembast implements FirestoreServiceProvider {
-  final sembast.DatabaseFactory databaseFactory;
-
-  FirestoreServiceSembast firestoreServiceSembast;
-
-  FirestoreServiceProviderSembast({sembast.DatabaseFactory databaseFactory})
-      : databaseFactory = databaseFactory ?? sembast.memoryDatabaseFactory {
-    firestoreServiceSembast = FirestoreServiceSembast(databaseFactory);
-  }
-
-  @override
-  FirestoreService firestoreService(Firebase firebase) =>
-      firestoreServiceSembast;
-}
-
-FirestoreServiceProviderSembast _firebaseFirestoreServiceProviderSembastMemory;
-FirestoreServiceProviderSembast
-    get firebaseFirestoreServiceProviderSembastMemory =>
-        _firebaseFirestoreServiceProviderSembastMemory ??
-        FirestoreServiceProviderSembast();
-
 FirestoreServiceSembast _firestoreServiceSembastMemory;
 
 FirestoreServiceSembast get firestoreServiceSembastMemory =>
