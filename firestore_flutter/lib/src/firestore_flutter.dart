@@ -6,23 +6,12 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 
-class FirestoreServiceProviderFlutter implements FirestoreServiceProvider {
-  @override
-  FirestoreService firestoreService(Firebase firebase) {
-    assert(firebase is FirebaseFlutter, 'invalid firebase type');
-    FirebaseFlutter firebaseFlutter = firebase;
-    return FirestoreServiceFlutter(firebaseFlutter);
-  }
-}
-
-FirestoreServiceProviderFlutter _firestoreServiceProviderFlutter;
-FirestoreServiceProviderFlutter get firestoreServiceProviderFlutter =>
-    _firestoreServiceProviderFlutter ?? FirestoreServiceProviderFlutter();
+FirestoreServiceFlutter _firestoreServiceFlutter;
+FirestoreService get firestoreService =>
+    _firestoreServiceFlutter ?? FirestoreServiceFlutter();
 
 class FirestoreServiceFlutter implements FirestoreService {
-  final FirebaseFlutter firebaseFlutter;
-
-  FirestoreServiceFlutter(this.firebaseFlutter);
+  FirestoreServiceFlutter();
 
   @override
   bool get supportsQuerySelect => false;
