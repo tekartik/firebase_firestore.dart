@@ -4,6 +4,10 @@
     
     npm install
     
+ Update to latest node package
+  
+     npm install --save @google-cloud/firestore
+     
 ## Test
 
     pub run build_runner test -- -p node

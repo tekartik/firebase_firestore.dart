@@ -3,14 +3,12 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:tekartik_firebase/firebase.dart';
+import 'package:tekartik_firebase_firestore/src/timestamp.dart';
 import 'src/firestore.dart';
 import 'package:collection/collection.dart';
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
-    show Timestamp, FirestoreSettings;
-
-abstract class FirestoreServiceProvider {
-  FirestoreService firestoreService(Firebase firebase);
-}
+    show FirestoreSettings;
+export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
 
 abstract class FirestoreService {
   bool get supportsQuerySelect;

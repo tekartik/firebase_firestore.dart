@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 
-import 'package:tekartik_firebase/utils/timestamp_utils.dart';
+import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:test/test.dart';
-import 'package:tekartik_firebase/firestore.dart';
-import 'package:tekartik_firebase/src/firestore.dart';
-import 'package:tekartik_firebase/src/firestore_common.dart';
+import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
 import 'src_firestore_common_test.dart';
 

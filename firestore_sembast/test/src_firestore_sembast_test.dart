@@ -6,15 +6,14 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
-import 'package:tekartik_firebase_firestore/firebase.dart';
+import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast_io.dart';
 import 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast.dart';
 import 'package:test/test.dart';
 
 void main() {
-  var provider = firebaseFirestoreServiceProviderSembastIo;
   var firebase = FirebaseLocal();
-  var service = provider.firestoreService(firebase);
+  var service = firestoreServiceIo;
   var app = firebase.initializeApp(name: 'test');
   var firestore = service.firestore(app);
 

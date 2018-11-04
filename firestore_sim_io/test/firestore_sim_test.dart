@@ -10,8 +10,7 @@ main() async {
   skipConcurrentTransactionTests = true;
   var testContext = await initTestContextSim();
   var firebase = testContext.firebase;
-  var provider = firestoreServiceProvider;
-  run(firebase: firebase, provider: provider);
+  run(firebase: firebase, firestoreService: firestoreService);
 
   tearDownAll(() async {
     await close(testContext);

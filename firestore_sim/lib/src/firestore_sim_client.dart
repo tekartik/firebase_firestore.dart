@@ -5,23 +5,22 @@ import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_common.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_client.dart';
 import 'package:tekartik_firebase_sim/rpc_message.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_sim/src/firebase_sim_client.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart';
 
 class FirestoreServiceSim implements FirestoreService {
-  final FirestoreServiceProviderSim provider;
-  final FirebaseSim firebaseSim;
-
   Map<App, FirestoreSim> _firestores = <App, FirestoreSim>{};
-
-  FirestoreServiceSim(this.provider, this.firebaseSim);
 
   @override
   bool get supportsQuerySelect => true;
@@ -50,18 +49,10 @@ class FirestoreServiceSim implements FirestoreService {
   Future deleteApp(App app) async {}
 }
 
-class FirestoreServiceProviderSim implements FirestoreServiceProvider {
-  @override
-  FirestoreService firestoreService(Firebase firebase) {
-    assert(firebase is FirebaseSim, 'firebase not compatible');
-    return FirestoreServiceSim(this, firebase as FirebaseSim);
-  }
-}
+FirestoreServiceSim _firestoreServiceSim;
 
-FirestoreServiceProviderSim _firebaseFirestoreServiceProviderSim;
-
-FirestoreServiceProviderSim get firebaseFirestoreServiceProviderSim =>
-    _firebaseFirestoreServiceProviderSim ?? FirestoreServiceProviderSim();
+FirestoreServiceSim get firestoreServiceSim =>
+    _firestoreServiceSim ?? FirestoreServiceSim();
 
 class DocumentDataSim extends DocumentDataMap {}
 
@@ -69,6 +60,7 @@ class DocumentSnapshotSim implements DocumentSnapshot {
   @override
   final DocumentReferenceSim ref;
 
+  @override
   final bool exists;
 
   final DocumentData documentData;
@@ -146,19 +138,20 @@ class DocumentReferenceSim implements DocumentReference {
       firestoreSim.documentSnapshotFromDataMap(path, map);
 
   // do until cancelled
-  _getStream(FirebaseSimClient simClient, String path,
+  Future _getStream(FirebaseSimClient simClient, String path,
       ServerSubscriptionSim subscription) async {
     var subscriptionId = subscription.id;
     while (true) {
       if (firestoreSim._subscriptions.containsKey(subscriptionId)) {
         var result = resultAsMap(await simClient.sendRequest(
             methodFirestoreGetStream, {paramSubscriptionId: subscriptionId}));
+        // devPrint(result);
         // null means cancelled
-        if (result == null) {
+        if (result[paramDone] == true) {
           break;
         }
-        subscription
-            .add(firestoreSim.documentSnapshotFromMessageMap(path, result));
+        subscription.add(firestoreSim.documentSnapshotFromMessageMap(
+            path, (result[paramSnapshot] as Map)?.cast<String, dynamic>()));
       } else {
         break;
       }
@@ -226,7 +219,7 @@ abstract class QueryMixinSim implements Query {
             arrayContains: arrayContains,
             isNull: isNull));
 
-  addOrderBy(String key, String directionStr) {
+  void addOrderBy(String key, String directionStr) {
     var orderBy = OrderByInfo()
       ..fieldPath = key
       ..ascending = directionStr != orderByDescending;
@@ -286,7 +279,7 @@ abstract class QueryMixinSim implements Query {
   }
 
   // do until cancelled
-  _getStream(
+  Future _getStream(
       FirebaseSimClient simClient, ServerSubscriptionSim subscription) async {
     var subscriptionId = subscription.id;
     while (true) {
@@ -294,11 +287,12 @@ abstract class QueryMixinSim implements Query {
         var result = resultAsMap(await simClient.sendRequest(
             methodFirestoreQueryStream, {paramSubscriptionId: subscriptionId}));
         // null means cancelled
-        if (result == null) {
+        if (result[paramDone] == true) {
           break;
         }
 
-        var querySnapshotData = FirestoreQuerySnapshotData()..fromMap(result);
+        var querySnapshotData = FirestoreQuerySnapshotData()
+          ..fromMap((result[paramSnapshot] as Map)?.cast<String, dynamic>());
 
         var docs = querySnapshotData.list
             .map((DocumentSnapshotData documentSnapshotData) =>
@@ -420,9 +414,12 @@ class QuerySnapshotSim implements QuerySnapshot {
 }
 
 class QuerySim extends Object with QueryMixinSim implements Query {
+  @override
   final CollectionReferenceSim simCollectionReference;
 
+  @override
   FirestoreSim get firestoreSim => simCollectionReference.firestoreSim;
+  @override
   QueryInfo queryInfo;
 
   QuerySim(this.simCollectionReference);
@@ -434,7 +431,9 @@ class CollectionReferenceSim extends Object
   @override
   QueryInfo queryInfo = QueryInfo();
 
+  @override
   CollectionReferenceSim get simCollectionReference => this;
+  @override
   final FirestoreSim firestoreSim;
 
   @override
@@ -482,7 +481,7 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
 
   Future<FirebaseSimClient> get simClient => appSim.simClient;
 
-  addSubscription(ServerSubscriptionSim subscription) {
+  void addSubscription(ServerSubscriptionSim subscription) {
     _subscriptions[subscription.id] = subscription;
   }
 

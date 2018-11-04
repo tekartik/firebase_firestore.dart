@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_firestore/firebase.dart';
+import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';
+import 'package:tekartik_firebase_firestore_sembast/firestore_sembast_io.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_server.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 import 'package:tekartik_firebase_sim_io/firebase_sim_client_io.dart' as sim;
@@ -22,8 +23,8 @@ Future<TestContext> initTestContextSimIo() async {
   testContext.firebase = sim.getFirebaseSim(
       clientFactory: webSocketChannelClientFactoryIo,
       url: testContext.simServer.webSocketChannelServer.url);
-  FirestoreSimServer(firebaseFirestoreServiceProviderSembastMemory,
-      testContext.simServer, testContext.firebase);
+  FirestoreSimServer(
+      firestoreServiceMemory, testContext.simServer, testContext.firebase);
   return testContext;
 }
 
@@ -36,8 +37,8 @@ Future<TestContext> initTestContextSim() async {
   testContext.firebase = sim.getFirebaseSim(
       clientFactory: webSocketChannelClientFactoryMemory,
       url: testContext.simServer.webSocketChannelServer.url);
-  FirestoreSimServer(firebaseFirestoreServiceProviderSembastMemory,
-      testContext.simServer, testContext.firebase);
+  FirestoreSimServer(
+      firestoreServiceIo, testContext.simServer, testContext.firebase);
   return testContext;
 }
 

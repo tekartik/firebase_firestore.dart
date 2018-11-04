@@ -11,11 +11,10 @@ bool skipConcurrentTransactionTests = false;
 
 void run(
     {@required Firebase firebase,
-    @required FirestoreServiceProvider provider,
+    @required FirestoreService firestoreService,
     AppOptions options}) {
   App app = firebase.initializeApp(options: options);
 
-  var firestoreService = provider.firestoreService(firebase);
   tearDownAll(() {
     return app.delete();
   });
@@ -517,6 +516,13 @@ runApp(
         expect(docRef.path, "${testsRef.path}/document_test_attributes");
         expect(docRef.parent, const TypeMatcher<CollectionReference>());
         expect(docRef.parent.id, "tests");
+      });
+
+      test('simpleOnSnapshot', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('simple_onSnapshot');
+        await docRef.set({'test': 1});
+        expect((await docRef.onSnapshot().first).data, {'test': 1});
       });
 
       test('onSnapshot', () async {

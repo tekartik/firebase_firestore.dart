@@ -1,6 +1,6 @@
 name: tekartik_firebase_firestore_sim
 description: Firebase simulation
-version: 0.3.6
+version: 0.3.7
 #homepage: https://www.example.com
 #author: alex <email@example.com>
 
@@ -10,16 +10,16 @@ environment:
 dependencies:
   tekartik_firebase_sim:
     git:
-      url: git://github.com/tekartik/firebase_firestore.dart
+      url: git://github.com/tekartik/firebase.dart
       path: firebase_sim
       ref: dart2
-    version: 0.3.6
+    version: 0.3.7
   tekartik_firebase_firestore:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
       ref: dart2
-    version: 0.3.6
+    version: 0.3.7
   meta: any
   synchronized: '>=1.5.0-dev.2'
   logging: any

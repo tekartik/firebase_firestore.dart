@@ -4,23 +4,10 @@ import 'package:firebase_admin_interop/firebase_admin_interop.dart' as node;
 import 'package:node_interop/js.dart' as js;
 import 'package:node_interop/util.dart';
 import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_node/src/firebase_node.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_node/src/firebase_node.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:firebase_admin_interop/src/bindings.dart' as js;
-
-class FirestoreServiceProviderNode implements FirestoreServiceProvider {
-  @override
-  FirestoreService firestoreService(Firebase firebase) {
-    assert(firebase is FirebaseNode, 'invalid firebase type');
-    FirebaseNode firebaseNode = firebase;
-    return FirestoreServiceNode(firebaseNode);
-  }
-}
-
-FirestoreServiceProviderNode _firestoreServiceProviderNode;
-FirestoreServiceProviderNode get firestoreServiceProviderNode =>
-    _firestoreServiceProviderNode ?? FirestoreServiceProviderNode();
 
 js.FirestoreSettings _unwrapSettings(FirestoreSettings settings) {
   var nativeSettings = js.FirestoreSettings(
@@ -29,10 +16,6 @@ js.FirestoreSettings _unwrapSettings(FirestoreSettings settings) {
 }
 
 class FirestoreServiceNode implements FirestoreService {
-  final FirebaseNode firebaseNode;
-
-  FirestoreServiceNode(this.firebaseNode);
-
   @override
   bool get supportsQuerySelect => true;
 
@@ -52,6 +35,11 @@ class FirestoreServiceNode implements FirestoreService {
     return FirestoreNode(appNode.nativeInstance.firestore());
   }
 }
+
+FirestoreServiceNode _firestoreServiceNode;
+FirestoreServiceNode get firestoreServiceNode =>
+    _firestoreServiceNode ??= FirestoreServiceNode();
+FirestoreService get firestoreService => firestoreServiceNode;
 
 class FirestoreNode implements Firestore {
   final node.Firestore nativeInstance;

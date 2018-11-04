@@ -8,7 +8,7 @@ import 'package:sembast/sembast_memory.dart' as sembast;
 import 'package:synchronized/synchronized.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_firestore/firebase.dart';
+import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
@@ -17,10 +17,11 @@ import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:uuid/uuid.dart';
 
 class FirestoreServiceSembast implements FirestoreService {
-  final FirestoreServiceProviderSembast provider;
+  final sembast.DatabaseFactory databaseFactory;
   Map<App, FirestoreSembast> _firestores = <App, FirestoreSembast>{};
 
-  FirestoreServiceSembast(this.provider);
+  FirestoreServiceSembast(sembast.DatabaseFactory databaseFactory)
+      : this.databaseFactory = databaseFactory;
 
   @override
   bool get supportsQuerySelect => true;
@@ -48,27 +49,11 @@ class FirestoreServiceSembast implements FirestoreService {
   Future deleteApp(App app) async {}
 }
 
-class FirestoreServiceProviderSembast implements FirestoreServiceProvider {
-  final sembast.DatabaseFactory databaseFactory;
+FirestoreServiceSembast _firestoreServiceSembastMemory;
 
-  FirestoreServiceSembast firestoreServiceSembast;
-
-  FirestoreServiceProviderSembast({sembast.DatabaseFactory databaseFactory})
-      : databaseFactory = databaseFactory ?? sembast.memoryDatabaseFactory {
-    firestoreServiceSembast = FirestoreServiceSembast(this);
-  }
-
-  @override
-  FirestoreService firestoreService(Firebase firebase) =>
-      firestoreServiceSembast;
-}
-
-FirestoreServiceProviderSembast _firebaseFirestoreServiceProviderSembastMemory;
-FirestoreServiceProviderSembast
-    get firebaseFirestoreServiceProviderSembastMemory =>
-        _firebaseFirestoreServiceProviderSembastMemory ??
-        FirestoreServiceProviderSembast();
-
+FirestoreServiceSembast get firestoreServiceSembastMemory =>
+    _firestoreServiceSembastMemory ??=
+        FirestoreServiceSembast(sembast.memoryDatabaseFactory);
 const revKey = r'$rev';
 
 // Stored as timestamp
@@ -350,7 +335,7 @@ class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
 
         String name = dbPath;
         print('opening database ${name}');
-        var db = await firestoreService.provider.databaseFactory
+        var db = await firestoreService.databaseFactory
             .openDatabase(name, version: firestoreSembastDatabaseVersion,
                 onVersionChanged: (db, oldVersion, newVersion) async {
           if (oldVersion == null) {
