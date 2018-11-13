@@ -4,11 +4,12 @@ library tekartik_firebase_sembast.firebase_io_src_test;
 import 'dart:io';
 
 import 'package:path/path.dart';
+import 'package:sembast/sembast.dart' as sembast;
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
-import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast_io.dart';
 import 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast.dart';
+import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -17,7 +18,7 @@ void main() {
   var app = firebase.initializeApp(name: 'test');
   var firestore = service.firestore(app);
 
-  group('firestore_io', () {
+  group('firestore_sembast', () {
     group('v1', () {
       test('read', () async {
         var dst = join('.dart_tool', 'tekartik_firebase_local', 'default_v1',
@@ -161,6 +162,24 @@ void main() {
         expect(subSubData.getInt('test'), 1234);
       });
 
+      test('sub field', () {
+        DocumentDataMap documentData = DocumentDataMap();
+        DocumentData subData = DocumentData();
+        subData.setInt('test', 1234);
+        documentData.setData('sub', subData);
+        // store as a map
+        expect(documentData.map['sub'], const TypeMatcher<Map>());
+        expect(documentDataToRecordMap(documentData), {
+          'sub': {'test': 1234}
+        });
+
+        documentData = documentDataFromRecordMap(firestore, {
+          'sub': {'test': 1234}
+        });
+        subData = documentData.getData('sub');
+        expect(subData.getInt('test'), 1234);
+      });
+
       test('list', () {
         DocumentData documentData = DocumentData();
         documentData.setList('test', [1, 2]);
@@ -227,6 +246,13 @@ void main() {
         expect(documentDataToRecordMap(documentData), expected);
         documentData = documentDataFromRecordMap(firestore, expected);
         expect(documentDataToRecordMap(documentData), expected);
+      });
+
+      test('valueToUpdateValue', () {
+        expect(
+            valueToUpdateValue(FieldValue.delete), sembast.FieldValue.delete);
+        expect(valueToUpdateValue({'test': FieldValue.delete}),
+            {'test': sembast.FieldValue.delete});
       });
     });
   });

@@ -61,8 +61,16 @@ class FirestoreBrowser implements Firestore {
 
   @override
   void settings(FirestoreSettings settings) {
-    // TODO: implement settings
+    nativeInstance.settings(_unwrapSettings(settings));
   }
+}
+
+native.Settings _unwrapSettings(FirestoreSettings settings) {
+  if (settings != null) {
+    return native.Settings(
+        timestampsInSnapshots: settings.timestampsInSnapshots);
+  }
+  return null;
 }
 
 class WriteBatchBrowser implements WriteBatch {
