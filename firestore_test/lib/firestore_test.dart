@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
+import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:test/test.dart';
 
@@ -138,6 +138,26 @@ runApp(
 
         var snapshot = await docRef.get();
         expect(snapshot.exists, isFalse);
+      });
+
+      test('delete_dummy', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('dummy_id_that_should_never_exists');
+        await docRef.delete();
+      });
+
+      test('update_dummy', () async {
+        bool failed = false;
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('dummy_id_that_should_never_exists');
+        try {
+          await docRef.update({'test': 1});
+        } catch (e) {
+          failed = true;
+          // print(e);
+          // print(e.runtimeType);
+        }
+        expect(failed, isTrue);
       });
     });
 
@@ -516,6 +536,26 @@ runApp(
         expect(docRef.path, "${testsRef.path}/document_test_attributes");
         expect(docRef.parent, const TypeMatcher<CollectionReference>());
         expect(docRef.parent.id, "tests");
+      });
+
+      test('set subfield', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('document_set_sub_field');
+        await docRef.set({'sub.field': 1});
+        expect((await docRef.get()).data, {'sub.field': 1});
+      }, skip: "Not working with sembast yet");
+
+      test('update sub.field', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('update');
+        await docRef.set({'created': 1, 'modified': 2});
+        await docRef.update({'modified': 22, 'added': 3, 'sub.field': 4});
+        expect((await docRef.get()).data, {
+          'created': 1,
+          'modified': 22,
+          'added': 3,
+          'sub': {'field': 4}
+        });
       });
 
       test('simpleOnSnapshot', () async {

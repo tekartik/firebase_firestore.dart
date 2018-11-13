@@ -59,7 +59,8 @@ class FirestoreFlutter implements Firestore {
 
   @override
   void settings(FirestoreSettings settings) {
-    // TODO: implement settings
+    nativeInstance.settings(
+        timestampsInSnapshotsEnabled: settings?.timestampsInSnapshots == true);
   }
 }
 
@@ -121,12 +122,12 @@ class WriteBatchFlutter implements WriteBatch {
 }
 
 Map<String, dynamic> documentDataToFlutterData(DocumentData data) {
-  // TODO convert data
+  // _TODO convert data
   return data?.asMap();
 }
 
 DocumentData documentDataFromFlutterData(Map<String, dynamic> map) {
-  // TODO convert data
+  // _TODO convert data
   return DocumentData(map);
 }
 
@@ -293,7 +294,7 @@ class DocumentReferenceFlutter implements DocumentReference {
     return nativeInstance.snapshots().transform(transformer);
   }
 
-  // TODO: implement parent
+  // _TODO: implement parent
   @override
   CollectionReference get parent => throw 'bug in parent';
 

@@ -8,12 +8,12 @@ import 'package:sembast/sembast_memory.dart' as sembast;
 import 'package:synchronized/synchronized.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
+import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:uuid/uuid.dart';
 
 class FirestoreServiceSembast implements FirestoreService {
@@ -107,7 +107,15 @@ dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
   throw 'recordValueToValue not supported $recordValue ${recordValue.runtimeType}';
 }
 
-dynamic valueToRecordValue(dynamic value) {
+dynamic valueToUpdateValue(dynamic value) {
+  if (value == FieldValue.delete) {
+    return sembast.FieldValue.delete;
+  }
+  return valueToRecordValue(value, valueToUpdateValue);
+}
+
+dynamic valueToRecordValue(dynamic value, [dynamic chainConverter(dynamic)]) {
+  chainConverter ??= valueToRecordValue;
   if (value == null || value is num || value is bool || value is String) {
     return value;
   } else if (value == FieldValue.serverTimestamp) {
@@ -117,13 +125,12 @@ dynamic valueToRecordValue(dynamic value) {
   } else if (value is Timestamp) {
     return timestampToRecordValue(value);
   } else if (value is Map) {
-    return value.map((key, value) => MapEntry(key, valueToRecordValue(value)));
+    return value.map((key, value) => MapEntry(key, chainConverter(value)));
   } else if (value is List) {
-    return value.map((subValue) => valueToRecordValue(subValue)).toList();
+    return value.map((subValue) => chainConverter(subValue)).toList();
   } else if (value is DocumentDataMap) {
     // this happens when it is a list item
-    return value.map
-        .map((key, value) => MapEntry(key, valueToRecordValue(value)));
+    return value.map.map((key, value) => MapEntry(key, chainConverter(value)));
   } else if (value is DocumentReferenceSembast) {
     return documentReferenceToRecordValue(value);
   } else if (value is Blob) {
@@ -139,8 +146,10 @@ DocumentDataMap _documentDataMap(DocumentData documentData) =>
 
 int recordMapRev(Map<String, dynamic> recordMap) =>
     recordMap != null ? recordMap[revKey] as int : null;
+
 Timestamp recordMapUpdateTime(Map<String, dynamic> recordMap) =>
     mapUpdateTime(recordMap);
+
 Timestamp recordMapCreateTime(Map<String, dynamic> recordMap) =>
     mapCreateTime(recordMap);
 
@@ -176,6 +185,18 @@ Map<String, dynamic> documentDataToRecordMap(DocumentData documentData,
     }
   });
   return recordMap;
+}
+
+Map<String, dynamic> documentDataToUpdateMap(DocumentData documentData) {
+  if (documentData == null) {
+    return null;
+  }
+  var updateMap = <String, dynamic>{};
+
+  _documentDataMap(documentData).map.forEach((String key, value) {
+    updateMap[key] = valueToUpdateValue(value);
+  });
+  return updateMap;
 }
 
 DocumentDataMap documentDataFromRecordMap(
@@ -281,6 +302,7 @@ class WriteResultSembast {
   bool get exists => newExists;
 
   bool get previousExists => previousSnapshot?.exists == true;
+
   bool get newExists => newSnapshot?.exists == true;
 
   DocumentSnapshotSembast previousSnapshot;
@@ -473,6 +495,35 @@ class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
     return result;
   }
 
+  Future<WriteResultSembast> txnUpdate(
+      sembast.Transaction txn, String path, DocumentData documentData) async {
+    var result = WriteResultSembast(path);
+    var docStore = txn.getStore(docStoreName);
+
+    // Need to get first to change rev
+    var existingRecordMap = await txnGetRecordMap(txn, path);
+    if (existingRecordMap == null) {
+      throw Exception("No document found at $path");
+    }
+    result.previousSnapshot = documentFromRecordMap(path, existingRecordMap);
+
+    // Update rev
+    int rev = (result.previousSnapshot?.rev ?? 0) + 1;
+
+    var updateMap = <String, dynamic>{};
+    updateMap[revKey] = rev;
+    var now = Timestamp.now();
+    updateMap[createTimeKey] =
+        (result.previousSnapshot?.createTime ?? now).toIso8601String();
+    updateMap[updateTimeKey] = now.toIso8601String();
+
+    Map<String, dynamic> recordMap =
+        await docStore.update(documentDataToUpdateMap(documentData), path);
+
+    result.newSnapshot = documentSnapshotFromRecordMap(this, path, recordMap);
+    return result;
+  }
+
   void notify(WriteResultSembast result) {
     var path = result.path;
     var documentSubscription = findSubscription(path);
@@ -535,12 +586,8 @@ class WriteBatchSembast extends WriteBatchBase implements WriteBatch {
             operation.documentData, operation.options));
       } else if (operation is WriteBatchOperationUpdate) {
         var path = operation.docRef.path;
-        var record = await txn.getStore(docStoreName).getRecord(path);
-        if (record == null) {
-          throw Exception("update failed, record $path does not exit");
-        }
-        results.add(await firestore.txnSet(
-            txn, path, operation.documentData, SetOptions(merge: true)));
+        results
+            .add(await firestore.txnUpdate(txn, path, operation.documentData));
       } else {
         throw 'not supported $operation';
       }
@@ -682,8 +729,7 @@ class DocumentReferenceSembast extends BaseReferenceSembast
       if (record == null) {
         throw Exception("update failed, record $path does not exit");
       }
-      result = await firestore.txnSet(
-          txn, path, DocumentData(data), SetOptions(merge: true));
+      result = await firestore.txnUpdate(txn, path, DocumentData(data));
     });
     if (result != null) {
       firestore.notify(result);
