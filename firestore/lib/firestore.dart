@@ -7,7 +7,7 @@ import 'package:tekartik_firebase_firestore/src/timestamp.dart';
 import 'src/firestore.dart';
 import 'package:collection/collection.dart';
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
-    show FirestoreSettings;
+    show FirestoreSettings, firestoreNameFieldPath;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
 
 abstract class FirestoreService {

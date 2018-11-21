@@ -5,7 +5,10 @@ import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/utils/collection.dart';
 import 'package:test/test.dart';
+import 'package:tekartik_firebase_firestore_test/utils_collection_test.dart'
+    as utils_collection;
 
 bool skipConcurrentTransactionTests = false;
 
@@ -19,10 +22,10 @@ void run(
     return app.delete();
   });
 
-  runApp(
-      firestoreService: firestoreService,
-      firestore: firestoreService.firestore(app));
-
+  var firestore = firestoreService.firestore(app);
+  runApp(firestoreService: firestoreService, firestore: firestore);
+  utils_collection.runApp(
+      firestoreService: firestoreService, firestore: firestore);
   if (firestoreService.supportsTimestampsInSnapshots) {
     // old date support
     var appNoTimestampsInSnapshots = firebase.initializeApp(
@@ -682,9 +685,29 @@ runApp(
         } else {
           expect(data, {'field1': 1, 'field2': 2});
         }
+
         querySnapshot = await collRef.select(['field1', 'field2']).get();
         data = querySnapshot.docs.first.data;
         expect(data, {'field1': 1, 'field2': 2});
+      });
+
+      test('order_by_name', () async {
+        var testsRef = getTestsRef();
+        var collRef = testsRef.doc('collection_test').collection('order');
+        await deleteCollection(firestore, collRef);
+        var twoRef = collRef.doc('two');
+        await twoRef.set({});
+        var oneRef = collRef.doc('one');
+        await oneRef.set({});
+        QuerySnapshot querySnapshot = await collRef.get();
+        // Order by name by default
+        expect(querySnapshot.docs[0].ref.path, oneRef.path);
+        expect(querySnapshot.docs[1].ref.path, twoRef.path);
+
+        querySnapshot = await collRef.orderBy(firestoreNameFieldPath).get();
+        // Order by name by default
+        expect(querySnapshot.docs[0].ref.path, oneRef.path);
+        expect(querySnapshot.docs[1].ref.path, twoRef.path);
       });
 
       test('complex', () async {

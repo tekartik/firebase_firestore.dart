@@ -669,6 +669,11 @@ class DocumentSnapshotSembast implements DocumentSnapshot {
 
   @override
   DocumentReference get ref => documentReference;
+
+  @override
+  String toString() {
+    return 'DocumentSnapshotSembast(ref: $ref)';
+  }
 }
 
 ReferenceContextSembast _context(FirestoreSembast firestore, String path) =>
@@ -767,6 +772,11 @@ class DocumentReferenceSembast extends BaseReferenceSembast
       controller.add(snapshotSembast);
     });
     return controller.stream;
+  }
+
+  @override
+  String toString() {
+    return 'DocumentReferenceSembast($path)';
   }
 }
 
@@ -932,48 +942,67 @@ abstract class QueryMixin implements Query, AttributesMixin {
       }
     }
 
-    // order
-    if (queryInfo.orderBys.isNotEmpty) {
-      docs.sort((DocumentSnapshotSembast snapshot1,
-          DocumentSnapshotSembast snapshot2) {
-        int cmp = 0;
-        for (var orderBy in queryInfo.orderBys) {
-          String keyPath = orderBy.fieldPath;
-          bool ascending = orderBy.ascending;
+    // if firestoreNameFieldPath (__name__) is not specified, add it
+    bool fieldPathFound = false;
 
-          int _rawCompare(Comparable object1, Comparable object2) {
-            if (object2 == null) {
-              if (object1 == null) {
-                return 0;
-              }
-              return -1;
-              // put object2 at the end
-            } else if (object1 == null) {
-              // put object1 at the end
-              return 1;
+    var orderBys = List.from(queryInfo.orderBys);
+    for (var orderBy in orderBys) {
+      if (orderBy.fieldPath == firestoreNameFieldPath) {
+        fieldPathFound = true;
+        break;
+      }
+    }
+
+    docs.sort(
+        (DocumentSnapshotSembast snapshot1, DocumentSnapshotSembast snapshot2) {
+      int cmp = 0;
+
+      if (!fieldPathFound) {
+        orderBys.add(OrderByInfo()
+          ..fieldPath = firestoreNameFieldPath
+          ..ascending = true);
+      }
+
+      for (var orderBy in orderBys) {
+        String keyPath = orderBy.fieldPath;
+        bool ascending = orderBy.ascending;
+
+        int _rawCompare(Comparable object1, Comparable object2) {
+          if (object2 == null) {
+            if (object1 == null) {
+              return 0;
             }
-            return object1.compareTo(object2);
+            return -1;
+            // put object2 at the end
+          } else if (object1 == null) {
+            // put object1 at the end
+            return 1;
           }
+          return object1.compareTo(object2);
+        }
 
-          int _compare(Comparable object1, Comparable object2) {
-            int rawCompare = _rawCompare(object1, object2);
-            if (ascending) {
-              return rawCompare;
-            } else {
-              return -rawCompare;
-            }
+        int _compare(Comparable object1, Comparable object2) {
+          int rawCompare = _rawCompare(object1, object2);
+          if (ascending) {
+            return rawCompare;
+          } else {
+            return -rawCompare;
           }
+        }
 
+        if (keyPath == firestoreNameFieldPath) {
+          cmp = _compare(snapshot1.ref.path, snapshot2.ref.path);
+        } else {
           cmp = _compare(
               snapshot1.documentData.valueAtFieldPath(keyPath) as Comparable,
               snapshot2.documentData.valueAtFieldPath(keyPath) as Comparable);
-          if (cmp != 0) {
-            break;
-          }
         }
-        return cmp;
-      });
-    }
+        if (cmp != 0) {
+          break;
+        }
+      }
+      return cmp;
+    });
 
     // Handle snapshot filtering (after ordering)
     List<DocumentSnapshotSembast> filteredDocs = [];

@@ -210,6 +210,11 @@ class CollectionReferenceNode extends QueryNode implements CollectionReference {
   @override
   // ignore: invalid_use_of_protected_member
   String get path => nativeInstance.nativeInstance.path;
+
+  @override
+  String toString() {
+    return 'CollectionReferenceNode($path)';
+  }
 }
 
 js.Timestamp _createJsTimestamp(node.Timestamp ts) {
@@ -384,6 +389,11 @@ class DocumentReferenceNode implements DocumentReference {
     });
     return nativeInstance.snapshots.transform(transformer);
   }
+
+  @override
+  String toString() {
+    return 'DocumentReferenceNode($path)';
+  }
 }
 
 class DocumentSnapshotNode implements DocumentSnapshot {
@@ -406,6 +416,11 @@ class DocumentSnapshotNode implements DocumentSnapshot {
 
   @override
   Timestamp get createTime => _wrapTimestamp(nativeInstance.createTime);
+
+  @override
+  String toString() {
+    return 'DocumentSnapshotNode(ref: $ref)';
+  }
 }
 
 Timestamp _wrapTimestamp(node.Timestamp nativeInstance) =>

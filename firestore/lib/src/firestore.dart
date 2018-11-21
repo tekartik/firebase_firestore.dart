@@ -197,6 +197,8 @@ enum FieldValueMapValue {
   serverTimestamp,
 }
 
+const String firestoreNameFieldPath = '__name__';
+
 class FirestoreSettings {
   /// Enables the use of `Timestamp`s for timestamp fields in
   /// `DocumentSnapshot`s.
