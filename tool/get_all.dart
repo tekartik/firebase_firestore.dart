@@ -23,6 +23,7 @@ var packages = [
   'firestore',
   'firestore_browser',
   'firestore_sembast',
+  'firestore_node',
   'firestore_sim',
   'firestore_test',
   'firestore_sim_io',
