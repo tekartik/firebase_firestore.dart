@@ -574,6 +574,11 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
         createTime: documentSnapshotData.createTime,
         updateTime: documentSnapshotData.updateTime);
   }
+
+  // This could be optimized
+  @override
+  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async =>
+      await Future.wait(refs.map((ref) => ref.get()));
 }
 
 class TransactionSim extends WriteBatchSim implements Transaction {

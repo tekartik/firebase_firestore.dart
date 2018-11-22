@@ -23,6 +23,9 @@ class FirestoreMock extends Object with FirestoreMixin implements Firestore {
 
   @override
   void settings(FirestoreSettings settings) {}
+
+  @override
+  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) => null;
 }
 
 class DocumentSnapshotMock implements DocumentSnapshot {

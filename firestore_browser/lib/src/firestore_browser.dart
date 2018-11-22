@@ -63,6 +63,11 @@ class FirestoreBrowser implements Firestore {
   void settings(FirestoreSettings settings) {
     nativeInstance.settings(_unwrapSettings(settings));
   }
+
+  @override
+  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async {
+    return await Future.wait(refs.map((ref) => ref.get()));
+  }
 }
 
 native.Settings _unwrapSettings(FirestoreSettings settings) {

@@ -68,6 +68,11 @@ class FirestoreNode implements Firestore {
   void settings(FirestoreSettings settings) {
     nativeInstance.settings(_unwrapSettings(settings));
   }
+
+  @override
+  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async =>
+      _wrapDocumentSnapshots(
+          await nativeInstance.getAll(_unwrapDocumentReferences(refs)));
 }
 
 FirestoreNode firestore(node.Firestore _impl) =>
@@ -81,6 +86,10 @@ DocumentReferenceNode _wrapDocumentReference(node.DocumentReference _impl) =>
 
 node.DocumentReference _unwrapDocumentReference(DocumentReference docRef) =>
     (docRef as DocumentReferenceNode)?.nativeInstance;
+
+List<node.DocumentReference> _unwrapDocumentReferences(
+        Iterable<DocumentReference> docRef) =>
+    docRef.map(_unwrapDocumentReference).toList(growable: false);
 
 class WriteBatchNode implements WriteBatch {
   final node.WriteBatch nativeInstance;
@@ -524,6 +533,10 @@ QueryNode _wrapQuery(node.DocumentQuery nativeInstance) =>
 DocumentSnapshotNode _wrapDocumentSnapshot(
         node.DocumentSnapshot nativeInstance) =>
     nativeInstance != null ? DocumentSnapshotNode._(nativeInstance) : null;
+
+List<DocumentSnapshotNode> _wrapDocumentSnapshots(
+        Iterable<node.DocumentSnapshot> nativeInstances) =>
+    nativeInstances.map(_wrapDocumentSnapshot).toList(growable: false);
 
 node.DocumentSnapshot _unwrapDocumentSnapshot(DocumentSnapshot snapshot) =>
     snapshot != null ? (snapshot as DocumentSnapshotNode).nativeInstance : null;

@@ -62,6 +62,11 @@ class FirestoreFlutter implements Firestore {
     nativeInstance.settings(
         timestampsInSnapshotsEnabled: settings?.timestampsInSnapshots == true);
   }
+
+  @override
+  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async {
+    return await Future.wait(refs.map((ref) => ref.get()));
+  }
 }
 
 class TransactionFlutter implements Transaction {

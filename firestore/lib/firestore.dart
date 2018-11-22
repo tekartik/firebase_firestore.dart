@@ -49,6 +49,9 @@ abstract class Firestore {
   ///
   /// Can only be invoked once and before any other [Firestore] method.
   void settings(FirestoreSettings settings);
+
+  /// Retrieves multiple documents from Firestore.
+  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs);
 }
 
 abstract class CollectionReference extends Query {

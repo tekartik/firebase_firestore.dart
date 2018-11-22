@@ -569,6 +569,10 @@ class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
     });
     transaction.notify(results);
   }
+
+  @override
+  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async =>
+      await Future.wait(refs.map((ref) => ref.get()));
 }
 
 class WriteBatchSembast extends WriteBatchBase implements WriteBatch {

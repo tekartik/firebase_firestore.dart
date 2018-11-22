@@ -134,6 +134,19 @@ runApp(
         expect(snapshot.exists, isFalse);
       });
 
+      test('get_all', () async {
+        var testsRef = getTestsRef();
+        var doc1Ref = testsRef.doc('get_all_1');
+        await doc1Ref.set({'value': 1});
+        var docDummyRef = testsRef.doc('dummy_id_that_should_never_exists');
+        var snapshots = await firestore.getAll([doc1Ref, docDummyRef]);
+        expect(snapshots.length, 2);
+        expect(snapshots[0].exists, isTrue);
+        expect(snapshots[0].data, {'value': 1});
+        expect(snapshots[1].exists, isFalse);
+        // expect(snapshots[1].data, isNull); currently node returns {}
+      });
+
       test('delete', () async {
         var testsRef = getTestsRef();
         var docRef = await testsRef.add({});
