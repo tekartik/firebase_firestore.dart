@@ -620,3 +620,105 @@ class WriteBatchOperationUpdate extends WriteBatchOperationBase {
   WriteBatchOperationUpdate(DocumentReference docRef, this.documentData)
       : super(docRef);
 }
+
+abstract class WriteResultBase {
+  final String path;
+
+  WriteResultBase(this.path);
+
+  bool get added => newExists && !previousExists;
+
+  bool get removed => previousExists && !newExists;
+
+  bool get exists => newExists;
+
+  bool get previousExists => previousSnapshot?.exists == true;
+
+  bool get newExists => newSnapshot?.exists == true;
+
+  DocumentSnapshot previousSnapshot;
+  DocumentSnapshot newSnapshot;
+
+  bool get shouldNotify => previousExists || newExists;
+
+  @override
+  String toString() {
+    return '$path added $added removed $removed old ${previousSnapshot?.exists} new ${newSnapshot?.exists}';
+  }
+}
+
+class DocumentChangeBase implements DocumentChange {
+  DocumentChangeBase(this.type, this.document, this.newIndex, this.oldIndex);
+
+  DocumentChangeType type;
+
+  @override
+  final DocumentSnapshot document;
+
+  @override
+  final int newIndex;
+
+  @override
+  final int oldIndex;
+
+  DocumentSnapshotBase get documentBase => document as DocumentSnapshotBase;
+}
+
+abstract class DocumentSnapshotBase implements DocumentSnapshot {
+  final RecordMetaData meta;
+  @override
+  final DocumentReference ref;
+  int get rev => meta?.rev;
+  @override
+  Timestamp get updateTime => meta?.updateTime;
+  @override
+  Timestamp get createTime => meta?.createTime;
+  final DocumentData documentData;
+
+  bool _exists;
+
+  @override
+  bool get exists => _exists;
+
+  DocumentSnapshotBase(this.ref, this.meta, this.documentData, {bool exists}) {
+    _exists = exists ?? (documentData != null);
+  }
+
+  @override
+  Map<String, dynamic> get data => documentData?.asMap();
+
+  @override
+  String toString() {
+    return 'DocumentSnapshot(ref: $ref, exists: $exists, meta $meta)';
+  }
+}
+
+class QuerySnapshotBase implements QuerySnapshot {
+  QuerySnapshotBase(this.docs, this.documentChanges);
+
+  @override
+  final List<DocumentSnapshot> docs;
+
+  @override
+  final List<DocumentChange> documentChanges;
+
+  bool contains(DocumentSnapshotBase document) {
+    for (var doc in docs) {
+      if (doc.ref.path == document.ref.path) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+// TODO handle sub field name
+Map<String, dynamic> toSelectedMap(Map map, List<String> fields) {
+  var selectedMap = <String, dynamic>{};
+  for (var key in fields) {
+    if (map.containsKey(key)) {
+      selectedMap[key] = map[key];
+    }
+  }
+  return selectedMap;
+}

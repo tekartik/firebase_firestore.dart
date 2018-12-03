@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:sembast/sembast.dart' hide Transaction, FieldValue;
 import 'package:sembast/sembast.dart' as sembast;
@@ -9,7 +8,6 @@ import 'package:synchronized/synchronized.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
@@ -54,58 +52,6 @@ FirestoreServiceSembast _firestoreServiceSembastMemory;
 FirestoreServiceSembast get firestoreServiceSembastMemory =>
     _firestoreServiceSembastMemory ??=
         FirestoreServiceSembast(sembast.memoryDatabaseFactory);
-const revKey = r'$rev';
-
-// Stored as timestamp
-Map<String, dynamic> dateTimeToRecordValue(DateTime dateTime) =>
-    timestampToRecordValue(Timestamp.fromDateTime(dateTime));
-// For now it is still a date
-Map<String, dynamic> timestampToRecordValue(Timestamp timestamp) =>
-    timestampToJsonValue(timestamp);
-
-Map<String, dynamic> documentReferenceToRecordValue(
-        DocumentReferenceSembast documentReference) =>
-    documentReferenceToJsonValue(documentReference);
-
-DateTime recordValueToDateTime(Map map) => jsonValueToDateTime(map)?.toLocal();
-
-DocumentReference recordValueToDocumentReference(
-        Firestore firestore, Map map) =>
-    jsonValueToDocumentReference(firestore, map);
-
-// TODO handle sub field name
-Map<String, dynamic> toSelectedMap(Map map, List<String> fields) {
-  var selectedMap = <String, dynamic>{};
-  for (var key in fields) {
-    if (map.containsKey(key)) {
-      selectedMap[key] = map[key];
-    }
-  }
-  return selectedMap;
-}
-
-dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
-  if (recordValue == null ||
-      recordValue is num ||
-      recordValue is bool ||
-      recordValue is String) {
-    return recordValue;
-  } else if (recordValue is Map) {
-    if (recordValue.containsKey(jsonTypeField)) {
-      return jsonToDocumentDataValue(firestore, recordValue);
-    } else {
-      return recordValue
-          .map((key, recordValue) =>
-              MapEntry(key, recordValueToValue(firestore, recordValue)))
-          .cast<String, dynamic>();
-    }
-  } else if (recordValue is Iterable) {
-    return recordValue
-        .map((recordValue) => recordValueToValue(firestore, recordValue))
-        .toList();
-  }
-  throw 'recordValueToValue not supported $recordValue ${recordValue.runtimeType}';
-}
 
 dynamic valueToUpdateValue(dynamic value) {
   if (value == FieldValue.delete) {
@@ -114,47 +60,22 @@ dynamic valueToUpdateValue(dynamic value) {
   return valueToRecordValue(value, valueToUpdateValue);
 }
 
-dynamic valueToRecordValue(dynamic value, [dynamic chainConverter(dynamic)]) {
-  chainConverter ??= valueToRecordValue;
-  if (value == null || value is num || value is bool || value is String) {
-    return value;
-  } else if (value == FieldValue.serverTimestamp) {
-    return dateTimeToRecordValue(DateTime.now());
-  } else if (value is DateTime) {
-    return dateTimeToRecordValue(value);
-  } else if (value is Timestamp) {
-    return timestampToRecordValue(value);
-  } else if (value is Map) {
-    return value.map((key, value) => MapEntry(key, chainConverter(value)));
-  } else if (value is List) {
-    return value.map((subValue) => chainConverter(subValue)).toList();
-  } else if (value is DocumentDataMap) {
-    // this happens when it is a list item
-    return value.map.map((key, value) => MapEntry(key, chainConverter(value)));
-  } else if (value is DocumentReferenceSembast) {
-    return documentReferenceToRecordValue(value);
-  } else if (value is Blob) {
-    return blobToJsonValue(value);
-  } else if (value is GeoPoint) {
-    return geoPointToJsonValue(value);
+Map<String, dynamic> documentDataToUpdateMap(DocumentData documentData) {
+  if (documentData == null) {
+    return null;
   }
-  throw 'not supported $value ${value.runtimeType}';
+  var updateMap = <String, dynamic>{};
+
+  documentDataMap(documentData).map.forEach((String key, value) {
+    updateMap[key] = valueToUpdateValue(value);
+  });
+  return updateMap;
 }
 
-DocumentDataMap _documentDataMap(DocumentData documentData) =>
-    documentData as DocumentDataMap;
-
-int recordMapRev(Map<String, dynamic> recordMap) =>
-    recordMap != null ? recordMap[revKey] as int : null;
-
-Timestamp recordMapUpdateTime(Map<String, dynamic> recordMap) =>
-    mapUpdateTime(recordMap);
-
-Timestamp recordMapCreateTime(Map<String, dynamic> recordMap) =>
-    mapCreateTime(recordMap);
-
+/*
 DocumentSnapshotSembast documentSnapshotFromRecordMap(
     FirestoreSembast firestore, String path, Map<String, dynamic> recordMap) {
+
   return DocumentSnapshotSembast(
       DocumentReferenceSembast(ReferenceContextSembast(firestore, path)),
       recordMapRev(recordMap),
@@ -162,161 +83,24 @@ DocumentSnapshotSembast documentSnapshotFromRecordMap(
       updateTime: recordMapUpdateTime(recordMap),
       createTime: recordMapCreateTime(recordMap));
 }
-
-// merge with existing record map if any
-Map<String, dynamic> documentDataToRecordMap(DocumentData documentData,
-    [Map<String, dynamic> recordMap]) {
-  if (documentData == null && recordMap == null) {
-    return null;
-  }
-  recordMap = recordMap != null
-      ? Map<String, dynamic>.from(recordMap)
-      : <String, dynamic>{};
-  if (documentData == null) {
-    return recordMap;
-  }
-  _documentDataMap(documentData).map.forEach((String key, value) {
-    // special delete field
-    if (value == FieldValue.delete) {
-      // remove
-      recordMap.remove(key);
-    } else {
-      recordMap[key] = valueToRecordValue(value);
-    }
-  });
-  return recordMap;
-}
-
-Map<String, dynamic> documentDataToUpdateMap(DocumentData documentData) {
-  if (documentData == null) {
-    return null;
-  }
-  var updateMap = <String, dynamic>{};
-
-  _documentDataMap(documentData).map.forEach((String key, value) {
-    updateMap[key] = valueToUpdateValue(value);
-  });
-  return updateMap;
-}
-
-DocumentDataMap documentDataFromRecordMap(
-    Firestore firestore, Map<String, dynamic> recordMap,
-    [DocumentData documentData]) {
-  if (documentData == null && recordMap == null) {
-    return null;
-  }
-  documentData ??= DocumentData();
-  if (recordMap != null) {
-    recordMap.forEach((String key, value) {
-      // ignore rev
-      if (key == revKey) {
-        return;
-      }
-      // ignore updateTime
-      if (key == updateTimeKey) {
-        return;
-      }
-      // ignore createTime
-      if (key == createTimeKey) {
-        return;
-      }
-      // call setValue to prevent checking type again
-      (documentData as DocumentDataMap)
-          .setValue(key, recordValueToValue(firestore, value));
-    });
-  }
-  return documentData as DocumentDataMap;
-}
-
-bool mapWhere(DocumentData documentData, WhereInfo where) {
-  // We always use Timestamp even for DateTime
-  dynamic _fixValue(dynamic value) {
-    if (value is DateTime) {
-      return Timestamp.fromDateTime(value);
-    }
-    return value;
-  }
-
-  var fieldValue = _fixValue(
-      _documentDataMap(documentData).valueAtFieldPath(where.fieldPath));
-  Comparable _comparableFieldValue() {
-    return fieldValue as Comparable;
-  }
-
-  if (where.isNull == true) {
-    return fieldValue == null;
-  } else if (where.isNull == false) {
-    return fieldValue != null;
-  } else if (where.isEqualTo != null) {
-    return fieldValue == _fixValue(where.isEqualTo);
-  } else if (where.isGreaterThan != null) {
-    return (fieldValue == null) ||
-        (_comparableFieldValue().compareTo(_fixValue(where.isGreaterThan)) > 0);
-  } else if (where.isGreaterThanOrEqualTo != null) {
-    return (fieldValue == null) ||
-        (_comparableFieldValue()
-                .compareTo(_fixValue(where.isGreaterThanOrEqualTo)) >=
-            0);
-  } else if (where.isLessThan != null) {
-    return fieldValue != null &&
-        (_comparableFieldValue().compareTo(_fixValue(where.isLessThan)) < 0);
-  } else if (where.isLessThanOrEqualTo != null) {
-    return fieldValue != null &&
-        (_comparableFieldValue()
-                .compareTo(_fixValue(where.isLessThanOrEqualTo)) <=
-            0);
-  } else if (where.arrayContains != null) {
-    return fieldValue != null &&
-        (fieldValue is Iterable) &&
-        (fieldValue.contains(_fixValue(where.arrayContains)));
-  }
-  return false;
-}
+*/
 
 // new format
 int firestoreSembastDatabaseVersion = 1;
 
-class CollectionSubscription
-    extends FirestoreSubscription<DocumentChangeSembast> {}
-
-class DocumentSubscription
-    extends FirestoreSubscription<DocumentSnapshotSembast> {}
-
-abstract class FirestoreSubscription<T> {
-  String path;
-  int count = 0;
-  var streamController = StreamController<T>.broadcast();
-}
-
 const String docStoreName = 'doc';
 
-class WriteResultSembast {
-  final String path;
-
-  WriteResultSembast(this.path);
-
-  bool get added => newExists && !previousExists;
-
-  bool get removed => previousExists && !newExists;
-
-  bool get exists => newExists;
-
-  bool get previousExists => previousSnapshot?.exists == true;
-
-  bool get newExists => newSnapshot?.exists == true;
-
-  DocumentSnapshotSembast previousSnapshot;
-  DocumentSnapshotSembast newSnapshot;
-
-  bool get shouldNotify => previousExists || newExists;
-
-  @override
-  String toString() {
-    return '$path added $added removed $removed old ${previousSnapshot?.exists} new ${newSnapshot?.exists}';
-  }
+class WriteResultSembast extends WriteResultBase {
+  WriteResultSembast(String path) : super(path);
+  DocumentSnapshotSembast get previousSnapshotSembast =>
+      previousSnapshot as DocumentSnapshotSembast;
+  DocumentSnapshotSembast get newSnapshotSembast =>
+      newSnapshot as DocumentSnapshotSembast;
 }
 
-class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
+class FirestoreSembast extends Object
+    with FirestoreMixin, FirestoreSubscriptionMixin, FirestoreDocumentsMixin
+    implements Firestore {
   var dbLock = Lock();
   Database db;
   final FirestoreServiceSembast firestoreService;
@@ -330,21 +114,19 @@ class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
           AppLocal.appPathPart(app.name)));
 
   Future close() async {
-    for (var subscription in subscriptions.values.toList()) {
-      await _clearSubscription(subscription);
-    }
+    await closeSubscriptions();
   }
 
   String get dbPath => join(appLocalPath, 'firestore.db');
 
   @override
   CollectionReference collection(String path) {
-    return CollectionReferenceSembast(_context(this, path));
+    return CollectionReferenceSembast(this, path);
   }
 
   @override
   DocumentReference doc(String path) {
-    return DocumentReferenceSembast(_context(this, path));
+    return DocumentReferenceSembast(this, path);
   }
 
   Future<Database> get ready async {
@@ -377,46 +159,6 @@ class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
     });
   }
 
-  // key is path
-  final subscriptions = <String, FirestoreSubscription>{};
-
-  FirestoreSubscription<T> findSubscription<T>(String path) {
-    return subscriptions[path] as FirestoreSubscription<T>;
-  }
-
-  CollectionSubscription addCollectionSubscription(String path) {
-    return _addSubscription(path, () => CollectionSubscription())
-        as CollectionSubscription;
-  }
-
-  DocumentSubscription addDocumentSubscription(String path) {
-    return _addSubscription(path, () => DocumentSubscription())
-        as DocumentSubscription;
-  }
-
-  FirestoreSubscription<T> _addSubscription<T>(
-      String path, FirestoreSubscription<T> create()) {
-    var subscription = findSubscription<T>(path);
-    if (subscription == null) {
-      subscription = create()..path = path;
-      subscriptions[path] = subscription;
-    }
-    subscription.count++;
-    return subscription;
-  }
-
-  // ref counting
-  Future removeSubscription(FirestoreSubscription subscription) async {
-    if (--subscription.count == 0) {
-      await _clearSubscription(subscription);
-    }
-  }
-
-  Future _clearSubscription(FirestoreSubscription subscription) async {
-    subscriptions.remove(subscription.path);
-    await subscription.streamController.close();
-  }
-
   Future<Map<String, dynamic>> txnGetRecordMap(
       sembast.Transaction txn, String path) async {
     Map<String, dynamic> recordMap =
@@ -425,51 +167,53 @@ class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
   }
 
   Future<DocumentSnapshotSembast> txnGetDocumentSnapshot(
-      sembast.Transaction txn, String path) async {
-    Map<String, dynamic> recordMap = await txnGetRecordMap(txn, path);
-    return documentFromRecordMap(path, recordMap);
+      sembast.Transaction txn, DocumentReference ref) async {
+    Map<String, dynamic> recordMap = await txnGetRecordMap(txn, ref.path);
+    return (await documentFromRecordMap(ref, recordMap))
+        as DocumentSnapshotSembast;
   }
 
+  /*
   // Remove meta keys
   DocumentSnapshotSembast documentFromRecordMap(
       String path, Map<String, dynamic> recordMap) {
-    int rev = recordMapRev(recordMap);
-    Timestamp updateTime = recordMapUpdateTime(recordMap);
-    Timestamp createTime = recordMapCreateTime(recordMap);
+    var meta = RecordMetaData.fromRecordMap(recordMap);
+    /*
     if (recordMap != null) {
       recordMap.remove(revKey);
       recordMap.remove(updateTimeKey);
       recordMap.remove(createTimeKey);
     }
+    */
     return DocumentSnapshotSembast(
-        DocumentReferenceSembast(ReferenceContextSembast(this, path)),
-        rev,
+        DocumentReferenceSembast(this, path),
+        meta,
         documentDataFromRecordMap(this, recordMap),
-        updateTime: updateTime,
-        createTime: createTime);
+        );
   }
+  */
 
   // return previous data
   Future<WriteResultSembast> txnDelete(
-      sembast.Transaction txn, String path) async {
-    var result = WriteResultSembast(path);
+      sembast.Transaction txn, DocumentReference ref) async {
+    var result = WriteResultSembast(ref.path);
     var docStore = txn.getStore(docStoreName);
-    result.previousSnapshot = await txnGetDocumentSnapshot(txn, path);
-    await docStore.delete(path);
+    result.previousSnapshot = await txnGetDocumentSnapshot(txn, ref);
+    await docStore.delete(ref.path);
     return result;
   }
 
   Future<WriteResultSembast> txnSet(
-      sembast.Transaction txn, String path, DocumentData documentData,
+      sembast.Transaction txn, DocumentReference ref, DocumentData documentData,
       [SetOptions options]) async {
-    var result = WriteResultSembast(path);
+    var result = WriteResultSembast(ref.path);
     var docStore = txn.getStore(docStoreName);
-    var existingRecordMap = await txnGetRecordMap(txn, path);
-    result.previousSnapshot = documentFromRecordMap(path, existingRecordMap);
+    var existingRecordMap = await txnGetRecordMap(txn, ref.path);
+    result.previousSnapshot = documentFromRecordMap(ref, existingRecordMap);
     Map<String, dynamic> recordMap;
 
     // Update rev
-    int rev = (result.previousSnapshot?.rev ?? 0) + 1;
+    int rev = (result.previousSnapshotSembast?.rev ?? 0) + 1;
     // merging?
     if (options?.merge == true) {
       recordMap = documentDataToRecordMap(documentData, existingRecordMap);
@@ -489,26 +233,26 @@ class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
       recordMap[updateTimeKey] = now.toIso8601String();
     }
 
-    result.newSnapshot = documentSnapshotFromRecordMap(this, path, recordMap);
-    Record record = Record(docStore.store, recordMap, path);
+    result.newSnapshot = this.documentFromRecordMap(ref, recordMap);
+    Record record = Record(docStore.store, recordMap, ref.path);
     await txn.putRecord(record);
     return result;
   }
 
-  Future<WriteResultSembast> txnUpdate(
-      sembast.Transaction txn, String path, DocumentData documentData) async {
-    var result = WriteResultSembast(path);
+  Future<WriteResultSembast> txnUpdate(sembast.Transaction txn,
+      DocumentReference ref, DocumentData documentData) async {
+    var result = WriteResultSembast(ref.path);
     var docStore = txn.getStore(docStoreName);
 
     // Need to get first to change rev
-    var existingRecordMap = await txnGetRecordMap(txn, path);
+    var existingRecordMap = await txnGetRecordMap(txn, ref.path);
     if (existingRecordMap == null) {
-      throw Exception("No document found at $path");
+      throw Exception("No document found at $ref");
     }
-    result.previousSnapshot = documentFromRecordMap(path, existingRecordMap);
+    result.previousSnapshot = documentFromRecordMap(ref, existingRecordMap);
 
     // Update rev
-    int rev = (result.previousSnapshot?.rev ?? 0) + 1;
+    int rev = (result.previousSnapshotSembast?.rev ?? 0) + 1;
 
     var updateMap = <String, dynamic>{};
     updateMap[revKey] = rev;
@@ -518,20 +262,21 @@ class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
     updateMap[updateTimeKey] = now.toIso8601String();
 
     Map<String, dynamic> recordMap =
-        await docStore.update(documentDataToUpdateMap(documentData), path);
+        await docStore.update(documentDataToUpdateMap(documentData), ref.path);
 
-    result.newSnapshot = documentSnapshotFromRecordMap(this, path, recordMap);
+    result.newSnapshot = documentFromRecordMap(ref, recordMap);
     return result;
   }
 
+  /*
   void notify(WriteResultSembast result) {
     var path = result.path;
     var documentSubscription = findSubscription(path);
     if (documentSubscription != null) {
       documentSubscription.streamController.add(DocumentSnapshotSembast(
           DocumentReferenceSembast(ReferenceContextSembast(this, path)),
-          result.newSnapshot?.rev,
-          result.newSnapshot?.documentData,
+          result.newSnapshotSembast?.rev,
+          result.newSnapshotSembast?.documentData,
           updateTime: result.newSnapshot?.updateTime,
           createTime: result.newSnapshot?.createTime));
     }
@@ -545,12 +290,13 @@ class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
                   ? DocumentChangeType.removed
                   : DocumentChangeType.modified),
           DocumentSnapshotSembast.fromSnapshot(
-              result.removed ? result.previousSnapshot : result.newSnapshot,
+              result.removed ? result.previousSnapshotSembast : result.newSnapshotSembast,
               true),
           null,
           null));
     }
   }
+  */
 
   @override
   WriteBatch batch() => WriteBatchSembast(this);
@@ -573,6 +319,36 @@ class FirestoreSembast extends Object with FirestoreMixin implements Firestore {
   @override
   Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async =>
       await Future.wait(refs.map((ref) => ref.get()));
+
+  @override
+  DocumentChangeBase documentChange(DocumentChangeType type,
+      DocumentSnapshot document, int newIndex, int oldIndex) {
+    return DocumentChangeSembast(type, document, newIndex, oldIndex);
+  }
+
+  @override
+  DocumentSnapshot cloneSnapshot(DocumentSnapshot documentSnapshot) {
+    return DocumentSnapshotSembast.fromSnapshot(
+        documentSnapshot as DocumentSnapshotSembast);
+  }
+
+  @override
+  DocumentSnapshot deletedSnapshot(DocumentReference documentReference) {
+    return DocumentSnapshotSembast(
+        documentReference as DocumentReferenceSembast, null, null);
+  }
+
+  @override
+  QuerySnapshot newQuerySnapshot(
+      List<DocumentSnapshot> docs, List<DocumentChange> changes) {
+    return QuerySnapshotSembast(docs, changes);
+  }
+
+  @override
+  DocumentSnapshot newSnapshot(
+      DocumentReference ref, RecordMetaData meta, DocumentData data) {
+    return DocumentSnapshotSembast(ref, meta, data);
+  }
 }
 
 class WriteBatchSembast extends WriteBatchBase implements WriteBatch {
@@ -584,14 +360,13 @@ class WriteBatchSembast extends WriteBatchBase implements WriteBatch {
     List<WriteResultSembast> results = [];
     for (var operation in operations) {
       if (operation is WriteBatchOperationDelete) {
-        results.add(await firestore.txnDelete(txn, operation.docRef.path));
+        results.add(await firestore.txnDelete(txn, operation.docRef));
       } else if (operation is WriteBatchOperationSet) {
-        results.add(await firestore.txnSet(txn, operation.docRef.path,
-            operation.documentData, operation.options));
+        results.add(await firestore.txnSet(
+            txn, operation.docRef, operation.documentData, operation.options));
       } else if (operation is WriteBatchOperationUpdate) {
-        var path = operation.docRef.path;
-        results
-            .add(await firestore.txnUpdate(txn, path, operation.documentData));
+        results.add(await firestore.txnUpdate(
+            txn, operation.docRef, operation.documentData));
       } else {
         throw 'not supported $operation';
       }
@@ -627,102 +402,67 @@ class TransactionSembast extends WriteBatchSembast implements Transaction {
 
   @override
   Future<DocumentSnapshot> get(DocumentReference documentRef) async {
-    var snapshot = await firestore.txnGetDocumentSnapshot(
-        nativeTransaction, _wrapDocumentReference(documentRef).path);
+    var snapshot =
+        await firestore.txnGetDocumentSnapshot(nativeTransaction, documentRef);
     return snapshot;
   }
 }
 
-class BaseReferenceSembast extends Object with AttributesMixin {
-  final ReferenceContextSembast context;
+class DocumentSnapshotSembast extends DocumentSnapshotBase {
+  DocumentSnapshotSembast(
+      DocumentReference ref, RecordMetaData meta, DocumentData documentData,
+      {bool exists})
+      : super(ref, meta, documentData, exists: exists);
 
-  BaseReferenceSembast(this.context);
-
-  ReferenceContextSembast pathContext(String path) =>
-      ReferenceContextSembast(context.firestore, path);
+  DocumentSnapshotSembast.fromSnapshot(DocumentSnapshotSembast snapshot,
+      {bool exists})
+      : this(snapshot.ref, snapshot.meta, snapshot.documentData,
+            exists: exists ?? snapshot.exists);
 }
 
-class DocumentSnapshotSembast implements DocumentSnapshot {
-  final DocumentReferenceSembast documentReference;
-  final int rev;
-  @override
-  final Timestamp updateTime;
-  @override
-  final Timestamp createTime;
-  final DocumentDataMap documentData;
-
-  bool _exists;
-
-  @override
-  bool get exists => _exists;
-
-  DocumentSnapshotSembast(this.documentReference, this.rev, this.documentData,
-      {bool exists, @required this.updateTime, @required this.createTime}) {
-    _exists = exists ?? (documentData != null);
-  }
-
-  DocumentSnapshotSembast.fromSnapshot(
-      DocumentSnapshotSembast snapshot, bool exists)
-      : this(snapshot.documentReference, snapshot.rev, snapshot.documentData,
-            exists: exists,
-            updateTime: snapshot.updateTime,
-            createTime: snapshot.createTime);
-
-  @override
-  Map<String, dynamic> get data => documentData?.asMap();
-
-  @override
-  DocumentReference get ref => documentReference;
-
-  @override
-  String toString() {
-    return 'DocumentSnapshotSembast(ref: $ref)';
-  }
-}
-
-ReferenceContextSembast _context(FirestoreSembast firestore, String path) =>
-    ReferenceContextSembast(firestore, path);
-
-class DocumentReferenceSembast extends BaseReferenceSembast
+class DocumentReferenceSembast extends FirestoreReferenceBase
     with AttributesMixin
     implements DocumentReference {
-  DocumentReferenceSembast(ReferenceContextSembast context) : super(context);
+  DocumentReferenceSembast(Firestore firestore, String path)
+      : super(firestore, path);
 
+  FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
   @override
   CollectionReference collection(String path) =>
-      CollectionReferenceSembast(pathContext(getChildPath(path)));
+      CollectionReferenceSembast(firestore, url.join(this.path, path));
 
   @override
   Future delete() async {
     WriteResultSembast result;
-    var db = await firestore.ready;
+    var db = await firestoreSembast.ready;
     await db.transaction((txn) async {
-      result = await firestore.txnDelete(txn, path);
+      result = await firestoreSembast.txnDelete(txn, this);
     });
     // We must either have added or removed it
     if (result.shouldNotify) {
-      firestore.notify(result);
+      firestoreSembast.notify(result);
     }
   }
 
   @override
   Future<DocumentSnapshot> get() async {
-    var db = await firestore.ready;
+    var db = await firestoreSembast.ready;
     Map<String, dynamic> recordMap =
         await db.getStore(docStoreName).get(path) as Map<String, dynamic>;
     // always create a snapshot even if it doest not exist
-    return documentSnapshotFromRecordMap(firestore, path, recordMap);
+    return firestoreSembast.documentFromRecordMap(this, recordMap);
   }
 
   @override
   Future set(Map<String, dynamic> data, [SetOptions options]) async {
-    WriteResultSembast result;
-    var db = await firestore.ready;
+    WriteResultBase result;
+    var db = await firestoreSembast.ready;
     await db.transaction((txn) async {
-      result = await firestore.txnSet(txn, path, DocumentData(data), options);
+      result =
+          await firestoreSembast.txnSet(txn, this, DocumentData(data), options);
     });
     if (result != null) {
-      firestore.notify(result);
+      firestoreSembast.notify(result);
     }
   }
 
@@ -732,16 +472,16 @@ class DocumentReferenceSembast extends BaseReferenceSembast
   Future update(Map<String, dynamic> data) async {
     WriteResultSembast result;
 
-    var db = await firestore.ready;
+    var db = await firestoreSembast.ready;
     await db.transaction((txn) async {
       var record = await txn.getStore(docStoreName).getRecord(_key);
       if (record == null) {
         throw Exception("update failed, record $path does not exit");
       }
-      result = await firestore.txnUpdate(txn, path, DocumentData(data));
+      result = await firestoreSembast.txnUpdate(txn, this, DocumentData(data));
     });
     if (result != null) {
-      firestore.notify(result);
+      firestoreSembast.notify(result);
     }
   }
 
@@ -751,51 +491,33 @@ class DocumentReferenceSembast extends BaseReferenceSembast
     if (parentPath == null) {
       return null;
     } else {
-      return CollectionReferenceSembast(pathContext(parentPath));
+      return CollectionReferenceSembast(firestore, parentPath);
     }
-  }
-
-  @override
-  Stream<DocumentSnapshot> onSnapshot() {
-    var subscription = firestore.addDocumentSubscription(path);
-    var querySubscription;
-    var controller = StreamController<DocumentSnapshotSembast>(onCancel: () {
-      querySubscription.cancel();
-    });
-
-    querySubscription = subscription.streamController.stream.listen(
-        (DocumentSnapshotSembast snapshot) async {
-      controller.add(snapshot);
-    }, onDone: () {
-      firestore.removeSubscription(subscription);
-    });
-
-    // Get the first batch
-    get().then((DocumentSnapshot snapshot) {
-      var snapshotSembast = _wrapDocumentSnapshot(snapshot);
-      controller.add(snapshotSembast);
-    });
-    return controller.stream;
   }
 
   @override
   String toString() {
     return 'DocumentReferenceSembast($path)';
   }
+
+  @override
+  Stream<DocumentSnapshot> onSnapshot() => firestoreSembast.onSnapshot(this);
 }
 
-class CollectionReferenceSembast extends BaseReferenceSembast
-    with QueryMixin, AttributesMixin
+class CollectionReferenceSembast extends QuerySembast
     implements CollectionReference {
-  CollectionReferenceSembast(ReferenceContextSembast context) : super(context);
+  FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
 
   // always created initially
   QueryInfo queryInfo = QueryInfo();
 
+  CollectionReferenceSembast(Firestore firestore, String path)
+      : super(firestore, path);
+
   @override
   DocumentReference doc([String path]) {
     path ??= _generateId();
-    return DocumentReferenceSembast(pathContext(getChildPath(path)));
+    return firestore.doc(url.join(this.path, path));
   }
 
   String _generateId() => Uuid().v4().toString();
@@ -807,16 +529,17 @@ class CollectionReferenceSembast extends BaseReferenceSembast
 
     WriteResultSembast result;
 
-    var db = await firestore.ready;
+    var db = await firestoreSembast.ready;
     await db.transaction((txn) async {
-      result = await firestore.txnSet(txn, path, DocumentData(data));
+      result = await firestoreSembast.txnSet(
+          txn, firestoreSembast.doc(path), DocumentData(data));
     });
     if (result != null) {
-      firestore.notify(result);
+      firestoreSembast.notify(result);
     }
 
     DocumentReferenceSembast documentReference =
-        DocumentReferenceSembast(pathContext(path));
+        DocumentReferenceSembast(firestore, path);
     return documentReference;
   }
 
@@ -826,450 +549,54 @@ class CollectionReferenceSembast extends BaseReferenceSembast
     if (parentPath == null) {
       return null;
     } else {
-      return DocumentReferenceSembast(pathContext(parentPath));
+      return DocumentReferenceSembast(firestore, parentPath);
     }
   }
 }
 
-class ReferenceContextSembast {
-  final FirestoreSembast firestore;
-  final String path;
-
-  ReferenceContextSembast(this.firestore, this.path);
-}
-
-class QuerySembast extends Object
-    with QueryMixin, AttributesMixin
+class QuerySembast extends FirestoreReferenceBase
+    with FirestoreQueryMixin, AttributesMixin
     implements Query {
-  final ReferenceContextSembast context;
+  FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
 
-  QuerySembast(this.context);
+  QuerySembast(Firestore firestore, String path) : super(firestore, path);
 
   QueryInfo queryInfo;
-}
-
-T safeGetItem<T>(List<T> list, int index) {
-  if (list != null && list.length > index) {
-    return list[index];
-  }
-  return null;
-}
-
-bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
-  //var data = documentData.map;
-  // if (data != null) {
-  //bool add = true;
-
-  if (queryInfo.wheres.isNotEmpty) {
-    for (var where in queryInfo.wheres) {
-      if (!mapWhere(documentData, where)) {
-        return false;
-      }
-    }
-  }
-
-  if (((queryInfo.startLimit?.values != null ||
-              queryInfo.endLimit?.values != null) &&
-          queryInfo.orderBys.isNotEmpty) ||
-      queryInfo.wheres.isNotEmpty) {
-    for (int i = 0; i < queryInfo.orderBys.length; i++) {
-      dynamic value =
-          documentData.valueAtFieldPath(queryInfo.orderBys[i].fieldPath);
-
-      if (queryInfo.startLimit?.inclusive == true) {
-        dynamic startAt = safeGetItem(queryInfo.startLimit?.values, i);
-        if (startAt != null) {
-          // ignore: non_bool_operand
-          if (value == null || value < startAt) {
-            return false;
-          }
-        }
-      } else {
-        dynamic startAfter = safeGetItem(queryInfo.startLimit?.values, i);
-        if (startAfter != null) {
-          // ignore: non_bool_operand
-          if (value == null || value <= startAfter) {
-            return false;
-          }
-        }
-      }
-
-      if (queryInfo.endLimit?.inclusive == true) {
-        dynamic endAt = safeGetItem(queryInfo.endLimit?.values, i);
-        if (endAt != null) {
-          // ignore: non_bool_operand
-          if (value == null || value > endAt) {
-            return false;
-          }
-        }
-      } else {
-        dynamic endBefore = safeGetItem(queryInfo.endLimit?.values, i);
-        if (endBefore != null) {
-          // ignore: non_bool_operand
-          if (value == null || value >= endBefore) {
-            return false;
-          }
-        }
-      }
-    }
-  }
-  return true;
-}
-
-abstract class QueryMixin implements Query, AttributesMixin {
-  ReferenceContextSembast get context;
-
-  QueryInfo get queryInfo;
-
-  ReferenceContextSembast pathContext(String path);
 
   @override
-  Future<QuerySnapshot> get() async {
-    var db = await firestore.ready;
+  FirestoreQueryMixin clone() =>
+      QuerySembast(firestore, path)..queryInfo = queryInfo?.clone();
 
-    // Get and filter
-    List<DocumentSnapshotSembast> docs = [];
+  @override
+  Future<List<DocumentSnapshot>> getCollectionDocuments() async {
+    var db = await firestoreSembast.ready;
+
+    List<DocumentSnapshot> docs = [];
     for (Record record
         in await db.getStore(docStoreName).findRecords(Finder())) {
       String recordPath = record.key;
       String parentPath = url.dirname(recordPath);
       if (parentPath == path) {
-        var docRef =
-            DocumentReferenceSembast(pathContext(record.key as String));
-        var documentData = documentDataFromRecordMap(
-            firestore, record.value as Map<String, dynamic>);
-
-        if (mapQueryInfo(documentData, queryInfo)) {
-          docs.add(documentSnapshotFromRecordMap(
-              firestore, docRef.path, record.value as Map<String, dynamic>));
-        }
+        docs.add(firestoreSembast.documentFromRecordMap(
+            firestoreSembast.doc(recordPath),
+            record.value as Map<String, dynamic>));
       }
     }
-
-    // if firestoreNameFieldPath (__name__) is not specified, add it
-    bool fieldPathFound = false;
-
-    var orderBys = List.from(queryInfo.orderBys);
-    for (var orderBy in orderBys) {
-      if (orderBy.fieldPath == firestoreNameFieldPath) {
-        fieldPathFound = true;
-        break;
-      }
-    }
-
-    docs.sort(
-        (DocumentSnapshotSembast snapshot1, DocumentSnapshotSembast snapshot2) {
-      int cmp = 0;
-
-      if (!fieldPathFound) {
-        orderBys.add(OrderByInfo()
-          ..fieldPath = firestoreNameFieldPath
-          ..ascending = true);
-      }
-
-      for (var orderBy in orderBys) {
-        String keyPath = orderBy.fieldPath;
-        bool ascending = orderBy.ascending;
-
-        int _rawCompare(Comparable object1, Comparable object2) {
-          if (object2 == null) {
-            if (object1 == null) {
-              return 0;
-            }
-            return -1;
-            // put object2 at the end
-          } else if (object1 == null) {
-            // put object1 at the end
-            return 1;
-          }
-          return object1.compareTo(object2);
-        }
-
-        int _compare(Comparable object1, Comparable object2) {
-          int rawCompare = _rawCompare(object1, object2);
-          if (ascending) {
-            return rawCompare;
-          } else {
-            return -rawCompare;
-          }
-        }
-
-        if (keyPath == firestoreNameFieldPath) {
-          cmp = _compare(snapshot1.ref.path, snapshot2.ref.path);
-        } else {
-          cmp = _compare(
-              snapshot1.documentData.valueAtFieldPath(keyPath) as Comparable,
-              snapshot2.documentData.valueAtFieldPath(keyPath) as Comparable);
-        }
-        if (cmp != 0) {
-          break;
-        }
-      }
-      return cmp;
-    });
-
-    // Handle snapshot filtering (after ordering)
-    List<DocumentSnapshotSembast> filteredDocs = [];
-    if (queryInfo.startLimit?.documentId != null ||
-        queryInfo.endLimit?.documentId != null) {
-      bool add = true;
-      if (queryInfo.startLimit?.documentId != null) {
-        add = false;
-      }
-      for (var snapshot in docs) {
-        if (!add && queryInfo.startLimit?.documentId != null) {
-          if (snapshot.ref.id == queryInfo.startLimit.documentId) {
-            add = true;
-            if (!queryInfo.startLimit.inclusive) {
-              // skip this one
-              continue;
-            }
-          }
-        }
-        // stop now?
-        if (add && queryInfo.endLimit?.documentId != null) {
-          if (snapshot.ref.id == queryInfo.endLimit.documentId) {
-            if (queryInfo.endLimit.inclusive) {
-              filteredDocs.add(snapshot);
-            }
-            break;
-          }
-        }
-
-        if (add) {
-          filteredDocs.add(snapshot);
-        }
-      }
-
-      docs = filteredDocs;
-    }
-
-    // offset && limit
-    if (queryInfo.limit != null || queryInfo.offset != null) {
-      List<DocumentSnapshotSembast> limitedDocs = [];
-      int index = 0;
-      for (var snapshot in docs) {
-        if (queryInfo.offset != null) {
-          if (index < queryInfo.offset) {
-            index++;
-            continue;
-          }
-        }
-        if (queryInfo.limit != null) {
-          if (limitedDocs.length >= queryInfo.limit) {
-            break;
-          }
-        }
-        index++;
-        limitedDocs.add(snapshot);
-      }
-      docs = limitedDocs;
-    }
-
-    // Apply select
-    if (queryInfo?.selectKeyPaths != null) {
-      List<DocumentSnapshotSembast> selectedDocs = [];
-      for (var snapshot in docs) {
-        var data = snapshot.documentData.map;
-        selectedDocs.add(DocumentSnapshotSembast(
-            _wrapDocumentReference(snapshot.ref),
-            snapshot.rev,
-            documentDataFromRecordMap(
-                firestore, toSelectedMap(data, queryInfo.selectKeyPaths)),
-            exists: true,
-            updateTime: snapshot.updateTime,
-            createTime: snapshot.createTime));
-      }
-      docs = selectedDocs;
-    }
-    return QuerySnapshotSembast(docs, <DocumentChangeSembast>[]);
-  }
-
-  @override
-  Query select(List<String> list) {
-    return clone()..queryInfo.selectKeyPaths = list;
-  }
-
-  @override
-  Query limit(int limit) => clone()..queryInfo.limit = limit;
-
-  @override
-  Query orderBy(String key, {bool descending}) => clone()
-    ..addOrderBy(
-        key, descending == true ? orderByDescending : orderByAscending);
-
-  QuerySembast clone() {
-    return QuerySembast(context)..queryInfo = queryInfo?.clone();
-  }
-
-  @override
-  Query where(
-    String fieldPath, {
-    dynamic isEqualTo,
-    dynamic isLessThan,
-    dynamic isLessThanOrEqualTo,
-    dynamic isGreaterThan,
-    dynamic isGreaterThanOrEqualTo,
-    dynamic arrayContains,
-    bool isNull,
-  }) =>
-      clone()
-        ..queryInfo.addWhere(WhereInfo(fieldPath,
-            isEqualTo: isEqualTo,
-            isLessThan: isLessThan,
-            isLessThanOrEqualTo: isLessThanOrEqualTo,
-            isGreaterThan: isGreaterThan,
-            isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
-            arrayContains: arrayContains,
-            isNull: isNull));
-
-  addOrderBy(String key, String directionStr) {
-    var orderBy = OrderByInfo()
-      ..fieldPath = key
-      ..ascending = directionStr != orderByDescending;
-    queryInfo.orderBys.add(orderBy);
-  }
-
-  @override
-  Query startAt({DocumentSnapshot snapshot, List values}) =>
-      clone()..queryInfo.startAt(snapshot: snapshot, values: values);
-
-  @override
-  Query startAfter({DocumentSnapshot snapshot, List values}) =>
-      clone()..queryInfo.startAfter(snapshot: snapshot, values: values);
-
-  @override
-  Query endAt({DocumentSnapshot snapshot, List values}) =>
-      clone()..queryInfo.endAt(snapshot: snapshot, values: values);
-
-  @override
-  Query endBefore({DocumentSnapshot snapshot, List values}) =>
-      clone()..queryInfo.endBefore(snapshot: snapshot, values: values);
-
-  @override
-  Stream<QuerySnapshot> onSnapshot() {
-    var collectionSubscription = firestore.addCollectionSubscription(path);
-    var querySubscription;
-    var controller = StreamController<QuerySnapshotSembast>(onCancel: () {
-      querySubscription.cancel();
-    });
-
-    querySubscription = collectionSubscription.streamController.stream.listen(
-        (DocumentChangeSembast documentChange) async {
-      // get the base data
-      var querySnapshot = await get() as QuerySnapshotSembast;
-      if (mapQueryInfo(documentChange.document.documentData, queryInfo)) {
-        if (documentChange.type == null) {
-          if (querySnapshot.contains(documentChange.document)) {
-            documentChange.type = DocumentChangeType.modified;
-          } else {
-            documentChange.type = DocumentChangeType.added;
-          }
-        }
-        querySnapshot.documentChanges.add(documentChange);
-      } else if (documentChange.type == DocumentChangeType.removed) {
-        if (querySnapshot.contains(documentChange.document)) {
-          querySnapshot.documentChanges.add(documentChange);
-        }
-      }
-      controller.add(querySnapshot);
-    }, onDone: () {
-      firestore.removeSubscription(collectionSubscription);
-    });
-
-    // Get the first batch
-    get().then((QuerySnapshot querySnaphost) {
-      var querySnapshotIo = querySnaphost as QuerySnapshotSembast;
-      // set index
-      int index = 0;
-      for (var doc in querySnaphost.docs) {
-        querySnapshotIo.documentChanges.add(DocumentChangeSembast(
-            DocumentChangeType.added, _wrapDocumentSnapshot(doc), index++, -1));
-      }
-      controller.add(querySnapshotIo);
-    });
-    return controller.stream;
+    return docs;
   }
 }
 
-abstract class ReferenceAttributes {
-  ReferenceContextSembast get context;
+class DocumentChangeSembast extends DocumentChangeBase {
+  DocumentChangeSembast(DocumentChangeType type, DocumentSnapshot document,
+      int newIndex, int oldIndex)
+      : super(type, document, newIndex, oldIndex);
 
-  String get parentPath;
-
-  String get id;
-
-  String getChildPath(String path);
+  DocumentSnapshotSembast get documentSembast =>
+      document as DocumentSnapshotSembast;
 }
 
-abstract class AttributesMixin implements ReferenceAttributes {
-  ReferenceContextSembast get context;
-
-  FirestoreSembast get firestore => context.firestore;
-
-  String get path => context.path;
-
-  @override
-  String get parentPath {
-    String dirPath = url.dirname(path);
-    if (dirPath?.length == 0) {
-      return null;
-    } else if (dirPath == ".") {
-      // Mimic firestore behavior where the top document has a "" path
-      return '';
-    } else if (dirPath == "/") {
-      // Mimic firestore behavior where the top document has a "" path
-      return '';
-    }
-    return dirPath;
-  }
-
-  @override
-  String get id => url.basename(path);
-
-  @override
-  String getChildPath(String path) => url.join(this.path, path);
-
-  ReferenceContextSembast pathContext(String path) =>
-      ReferenceContextSembast(firestore, path);
+class QuerySnapshotSembast extends QuerySnapshotBase {
+  QuerySnapshotSembast(
+      List<DocumentSnapshot> docs, List<DocumentChange> documentChanges)
+      : super(docs, documentChanges);
 }
-
-class DocumentChangeSembast implements DocumentChange {
-  DocumentChangeSembast(this.type, this.document, this.newIndex, this.oldIndex);
-
-  DocumentChangeType type;
-
-  @override
-  final DocumentSnapshotSembast document;
-
-  @override
-  final int newIndex;
-
-  @override
-  final int oldIndex;
-}
-
-class QuerySnapshotSembast implements QuerySnapshot {
-  QuerySnapshotSembast(this.docs, this.documentChanges);
-
-  @override
-  final List<DocumentSnapshotSembast> docs;
-
-  @override
-  final List<DocumentChange> documentChanges;
-
-  bool contains(DocumentSnapshotSembast document) {
-    for (var doc in docs) {
-      if (doc.ref.path == document.ref.path) {
-        return true;
-      }
-    }
-    return false;
-  }
-}
-
-DocumentSnapshotSembast _wrapDocumentSnapshot(DocumentSnapshot snapshot) =>
-    snapshot as DocumentSnapshotSembast;
-
-DocumentReferenceSembast _wrapDocumentReference(DocumentReference ref) =>
-    ref as DocumentReferenceSembast;
