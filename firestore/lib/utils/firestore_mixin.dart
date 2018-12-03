@@ -483,9 +483,6 @@ mixin FirestoreQueryMixin implements Query {
         key, descending == true ? orderByDescending : orderByAscending);
 
   FirestoreQueryMixin clone();
-  //  FirestoreQueryMixin clone() {
-  //    return QuerySembast(context)..queryInfo = queryInfo?.clone();
-  //  }
 
   @override
   Query where(

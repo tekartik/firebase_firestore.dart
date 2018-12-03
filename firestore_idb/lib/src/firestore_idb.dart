@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:path/path.dart';
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:idb_shim/idb.dart' as idb;
-import 'package:tekartik_browser_utils/browser_utils_import.dart' hide Blob;
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/document_data.dart';
@@ -53,7 +53,14 @@ class FirestoreIdb extends Object
     if (_database != null) {
       return _database;
     }
-    return idbFactory.open(appLocal.localPath).then((idb.Database database) {
+    return idbFactory.open(appLocal.localPath, version: 1,
+        onUpgradeNeeded: (idb.VersionChangeEvent versionChangeEvent) {
+      // devPrint('old version ${versionChangeEvent.oldVersion}');
+      // Just on object store
+      if (versionChangeEvent.oldVersion == 0) {
+        versionChangeEvent.database.createObjectStore(storeName);
+      }
+    }).then((idb.Database database) {
       _database = database;
       return _database;
     });
