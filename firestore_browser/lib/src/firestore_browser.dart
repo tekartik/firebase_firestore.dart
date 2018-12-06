@@ -8,6 +8,13 @@ import 'package:tekartik_firebase_browser/src/firebase_browser.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 
+JavascriptScriptLoader firestoreJsLoader = JavascriptScriptLoader(
+    "https://www.gstatic.com/firebasejs/$firebaseJsVersion/firebase-firestore.js");
+
+Future loadFirebaseFirestoreJs() async {
+  await firestoreJsLoader.load();
+}
+
 class FirestoreServiceBrowser implements FirestoreService {
   @override
   bool get supportsQuerySelect => false;
