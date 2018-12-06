@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/src/timestamp.dart';
-import 'src/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:collection/collection.dart';
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
     show FirestoreSettings, firestoreNameFieldPath;
