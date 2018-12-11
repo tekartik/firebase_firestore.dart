@@ -4,10 +4,10 @@ import 'dart:typed_data';
 
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/src/timestamp.dart';
-import 'src/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:collection/collection.dart';
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
-    show FirestoreSettings;
+    show FirestoreSettings, firestoreNameFieldPath;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
 
 abstract class FirestoreService {
@@ -49,6 +49,9 @@ abstract class Firestore {
   ///
   /// Can only be invoked once and before any other [Firestore] method.
   void settings(FirestoreSettings settings);
+
+  /// Retrieves multiple documents from Firestore.
+  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs);
 }
 
 abstract class CollectionReference extends Query {

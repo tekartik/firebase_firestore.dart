@@ -1,6 +1,6 @@
-name: tekartik_firebase_firestore_sembast
-description: Firebase firestore sembast
-version: 0.3.7+3
+name: tekartik_firebase_firestore_idb
+description: Firebase firestore browser
+version: 0.3.7+1
 #homepage: https://www.example.com
 #author: alex <email@example.com>
 
@@ -8,8 +8,6 @@ environment:
   sdk: '>=2.0.0-dev.54 <3.0.0'
 
 dependencies:
-  sembast: '>=1.12.0-dev.1'
-  uuid: '>=1.0.0'
   tekartik_firebase_firestore:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
@@ -22,14 +20,24 @@ dependencies:
       path: firebase_local
       ref: dart2
     version: '>=0.3.7'
+  idb_shim: '>=1.7.0+1'
+  uuid:
+  tekartik_browser_utils:
+    git:
+      url: git://github.com/tekartik/browser_utils.dart
+      ref: dart2
 
 dev_dependencies:
-  test: any
+  test: ">=0.12.37"
+  dev_test: '>=0.12.0-dev.1'
+  http: any
+  yaml: any
   build_runner: ">=0.9.1"
   build_test: ">=0.10.3"
-  tekartik_firebase_firestore_test:
-    path: ../firestore_test
+  build_web_compilers: ">=0.4.0+4"
 
 dependency_overrides:
   tekartik_firebase_firestore:
     path: ../firestore
+  tekartik_firebase_firestore_test:
+    path: ../firestore_test
