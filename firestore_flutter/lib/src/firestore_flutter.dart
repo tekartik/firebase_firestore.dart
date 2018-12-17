@@ -29,7 +29,11 @@ class FirestoreServiceFlutter implements FirestoreService {
   Firestore firestore(App app) {
     assert(app is AppFlutter, 'invalid firebase app type');
     AppFlutter appFlutter = app;
-    return FirestoreFlutter(native.Firestore(app: appFlutter.nativeInstance));
+    if (appFlutter.isDefault) {
+      return FirestoreFlutter(native.Firestore.instance);
+    } else {
+      return FirestoreFlutter(native.Firestore(app: appFlutter.nativeInstance));
+    }
   }
 }
 
