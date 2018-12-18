@@ -45,6 +45,9 @@ class FirestoreServiceSembast implements FirestoreService {
 
   //TODO
   Future deleteApp(App app) async {}
+
+  @override
+  bool get supportsQuerySnapshotCursor => true;
 }
 
 FirestoreServiceSembast _firestoreServiceSembastMemory;

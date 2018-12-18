@@ -34,6 +34,9 @@ class FirestoreServiceNode implements FirestoreService {
     AppNode appNode = app;
     return FirestoreNode(appNode.nativeInstance.firestore());
   }
+
+  @override
+  bool get supportsQuerySnapshotCursor => true;
 }
 
 FirestoreServiceNode _firestoreServiceNode;

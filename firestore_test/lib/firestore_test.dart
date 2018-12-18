@@ -27,22 +27,32 @@ void run(
   utils_collection.runApp(
       firestoreService: firestoreService, firestore: firestore);
   if (firestoreService.supportsTimestampsInSnapshots) {
-    // old date support
-    var appNoTimestampsInSnapshots = firebase.initializeApp(
-        options: options ?? AppOptions(), name: 'noTimestampsInSnapshots');
     runNoTimestampsInSnapshots(
         firestoreService: firestoreService,
-        firestore: firestoreService.firestore(appNoTimestampsInSnapshots));
+        firebase: firebase,
+        options: options);
   }
 }
 
 runNoTimestampsInSnapshots(
     {@required FirestoreService firestoreService,
-    @required Firestore firestore}) {
+    @required FirebaseAsync firebase,
+    AppOptions options}) {
+  App appNoTimestampsInSnapshots;
+  Firestore firestore;
   group('firestore_noTimestampsInSnapshots', () {
-    setUpAll(() {
+    setUpAll(() async {
+      // old date support
+      appNoTimestampsInSnapshots = await firebase.initializeAppAsync(
+          options: options ?? AppOptions(), name: 'noTimestampsInSnapshots');
+      firestore = firestoreService.firestore(appNoTimestampsInSnapshots);
       //devPrint('App name: ${app.name}');
+
       firestore.settings(FirestoreSettings(timestampsInSnapshots: false));
+    });
+
+    tearDownAll(() async {
+      await appNoTimestampsInSnapshots.delete();
     });
     var testsRefPath = 'tests/tekartik_firebase/tests';
 
@@ -218,7 +228,7 @@ runApp(
         await docRef.set({'test': 2});
         snapshot = await docRef.get();
 
-        _check() {
+        void _check() {
           expect(snapshot.data, {'test': 2});
           if (firestoreService.supportsDocumentSnapshotTime) {
             expect(snapshot.updateTime.compareTo(snapshot.createTime),
@@ -803,14 +813,16 @@ runApp(
         expect(list.length, 1);
         expect(list.first.ref.id, "one");
 
-        // start after using snapshot
-        querySnapshot = await collRef
-            .orderBy('value')
-            .startAfter(snapshot: list.first)
-            .get();
-        list = querySnapshot.docs;
-        expect(list.length, 1);
-        expect(list.first.ref.id, "two");
+        if (firestoreService.supportsQuerySnapshotCursor) {
+          // start after using snapshot
+          querySnapshot = await collRef
+              .orderBy('value')
+              .startAfter(snapshot: list.first)
+              .get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "two");
+        }
 
         // where >
         querySnapshot = await collRef.where('value', isGreaterThan: 1).get();

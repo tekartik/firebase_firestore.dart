@@ -11,7 +11,12 @@ export 'package:tekartik_firebase_firestore/src/firestore.dart'
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
 
 abstract class FirestoreService {
+  // True if query supporting selecting a set of fields
   bool get supportsQuerySelect;
+
+  // True if startAt/startAfter/endAt/endAfter can be used with snapshot
+  bool get supportsQuerySnapshotCursor;
+
   bool get supportsDocumentSnapshotTime;
   bool get supportsTimestamps;
   bool get supportsTimestampsInSnapshots;

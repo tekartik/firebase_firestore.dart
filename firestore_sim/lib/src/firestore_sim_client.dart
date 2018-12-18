@@ -47,6 +47,9 @@ class FirestoreServiceSim implements FirestoreService {
 
   //TODO
   Future deleteApp(App app) async {}
+
+  @override
+  bool get supportsQuerySnapshotCursor => true;
 }
 
 FirestoreServiceSim _firestoreServiceSim;
