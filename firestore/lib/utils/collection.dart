@@ -1,6 +1,7 @@
 // Delete entire collection
 // <https://firebase.google.com/docs/firestore/manage-data/delete-data#collections>
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'dart:async';
 
 Future deleteCollection(Firestore firestore, CollectionReference collectionRef,
     {int batchSize}) async {

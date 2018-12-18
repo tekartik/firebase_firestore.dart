@@ -203,8 +203,8 @@ runApp(
         var now = Timestamp.now();
         await docRef.set({'test': 1});
         var snapshot = await docRef.get();
-        // devPrint('createTime ${snapshot.createTime}');
-        // devPrint('updateTime ${snapshot.updateTime}');
+        //devPrint('createTime ${snapshot.createTime}');
+        //devPrint('updateTime ${snapshot.updateTime}');
         expect(snapshot.data, {'test': 1});
 
         if (firestoreService.supportsDocumentSnapshotTime) {
