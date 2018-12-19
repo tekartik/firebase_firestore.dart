@@ -361,6 +361,27 @@ runApp(
         await docRef.delete();
       });
 
+      test('list<data>', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('list');
+        await docRef.set({
+          "some_key": [
+            {"sub_key": "some_value"}
+          ]
+        });
+        var snapshot = await docRef.get();
+        var documentData = DocumentData(snapshot.data);
+        expect(snapshot.data, {
+          "some_key": [
+            {"sub_key": "some_value"}
+          ]
+        });
+        var list = documentData.getList('some_key');
+        DocumentData sub = DocumentData(list[0] as Map<String, dynamic>);
+        expect(sub.getString('sub_key'), 'some_value');
+        await docRef.delete();
+      });
+
       test(
         'date',
         () async {
