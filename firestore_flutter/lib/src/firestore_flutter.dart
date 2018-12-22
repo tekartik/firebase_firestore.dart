@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:path/path.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as native;
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
@@ -20,7 +21,7 @@ class FirestoreServiceFlutter implements FirestoreService {
   bool get supportsDocumentSnapshotTime => false;
 
   @override
-  bool get supportsTimestampsInSnapshots => false;
+  bool get supportsTimestampsInSnapshots => true;
 
   @override
   bool get supportsTimestamps => true;
@@ -35,6 +36,10 @@ class FirestoreServiceFlutter implements FirestoreService {
       return FirestoreFlutter(native.Firestore(app: appFlutter.nativeInstance));
     }
   }
+
+  // Native implementation does not allow passing snapshots
+  @override
+  bool get supportsQuerySnapshotCursor => false;
 }
 
 class FirestoreFlutter implements Firestore {
@@ -130,14 +135,85 @@ class WriteBatchFlutter implements WriteBatch {
           documentDataToFlutterData(DocumentData(data)));
 }
 
-Map<String, dynamic> documentDataToFlutterData(DocumentData data) {
-  // _TODO convert data
-  return data?.asMap();
+// for both native and not
+bool isCommonValue(value) {
+  return (value == null ||
+      value is String ||
+      value is DateTime ||
+      value is num ||
+      value is bool);
 }
 
-DocumentData documentDataFromFlutterData(Map<String, dynamic> map) {
-  // _TODO convert data
-  return DocumentData(map);
+dynamic toNativeValue(value) {
+  if (isCommonValue(value)) {
+    return value;
+  } else if (value is Timestamp) {
+    return native.Timestamp(value.seconds, value.nanoseconds);
+  } else if (value is Iterable) {
+    return value.map((nativeValue) => toNativeValue(nativeValue)).toList();
+  } else if (value is Map) {
+    return value.map<String, dynamic>(
+        (key, value) => MapEntry(key as String, toNativeValue(value)));
+  } else if (value is FieldValue) {
+    if (FieldValue.delete == value) {
+      return native.FieldValue.delete();
+    } else if (FieldValue.serverTimestamp == value) {
+      return native.FieldValue.serverTimestamp();
+    }
+  } else if (value is DocumentReferenceFlutter) {
+    return value.nativeInstance;
+  } else if (value is Blob) {
+    return native.Blob(value.data);
+  } else if (value is GeoPoint) {
+    return native.GeoPoint(
+        value.latitude?.toDouble(), value.longitude?.toDouble());
+  }
+
+  throw 'not supported ${value} type ${value.runtimeType}';
+}
+
+dynamic fromNativeValue(nativeValue) {
+  if (isCommonValue(nativeValue)) {
+    return nativeValue;
+  }
+  if (nativeValue is Iterable) {
+    return nativeValue
+        .map((nativeValue) => fromNativeValue(nativeValue))
+        .toList();
+  } else if (nativeValue is Map) {
+    return nativeValue.map<String, dynamic>((key, nativeValue) =>
+        MapEntry(key as String, fromNativeValue(nativeValue)));
+  } else if (native.FieldValue.delete() == nativeValue) {
+    return FieldValue.delete;
+  } else if (native.FieldValue.serverTimestamp() == nativeValue) {
+    return FieldValue.serverTimestamp;
+  } else if (nativeValue is native.DocumentReference) {
+    return DocumentReferenceFlutter(nativeValue);
+  } else if (nativeValue is native.Blob) {
+    return Blob(nativeValue.bytes);
+  } else if (nativeValue is native.GeoPoint) {
+    return GeoPoint(nativeValue.latitude, nativeValue.longitude);
+  } else if (nativeValue is native.Timestamp) {
+    return Timestamp(nativeValue.seconds, nativeValue.nanoseconds);
+  } else {
+    throw 'not supported ${nativeValue} type ${nativeValue.runtimeType}';
+  }
+}
+
+Map<String, dynamic> documentDataToFlutterData(DocumentData data) {
+  if (data != null) {
+    var map = data.asMap();
+    return toNativeValue(map) as Map<String, dynamic>;
+  }
+  return null;
+}
+
+DocumentData documentDataFromFlutterData(Map<String, dynamic> nativeMap) {
+  if (nativeMap != null) {
+    var map = fromNativeValue(nativeMap) as Map<String, dynamic>;
+    return DocumentData(map);
+  }
+  return null;
 }
 
 QueryFlutter _wrapQuery(native.Query nativeInstance) =>
@@ -149,12 +225,12 @@ class QueryFlutter implements Query {
   QueryFlutter(this.nativeInstance);
   @override
   Query endAt({DocumentSnapshot snapshot, List values}) {
-    return _wrapQuery(nativeInstance.endAt(values));
+    return _wrapQuery(nativeInstance.endAt(toNativeValue(values) as List));
   }
 
   @override
   Query endBefore({DocumentSnapshot snapshot, List values}) {
-    return _wrapQuery(nativeInstance.endBefore(values));
+    return _wrapQuery(nativeInstance.endBefore(toNativeValue(values) as List));
   }
 
   @override
@@ -178,7 +254,8 @@ class QueryFlutter implements Query {
 
   @override
   Query orderBy(String key, {bool descending}) {
-    return _wrapQuery(nativeInstance.orderBy(key, descending: descending));
+    return _wrapQuery(
+        nativeInstance.orderBy(key, descending: descending == true));
   }
 
   @override
@@ -189,12 +266,12 @@ class QueryFlutter implements Query {
 
   @override
   Query startAfter({DocumentSnapshot snapshot, List values}) {
-    return _wrapQuery(nativeInstance.startAfter(values));
+    return _wrapQuery(nativeInstance.startAfter(toNativeValue(values) as List));
   }
 
   @override
   Query startAt({DocumentSnapshot snapshot, List values}) {
-    return _wrapQuery(nativeInstance.startAt(values));
+    return _wrapQuery(nativeInstance.startAt(toNativeValue(values) as List));
   }
 
   @override
@@ -207,11 +284,12 @@ class QueryFlutter implements Query {
       arrayContains,
       bool isNull}) {
     return _wrapQuery(nativeInstance.where(fieldPath,
-        isEqualTo: isEqualTo,
-        isLessThan: isLessThan,
-        isGreaterThan: isGreaterThan,
-        isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
-        arrayContains: arrayContains,
+        isEqualTo: toNativeValue(isEqualTo),
+        isLessThan: toNativeValue(isLessThan),
+        isLessThanOrEqualTo: toNativeValue(isLessThanOrEqualTo),
+        isGreaterThan: toNativeValue(isGreaterThan),
+        isGreaterThanOrEqualTo: toNativeValue(isGreaterThanOrEqualTo),
+        arrayContains: toNativeValue(arrayContains),
         isNull: isNull));
   }
 }
@@ -238,8 +316,8 @@ class CollectionReferenceFlutter extends QueryFlutter
 
   @override
   DocumentReference get parent {
-    // _wrapDocumentReference(nativeInstance.parent());
-    throw 'bug issue in original';
+    return _wrapDocumentReference(
+        nativeInstance.firestore.document(url.dirname(path)));
   }
 
   @override
@@ -305,7 +383,8 @@ class DocumentReferenceFlutter implements DocumentReference {
 
   // _TODO: implement parent
   @override
-  CollectionReference get parent => throw 'bug in parent';
+  CollectionReference get parent => _wrapCollectionReference(
+      nativeInstance.firestore.collection(url.dirname(path)));
 
   @override
   String get path => nativeInstance.path;

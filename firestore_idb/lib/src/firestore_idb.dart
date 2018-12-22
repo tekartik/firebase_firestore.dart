@@ -37,6 +37,9 @@ class FirestoreServiceIdb implements FirestoreService {
     AppLocal appLocal = app;
     return FirestoreIdb(appLocal, this);
   }
+
+  @override
+  bool get supportsQuerySnapshotCursor => true;
 }
 
 FirestoreService getFirestoreService(idb.IdbFactory idbFactory) =>

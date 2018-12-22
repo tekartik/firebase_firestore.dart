@@ -34,6 +34,9 @@ class FirestoreServiceBrowser implements FirestoreService {
     AppBrowser appBrowser = app;
     return FirestoreBrowser(appBrowser.nativeApp.firestore());
   }
+
+  @override
+  bool get supportsQuerySnapshotCursor => true;
 }
 
 FirestoreServiceBrowser _firebaseFirestoreServiceBrowser;
