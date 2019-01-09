@@ -40,6 +40,9 @@ class FirestoreServiceIdb implements FirestoreService {
 
   @override
   bool get supportsQuerySnapshotCursor => true;
+
+  @override
+  bool get supportsFieldValueArray => false;
 }
 
 FirestoreService getFirestoreService(idb.IdbFactory idbFactory) =>

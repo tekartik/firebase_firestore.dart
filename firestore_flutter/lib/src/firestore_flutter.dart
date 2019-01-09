@@ -40,6 +40,9 @@ class FirestoreServiceFlutter implements FirestoreService {
   // Native implementation does not allow passing snapshots
   @override
   bool get supportsQuerySnapshotCursor => false;
+
+  @override
+  bool get supportsFieldValueArray => true;
 }
 
 class FirestoreFlutter implements Firestore {
@@ -159,6 +162,10 @@ dynamic toNativeValue(value) {
       return native.FieldValue.delete();
     } else if (FieldValue.serverTimestamp == value) {
       return native.FieldValue.serverTimestamp();
+    } else if (value.type == FieldValueType.arrayUnion) {
+      return native.FieldValue.arrayUnion(value.data as List);
+    } else if (value.type == FieldValueType.arrayRemove) {
+      return native.FieldValue.arrayRemove(value.data as List);
     }
   } else if (value is DocumentReferenceFlutter) {
     return value.nativeInstance;

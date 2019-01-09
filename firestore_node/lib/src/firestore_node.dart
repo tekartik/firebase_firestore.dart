@@ -37,6 +37,9 @@ class FirestoreServiceNode implements FirestoreService {
 
   @override
   bool get supportsQuerySnapshotCursor => true;
+
+  @override
+  bool get supportsFieldValueArray => false;
 }
 
 FirestoreServiceNode _firestoreServiceNode;

@@ -14,6 +14,8 @@ abstract class FirestoreService {
   // True if query supporting selecting a set of fields
   bool get supportsQuerySelect;
 
+  // Temporary flag
+  bool get supportsFieldValueArray;
   // True if startAt/startAfter/endAt/endAfter can be used with snapshot
   bool get supportsQuerySnapshotCursor;
 
@@ -180,11 +182,27 @@ abstract class DocumentSnapshot {
   Timestamp get createTime;
 }
 
-// Sentinal values for update/set
-enum FieldValue {
+enum FieldValueType {
   serverTimestamp,
-// update only
-  delete
+  delete,
+  arrayUnion,
+  arrayRemove,
+}
+
+// Sentinal values for update/set
+class FieldValue {
+  dynamic get data => null;
+  final FieldValueType type;
+  static final FieldValue serverTimestamp =
+      FieldValue(FieldValueType.serverTimestamp);
+  static final FieldValue delete = FieldValue(FieldValueType.delete);
+  factory FieldValue.arrayUnion(List<dynamic> data) {
+    return FieldValueArray(FieldValueType.arrayUnion, data);
+  }
+  factory FieldValue.arrayRemove(List<dynamic> data) {
+    return FieldValueArray(FieldValueType.arrayRemove, data);
+  }
+  FieldValue(this.type);
 }
 
 // Use UInt8Array as much as possible

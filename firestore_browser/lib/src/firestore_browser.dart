@@ -37,6 +37,9 @@ class FirestoreServiceBrowser implements FirestoreService {
 
   @override
   bool get supportsQuerySnapshotCursor => true;
+
+  @override
+  bool get supportsFieldValueArray => false;
 }
 
 FirestoreServiceBrowser _firebaseFirestoreServiceBrowser;

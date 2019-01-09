@@ -48,6 +48,9 @@ class FirestoreServiceSembast implements FirestoreService {
 
   @override
   bool get supportsQuerySnapshotCursor => true;
+
+  @override
+  bool get supportsFieldValueArray => false;
 }
 
 FirestoreServiceSembast _firestoreServiceSembastMemory;

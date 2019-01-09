@@ -571,6 +571,51 @@ runApp(
         data = (await docRef.get()).data;
         expect(data, {"other_key": "other_value"});
       });
+      test('array', () async {
+        if (firestoreService.supportsFieldValueArray) {
+          var testsRef = getTestsRef();
+          var docRef = testsRef.doc("array_union");
+
+          // Test creating an array
+          var data = <String, dynamic>{
+            "some_array": FieldValue.arrayUnion([1]),
+            // create to be updated later as an array
+            "not_array": 2,
+          };
+          await docRef.set(data);
+          data = (await docRef.get()).data;
+          expect(data, {
+            "some_array": [1],
+            "not_array": 2
+          });
+
+          // Test update to add data or override an existing type
+          data = <String, dynamic>{
+            "some_array": FieldValue.arrayUnion([3]),
+            // update as an array
+            "not_array": FieldValue.arrayUnion([4, 5]),
+          };
+          await docRef.update(data);
+          data = (await docRef.get()).data;
+          expect(data, {
+            "some_array": [1, 3],
+            "not_array": [4, 5]
+          });
+
+          // Test delete
+          data = <String, dynamic>{
+            "some_array": FieldValue.arrayRemove([1]),
+            "not_array": FieldValue.arrayRemove([4, 6]),
+            "not_existing": FieldValue.arrayRemove([7]),
+          };
+          await docRef.update(data);
+          data = (await docRef.get()).data;
+          expect(data, {
+            "some_array": [3],
+            "not_array": [5]
+          });
+        }
+      });
 
       //test('subData')
     });

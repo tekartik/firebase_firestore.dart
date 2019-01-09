@@ -50,6 +50,9 @@ class FirestoreServiceSim implements FirestoreService {
 
   @override
   bool get supportsQuerySnapshotCursor => true;
+
+  @override
+  bool get supportsFieldValueArray => false;
 }
 
 FirestoreServiceSim _firestoreServiceSim;
