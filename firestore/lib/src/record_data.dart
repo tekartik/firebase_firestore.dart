@@ -2,6 +2,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
+import 'package:tekartik_common_utils/map_utils.dart';
 
 const revKey = r'$rev';
 
@@ -71,12 +72,15 @@ DocumentDataMap documentDataMap(DocumentData documentData) =>
 
 // merge with existing record map if any
 Map<String, dynamic> documentDataToRecordMap(DocumentData documentData,
+
+    /// Needed for arrayRemove
     [Map<String, dynamic> recordMap]) {
   if (documentData == null && recordMap == null) {
     return null;
   }
-  recordMap = recordMap != null
-      ? Map<String, dynamic>.from(recordMap)
+  var existingRecordMap = recordMap ?? {};
+  recordMap = (recordMap != null)
+      ? cloneMap(recordMap)?.cast<String, dynamic>()
       : <String, dynamic>{};
   if (documentData == null) {
     return recordMap;
@@ -86,11 +90,38 @@ Map<String, dynamic> documentDataToRecordMap(DocumentData documentData,
     if (value == FieldValue.delete) {
       // remove
       recordMap.remove(key);
+    } else if (value is FieldValueArray) {
+      recordMap[key] = fieldArrayValueMergeValue(value, existingRecordMap[key]);
     } else {
       recordMap[key] = valueToRecordValue(value);
     }
   });
   return recordMap;
+}
+
+/// To handle arrayUnion and ArrayDelete
+class FieldValueArray extends FieldValue {
+  final List<dynamic> data;
+
+  FieldValueArray(FieldValueType type, this.data) : super(type);
+}
+
+dynamic fieldArrayValueMergeValue(
+    FieldValueArray fieldValueArray, dynamic existing) {
+  // get the list
+  var existingIterable = existing;
+  List list;
+  if (existingIterable is Iterable) {
+    list = existingIterable.toList()?.cast<dynamic>();
+  } else {
+    list = [];
+  }
+  if (fieldValueArray.type == FieldValueType.arrayUnion) {
+    list.addAll(fieldValueArray.data);
+  } else if (fieldValueArray.type == FieldValueType.arrayRemove) {
+    list.removeWhere((item) => fieldValueArray.data.contains(item));
+  }
+  return list;
 }
 
 dynamic valueToRecordValue(dynamic value, [dynamic chainConverter(dynamic)]) {
@@ -116,6 +147,8 @@ dynamic valueToRecordValue(dynamic value, [dynamic chainConverter(dynamic)]) {
     return blobToJsonValue(value);
   } else if (value is GeoPoint) {
     return geoPointToJsonValue(value);
+  } else if (value is FieldValueArray) {
+    return value;
   }
   throw 'not supported $value ${value.runtimeType}';
 }

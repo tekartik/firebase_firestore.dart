@@ -25,7 +25,9 @@ export 'package:tekartik_firebase_firestore/src/record_data.dart'
         RecordMetaData,
         valueToRecordValue,
         documentDataMap,
-        recordMapCreateTime;
+        recordMapCreateTime,
+        FieldValueArray,
+        fieldArrayValueMergeValue;
 
 // might evolve to be always true
 bool firestoreTimestampsInSnapshots(Firestore firestore) {

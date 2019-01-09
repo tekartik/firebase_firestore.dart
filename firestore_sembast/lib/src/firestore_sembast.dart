@@ -50,7 +50,7 @@ class FirestoreServiceSembast implements FirestoreService {
   bool get supportsQuerySnapshotCursor => true;
 
   @override
-  bool get supportsFieldValueArray => false;
+  bool get supportsFieldValueArray => true;
 }
 
 FirestoreServiceSembast _firestoreServiceSembastMemory;
@@ -66,14 +66,19 @@ dynamic valueToUpdateValue(dynamic value) {
   return valueToRecordValue(value, valueToUpdateValue);
 }
 
-Map<String, dynamic> documentDataToUpdateMap(DocumentData documentData) {
+Map<String, dynamic> documentDataToUpdateMap(
+    DocumentData documentData, Map<String, dynamic> recordMap) {
   if (documentData == null) {
     return null;
   }
   var updateMap = <String, dynamic>{};
-
   documentDataMap(documentData).map.forEach((String key, value) {
-    updateMap[key] = valueToUpdateValue(value);
+    if (value is FieldValueArray) {
+      recordMap ??= {};
+      updateMap[key] = fieldArrayValueMergeValue(value, recordMap[key]);
+    } else {
+      updateMap[key] = valueToUpdateValue(value);
+    }
   });
   return updateMap;
 }
@@ -224,6 +229,7 @@ class FirestoreSembast extends Object
     if (options?.merge == true) {
       recordMap = documentDataToRecordMap(documentData, existingRecordMap);
     } else {
+      // Map needed to handle arrayRemove and arrayUnion
       recordMap = documentDataToRecordMap(documentData);
     }
 
@@ -267,8 +273,8 @@ class FirestoreSembast extends Object
         (result.previousSnapshot?.createTime ?? now).toIso8601String();
     updateMap[updateTimeKey] = now.toIso8601String();
 
-    Map<String, dynamic> recordMap =
-        await docStore.update(documentDataToUpdateMap(documentData), ref.path);
+    Map<String, dynamic> recordMap = await docStore.update(
+        documentDataToUpdateMap(documentData, existingRecordMap), ref.path);
 
     result.newSnapshot = documentFromRecordMap(ref, recordMap);
     return result;

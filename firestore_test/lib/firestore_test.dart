@@ -589,20 +589,19 @@ runApp(
             "not_array": 2
           });
 
-          // Test update to add data or override an existing type
+          // Test update arrayUnion and overriding a non array field
           data = <String, dynamic>{
             "some_array": FieldValue.arrayUnion([3]),
-            // update as an array
             "not_array": FieldValue.arrayUnion([4, 5]),
           };
           await docRef.update(data);
           data = (await docRef.get()).data;
           expect(data, {
             "some_array": [1, 3],
-            "not_array": [4, 5]
+            "not_array": [4, 5],
           });
 
-          // Test delete
+          // Test arrayRemove
           data = <String, dynamic>{
             "some_array": FieldValue.arrayRemove([1]),
             "not_array": FieldValue.arrayRemove([4, 6]),
@@ -612,7 +611,35 @@ runApp(
           data = (await docRef.get()).data;
           expect(data, {
             "some_array": [3],
-            "not_array": [5]
+            "not_array": [5],
+            "not_existing": []
+          });
+
+          // Test update using set with merge
+          data = <String, dynamic>{
+            "some_array": FieldValue.arrayUnion([8]),
+            "not_array": FieldValue.arrayRemove([5]),
+            "merged_not_existing": FieldValue.arrayRemove([9])
+          };
+          await docRef.set(data, SetOptions(merge: true));
+          data = (await docRef.get()).data;
+          expect(data, {
+            "some_array": [3, 8],
+            "not_array": [],
+            "not_existing": [],
+            "merged_not_existing": [],
+          });
+
+          // Test update using set no merge
+          data = <String, dynamic>{
+            "some_array": FieldValue.arrayUnion([3, 6]),
+            "no_merge_not_existing": FieldValue.arrayRemove([10]),
+          };
+          await docRef.set(data);
+          data = (await docRef.get()).data;
+          expect(data, {
+            "some_array": [3, 6],
+            "no_merge_not_existing": []
           });
         }
       });

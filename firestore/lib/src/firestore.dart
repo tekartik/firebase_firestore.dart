@@ -197,12 +197,6 @@ enum FieldValueMapValue {
   serverTimestamp,
 }
 
-class FieldValueArray extends FieldValue {
-  final List<dynamic> data;
-
-  FieldValueArray(FieldValueType type, this.data) : super(type);
-}
-
 const String firestoreNameFieldPath = '__name__';
 
 class FirestoreSettings {

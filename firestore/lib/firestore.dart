@@ -6,6 +6,7 @@ import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/src/timestamp.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:collection/collection.dart';
+import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
     show FirestoreSettings, firestoreNameFieldPath;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
@@ -196,13 +197,31 @@ class FieldValue {
   static final FieldValue serverTimestamp =
       FieldValue(FieldValueType.serverTimestamp);
   static final FieldValue delete = FieldValue(FieldValueType.delete);
+
+  // Returns a sentinel value that can be used with set(merge: true) or update()
+  // that tells the server to union the given elements with any array value that
+  // already exists on the server. Each specified element that doesn't already
+  // exist in the array will be added to the end. If the field being modified
+  // is not already an array it will be overwritten with an array containing
+  // exactly the specified elements.
   factory FieldValue.arrayUnion(List<dynamic> data) {
     return FieldValueArray(FieldValueType.arrayUnion, data);
   }
+
+  // Returns a sentinel value that can be used with set(merge: true) or
+  // update() that tells
+  // the server to remove the given elements from any array value that already
+  // exists on the server. All instances of each element specified will be
+  // removed from the array. If the field being modified is not already an array
+  // it will be overwritten with an empty array.
   factory FieldValue.arrayRemove(List<dynamic> data) {
     return FieldValueArray(FieldValueType.arrayRemove, data);
   }
   FieldValue(this.type);
+  @override
+  String toString() {
+    return '${type}${data != null ? '($data)' : ''}';
+  }
 }
 
 // Use UInt8Array as much as possible
