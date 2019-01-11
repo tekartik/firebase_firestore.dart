@@ -340,7 +340,6 @@ class ComparableMap<K, V> with MapMixin<K, V> implements Comparable<Map<K, V>> {
       }
     }
     return length - other.length;
-
   }
 }
 
@@ -354,8 +353,7 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
     for (int i = 0; i < queryInfo.orderBys.length; i++) {
       var fieldPath = queryInfo.orderBys[i].fieldPath;
       if (fieldPath != firestoreNameFieldPath) {
-        dynamic value =
-        documentData.valueAtFieldPath(fieldPath);
+        dynamic value = documentData.valueAtFieldPath(fieldPath);
         if (value == null) {
           return false;
         }

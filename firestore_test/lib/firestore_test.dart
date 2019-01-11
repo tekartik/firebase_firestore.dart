@@ -954,7 +954,8 @@ runApp(
         expect(list.length, 0);
 
         // complex object
-        querySnapshot = await collRef.where('sub', isEqualTo: {'value': 'a'}).get();
+        querySnapshot =
+            await collRef.where('sub', isEqualTo: {'value': 'a'}).get();
         list = querySnapshot.docs;
         expect(list.length, 1);
         expect(list.first.ref.id, "two");
@@ -978,9 +979,7 @@ runApp(
           'sub': {'value': 'a'}
         });
         var docRefThree = collRef.doc('three');
-        await docRefThree.set({
-          'no_sub': false
-        });
+        await docRefThree.set({'no_sub': false});
         var docRefFour = collRef.doc('four');
         await docRefFour.set({
           'sub': {'other': 'a', 'value': 'c'}
@@ -991,13 +990,13 @@ runApp(
         }
 
         // complex object
-        var querySnapshot = await collRef.where('sub', isEqualTo: {'value': 'a'}).get();
+        var querySnapshot =
+            await collRef.where('sub', isEqualTo: {'value': 'a'}).get();
         expect(_querySnapshotDocIds(querySnapshot), ['two']);
 
         // ordered by sub (complex object)
         querySnapshot = await collRef.orderBy('sub').get();
         expect(_querySnapshotDocIds(querySnapshot), ['four', 'two', 'one']);
-
       });
 
       test('list_object_order', () async {
@@ -1012,9 +1011,7 @@ runApp(
           'sub': ['a']
         });
         var docRefThree = collRef.doc('three');
-        await docRefThree.set({
-          'no_sub': false
-        });
+        await docRefThree.set({'no_sub': false});
         var docRefFour = collRef.doc('four');
         await docRefFour.set({
           'sub': ['a', 'b']
@@ -1031,7 +1028,6 @@ runApp(
         // ordered by sub (complex object)
         querySnapshot = await collRef.orderBy('sub').get();
         expect(_querySnapshotDocIds(querySnapshot), ['two', 'four', 'one']);
-
       });
 
       test('onQuerySnapshot', () async {
