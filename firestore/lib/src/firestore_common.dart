@@ -248,6 +248,9 @@ Map<String, dynamic> documentDataToJsonMap(DocumentData documentData) {
 class OrderByInfo {
   String fieldPath;
   bool ascending;
+
+  @override
+  String toString() => '$fieldPath ${ascending ? 'ASC' : 'DESC'}';
 }
 
 class LimitInfo {

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:js/js_util.dart' as js;
 import 'package:firebase_admin_interop/firebase_admin_interop.dart' as node;
 import 'package:node_interop/js.dart' as js;
-import 'package:node_interop/util.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_node/src/firebase_node.dart';
@@ -232,18 +231,17 @@ class CollectionReferenceNode extends QueryNode implements CollectionReference {
   }
 }
 
-js.Timestamp _createJsTimestamp(node.Timestamp ts) {
-  return js.callConstructor(js.admin.firestore.Timestamp as Function,
-      jsify([ts.seconds, ts.nanoseconds]) as List) as js.Timestamp;
-}
-
-_unwrapValue(value) {
+dynamic _unwrapValue(value) {
   if (value == null || value is num || value is bool || value is String) {
     return value;
   } else if (value is DateTime) {
-    return js.Date(value.millisecondsSinceEpoch);
+    return value;
   } else if (value is Timestamp) {
-    return _createJsTimestamp(node.Timestamp(value.seconds, value.nanoseconds));
+    return node.Timestamp(value.seconds, value.nanoseconds);
+  } else if (value is Map) {
+    return value.map((key, value) => MapEntry(key, _unwrapValue(value)));
+  } else if (value is List) {
+    return value.map(_unwrapValue).toList(growable: false);
   } else {
     throw ArgumentError.value(
         value, "${value.runtimeType}", "Unsupported value for _unwrapValue");

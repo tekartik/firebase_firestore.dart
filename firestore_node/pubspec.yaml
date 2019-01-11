@@ -45,4 +45,4 @@ dependency_overrides:
     path: ../firestore
   quiver_hashcode: '>=1.0.0'
 #  firebase_admin_interop:
-#    git: git://github.com/asaarnak/firebase-admin-interop
+#    path: ../../firebase-admin-interop

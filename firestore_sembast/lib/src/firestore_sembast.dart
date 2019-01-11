@@ -184,26 +184,6 @@ class FirestoreSembast extends Object
         as DocumentSnapshotSembast;
   }
 
-  /*
-  // Remove meta keys
-  DocumentSnapshotSembast documentFromRecordMap(
-      String path, Map<String, dynamic> recordMap) {
-    var meta = RecordMetaData.fromRecordMap(recordMap);
-    /*
-    if (recordMap != null) {
-      recordMap.remove(revKey);
-      recordMap.remove(updateTimeKey);
-      recordMap.remove(createTimeKey);
-    }
-    */
-    return DocumentSnapshotSembast(
-        DocumentReferenceSembast(this, path),
-        meta,
-        documentDataFromRecordMap(this, recordMap),
-        );
-  }
-  */
-
   // return previous data
   Future<WriteResultSembast> txnDelete(
       sembast.Transaction txn, DocumentReference ref) async {
@@ -279,36 +259,6 @@ class FirestoreSembast extends Object
     result.newSnapshot = documentFromRecordMap(ref, recordMap);
     return result;
   }
-
-  /*
-  void notify(WriteResultSembast result) {
-    var path = result.path;
-    var documentSubscription = findSubscription(path);
-    if (documentSubscription != null) {
-      documentSubscription.streamController.add(DocumentSnapshotSembast(
-          DocumentReferenceSembast(ReferenceContextSembast(this, path)),
-          result.newSnapshotSembast?.rev,
-          result.newSnapshotSembast?.documentData,
-          updateTime: result.newSnapshot?.updateTime,
-          createTime: result.newSnapshot?.createTime));
-    }
-    // notify collection listeners
-    var collectionSubscription = findSubscription(url.dirname(path));
-    if (collectionSubscription != null) {
-      collectionSubscription.streamController.add(DocumentChangeSembast(
-          result.added
-              ? DocumentChangeType.added
-              : (result.removed
-                  ? DocumentChangeType.removed
-                  : DocumentChangeType.modified),
-          DocumentSnapshotSembast.fromSnapshot(
-              result.removed ? result.previousSnapshotSembast : result.newSnapshotSembast,
-              true),
-          null,
-          null));
-    }
-  }
-  */
 
   @override
   WriteBatch batch() => WriteBatchSembast(this);

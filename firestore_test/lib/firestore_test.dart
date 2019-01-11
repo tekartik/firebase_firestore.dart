@@ -952,6 +952,86 @@ runApp(
         querySnapshot = await collRef.where('array', arrayContains: 5).get();
         list = querySnapshot.docs;
         expect(list.length, 0);
+
+        // complex object
+        querySnapshot = await collRef.where('sub', isEqualTo: {'value': 'a'}).get();
+        list = querySnapshot.docs;
+        expect(list.length, 1);
+        expect(list.first.ref.id, "two");
+
+        // ordered by sub (complex object)
+        querySnapshot = await collRef.orderBy('sub').get();
+        list = querySnapshot.docs;
+        expect(list.length, 2);
+        expect(list.first.ref.id, "two");
+      });
+
+      test('nested_object_order', () async {
+        var testsRef = getTestsRef();
+        var collRef = testsRef.doc('nested_order_test').collection('many');
+        var docRefOne = collRef.doc('one');
+        await docRefOne.set({
+          'sub': {'value': 'b'}
+        });
+        var docRefTwo = collRef.doc('two');
+        await docRefTwo.set({
+          'sub': {'value': 'a'}
+        });
+        var docRefThree = collRef.doc('three');
+        await docRefThree.set({
+          'no_sub': false
+        });
+        var docRefFour = collRef.doc('four');
+        await docRefFour.set({
+          'sub': {'other': 'a', 'value': 'c'}
+        });
+
+        List<String> _querySnapshotDocIds(QuerySnapshot querySnapshot) {
+          return querySnapshot.docs.map((snapshot) => snapshot.ref.id).toList();
+        }
+
+        // complex object
+        var querySnapshot = await collRef.where('sub', isEqualTo: {'value': 'a'}).get();
+        expect(_querySnapshotDocIds(querySnapshot), ['two']);
+
+        // ordered by sub (complex object)
+        querySnapshot = await collRef.orderBy('sub').get();
+        expect(_querySnapshotDocIds(querySnapshot), ['four', 'two', 'one']);
+
+      });
+
+      test('list_object_order', () async {
+        var testsRef = getTestsRef();
+        var collRef = testsRef.doc('list_order_test').collection('many');
+        var docRefOne = collRef.doc('one');
+        await docRefOne.set({
+          'sub': ['b']
+        });
+        var docRefTwo = collRef.doc('two');
+        await docRefTwo.set({
+          'sub': ['a']
+        });
+        var docRefThree = collRef.doc('three');
+        await docRefThree.set({
+          'no_sub': false
+        });
+        var docRefFour = collRef.doc('four');
+        await docRefFour.set({
+          'sub': ['a', 'b']
+        });
+
+        List<String> _querySnapshotDocIds(QuerySnapshot querySnapshot) {
+          return querySnapshot.docs.map((snapshot) => snapshot.ref.id).toList();
+        }
+
+        // complex object
+        var querySnapshot = await collRef.where('sub', isEqualTo: ['a']).get();
+        expect(_querySnapshotDocIds(querySnapshot), ['two']);
+
+        // ordered by sub (complex object)
+        querySnapshot = await collRef.orderBy('sub').get();
+        expect(_querySnapshotDocIds(querySnapshot), ['two', 'four', 'one']);
+
       });
 
       test('onQuerySnapshot', () async {

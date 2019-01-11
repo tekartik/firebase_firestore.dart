@@ -1,6 +1,7 @@
 import 'dart:async';
-
+import 'dart:math';
 import 'package:path/path.dart';
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
@@ -129,7 +130,9 @@ mixin FirestoreSubscriptionMixin on Firestore {
   // DocumentSnapshot snapshotFromReferenceRevAndData(DocumentReference documentReference, int rev, DocumentData documentData, {Timestamp updateTime, Timestamp createTime});
 
   DocumentSnapshot cloneSnapshot(DocumentSnapshot documentSnapshot);
+
   DocumentSnapshot deletedSnapshot(DocumentReference documentReference);
+
   DocumentChangeBase documentChange(DocumentChangeType type,
       DocumentSnapshot document, int newIndex, int oldIndex);
 
@@ -186,45 +189,37 @@ mixin FirestoreSubscriptionMixin on Firestore {
 
 bool mapWhere(DocumentData documentData, WhereInfo where) {
   // We always use Timestamp even for DateTime
-  dynamic _fixValue(dynamic value) {
-    if (value is DateTime) {
-      return Timestamp.fromDateTime(value);
-    }
-    return value;
+  Comparable _fixValue(dynamic value) {
+    return _getComparable(value);
   }
 
   var fieldValue = _fixValue(
       documentDataMap(documentData).valueAtFieldPath(where.fieldPath));
-  Comparable _comparableFieldValue() {
-    return fieldValue as Comparable;
-  }
 
   if (where.isNull == true) {
     return fieldValue == null;
   } else if (where.isNull == false) {
     return fieldValue != null;
   } else if (where.isEqualTo != null) {
-    return fieldValue == _fixValue(where.isEqualTo);
+    return (fieldValue == null
+        ? (where.isEqualTo == null)
+        : (fieldValue.compareTo(_fixValue(where.isEqualTo)) == 0));
   } else if (where.isGreaterThan != null) {
     return (fieldValue == null) ||
-        (_comparableFieldValue().compareTo(_fixValue(where.isGreaterThan)) > 0);
+        (fieldValue.compareTo(_fixValue(where.isGreaterThan)) > 0);
   } else if (where.isGreaterThanOrEqualTo != null) {
     return (fieldValue == null) ||
-        (_comparableFieldValue()
-                .compareTo(_fixValue(where.isGreaterThanOrEqualTo)) >=
-            0);
+        (fieldValue.compareTo(_fixValue(where.isGreaterThanOrEqualTo)) >= 0);
   } else if (where.isLessThan != null) {
     return fieldValue != null &&
-        (_comparableFieldValue().compareTo(_fixValue(where.isLessThan)) < 0);
+        (fieldValue.compareTo(_fixValue(where.isLessThan)) < 0);
   } else if (where.isLessThanOrEqualTo != null) {
     return fieldValue != null &&
-        (_comparableFieldValue()
-                .compareTo(_fixValue(where.isLessThanOrEqualTo)) <=
-            0);
+        (fieldValue.compareTo(_fixValue(where.isLessThanOrEqualTo)) <= 0);
   } else if (where.arrayContains != null) {
     return fieldValue != null &&
         (fieldValue is Iterable) &&
-        (fieldValue.contains(_fixValue(where.arrayContains)));
+        ((fieldValue as Iterable).contains(_fixValue(where.arrayContains)));
   }
   return false;
 }
@@ -236,10 +231,137 @@ T safeGetItem<T>(List<T> list, int index) {
   return null;
 }
 
+Comparable _getComparable<T>(dynamic value) {
+  if (value is DateTime) {
+    return Timestamp.fromDateTime(value);
+  }
+  if (value is Comparable) {
+    return value;
+  } else if (value is List) {
+    return ComparableList(value);
+  } else if (value is Map) {
+    return ComparableMap(value);
+  }
+  return NonComparable(value);
+}
+
+class NonComparable<T> implements Comparable<T> {
+  final T _value;
+
+  NonComparable(this._value);
+
+  @override
+  int compareTo(T other) {
+    if (identical(other, _value)) {
+      return 0;
+    }
+    return -1;
+  }
+}
+
+class ComparableList<E> with ListMixin<E> implements Comparable<List<E>> {
+  final List<E> _list;
+
+  ComparableList(this._list);
+
+  @override
+  int get length => _list.length;
+
+  @override
+  E operator [](int index) => _list[index];
+
+  @override
+  void operator []=(int index, E value) {
+    throw StateError('read-only');
+  }
+
+  @override
+  int compareTo(List other) {
+    for (int i = 0; i < min(other.length, this.length); i++) {
+      var item1 = _getComparable(this[i]);
+      var item2 = _getComparable(other[i]);
+      int result = item1.compareTo(item2);
+      if (result != 0) {
+        return result;
+      }
+    }
+    // compare length
+    return length - other.length;
+  }
+
+  @override
+  void set length(int newLength) {
+    throw StateError('read-only');
+  }
+}
+
+class ComparableMap<K, V> with MapMixin<K, V> implements Comparable<Map<K, V>> {
+  final Map<K, V> _map;
+
+  ComparableMap(this._map);
+
+  @override
+  V operator [](Object key) => _map[key];
+
+  @override
+  void operator []=(key, value) {
+    throw StateError('read-only');
+  }
+
+  @override
+  void clear() {
+    throw StateError('read-only');
+  }
+
+  @override
+  Iterable<K> get keys => _map.keys;
+
+  @override
+  V remove(Object key) {
+    throw StateError('read-only');
+  }
+
+  @override
+  int compareTo(Map<K, V> other) {
+    var keys1 = keys.toList(growable: false)..sort();
+    var keys2 = other.keys.toList(growable: false)..sort();
+    for (int i = 0; i < min(length, other.length); i++) {
+      K key1 = keys1[i];
+      K key2 = keys2[i];
+      int result = _getComparable(key1).compareTo(_getComparable(key2));
+      if (result != 0) {
+        return result;
+      }
+      V value1 = this[key1];
+      V value2 = other[key2];
+      result = _getComparable(value1).compareTo(_getComparable(value2));
+      if (result != 0) {
+        return result;
+      }
+    }
+    return length - other.length;
+
+  }
+}
+
 bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
   //var data = documentData.map;
   // if (data != null) {
   //bool add = true;
+
+  // Ignore if one sorted field is null
+  if (queryInfo.orderBys.isNotEmpty) {
+    for (int i = 0; i < queryInfo.orderBys.length; i++) {
+      var fieldPath = queryInfo.orderBys[i].fieldPath;
+      if (fieldPath != firestoreNameFieldPath) {
+        dynamic value =
+        documentData.valueAtFieldPath(fieldPath);
+        if (value == null) {
+          return false;
+        }
+      }
+    }
+  }
 
   if (queryInfo.wheres.isNotEmpty) {
     for (var where in queryInfo.wheres) {
@@ -306,10 +428,12 @@ abstract class FirestoreReferenceBase {
 
 mixin FirestoreQueryMixin implements Query {
   Firestore get firestore;
+
   String get path;
 
   FirestoreDocumentsMixin get documentsMixin =>
       firestore as FirestoreDocumentsMixin;
+
   FirestoreSubscriptionMixin get subscriptionMixin =>
       firestore as FirestoreSubscriptionMixin;
 
@@ -383,10 +507,10 @@ mixin FirestoreQueryMixin implements Query {
           cmp = _compare(snapshot1.ref.path, snapshot2.ref.path);
         } else {
           cmp = _compare(
-              snapshotDataMap(snapshot1).valueAtFieldPath(keyPath)
-                  as Comparable,
-              snapshotDataMap(snapshot2).valueAtFieldPath(keyPath)
-                  as Comparable);
+              _getComparable(
+                  snapshotDataMap(snapshot1).valueAtFieldPath(keyPath)),
+              _getComparable(
+                  snapshotDataMap(snapshot2).valueAtFieldPath(keyPath)));
         }
         if (cmp != 0) {
           break;
