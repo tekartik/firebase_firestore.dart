@@ -41,3 +41,5 @@ dependency_overrides:
     path: ../firestore
   tekartik_firebase_firestore_test:
     path: ../firestore_test
+#  firebase:
+#    path: ../../../tekartik-2/firebase-dart

@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:js/js_util.dart' as js;
 import 'package:firebase_admin_interop/firebase_admin_interop.dart' as node;
 import 'package:node_interop/js.dart' as js;
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_node/src/firebase_node.dart';
 // ignore: implementation_imports
@@ -41,7 +43,7 @@ class FirestoreServiceNode implements FirestoreService {
   bool get supportsQuerySnapshotCursor => true;
 
   @override
-  bool get supportsFieldValueArray => false;
+  bool get supportsFieldValueArray => true;
 }
 
 FirestoreServiceNode _firestoreServiceNode;
@@ -260,6 +262,10 @@ js.Timestamp _createJsTimestamp(Timestamp ts) {
 }
 */
 
+dynamic listToNative(Iterable list) {
+  return list.map((value) => documentValueToNativeValue(value)).toList();
+}
+
 dynamic documentValueToNativeValue(dynamic value) {
   if (value == null ||
       value is num ||
@@ -274,9 +280,15 @@ dynamic documentValueToNativeValue(dynamic value) {
       return node.Firestore.fieldValues.delete();
     } else if (value == FieldValue.serverTimestamp) {
       return node.Firestore.fieldValues.serverTimestamp();
+    } else if (value is FieldValueArray) {
+      if (value.type == FieldValueType.arrayUnion) {
+        return node.Firestore.fieldValues.arrayUnion(listToNative(value.data));
+      } else if (value.type == FieldValueType.arrayRemove) {
+        return node.Firestore.fieldValues.arrayRemove(listToNative(value.data));
+      }
     }
-  } else if (value is List) {
-    return value.map((value) => documentValueToNativeValue(value)).toList();
+  } else if (value is Iterable) {
+    return listToNative(value);
   } else if (value is Map) {
     return value.map<String, dynamic>((key, value) =>
         MapEntry(key as String, documentValueToNativeValue(value)));

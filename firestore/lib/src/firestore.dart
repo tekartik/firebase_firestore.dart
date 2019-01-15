@@ -1,5 +1,13 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
+// don't export it yet
+enum FieldValueType {
+  serverTimestamp,
+  delete,
+  arrayUnion,
+  arrayRemove,
+}
+
 DateTime toLocaleTime(DateTime value) {
   if (value == null || !value.isUtc) {
     return value;
