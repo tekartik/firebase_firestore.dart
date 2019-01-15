@@ -34,7 +34,7 @@ void run(
   }
 }
 
-runNoTimestampsInSnapshots(
+void runNoTimestampsInSnapshots(
     {@required FirestoreService firestoreService,
     @required FirebaseAsync firebase,
     AppOptions options}) {
@@ -91,7 +91,7 @@ runNoTimestampsInSnapshots(
   });
 }
 
-runApp(
+void runApp(
     {@required FirestoreService firestoreService,
     @required Firestore firestore}) {
   setUpAll(() async {
@@ -394,7 +394,7 @@ runApp(
           await docRef
               .set({"some_date": localDateTime, "some_utc_date": utcDateTime});
 
-          _check(Map data) {
+          void _check(Map data) {
             if (firestoreService.supportsTimestampsInSnapshots) {
               //devPrint(data['some_date'].runtimeType);
               expect(data, {
@@ -453,7 +453,7 @@ runApp(
         var timestamp = Timestamp(1234567890, 123000);
         await docRef.set({"some_timestamp": timestamp});
 
-        _check(Map<String, dynamic> data) {
+        void _check(Map<String, dynamic> data) {
           if (firestoreService.supportsTimestampsInSnapshots) {
             expect(
                 data,
@@ -570,6 +570,78 @@ runApp(
         await docRef.update(data);
         data = (await docRef.get()).data;
         expect(data, {"other_key": "other_value"});
+      });
+      test('array', () async {
+        if (firestoreService.supportsFieldValueArray) {
+          var testsRef = getTestsRef();
+          var docRef = testsRef.doc("array_union");
+
+          // Test creating an array
+          var data = <String, dynamic>{
+            "some_array": FieldValue.arrayUnion([1]),
+            // create to be updated later as an array
+            "not_array": 2,
+          };
+          await docRef.set(data);
+          data = (await docRef.get()).data;
+          expect(data, {
+            "some_array": [1],
+            "not_array": 2
+          });
+
+          // Test update arrayUnion and overriding a non array field
+          data = <String, dynamic>{
+            "some_array": FieldValue.arrayUnion([3]),
+            "not_array": FieldValue.arrayUnion([4, 5]),
+          };
+          await docRef.update(data);
+          data = (await docRef.get()).data;
+          expect(data, {
+            "some_array": [1, 3],
+            "not_array": [4, 5],
+          });
+
+          // Test arrayRemove
+          data = <String, dynamic>{
+            "some_array": FieldValue.arrayRemove([1]),
+            "not_array": FieldValue.arrayRemove([4, 6]),
+            "not_existing": FieldValue.arrayRemove([7]),
+          };
+          await docRef.update(data);
+          data = (await docRef.get()).data;
+          expect(data, {
+            "some_array": [3],
+            "not_array": [5],
+            "not_existing": []
+          });
+
+          // Test update using set with merge
+          data = <String, dynamic>{
+            "some_array": FieldValue.arrayUnion([8]),
+            "not_array": FieldValue.arrayRemove([5]),
+            "merged_not_existing": FieldValue.arrayRemove([9])
+          };
+          await docRef.set(data, SetOptions(merge: true));
+          data = (await docRef.get()).data;
+          expect(data, {
+            "some_array": [3, 8],
+            "not_array": [],
+            "not_existing": [],
+            "merged_not_existing": [],
+          });
+
+          // Test update using set no merge
+          data = <String, dynamic>{
+            "some_array": FieldValue.arrayUnion([3, 6]),
+            "no_merge_not_existing": FieldValue.arrayRemove([10]),
+          };
+          await docRef.set(data);
+          data = (await docRef.get()).data;
+          expect(data, {
+            "some_array": [3, 6],
+            "no_merge_not_existing": []
+          });
+        }
       });
 
       //test('subData')
@@ -880,6 +952,82 @@ runApp(
         querySnapshot = await collRef.where('array', arrayContains: 5).get();
         list = querySnapshot.docs;
         expect(list.length, 0);
+
+        // complex object
+        querySnapshot =
+            await collRef.where('sub', isEqualTo: {'value': 'a'}).get();
+        list = querySnapshot.docs;
+        expect(list.length, 1);
+        expect(list.first.ref.id, "two");
+
+        // ordered by sub (complex object)
+        querySnapshot = await collRef.orderBy('sub').get();
+        list = querySnapshot.docs;
+        expect(list.length, 2);
+        expect(list.first.ref.id, "two");
+      });
+
+      test('nested_object_order', () async {
+        var testsRef = getTestsRef();
+        var collRef = testsRef.doc('nested_order_test').collection('many');
+        var docRefOne = collRef.doc('one');
+        await docRefOne.set({
+          'sub': {'value': 'b'}
+        });
+        var docRefTwo = collRef.doc('two');
+        await docRefTwo.set({
+          'sub': {'value': 'a'}
+        });
+        var docRefThree = collRef.doc('three');
+        await docRefThree.set({'no_sub': false});
+        var docRefFour = collRef.doc('four');
+        await docRefFour.set({
+          'sub': {'other': 'a', 'value': 'c'}
+        });
+
+        List<String> _querySnapshotDocIds(QuerySnapshot querySnapshot) {
+          return querySnapshot.docs.map((snapshot) => snapshot.ref.id).toList();
+        }
+
+        // complex object
+        var querySnapshot =
+            await collRef.where('sub', isEqualTo: {'value': 'a'}).get();
+        expect(_querySnapshotDocIds(querySnapshot), ['two']);
+
+        // ordered by sub (complex object)
+        querySnapshot = await collRef.orderBy('sub').get();
+        expect(_querySnapshotDocIds(querySnapshot), ['four', 'two', 'one']);
+      });
+
+      test('list_object_order', () async {
+        var testsRef = getTestsRef();
+        var collRef = testsRef.doc('list_order_test').collection('many');
+        var docRefOne = collRef.doc('one');
+        await docRefOne.set({
+          'sub': ['b']
+        });
+        var docRefTwo = collRef.doc('two');
+        await docRefTwo.set({
+          'sub': ['a']
+        });
+        var docRefThree = collRef.doc('three');
+        await docRefThree.set({'no_sub': false});
+        var docRefFour = collRef.doc('four');
+        await docRefFour.set({
+          'sub': ['a', 'b']
+        });
+
+        List<String> _querySnapshotDocIds(QuerySnapshot querySnapshot) {
+          return querySnapshot.docs.map((snapshot) => snapshot.ref.id).toList();
+        }
+
+        // complex object
+        var querySnapshot = await collRef.where('sub', isEqualTo: ['a']).get();
+        expect(_querySnapshotDocIds(querySnapshot), ['two']);
+
+        // ordered by sub (complex object)
+        querySnapshot = await collRef.orderBy('sub').get();
+        expect(_querySnapshotDocIds(querySnapshot), ['two', 'four', 'one']);
       });
 
       test('onQuerySnapshot', () async {
@@ -1056,7 +1204,7 @@ runApp(
       // TODO implement
     });
     test('bug_limit', () async {
-      var query = await firestore
+      var query = firestore
           .collection("tests")
           .doc("firebase_shim_test")
           .collection("tests")

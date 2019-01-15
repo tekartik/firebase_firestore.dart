@@ -9,6 +9,7 @@ import 'package:idb_shim/idb.dart' as idb;
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/document_data.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:uuid/uuid.dart';
 
@@ -40,6 +41,9 @@ class FirestoreServiceIdb implements FirestoreService {
 
   @override
   bool get supportsQuerySnapshotCursor => true;
+
+  @override
+  bool get supportsFieldValueArray => false;
 }
 
 FirestoreService getFirestoreService(idb.IdbFactory idbFactory) =>
@@ -406,6 +410,7 @@ class QueryIdb extends FirestoreReferenceBase
     implements Query {
   FirestoreIdb get firestoreIdb => firestore as FirestoreIdb;
 
+  @override
   QueryInfo queryInfo;
 
   QueryIdb(Firestore firestore, String path) : super(firestore, path);

@@ -8,6 +8,7 @@ import 'package:synchronized/synchronized.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
@@ -18,8 +19,7 @@ class FirestoreServiceSembast implements FirestoreService {
   final sembast.DatabaseFactory databaseFactory;
   Map<App, FirestoreSembast> _firestores = <App, FirestoreSembast>{};
 
-  FirestoreServiceSembast(sembast.DatabaseFactory databaseFactory)
-      : this.databaseFactory = databaseFactory;
+  FirestoreServiceSembast(this.databaseFactory);
 
   @override
   bool get supportsQuerySelect => true;
@@ -48,6 +48,9 @@ class FirestoreServiceSembast implements FirestoreService {
 
   @override
   bool get supportsQuerySnapshotCursor => true;
+
+  @override
+  bool get supportsFieldValueArray => true;
 }
 
 FirestoreServiceSembast _firestoreServiceSembastMemory;
@@ -63,14 +66,19 @@ dynamic valueToUpdateValue(dynamic value) {
   return valueToRecordValue(value, valueToUpdateValue);
 }
 
-Map<String, dynamic> documentDataToUpdateMap(DocumentData documentData) {
+Map<String, dynamic> documentDataToUpdateMap(
+    DocumentData documentData, Map<String, dynamic> recordMap) {
   if (documentData == null) {
     return null;
   }
   var updateMap = <String, dynamic>{};
-
   documentDataMap(documentData).map.forEach((String key, value) {
-    updateMap[key] = valueToUpdateValue(value);
+    if (value is FieldValueArray) {
+      recordMap ??= {};
+      updateMap[key] = fieldArrayValueMergeValue(value, recordMap[key]);
+    } else {
+      updateMap[key] = valueToUpdateValue(value);
+    }
   });
   return updateMap;
 }
@@ -172,29 +180,8 @@ class FirestoreSembast extends Object
   Future<DocumentSnapshotSembast> txnGetDocumentSnapshot(
       sembast.Transaction txn, DocumentReference ref) async {
     Map<String, dynamic> recordMap = await txnGetRecordMap(txn, ref.path);
-    return (await documentFromRecordMap(ref, recordMap))
-        as DocumentSnapshotSembast;
+    return (documentFromRecordMap(ref, recordMap)) as DocumentSnapshotSembast;
   }
-
-  /*
-  // Remove meta keys
-  DocumentSnapshotSembast documentFromRecordMap(
-      String path, Map<String, dynamic> recordMap) {
-    var meta = RecordMetaData.fromRecordMap(recordMap);
-    /*
-    if (recordMap != null) {
-      recordMap.remove(revKey);
-      recordMap.remove(updateTimeKey);
-      recordMap.remove(createTimeKey);
-    }
-    */
-    return DocumentSnapshotSembast(
-        DocumentReferenceSembast(this, path),
-        meta,
-        documentDataFromRecordMap(this, recordMap),
-        );
-  }
-  */
 
   // return previous data
   Future<WriteResultSembast> txnDelete(
@@ -221,6 +208,7 @@ class FirestoreSembast extends Object
     if (options?.merge == true) {
       recordMap = documentDataToRecordMap(documentData, existingRecordMap);
     } else {
+      // Map needed to handle arrayRemove and arrayUnion
       recordMap = documentDataToRecordMap(documentData);
     }
 
@@ -264,42 +252,13 @@ class FirestoreSembast extends Object
         (result.previousSnapshot?.createTime ?? now).toIso8601String();
     updateMap[updateTimeKey] = now.toIso8601String();
 
-    Map<String, dynamic> recordMap =
-        await docStore.update(documentDataToUpdateMap(documentData), ref.path);
+    Map<String, dynamic> recordMap = (await docStore.update(
+            documentDataToUpdateMap(documentData, existingRecordMap), ref.path))
+        as Map<String, dynamic>;
 
     result.newSnapshot = documentFromRecordMap(ref, recordMap);
     return result;
   }
-
-  /*
-  void notify(WriteResultSembast result) {
-    var path = result.path;
-    var documentSubscription = findSubscription(path);
-    if (documentSubscription != null) {
-      documentSubscription.streamController.add(DocumentSnapshotSembast(
-          DocumentReferenceSembast(ReferenceContextSembast(this, path)),
-          result.newSnapshotSembast?.rev,
-          result.newSnapshotSembast?.documentData,
-          updateTime: result.newSnapshot?.updateTime,
-          createTime: result.newSnapshot?.createTime));
-    }
-    // notify collection listeners
-    var collectionSubscription = findSubscription(url.dirname(path));
-    if (collectionSubscription != null) {
-      collectionSubscription.streamController.add(DocumentChangeSembast(
-          result.added
-              ? DocumentChangeType.added
-              : (result.removed
-                  ? DocumentChangeType.removed
-                  : DocumentChangeType.modified),
-          DocumentSnapshotSembast.fromSnapshot(
-              result.removed ? result.previousSnapshotSembast : result.newSnapshotSembast,
-              true),
-          null,
-          null));
-    }
-  }
-  */
 
   @override
   WriteBatch batch() => WriteBatchSembast(this);
@@ -509,13 +468,13 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
 
 class CollectionReferenceSembast extends QuerySembast
     implements CollectionReference {
+  @override
   FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
 
-  // always created initially
-  QueryInfo queryInfo = QueryInfo();
-
   CollectionReferenceSembast(Firestore firestore, String path)
-      : super(firestore, path);
+      : super(firestore, path) {
+    queryInfo = QueryInfo();
+  }
 
   @override
   DocumentReference doc([String path]) {
@@ -564,6 +523,7 @@ class QuerySembast extends FirestoreReferenceBase
 
   QuerySembast(Firestore firestore, String path) : super(firestore, path);
 
+  @override
   QueryInfo queryInfo;
 
   @override

@@ -6,6 +6,7 @@ import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/src/timestamp.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:collection/collection.dart';
+import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
     show FirestoreSettings, firestoreNameFieldPath;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
@@ -14,6 +15,8 @@ abstract class FirestoreService {
   // True if query supporting selecting a set of fields
   bool get supportsQuerySelect;
 
+  // Temporary flag
+  bool get supportsFieldValueArray;
   // True if startAt/startAfter/endAt/endAfter can be used with snapshot
   bool get supportsQuerySnapshotCursor;
 
@@ -47,7 +50,7 @@ abstract class Firestore {
   /// completed successfully of was explicitly aborted by returning a Future
   /// with an error. If [updateFunction] throws then returned Future completes
   /// with the same error.
-  Future runTransaction(updateFunction(Transaction transaction));
+  Future runTransaction(dynamic updateFunction(Transaction transaction));
 
   /// Specifies custom settings to be used to configure the `Firestore`
   /// instance.
@@ -180,11 +183,45 @@ abstract class DocumentSnapshot {
   Timestamp get createTime;
 }
 
-// Sentinal values for update/set
-enum FieldValue {
+enum FieldValueType {
   serverTimestamp,
-// update only
-  delete
+  delete,
+  arrayUnion,
+  arrayRemove,
+}
+
+// Sentinal values for update/set
+class FieldValue {
+  dynamic get data => null;
+  final FieldValueType type;
+  static final FieldValue serverTimestamp =
+      FieldValue(FieldValueType.serverTimestamp);
+  static final FieldValue delete = FieldValue(FieldValueType.delete);
+
+  // Returns a sentinel value that can be used with set(merge: true) or update()
+  // that tells the server to union the given elements with any array value that
+  // already exists on the server. Each specified element that doesn't already
+  // exist in the array will be added to the end. If the field being modified
+  // is not already an array it will be overwritten with an array containing
+  // exactly the specified elements.
+  factory FieldValue.arrayUnion(List<dynamic> data) {
+    return FieldValueArray(FieldValueType.arrayUnion, data);
+  }
+
+  // Returns a sentinel value that can be used with set(merge: true) or
+  // update() that tells
+  // the server to remove the given elements from any array value that already
+  // exists on the server. All instances of each element specified will be
+  // removed from the array. If the field being modified is not already an array
+  // it will be overwritten with an empty array.
+  factory FieldValue.arrayRemove(List<dynamic> data) {
+    return FieldValueArray(FieldValueType.arrayRemove, data);
+  }
+  FieldValue(this.type);
+  @override
+  String toString() {
+    return '${type}${data != null ? '($data)' : ''}';
+  }
 }
 
 // Use UInt8Array as much as possible
@@ -198,8 +235,7 @@ class Blob {
   Blob(this._data);
 
   @override
-  int get hashCode =>
-      (_data != null && _data.length > 0) ? _data.first.hashCode : 0;
+  int get hashCode => (_data?.isNotEmpty == true) ? _data.first.hashCode : 0;
 
   @override
   bool operator ==(other) {
@@ -224,9 +260,12 @@ class GeoPoint {
   @override
   bool operator ==(other) {
     if (identical(this, other)) return true;
-    if (other is! GeoPoint) return false;
-    GeoPoint point = other;
-    return latitude == point.latitude && longitude == point.longitude;
+    if (other is GeoPoint) {
+      GeoPoint point = other;
+      return latitude == point.latitude && longitude == point.longitude;
+    } else {
+      return false;
+    }
   }
 
   @override

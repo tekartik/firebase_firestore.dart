@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 // pub run test -p chrome,node,vm,firefox .\test\timestamp_test.dart
 bool get _runningAsJavascript => identical(1, 1.0);
 
-main() {
+void main() {
   group('timestamp', () {
     test('equals', () {
       expect(Timestamp(1, 2), Timestamp(1, 2));
@@ -41,7 +41,7 @@ main() {
       expect(Timestamp(1, 2).compareTo(Timestamp(0, 2)), greaterThan(0));
     });
 
-    _checkToIso8601(
+    void _checkToIso8601(
         Timestamp timestamp,
         String expectedTimestampToIso8601String,
         String expectedDateTimeToIso8601String) {
@@ -91,7 +91,7 @@ main() {
       expect(() => Timestamp(0, 1000000000), throwsArgumentError);
     });
     test('parse', () {
-      _checkParse(
+      void _checkParse(
         String text,
         String expectedTimestampToIso8601String,
         String expectedDateTimeToIso8601String,
@@ -101,7 +101,7 @@ main() {
             expectedDateTimeToIso8601String);
       }
 
-      _checkParseSecondsNanos(
+      void _checkParseSecondsNanos(
           String text, int expectedSeconds, int expectedNanos) {
         var timestamp = Timestamp.parse(text);
         expect(timestamp.seconds, expectedSeconds, reason: text);

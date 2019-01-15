@@ -2,11 +2,13 @@ import 'dart:async';
 import 'package:js/js_util.dart' as js;
 import 'package:firebase_admin_interop/firebase_admin_interop.dart' as node;
 import 'package:node_interop/js.dart' as js;
-import 'package:node_interop/util.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_node/src/firebase_node.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
+// ignore: implementation_imports
 import 'package:firebase_admin_interop/src/bindings.dart' as js;
 
 js.FirestoreSettings _unwrapSettings(FirestoreSettings settings) {
@@ -37,6 +39,9 @@ class FirestoreServiceNode implements FirestoreService {
 
   @override
   bool get supportsQuerySnapshotCursor => true;
+
+  @override
+  bool get supportsFieldValueArray => false;
 }
 
 FirestoreServiceNode _firestoreServiceNode;
@@ -121,6 +126,7 @@ class WriteBatchNode implements WriteBatch {
 }
 
 class QueryNode extends Object with QueryMixin {
+  @override
   final node.DocumentQuery nativeInstance;
 
   QueryNode(this.nativeInstance);
@@ -197,6 +203,7 @@ abstract class QueryMixin implements Query {
 }
 
 class CollectionReferenceNode extends QueryNode implements CollectionReference {
+  @override
   node.CollectionReference get nativeInstance =>
       super.nativeInstance as node.CollectionReference;
 
@@ -229,18 +236,17 @@ class CollectionReferenceNode extends QueryNode implements CollectionReference {
   }
 }
 
-js.Timestamp _createJsTimestamp(node.Timestamp ts) {
-  return js.callConstructor(js.admin.firestore.Timestamp as Function,
-      jsify([ts.seconds, ts.nanoseconds]) as List) as js.Timestamp;
-}
-
-_unwrapValue(value) {
+dynamic _unwrapValue(value) {
   if (value == null || value is num || value is bool || value is String) {
     return value;
   } else if (value is DateTime) {
-    return js.Date(value.millisecondsSinceEpoch);
+    return value;
   } else if (value is Timestamp) {
-    return _createJsTimestamp(node.Timestamp(value.seconds, value.nanoseconds));
+    return node.Timestamp(value.seconds, value.nanoseconds);
+  } else if (value is Map) {
+    return value.map((key, value) => MapEntry(key, _unwrapValue(value)));
+  } else if (value is List) {
+    return value.map(_unwrapValue).toList(growable: false);
   } else {
     throw ArgumentError.value(
         value, "${value.runtimeType}", "Unsupported value for _unwrapValue");
@@ -254,7 +260,7 @@ js.Timestamp _createJsTimestamp(Timestamp ts) {
 }
 */
 
-documentValueToNativeValue(dynamic value) {
+dynamic documentValueToNativeValue(dynamic value) {
   if (value == null ||
       value is num ||
       value is bool ||
@@ -287,7 +293,7 @@ documentValueToNativeValue(dynamic value) {
   }
 }
 
-documentValueFromNativeValue(dynamic value) {
+dynamic documentValueFromNativeValue(dynamic value) {
   if (value == null ||
       value is num ||
       value is bool ||

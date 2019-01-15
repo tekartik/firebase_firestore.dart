@@ -248,6 +248,9 @@ Map<String, dynamic> documentDataToJsonMap(DocumentData documentData) {
 class OrderByInfo {
   String fieldPath;
   bool ascending;
+
+  @override
+  String toString() => '$fieldPath ${ascending ? 'ASC' : 'DESC'}';
 }
 
 class LimitInfo {
@@ -338,28 +341,31 @@ class QueryInfo {
       ..orderBys = List.from(orderBys);
   }
 
-  startAt({DocumentSnapshot snapshot, List values}) => startLimit = (LimitInfo()
-    ..documentId = snapshot?.ref?.id
-    ..values = values
-    ..inclusive = true);
+  void startAt({DocumentSnapshot snapshot, List values}) =>
+      startLimit = (LimitInfo()
+        ..documentId = snapshot?.ref?.id
+        ..values = values
+        ..inclusive = true);
 
-  startAfter({DocumentSnapshot snapshot, List values}) =>
+  void startAfter({DocumentSnapshot snapshot, List values}) =>
       startLimit = (LimitInfo()
         ..documentId = snapshot?.ref?.id
         ..values = values
         ..inclusive = false);
 
-  endAt({DocumentSnapshot snapshot, List values}) => endLimit = (LimitInfo()
-    ..documentId = snapshot?.ref?.id
-    ..values = values
-    ..inclusive = true);
+  void endAt({DocumentSnapshot snapshot, List values}) =>
+      endLimit = (LimitInfo()
+        ..documentId = snapshot?.ref?.id
+        ..values = values
+        ..inclusive = true);
 
-  endBefore({DocumentSnapshot snapshot, List values}) => endLimit = (LimitInfo()
-    ..documentId = snapshot?.ref?.id
-    ..values = values
-    ..inclusive = false);
+  void endBefore({DocumentSnapshot snapshot, List values}) =>
+      endLimit = (LimitInfo()
+        ..documentId = snapshot?.ref?.id
+        ..values = values
+        ..inclusive = false);
 
-  addWhere(WhereInfo where) {
+  void addWhere(WhereInfo where) {
     wheres.add(where);
   }
 }
@@ -578,6 +584,7 @@ bool isDocumentReferencePath(String path) {
 abstract class WriteBatchBase implements WriteBatch {
   final List<WriteBatchOperation> operations = [];
 
+  @override
   void delete(DocumentReference ref) =>
       operations.add(WriteBatchOperationDelete(ref));
 
@@ -650,6 +657,7 @@ abstract class WriteResultBase {
 class DocumentChangeBase implements DocumentChange {
   DocumentChangeBase(this.type, this.document, this.newIndex, this.oldIndex);
 
+  @override
   DocumentChangeType type;
 
   @override

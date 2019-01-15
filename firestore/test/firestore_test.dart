@@ -8,7 +8,7 @@ import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
 import 'src_firestore_common_test.dart';
 
-main() {
+void main() {
   var firestore = FirestoreMock();
   group('jsonValue', () {
     test('dateTime', () {

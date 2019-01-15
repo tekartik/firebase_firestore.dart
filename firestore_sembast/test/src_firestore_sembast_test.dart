@@ -80,6 +80,8 @@ void main() {
             valueToUpdateValue(FieldValue.delete), sembast.FieldValue.delete);
         expect(valueToUpdateValue({'test': FieldValue.delete}),
             {'test': sembast.FieldValue.delete});
+        var union = FieldValue.arrayUnion([1]);
+        expect(valueToUpdateValue({'test': union}), {'test': union});
       });
     });
   });

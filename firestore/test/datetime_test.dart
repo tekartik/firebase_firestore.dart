@@ -2,10 +2,10 @@ import 'package:test/test.dart';
 
 bool get _runningAsJavascript => identical(1, 1.0);
 
-main() {
+void main() {
   group('timestamp', () {
     test('DateTime', () {
-      _checkParse(String text, String expected) {
+      void _checkParse(String text, String expected) {
         expect(DateTime.parse(text).toIso8601String(), expected);
       }
 
