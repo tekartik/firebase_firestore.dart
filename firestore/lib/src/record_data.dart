@@ -101,6 +101,7 @@ Map<String, dynamic> documentDataToRecordMap(DocumentData documentData,
 
 /// To handle arrayUnion and ArrayDelete
 class FieldValueArray extends FieldValue {
+  @override
   final List<dynamic> data;
 
   FieldValueArray(FieldValueType type, this.data) : super(type);

@@ -42,6 +42,6 @@ Future<TestContext> initTestContextSim() async {
   return testContext;
 }
 
-close(TestContext testContext) async {
+Future close(TestContext testContext) async {
   await testContext.simServer?.close();
 }

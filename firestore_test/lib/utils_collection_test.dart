@@ -5,7 +5,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
 import 'package:test/test.dart';
 
-runApp(
+void runApp(
     {@required FirestoreService firestoreService,
     @required Firestore firestore}) {
   group('utils_collection', () {

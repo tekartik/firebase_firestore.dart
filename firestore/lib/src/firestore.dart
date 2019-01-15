@@ -64,7 +64,7 @@ class DocumentDataMap implements DocumentData {
   String getString(String key) => getValue(key) as String;
 
   @override
-  setNull(String key) => setValue(key, null);
+  void setNull(String key) => setValue(key, null);
 
   void setValue(String key, dynamic value) => map[key] = value;
 
@@ -88,13 +88,13 @@ class DocumentDataMap implements DocumentData {
   dynamic getValue(String key) => map[key];
 
   @override
-  setString(String key, String value) => setValue(key, value);
+  void setString(String key, String value) => setValue(key, value);
 
   @override
   bool containsKey(String key) => _map.containsKey(key);
 
   @override
-  setFieldValue(String key, FieldValue value) => setValue(key, value);
+  void setFieldValue(String key, FieldValue value) => setValue(key, value);
 
   @override
   void setInt(String key, int value) => setValue(key, value);
@@ -138,7 +138,7 @@ class DocumentDataMap implements DocumentData {
       setValue(key, (value as DocumentDataMap).map);
 
   @override
-  getProperty(String key) => getValue(key);
+  dynamic getProperty(String key) => getValue(key);
 
   @override
   bool has(String key) => containsKey(key);

@@ -1,5 +1,5 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore_browser/src/firestore_browser.dart'
-    as _;
+    as firestore_browser;
 
-FirestoreService get firestoreService => _.firestoreService;
+FirestoreService get firestoreService => firestore_browser.firestoreService;

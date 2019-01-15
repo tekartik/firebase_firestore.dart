@@ -8,6 +8,7 @@ import 'package:synchronized/synchronized.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
@@ -18,8 +19,7 @@ class FirestoreServiceSembast implements FirestoreService {
   final sembast.DatabaseFactory databaseFactory;
   Map<App, FirestoreSembast> _firestores = <App, FirestoreSembast>{};
 
-  FirestoreServiceSembast(sembast.DatabaseFactory databaseFactory)
-      : this.databaseFactory = databaseFactory;
+  FirestoreServiceSembast(this.databaseFactory);
 
   @override
   bool get supportsQuerySelect => true;
@@ -180,8 +180,7 @@ class FirestoreSembast extends Object
   Future<DocumentSnapshotSembast> txnGetDocumentSnapshot(
       sembast.Transaction txn, DocumentReference ref) async {
     Map<String, dynamic> recordMap = await txnGetRecordMap(txn, ref.path);
-    return (await documentFromRecordMap(ref, recordMap))
-        as DocumentSnapshotSembast;
+    return (documentFromRecordMap(ref, recordMap)) as DocumentSnapshotSembast;
   }
 
   // return previous data
@@ -253,8 +252,9 @@ class FirestoreSembast extends Object
         (result.previousSnapshot?.createTime ?? now).toIso8601String();
     updateMap[updateTimeKey] = now.toIso8601String();
 
-    Map<String, dynamic> recordMap = await docStore.update(
-        documentDataToUpdateMap(documentData, existingRecordMap), ref.path);
+    Map<String, dynamic> recordMap = (await docStore.update(
+            documentDataToUpdateMap(documentData, existingRecordMap), ref.path))
+        as Map<String, dynamic>;
 
     result.newSnapshot = documentFromRecordMap(ref, recordMap);
     return result;
@@ -468,13 +468,13 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
 
 class CollectionReferenceSembast extends QuerySembast
     implements CollectionReference {
+  @override
   FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
 
-  // always created initially
-  QueryInfo queryInfo = QueryInfo();
-
   CollectionReferenceSembast(Firestore firestore, String path)
-      : super(firestore, path);
+      : super(firestore, path) {
+    queryInfo = QueryInfo();
+  }
 
   @override
   DocumentReference doc([String path]) {
@@ -523,6 +523,7 @@ class QuerySembast extends FirestoreReferenceBase
 
   QuerySembast(Firestore firestore, String path) : super(firestore, path);
 
+  @override
   QueryInfo queryInfo;
 
   @override

@@ -50,7 +50,7 @@ abstract class Firestore {
   /// completed successfully of was explicitly aborted by returning a Future
   /// with an error. If [updateFunction] throws then returned Future completes
   /// with the same error.
-  Future runTransaction(updateFunction(Transaction transaction));
+  Future runTransaction(dynamic updateFunction(Transaction transaction));
 
   /// Specifies custom settings to be used to configure the `Firestore`
   /// instance.
@@ -235,8 +235,7 @@ class Blob {
   Blob(this._data);
 
   @override
-  int get hashCode =>
-      (_data != null && _data.length > 0) ? _data.first.hashCode : 0;
+  int get hashCode => (_data?.isNotEmpty == true) ? _data.first.hashCode : 0;
 
   @override
   bool operator ==(other) {
@@ -261,9 +260,12 @@ class GeoPoint {
   @override
   bool operator ==(other) {
     if (identical(this, other)) return true;
-    if (other is! GeoPoint) return false;
-    GeoPoint point = other;
-    return latitude == point.latitude && longitude == point.longitude;
+    if (other is GeoPoint) {
+      GeoPoint point = other;
+      return latitude == point.latitude && longitude == point.longitude;
+    } else {
+      return false;
+    }
   }
 
   @override

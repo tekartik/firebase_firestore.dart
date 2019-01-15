@@ -4,13 +4,17 @@ import 'package:firebase/firestore.dart' as native;
 import 'package:js/js_util.dart';
 import 'package:tekartik_browser_utils/browser_utils_import.dart' hide Blob;
 import 'package:tekartik_firebase/firebase.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_browser/src/firebase_browser.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 
 JavascriptScriptLoader firestoreJsLoader = JavascriptScriptLoader(
     "https://www.gstatic.com/firebasejs/$firebaseJsVersion/firebase-firestore.js");
 
+// Put js in HTML instead
+@deprecated
 Future loadFirebaseFirestoreJs() async {
   await firestoreJsLoader.load();
 }

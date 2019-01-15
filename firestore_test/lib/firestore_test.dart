@@ -34,7 +34,7 @@ void run(
   }
 }
 
-runNoTimestampsInSnapshots(
+void runNoTimestampsInSnapshots(
     {@required FirestoreService firestoreService,
     @required FirebaseAsync firebase,
     AppOptions options}) {
@@ -91,7 +91,7 @@ runNoTimestampsInSnapshots(
   });
 }
 
-runApp(
+void runApp(
     {@required FirestoreService firestoreService,
     @required Firestore firestore}) {
   setUpAll(() async {
@@ -394,7 +394,7 @@ runApp(
           await docRef
               .set({"some_date": localDateTime, "some_utc_date": utcDateTime});
 
-          _check(Map data) {
+          void _check(Map data) {
             if (firestoreService.supportsTimestampsInSnapshots) {
               //devPrint(data['some_date'].runtimeType);
               expect(data, {
@@ -453,7 +453,7 @@ runApp(
         var timestamp = Timestamp(1234567890, 123000);
         await docRef.set({"some_timestamp": timestamp});
 
-        _check(Map<String, dynamic> data) {
+        void _check(Map<String, dynamic> data) {
           if (firestoreService.supportsTimestampsInSnapshots) {
             expect(
                 data,
@@ -1204,7 +1204,7 @@ runApp(
       // TODO implement
     });
     test('bug_limit', () async {
-      var query = await firestore
+      var query = firestore
           .collection("tests")
           .doc("firebase_shim_test")
           .collection("tests")

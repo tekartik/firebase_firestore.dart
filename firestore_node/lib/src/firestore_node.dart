@@ -4,8 +4,11 @@ import 'package:firebase_admin_interop/firebase_admin_interop.dart' as node;
 import 'package:node_interop/js.dart' as js;
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_node/src/firebase_node.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
+// ignore: implementation_imports
 import 'package:firebase_admin_interop/src/bindings.dart' as js;
 
 js.FirestoreSettings _unwrapSettings(FirestoreSettings settings) {
@@ -123,6 +126,7 @@ class WriteBatchNode implements WriteBatch {
 }
 
 class QueryNode extends Object with QueryMixin {
+  @override
   final node.DocumentQuery nativeInstance;
 
   QueryNode(this.nativeInstance);
@@ -199,6 +203,7 @@ abstract class QueryMixin implements Query {
 }
 
 class CollectionReferenceNode extends QueryNode implements CollectionReference {
+  @override
   node.CollectionReference get nativeInstance =>
       super.nativeInstance as node.CollectionReference;
 
@@ -255,7 +260,7 @@ js.Timestamp _createJsTimestamp(Timestamp ts) {
 }
 */
 
-documentValueToNativeValue(dynamic value) {
+dynamic documentValueToNativeValue(dynamic value) {
   if (value == null ||
       value is num ||
       value is bool ||
@@ -288,7 +293,7 @@ documentValueToNativeValue(dynamic value) {
   }
 }
 
-documentValueFromNativeValue(dynamic value) {
+dynamic documentValueFromNativeValue(dynamic value) {
   if (value == null ||
       value is num ||
       value is bool ||

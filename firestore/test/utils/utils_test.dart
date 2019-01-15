@@ -2,7 +2,7 @@ import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:test/test.dart';
 
-main() {
+void main() {
   group('utils', () {
     test('mapCreateTime', () {
       expect(mapCreateTime(null), isNull);

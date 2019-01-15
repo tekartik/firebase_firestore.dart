@@ -68,6 +68,7 @@ class DocumentReferenceMock implements DocumentReference {
   @override
   final String path;
 
+  @override
   Future set(Map<String, dynamic> data, [SetOptions options]) => null;
 
   @override
@@ -77,7 +78,7 @@ class DocumentReferenceMock implements DocumentReference {
   Stream<DocumentSnapshot> onSnapshot() => null;
 }
 
-main() {
+void main() {
   group('path', () {
     test('sanitizeReferencePath', () {
       expect(sanitizeReferencePath(null), isNull);
@@ -145,7 +146,7 @@ main() {
   });
 
   group('DocumentData', () {
-    Firestore firestore = null;
+    Firestore firestore;
     test('dateTime', () {
       var utcDate = DateTime.fromMillisecondsSinceEpoch(12345657890123).toUtc();
       var localDate = DateTime.fromMillisecondsSinceEpoch(123456578901234);

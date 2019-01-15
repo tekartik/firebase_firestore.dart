@@ -4,7 +4,9 @@ import 'package:path/path.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as native;
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 
 FirestoreServiceFlutter _firestoreServiceFlutter;
@@ -305,6 +307,7 @@ class CollectionReferenceFlutter extends QueryFlutter
     implements CollectionReference {
   CollectionReferenceFlutter(native.CollectionReference nativeInstance)
       : super(nativeInstance);
+  @override
   native.CollectionReference get nativeInstance =>
       super.nativeInstance as native.CollectionReference;
 

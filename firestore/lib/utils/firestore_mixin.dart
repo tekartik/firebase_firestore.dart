@@ -290,7 +290,7 @@ class ComparableList<E> with ListMixin<E> implements Comparable<List<E>> {
   }
 
   @override
-  void set length(int newLength) {
+  set length(int newLength) {
     throw StateError('read-only');
   }
 }
@@ -629,7 +629,7 @@ mixin FirestoreQueryMixin implements Query {
             arrayContains: arrayContains,
             isNull: isNull));
 
-  addOrderBy(String key, String directionStr) {
+  void addOrderBy(String key, String directionStr) {
     var orderBy = OrderByInfo()
       ..fieldPath = key
       ..ascending = directionStr != orderByDescending;
@@ -662,8 +662,8 @@ mixin FirestoreQueryMixin implements Query {
     });
 
     querySubscription = collectionSubscription.streamController.stream.listen(
-        (DocumentChange documentChange_) async {
-      DocumentChangeBase documentChange = documentChange_;
+        (DocumentChange collectionDocumentChange) async {
+      DocumentChangeBase documentChange = collectionDocumentChange;
       // get the base data
       var querySnapshot = await get() as QuerySnapshotBase;
       if (mapQueryInfo(
@@ -719,7 +719,7 @@ abstract class AttributesMixin implements ReferenceAttributes {
   @override
   String get parentPath {
     String dirPath = url.dirname(path);
-    if (dirPath?.length == 0) {
+    if (dirPath?.isEmpty == true) {
       return null;
     } else if (dirPath == ".") {
       // Mimic firestore behavior where the top document has a "" path
