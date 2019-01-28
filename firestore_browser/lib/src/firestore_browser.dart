@@ -35,7 +35,7 @@ class FirestoreServiceBrowser implements FirestoreService {
   @override
   Firestore firestore(App app) {
     assert(app is AppBrowser, 'invalid firebase app type');
-    AppBrowser appBrowser = app;
+    AppBrowser appBrowser = app as AppBrowser;
     return FirestoreBrowser(appBrowser.nativeApp.firestore());
   }
 

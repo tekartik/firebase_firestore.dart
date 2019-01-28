@@ -1,5 +1,4 @@
-# Specify analysis options.
-# 2019-01-15
+# 2019-01-15 Specify analysis options.
 #
 # Until there are meta linter rules, each desired lint must be explicitly enabled.
 # See: https://github.com/dart-lang/linter/issues/288
@@ -7,11 +6,10 @@
 # For a list of lints, see: http://dart-lang.github.io/linter/lints/
 # See the configuration guide for more
 # https://github.com/dart-lang/sdk/tree/master/pkg/analyzer#configuring-the-analyzer
-#
-# NOTE: Please keep this file in sync with
-# https://github.com/flutter/flutter/blob/master/analysis_options.yaml
-
 analyzer:
+  # Strong mode is sometimes harder to keep
+  strong-mode:
+    implicit-casts: false
   errors:
     # treat missing required parameters as a warning (not a hint)
     missing_required_param: warning
@@ -119,7 +117,8 @@ linter:
     # remove alex:
     # - unnecessary_brace_in_string_interps
     - unnecessary_const
-    - unnecessary_getters_setters
+    # removed alex:
+    # - unnecessary_getters_setters
     # - unnecessary_lambdas # https://github.com/dart-lang/linter/issues/498
     - unnecessary_new
     - unnecessary_null_aware_assignments
@@ -132,6 +131,9 @@ linter:
     # - use_setters_to_change_properties # not yet tested
     # - use_string_buffers # https://github.com/dart-lang/linter/pull/664
     # - use_to_and_as_if_applicable # has false positives, so we prefer to catch this by code-review
+
+    # added alex
+    - avoid_relative_lib_imports
 
     # === pub rules ===
     - package_names

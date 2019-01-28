@@ -66,7 +66,7 @@ void main() {
       await firestore.doc('doc_path').delete();
       await firestore.doc('doc_path').set({'test': 1});
       var db = (firestore as FirestoreSembast).db;
-      Map map = await db.getStore('doc').get('doc_path');
+      Map map = await db.getStore('doc').get('doc_path') as Map;
       expect(map['test'], 1);
       expect(map[r'$rev'], 1);
       expect(Timestamp.tryParse(map[r'$createTime'] as String), isNotNull);

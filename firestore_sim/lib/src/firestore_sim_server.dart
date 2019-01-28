@@ -210,7 +210,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     // New stream?
     var subscriptionId = parameters[paramSubscriptionId].value as int;
     SimSubscription<DocumentSnapshot> subscription =
-        subscriptions[subscriptionId];
+        subscriptions[subscriptionId] as SimSubscription<DocumentSnapshot>;
     var event = await subscription?.getNext();
     var map = {};
     if (event == null || event.done) {
@@ -263,7 +263,8 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
   Future handleFirestoreQueryStream(rpc.Parameters parameters) async {
     // New stream?
     var subscriptionId = parameters[paramSubscriptionId].value as int;
-    SimSubscription<QuerySnapshot> subscription = subscriptions[subscriptionId];
+    SimSubscription<QuerySnapshot> subscription =
+        subscriptions[subscriptionId] as SimSubscription<QuerySnapshot>;
     try {
       var event = await subscription?.getNext();
       var map = {};

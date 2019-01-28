@@ -35,7 +35,7 @@ class FirestoreServiceIdb implements FirestoreService {
   @override
   Firestore firestore(App app) {
     assert(app is AppLocal, 'invalid firebase app type');
-    AppLocal appLocal = app;
+    AppLocal appLocal = app as AppLocal;
     return FirestoreIdb(appLocal, this);
   }
 
@@ -429,7 +429,7 @@ class QueryIdb extends FirestoreReferenceBase
         .objectStore(firestoreIdb.storeName)
         .openCursor(range: idb.KeyRange.lowerBound(path), autoAdvance: false)
         .listen((cwv) {
-      String docPath = cwv.key;
+      String docPath = cwv.key as String;
       if (dirname(docPath) == path) {
         docs.add(firestoreIdb.documentFromRecordMap(firestoreIdb.doc(docPath),
             (cwv.value as Map)?.cast<String, dynamic>()));

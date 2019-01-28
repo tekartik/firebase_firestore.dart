@@ -470,8 +470,8 @@ mixin FirestoreQueryMixin implements Query {
       }
 
       for (var orderBy in orderBys) {
-        String keyPath = orderBy.fieldPath;
-        bool ascending = orderBy.ascending;
+        String keyPath = orderBy.fieldPath as String;
+        bool ascending = orderBy.ascending as bool;
 
         int _rawCompare(Comparable object1, Comparable object2) {
           if (object2 == null) {
@@ -663,7 +663,8 @@ mixin FirestoreQueryMixin implements Query {
 
     querySubscription = collectionSubscription.streamController.stream.listen(
         (DocumentChange collectionDocumentChange) async {
-      DocumentChangeBase documentChange = collectionDocumentChange;
+      DocumentChangeBase documentChange =
+          collectionDocumentChange as DocumentChangeBase;
       // get the base data
       var querySnapshot = await get() as QuerySnapshotBase;
       if (mapQueryInfo(

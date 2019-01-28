@@ -35,7 +35,7 @@ class FirestoreServiceNode implements FirestoreService {
   @override
   Firestore firestore(App app) {
     assert(app is AppNode, 'invalid firebase app type');
-    AppNode appNode = app;
+    AppNode appNode = app as AppNode;
     return FirestoreNode(appNode.nativeInstance.firestore());
   }
 
@@ -262,7 +262,7 @@ js.Timestamp _createJsTimestamp(Timestamp ts) {
 }
 */
 
-dynamic listToNative(Iterable list) {
+List listToNative(Iterable list) {
   return list.map((value) => documentValueToNativeValue(value)).toList();
 }
 

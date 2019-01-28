@@ -537,7 +537,7 @@ class QuerySembast extends FirestoreReferenceBase
     List<DocumentSnapshot> docs = [];
     for (Record record
         in await db.getStore(docStoreName).findRecords(Finder())) {
-      String recordPath = record.key;
+      String recordPath = record.key as String;
       String parentPath = url.dirname(recordPath);
       if (parentPath == path) {
         docs.add(firestoreSembast.documentFromRecordMap(
