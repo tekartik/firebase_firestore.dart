@@ -235,7 +235,11 @@ class FirestoreIdb extends Object
     return txnGet(localTransaction, documentRef)
         .then((DocumentSnapshotIdb snapshotIdb) {
       var map = snapshotIdb.data;
-      // TODO
+
+      // not found
+      if (map == null) {
+        throw Exception("No document found at $documentRef");
+      }
       map = documentDataToUpdateMap(documentData);
       return localTransaction.transaction
           .objectStore(storeName)
