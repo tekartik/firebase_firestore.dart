@@ -10,7 +10,8 @@ import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 
 FirestoreServiceFlutter _firestoreServiceFlutter;
-FirestoreService get firestoreService =>
+FirestoreService get firestoreService => firestoreServiceFlutter;
+FirestoreService get firestoreServiceFlutter =>
     _firestoreServiceFlutter ?? FirestoreServiceFlutter();
 
 class FirestoreServiceFlutter implements FirestoreService {
