@@ -677,6 +677,25 @@ void runApp(
         });
       });
 
+      // This only fails on node
+      test('update invalid sub map', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('update');
+        await docRef.set({'created': 1, 'modified': 2});
+        // Here we have a sub map, not support by update!
+        await docRef.update({
+          'modified': 22,
+          'added': 3,
+          'sub': {'field': 4}
+        });
+        expect((await docRef.get()).data, {
+          'created': 1,
+          'modified': 22,
+          'added': 3,
+          'sub': {'field': 4}
+        });
+      });
+
       test('simpleOnSnapshot', () async {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('simple_onSnapshot');
@@ -707,14 +726,14 @@ void runApp(
         expect(snapshot.exists, isFalse);
 
         // create it
-        docRef.set({});
+        await docRef.set({});
         // wait for receiving change data
         snapshot = await completers[index++].future;
         expect(snapshot.exists, isTrue);
         expect(snapshot.data, {});
 
         // modify it
-        docRef.set({'value': 1});
+        await docRef.set({'value': 1});
         // wait for receiving change data
         snapshot = await completers[index++].future;
         expect(snapshot.exists, isTrue);
@@ -1075,13 +1094,13 @@ void runApp(
         await completer1.future;
 
         // create it
-        docRef.set({});
+        await docRef.set({});
 
         // wait for receiving change data
         await completer2.future;
 
         // modify it
-        docRef.set({'value': 1});
+        await docRef.set({'value': 1});
 
         // wait for receiving change data
         await completer3.future;

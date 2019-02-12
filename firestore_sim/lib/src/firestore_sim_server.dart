@@ -421,7 +421,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
       ..transactionId = ++lastTransactionId;
 
     // start locking but don't wait
-    transactionLock.synchronized(() async {
+    await transactionLock.synchronized(() async {
       transactionCompleter = Completer();
       await transactionCompleter.future;
       transactionCompleter = null;

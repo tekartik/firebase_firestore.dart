@@ -24,7 +24,7 @@ dependencies:
       ref: dart2
     version: '>=0.3.7'
   firebase_functions_interop: ">=1.0.0-dev.11.0"
-  firebase_admin_interop: ">=1.2.0"
+  firebase_admin_interop: ">=1.2.1"
 
 dev_dependencies:
   test: ">=1.2.0"

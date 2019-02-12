@@ -23,6 +23,6 @@
 
     pub run build_runner test -- -p node .\test\firestore_node_test.dart
 
-    pbr test -- -p -node test/storage_node_test.dart
-    pbr test -- -p -node test/firestore_node_test.dart
-    pbr test -- -p -node test/admin_node_test.dart
+    pbr test -- -p node test/storage_node_test.dart
+    pbr test -- -p node test/firestore_node_test.dart
+    pbr test -- -p node test/admin_node_test.dart

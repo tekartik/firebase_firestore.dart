@@ -170,7 +170,7 @@ class DocumentReferenceSim implements DocumentReference {
     ServerSubscriptionSim<DocumentSnapshotSim> subscription;
     FirebaseSimClient simClient;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {
-      firestoreSim.removeSubscription(subscription);
+      await firestoreSim.removeSubscription(subscription);
       await simClient.sendRequest(
           methodFirestoreGetCancel, {paramSubscriptionId: subscription.id});
       await subscription.done;
@@ -185,7 +185,7 @@ class DocumentReferenceSim implements DocumentReference {
       firestoreSim.addSubscription(subscription);
 
       // Loop until cancelled
-      _getStream(simClient, path, subscription);
+      await _getStream(simClient, path, subscription);
     }();
     return subscription.stream;
   }
@@ -338,7 +338,7 @@ abstract class QueryMixinSim implements Query {
     FirebaseSimClient simClient;
     ServerSubscriptionSim<QuerySnapshot> subscription;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {
-      firestoreSim.removeSubscription(subscription);
+      await firestoreSim.removeSubscription(subscription);
       await simClient.sendRequest(
           methodFirestoreQueryCancel, {paramSubscriptionId: subscription.id});
       await subscription.done;
@@ -358,7 +358,7 @@ abstract class QueryMixinSim implements Query {
       firestoreSim.addSubscription(subscription);
 
       // Loop until cancelled
-      _getStream(simClient, subscription);
+      await _getStream(simClient, subscription);
     }();
     return subscription.stream;
   }
@@ -377,7 +377,7 @@ class ServerSubscriptionSim<T> {
   Stream<T> get stream => _controller.stream;
 
   Future close() async {
-    notificationSubscription?.cancel();
+    await notificationSubscription?.cancel();
     await _controller.close();
   }
 
