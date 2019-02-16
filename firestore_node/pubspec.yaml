@@ -44,5 +44,5 @@ dependency_overrides:
   tekartik_firebase_firestore:
     path: ../firestore
   quiver_hashcode: '>=1.0.0'
-  firebase_admin_interop:
-    path: ../../firebase-admin-interop
+#  firebase_admin_interop:
+#    path: ../../firebase-admin-interop
