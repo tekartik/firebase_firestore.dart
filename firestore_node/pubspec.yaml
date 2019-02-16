@@ -1,6 +1,6 @@
 name: tekartik_firebase_firestore_node
 description: Firebase firestore server node
-version: 0.4.1
+version: 0.4.1+1
 #homepage: https://www.example.com
 #author: alex <email@example.com>
 
@@ -16,7 +16,7 @@ dependencies:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
       ref: dart2
-    version: '>=0.4.0'
+    version: '>=0.4.1+1'
   tekartik_firebase_node:
     git:
       url: git://github.com/tekartik/firebase.dart
@@ -44,5 +44,5 @@ dependency_overrides:
   tekartik_firebase_firestore:
     path: ../firestore
   quiver_hashcode: '>=1.0.0'
-#  firebase_admin_interop:
-#    path: ../../firebase-admin-interop
+  firebase_admin_interop:
+    path: ../../firebase-admin-interop

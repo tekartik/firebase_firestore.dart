@@ -343,6 +343,20 @@ class ComparableMap<K, V> with MapMixin<K, V> implements Comparable<Map<K, V>> {
   }
 }
 
+int _compare(Comparable value1, Comparable value2) {
+  // Compare to timestamp if needed
+  if (value1 is DateTime) {
+    if (value2 is Timestamp) {
+      value1 = Timestamp.fromDateTime(value1 as DateTime);
+    }
+  } else if (value2 is DateTime) {
+    if (value1 is Timestamp) {
+      value2 = Timestamp.fromDateTime(value2 as DateTime);
+    }
+  }
+  return Comparable.compare(value1, value2);
+}
+
 bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
   //var data = documentData.map;
   // if (data != null) {
@@ -374,40 +388,43 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
           queryInfo.orderBys.isNotEmpty) ||
       queryInfo.wheres.isNotEmpty) {
     for (int i = 0; i < queryInfo.orderBys.length; i++) {
-      dynamic value =
-          documentData.valueAtFieldPath(queryInfo.orderBys[i].fieldPath);
+      final value = documentData
+          .valueAtFieldPath(queryInfo.orderBys[i].fieldPath) as Comparable;
 
       if (queryInfo.startLimit?.inclusive == true) {
-        dynamic startAt = safeGetItem(queryInfo.startLimit?.values, i);
+        final startAt =
+            safeGetItem(queryInfo.startLimit?.values, i) as Comparable;
         if (startAt != null) {
           // ignore: non_bool_operand
-          if (value == null || value < startAt) {
+          if (value == null || _compare(value, startAt) < 0) {
             return false;
           }
         }
       } else {
-        dynamic startAfter = safeGetItem(queryInfo.startLimit?.values, i);
+        final startAfter =
+            safeGetItem(queryInfo.startLimit?.values, i) as Comparable;
         if (startAfter != null) {
           // ignore: non_bool_operand
-          if (value == null || value <= startAfter) {
+          if (value == null || _compare(value, startAfter) <= 0) {
             return false;
           }
         }
       }
 
       if (queryInfo.endLimit?.inclusive == true) {
-        dynamic endAt = safeGetItem(queryInfo.endLimit?.values, i);
+        final endAt = safeGetItem(queryInfo.endLimit?.values, i) as Comparable;
         if (endAt != null) {
           // ignore: non_bool_operand
-          if (value == null || value > endAt) {
+          if (value == null || _compare(value, endAt) > 0) {
             return false;
           }
         }
       } else {
-        dynamic endBefore = safeGetItem(queryInfo.endLimit?.values, i);
+        final endBefore =
+            safeGetItem(queryInfo.endLimit?.values, i) as Comparable;
         if (endBefore != null) {
           // ignore: non_bool_operand
-          if (value == null || value >= endBefore) {
+          if (value == null || _compare(value, endBefore) >= 0) {
             return false;
           }
         }

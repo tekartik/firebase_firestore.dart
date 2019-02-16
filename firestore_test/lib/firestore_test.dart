@@ -986,6 +986,129 @@ void runApp(
         expect(list.first.ref.id, "two");
       });
 
+      test('order', () async {
+        var testsRef = getTestsRef();
+        var collRef =
+            testsRef.doc('collection_test').collection('complex_timestamp');
+        var docRefOne = collRef.doc('one');
+        var docRefTwo = collRef.doc('two');
+
+        List<DocumentSnapshot> list;
+        var timestamp2 = Timestamp.fromMillisecondsSinceEpoch(2);
+        var date2 = DateTime.fromMillisecondsSinceEpoch(2);
+
+        var map2 = <String, dynamic>{
+          'date': date2,
+          'int': 2,
+          'text': '2',
+          'double': 1.5
+        };
+        if (firestoreService.supportsTimestamps) {
+          map2['timestamp'] = timestamp2;
+        }
+
+        var timestamp1 = Timestamp.fromMillisecondsSinceEpoch(1);
+        var date1 = DateTime.fromMillisecondsSinceEpoch(1);
+
+        var map1 = <String, dynamic>{
+          'date': date1,
+          'int': 1,
+          'text': '1',
+          'double': 0.5
+        };
+        if (firestoreService.supportsTimestamps) {
+          map1['timestamp'] = timestamp1;
+        }
+
+        await docRefTwo.set(map2);
+        await docRefOne.set(map1);
+
+        Future testField<T>(String field, T value1, T value2) async {
+          var reason = '$field $value1 $value2';
+          // order by
+          var querySnapshot = await collRef.orderBy(field).get();
+          list = querySnapshot.docs;
+          expect(list.length, 2);
+          expect(list.first.ref.id, "one", reason: reason);
+
+          // start at
+          querySnapshot =
+              await collRef.orderBy(field).startAt(values: [value2]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1, reason: reason);
+          expect(list.first.ref.id, "two");
+
+          // start after
+          querySnapshot =
+              await collRef.orderBy(field).startAfter(values: [value1]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "two");
+
+          // end at
+          querySnapshot =
+              await collRef.orderBy(field).endAt(values: [value1]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "one");
+
+          // end before
+          querySnapshot =
+              await collRef.orderBy(field).endBefore(values: [value2]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "one");
+
+          if (firestoreService.supportsQuerySnapshotCursor) {
+            // start after using snapshot
+            querySnapshot = await collRef
+                .orderBy(field)
+                .startAfter(snapshot: list.first)
+                .get();
+            list = querySnapshot.docs;
+            expect(list.length, 1);
+            expect(list.first.ref.id, "two");
+          }
+
+          // where >
+          querySnapshot =
+              await collRef.where(field, isGreaterThan: value1).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "two");
+
+          // where >=
+          querySnapshot =
+              await collRef.where(field, isGreaterThanOrEqualTo: value2).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "two");
+
+          // where <
+          querySnapshot = await collRef.where(field, isLessThan: value2).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "one");
+
+          // where <=
+          querySnapshot =
+              await collRef.where(field, isLessThanOrEqualTo: value1).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "one");
+        }
+
+        await testField('int', 1, 2);
+
+        await testField('double', .5, 1.5);
+        await testField('text', '1', '2');
+        await testField('date', date1, date2);
+        if (firestoreService.supportsTimestamps) {
+          await testField('timestamp', timestamp1, timestamp2);
+        }
+
+      });
+
       test('nested_object_order', () async {
         var testsRef = getTestsRef();
         var collRef = testsRef.doc('nested_order_test').collection('many');

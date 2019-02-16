@@ -156,22 +156,26 @@ abstract class QueryMixin implements Query {
   @override
   QueryNode startAt({DocumentSnapshot snapshot, List values}) =>
       _wrapQuery(nativeInstance.startAt(
-          snapshot: _unwrapDocumentSnapshot(snapshot), values: values));
+          snapshot: _unwrapDocumentSnapshot(snapshot),
+          values: _unwrapValues(values)));
 
   @override
   Query startAfter({DocumentSnapshot snapshot, List values}) =>
       _wrapQuery(nativeInstance.startAfter(
-          snapshot: _unwrapDocumentSnapshot(snapshot), values: values));
+          snapshot: _unwrapDocumentSnapshot(snapshot),
+          values: _unwrapValues(values)));
 
   @override
   QueryNode endAt({DocumentSnapshot snapshot, List values}) =>
       _wrapQuery(nativeInstance.endAt(
-          snapshot: _unwrapDocumentSnapshot(snapshot), values: values));
+          snapshot: _unwrapDocumentSnapshot(snapshot),
+          values: _unwrapValues(values)));
 
   @override
   QueryNode endBefore({DocumentSnapshot snapshot, List values}) =>
       _wrapQuery(nativeInstance.endBefore(
-          snapshot: _unwrapDocumentSnapshot(snapshot), values: values));
+          snapshot: _unwrapDocumentSnapshot(snapshot),
+          values: _unwrapValues(values)));
 
   @override
   QueryNode where(
@@ -237,6 +241,10 @@ class CollectionReferenceNode extends QueryNode implements CollectionReference {
     return 'CollectionReferenceNode($path)';
   }
 }
+
+/// Unwrap list for startAt, endAt...
+List _unwrapValues(List values) =>
+    values?.map(_unwrapValue)?.toList(growable: false);
 
 dynamic _unwrapValue(value) {
   if (value == null || value is num || value is bool || value is String) {
