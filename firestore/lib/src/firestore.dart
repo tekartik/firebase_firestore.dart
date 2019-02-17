@@ -198,6 +198,9 @@ class DocumentDataMap implements DocumentData {
   void setTimestamp(String key, Timestamp value) {
     setValue(key, value);
   }
+
+  @override
+  String toString() => asMap().toString();
 }
 
 enum FieldValueMapValue {
