@@ -14,7 +14,7 @@ import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_sim/src/firebase_sim_server.dart';
 import 'package:tekartik_common_utils/stream/stream_poller.dart';
-//import 'package:tekartik_firebase_sim/rpc_message.dart';
+import 'package:pedantic/pedantic.dart';
 
 class SimSubscription<T> {
   StreamPoller<T> _poller;
@@ -421,11 +421,11 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
       ..transactionId = ++lastTransactionId;
 
     // start locking but don't wait
-    await transactionLock.synchronized(() async {
+    unawaited(transactionLock.synchronized(() async {
       transactionCompleter = Completer();
       await transactionCompleter.future;
       transactionCompleter = null;
-    });
+    }));
     return responseData.toMap();
   }
 

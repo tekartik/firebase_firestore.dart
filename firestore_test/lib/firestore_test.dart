@@ -1106,7 +1106,6 @@ void runApp(
         if (firestoreService.supportsTimestamps) {
           await testField('timestamp', timestamp1, timestamp2);
         }
-
       });
 
       test('nested_object_order', () async {

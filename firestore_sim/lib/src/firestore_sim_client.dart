@@ -585,6 +585,9 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
   @override
   Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async =>
       await Future.wait(refs.map((ref) => ref.get()));
+
+  @override
+  String toString() => 'FirestoreSim[${identityHashCode(this)}]';
 }
 
 class TransactionSim extends WriteBatchSim implements Transaction {
