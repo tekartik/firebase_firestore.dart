@@ -1,6 +1,20 @@
+import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
+import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:test/test.dart';
+
+import '../src_firestore_common_test.dart';
+
+class DocumentSnapshotMock extends DocumentSnapshotBase {
+  DocumentSnapshotMock(
+      {DocumentReference ref,
+      RecordMetaData meta,
+      DocumentDataMap documentData,
+      bool exists})
+      : super(ref, meta, documentData, exists: exists);
+}
 
 void main() {
   group('utils', () {
@@ -57,6 +71,28 @@ void main() {
             ]
           })),
           lessThan(0));
+    });
+
+    test('mapQueryInfo', () {
+      DocumentSnapshotBase _snapshot(String id, int value) {
+        return DocumentSnapshotMock(
+            ref: DocumentReferenceMock(id),
+            documentData:
+                DocumentDataMap(map: <String, dynamic>{'value': value}));
+      }
+
+      var queryInfo = QueryInfo()
+        ..orderBys = [
+          OrderByInfo(fieldPath: 'value', ascending: false),
+          OrderByInfo(fieldPath: firestoreNameFieldPath, ascending: true)
+        ]
+        ..startAt(values: [2, 'b']);
+      expect(snapshotMapQueryInfo(_snapshot('a', 1), queryInfo), isTrue);
+      expect(snapshotMapQueryInfo(_snapshot('c', 1), queryInfo), isTrue);
+      expect(snapshotMapQueryInfo(_snapshot('b', 2), queryInfo), isTrue);
+      expect(snapshotMapQueryInfo(_snapshot('a', 2), queryInfo), isFalse);
+      expect(snapshotMapQueryInfo(_snapshot('c', 2), queryInfo), isTrue);
+      expect(snapshotMapQueryInfo(_snapshot('c', 3), queryInfo), isFalse);
     });
   });
 }

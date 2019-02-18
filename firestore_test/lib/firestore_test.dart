@@ -845,6 +845,40 @@ void runApp(
         expect(querySnapshot.docs[1].ref.path, twoRef.path);
       });
 
+      test('order_desc_field_and_key', () async {
+        var testsRef = getTestsRef();
+        var collRef = testsRef
+            .doc('collection_test')
+            .collection('order_desc_field_and_key');
+        await deleteCollection(firestore, collRef);
+        var oneRef = collRef.doc('one');
+        await oneRef.set({'value': 2});
+        var twoRef = collRef.doc('two');
+        await twoRef.set({'value': 1});
+        var threeRef = collRef.doc('three');
+        await threeRef.set({'value': 1});
+
+        QuerySnapshot querySnapshot;
+
+        querySnapshot = await collRef
+            .orderBy('value', descending: true)
+            .orderBy(firestoreNameFieldPath)
+            .get();
+        // Order by name by default
+        expect(querySnapshot.docs[0].ref.path, oneRef.path);
+        expect(querySnapshot.docs[1].ref.path, threeRef.path);
+        expect(querySnapshot.docs[2].ref.path, twoRef.path);
+
+        querySnapshot = await collRef
+            .orderBy('value', descending: true)
+            .orderBy(firestoreNameFieldPath)
+            .startAt(values: [1, 'three']).get();
+        // Order by name by default
+
+        expect(querySnapshot.docs[0].ref.path, threeRef.path);
+        expect(querySnapshot.docs[1].ref.path, twoRef.path);
+      });
+
       test('complex', () async {
         var testsRef = getTestsRef();
         var collRef = testsRef.doc('collection_test').collection('many');

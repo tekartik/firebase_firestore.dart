@@ -226,9 +226,8 @@ abstract class QueryMixinSim implements Query {
             isNull: isNull));
 
   void addOrderBy(String key, String directionStr) {
-    var orderBy = OrderByInfo()
-      ..fieldPath = key
-      ..ascending = directionStr != orderByDescending;
+    var orderBy = OrderByInfo(
+        fieldPath: key, ascending: directionStr != orderByDescending);
     queryInfo.orderBys.add(orderBy);
   }
 

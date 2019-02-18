@@ -242,6 +242,9 @@ Comparable _getComparable<T>(dynamic value) {
   } else if (value is Map) {
     return ComparableMap(value);
   }
+  if (value == null) {
+    return null;
+  }
   return NonComparable(value);
 }
 
@@ -343,20 +346,107 @@ class ComparableMap<K, V> with MapMixin<K, V> implements Comparable<Map<K, V>> {
   }
 }
 
-int _compare(Comparable value1, Comparable value2) {
-  // Compare to timestamp if needed
-  if (value1 is DateTime) {
-    if (value2 is Timestamp) {
-      value1 = Timestamp.fromDateTime(value1 as DateTime);
-    }
-  } else if (value2 is DateTime) {
-    if (value1 is Timestamp) {
-      value2 = Timestamp.fromDateTime(value2 as DateTime);
-    }
+int _compare(Comparable value1, Comparable value2, bool ascending) {
+  int compareValue = Comparable.compare(value1, value2);
+  if (ascending != false) {
+    return compareValue;
+  } else {
+    return -compareValue;
   }
-  return Comparable.compare(value1, value2);
 }
 
+bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
+  var data = snapshot.documentData as DocumentDataMap;
+
+  Comparable getComparableValue(String fieldPath) {
+    dynamic value;
+    if (fieldPath != firestoreNameFieldPath) {
+      value = data.valueAtFieldPath(fieldPath);
+
+      // Convert DateTime to Timestamp
+      return _getComparable(value);
+
+      //return null;
+    } else {
+      return snapshot.ref.id;
+    }
+  }
+  //var data = documentData.map;
+  // if (data != null) {
+  //bool add = true;
+
+  // Ignore if one sorted field is null
+  if (queryInfo.orderBys.isNotEmpty) {
+    for (int i = 0; i < queryInfo.orderBys.length; i++) {
+      var fieldPath = queryInfo.orderBys[i].fieldPath;
+      // Must be non null and comparable
+      if (getComparableValue(fieldPath) == null) {
+        return false;
+      }
+    }
+  }
+
+  if (queryInfo.wheres.isNotEmpty) {
+    for (var where in queryInfo.wheres) {
+      if (!mapWhere(data, where)) {
+        return false;
+      }
+    }
+  }
+
+  if (((queryInfo.startLimit?.values != null ||
+              queryInfo.endLimit?.values != null) &&
+          queryInfo.orderBys.isNotEmpty) ||
+      queryInfo.wheres.isNotEmpty) {
+    int startCompare = 0;
+    int endCompare = 0;
+    for (int i = 0; i < queryInfo.orderBys.length; i++) {
+      var orderBy = queryInfo.orderBys[i];
+      var fieldPath = orderBy.fieldPath;
+      Comparable value = getComparableValue(fieldPath);
+
+      // Start
+      dynamic rawLimitValue = safeGetItem(queryInfo.startLimit?.values, i);
+      if (rawLimitValue != null) {
+        final limitValue = _getComparable(rawLimitValue);
+
+        startCompare = _compare(value, limitValue, orderBy.ascending);
+
+        if (startCompare > 0) {
+          return true;
+        } else if (startCompare < 0) {
+          return false;
+        }
+      }
+
+      // End
+      rawLimitValue = safeGetItem(queryInfo.endLimit?.values, i);
+      if (rawLimitValue != null) {
+        final limitValue = _getComparable(rawLimitValue);
+
+        endCompare = _compare(value, limitValue, orderBy.ascending);
+
+        if (endCompare < 0) {
+          return true;
+        } else if (endCompare > 0) {
+          return false;
+        }
+      }
+    }
+    // So we know we are equals
+    if (queryInfo.startLimit != null &&
+        queryInfo.startLimit.inclusive != true) {
+      return false;
+    }
+    if (queryInfo.endLimit != null && queryInfo.endLimit.inclusive != true) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+@deprecated
 bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
   //var data = documentData.map;
   // if (data != null) {
@@ -388,15 +478,17 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
           queryInfo.orderBys.isNotEmpty) ||
       queryInfo.wheres.isNotEmpty) {
     for (int i = 0; i < queryInfo.orderBys.length; i++) {
-      final value = documentData
-          .valueAtFieldPath(queryInfo.orderBys[i].fieldPath) as Comparable;
+      var orderBy = queryInfo.orderBys[i];
+      final value =
+          documentData.valueAtFieldPath(orderBy.fieldPath) as Comparable;
 
       if (queryInfo.startLimit?.inclusive == true) {
         final startAt =
             safeGetItem(queryInfo.startLimit?.values, i) as Comparable;
         if (startAt != null) {
           // ignore: non_bool_operand
-          if (value == null || _compare(value, startAt) < 0) {
+          if (value == null ||
+              _compare(value, startAt, orderBy.ascending) < 0) {
             return false;
           }
         }
@@ -405,7 +497,8 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
             safeGetItem(queryInfo.startLimit?.values, i) as Comparable;
         if (startAfter != null) {
           // ignore: non_bool_operand
-          if (value == null || _compare(value, startAfter) <= 0) {
+          if (value == null ||
+              _compare(value, startAfter, orderBy.ascending) <= 0) {
             return false;
           }
         }
@@ -415,7 +508,7 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
         final endAt = safeGetItem(queryInfo.endLimit?.values, i) as Comparable;
         if (endAt != null) {
           // ignore: non_bool_operand
-          if (value == null || _compare(value, endAt) > 0) {
+          if (value == null || _compare(value, endAt, orderBy.ascending) > 0) {
             return false;
           }
         }
@@ -424,7 +517,8 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
             safeGetItem(queryInfo.endLimit?.values, i) as Comparable;
         if (endBefore != null) {
           // ignore: non_bool_operand
-          if (value == null || _compare(value, endBefore) >= 0) {
+          if (value == null ||
+              _compare(value, endBefore, orderBy.ascending) >= 0) {
             return false;
           }
         }
@@ -461,7 +555,7 @@ mixin FirestoreQueryMixin implements Query {
     // Get and filter
     List<DocumentSnapshot> docs = [];
     for (var doc in await getCollectionDocuments()) {
-      if (mapQueryInfo(DocumentDataMap(map: doc.data), queryInfo)) {
+      if (snapshotMapQueryInfo(doc as DocumentSnapshotBase, queryInfo)) {
         docs.add(doc);
       }
     }
@@ -481,9 +575,8 @@ mixin FirestoreQueryMixin implements Query {
       int cmp = 0;
 
       if (!fieldPathFound) {
-        orderBys.add(OrderByInfo()
-          ..fieldPath = firestoreNameFieldPath
-          ..ascending = true);
+        orderBys.add(
+            OrderByInfo(fieldPath: firestoreNameFieldPath, ascending: true));
       }
 
       for (var orderBy in orderBys) {
@@ -647,9 +740,8 @@ mixin FirestoreQueryMixin implements Query {
             isNull: isNull));
 
   void addOrderBy(String key, String directionStr) {
-    var orderBy = OrderByInfo()
-      ..fieldPath = key
-      ..ascending = directionStr != orderByDescending;
+    var orderBy = OrderByInfo(
+        fieldPath: key, ascending: directionStr != orderByDescending);
     queryInfo.orderBys.add(orderBy);
   }
 
@@ -684,10 +776,8 @@ mixin FirestoreQueryMixin implements Query {
           collectionDocumentChange as DocumentChangeBase;
       // get the base data
       var querySnapshot = await get() as QuerySnapshotBase;
-      if (mapQueryInfo(
-          ((documentChange.document as DocumentSnapshotBase).documentData)
-              as DocumentDataMap,
-          queryInfo)) {
+      if (snapshotMapQueryInfo(
+          documentChange.document as DocumentSnapshotBase, queryInfo)) {
         if (documentChange.type == null) {
           if (querySnapshot.contains(documentChange.documentBase)) {
             documentChange.type = DocumentChangeType.modified;

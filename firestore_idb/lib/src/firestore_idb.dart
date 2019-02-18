@@ -24,7 +24,7 @@ class FirestoreServiceIdb implements FirestoreService {
   bool get supportsQuerySelect => false;
 
   @override
-  bool get supportsDocumentSnapshotTime => false;
+  bool get supportsDocumentSnapshotTime => true;
 
   @override
   bool get supportsTimestampsInSnapshots => false;
