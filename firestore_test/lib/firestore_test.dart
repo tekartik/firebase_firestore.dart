@@ -662,7 +662,7 @@ void runApp(
         var docRef = testsRef.doc('document_set_sub_field');
         await docRef.set({'sub.field': 1});
         expect((await docRef.get()).data, {'sub.field': 1});
-      }, skip: "Not working with sembast yet");
+      }); //skip: "Not working with sembast yet");
 
       test('update sub.field', () async {
         var testsRef = getTestsRef();
