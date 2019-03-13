@@ -662,13 +662,32 @@ void runApp(
         var docRef = testsRef.doc('document_set_sub_field');
         await docRef.set({'sub.field': 1});
         expect((await docRef.get()).data, {'sub.field': 1});
-      }, skip: "Not working with sembast yet");
+      }); //skip: "Not working with sembast yet");
 
       test('update sub.field', () async {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('update');
         await docRef.set({'created': 1, 'modified': 2});
         await docRef.update({'modified': 22, 'added': 3, 'sub.field': 4});
+        expect((await docRef.get()).data, {
+          'created': 1,
+          'modified': 22,
+          'added': 3,
+          'sub': {'field': 4}
+        });
+      });
+
+      // This only fails on node
+      test('update invalid sub map', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('update');
+        await docRef.set({'created': 1, 'modified': 2});
+        // Here we have a sub map, not support by update!
+        await docRef.update({
+          'modified': 22,
+          'added': 3,
+          'sub': {'field': 4}
+        });
         expect((await docRef.get()).data, {
           'created': 1,
           'modified': 22,
@@ -707,14 +726,14 @@ void runApp(
         expect(snapshot.exists, isFalse);
 
         // create it
-        docRef.set({});
+        await docRef.set({});
         // wait for receiving change data
         snapshot = await completers[index++].future;
         expect(snapshot.exists, isTrue);
         expect(snapshot.data, {});
 
         // modify it
-        docRef.set({'value': 1});
+        await docRef.set({'value': 1});
         // wait for receiving change data
         snapshot = await completers[index++].future;
         expect(snapshot.exists, isTrue);
@@ -823,6 +842,40 @@ void runApp(
         querySnapshot = await collRef.orderBy(firestoreNameFieldPath).get();
         // Order by name by default
         expect(querySnapshot.docs[0].ref.path, oneRef.path);
+        expect(querySnapshot.docs[1].ref.path, twoRef.path);
+      });
+
+      test('order_desc_field_and_key', () async {
+        var testsRef = getTestsRef();
+        var collRef = testsRef
+            .doc('collection_test')
+            .collection('order_desc_field_and_key');
+        await deleteCollection(firestore, collRef);
+        var oneRef = collRef.doc('one');
+        await oneRef.set({'value': 2});
+        var twoRef = collRef.doc('two');
+        await twoRef.set({'value': 1});
+        var threeRef = collRef.doc('three');
+        await threeRef.set({'value': 1});
+
+        QuerySnapshot querySnapshot;
+
+        querySnapshot = await collRef
+            .orderBy('value', descending: true)
+            .orderBy(firestoreNameFieldPath)
+            .get();
+        // Order by name by default
+        expect(querySnapshot.docs[0].ref.path, oneRef.path);
+        expect(querySnapshot.docs[1].ref.path, threeRef.path);
+        expect(querySnapshot.docs[2].ref.path, twoRef.path);
+
+        querySnapshot = await collRef
+            .orderBy('value', descending: true)
+            .orderBy(firestoreNameFieldPath)
+            .startAt(values: [1, 'three']).get();
+        // Order by name by default
+
+        expect(querySnapshot.docs[0].ref.path, threeRef.path);
         expect(querySnapshot.docs[1].ref.path, twoRef.path);
       });
 
@@ -967,6 +1020,128 @@ void runApp(
         expect(list.first.ref.id, "two");
       });
 
+      test('order', () async {
+        var testsRef = getTestsRef();
+        var collRef =
+            testsRef.doc('collection_test').collection('complex_timestamp');
+        var docRefOne = collRef.doc('one');
+        var docRefTwo = collRef.doc('two');
+
+        List<DocumentSnapshot> list;
+        var timestamp2 = Timestamp.fromMillisecondsSinceEpoch(2);
+        var date2 = DateTime.fromMillisecondsSinceEpoch(2);
+
+        var map2 = <String, dynamic>{
+          'date': date2,
+          'int': 2,
+          'text': '2',
+          'double': 1.5
+        };
+        if (firestoreService.supportsTimestamps) {
+          map2['timestamp'] = timestamp2;
+        }
+
+        var timestamp1 = Timestamp.fromMillisecondsSinceEpoch(1);
+        var date1 = DateTime.fromMillisecondsSinceEpoch(1);
+
+        var map1 = <String, dynamic>{
+          'date': date1,
+          'int': 1,
+          'text': '1',
+          'double': 0.5
+        };
+        if (firestoreService.supportsTimestamps) {
+          map1['timestamp'] = timestamp1;
+        }
+
+        await docRefTwo.set(map2);
+        await docRefOne.set(map1);
+
+        Future testField<T>(String field, T value1, T value2) async {
+          var reason = '$field $value1 $value2';
+          // order by
+          var querySnapshot = await collRef.orderBy(field).get();
+          list = querySnapshot.docs;
+          expect(list.length, 2);
+          expect(list.first.ref.id, "one", reason: reason);
+
+          // start at
+          querySnapshot =
+              await collRef.orderBy(field).startAt(values: [value2]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1, reason: reason);
+          expect(list.first.ref.id, "two");
+
+          // start after
+          querySnapshot =
+              await collRef.orderBy(field).startAfter(values: [value1]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "two");
+
+          // end at
+          querySnapshot =
+              await collRef.orderBy(field).endAt(values: [value1]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "one");
+
+          // end before
+          querySnapshot =
+              await collRef.orderBy(field).endBefore(values: [value2]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "one");
+
+          if (firestoreService.supportsQuerySnapshotCursor) {
+            // start after using snapshot
+            querySnapshot = await collRef
+                .orderBy(field)
+                .startAfter(snapshot: list.first)
+                .get();
+            list = querySnapshot.docs;
+            expect(list.length, 1);
+            expect(list.first.ref.id, "two");
+          }
+
+          // where >
+          querySnapshot =
+              await collRef.where(field, isGreaterThan: value1).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "two");
+
+          // where >=
+          querySnapshot =
+              await collRef.where(field, isGreaterThanOrEqualTo: value2).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "two");
+
+          // where <
+          querySnapshot = await collRef.where(field, isLessThan: value2).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "one");
+
+          // where <=
+          querySnapshot =
+              await collRef.where(field, isLessThanOrEqualTo: value1).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, "one");
+        }
+
+        await testField('int', 1, 2);
+
+        await testField('double', .5, 1.5);
+        await testField('text', '1', '2');
+        await testField('date', date1, date2);
+        if (firestoreService.supportsTimestamps) {
+          await testField('timestamp', timestamp1, timestamp2);
+        }
+      });
+
       test('nested_object_order', () async {
         var testsRef = getTestsRef();
         var collRef = testsRef.doc('nested_order_test').collection('many');
@@ -1075,13 +1250,13 @@ void runApp(
         await completer1.future;
 
         // create it
-        docRef.set({});
+        await docRef.set({});
 
         // wait for receiving change data
         await completer2.future;
 
         // modify it
-        docRef.set({'value': 1});
+        await docRef.set({'value': 1});
 
         // wait for receiving change data
         await completer3.future;

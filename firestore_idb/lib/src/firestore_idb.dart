@@ -24,7 +24,7 @@ class FirestoreServiceIdb implements FirestoreService {
   bool get supportsQuerySelect => false;
 
   @override
-  bool get supportsDocumentSnapshotTime => false;
+  bool get supportsDocumentSnapshotTime => true;
 
   @override
   bool get supportsTimestampsInSnapshots => false;
@@ -35,7 +35,7 @@ class FirestoreServiceIdb implements FirestoreService {
   @override
   Firestore firestore(App app) {
     assert(app is AppLocal, 'invalid firebase app type');
-    AppLocal appLocal = app;
+    AppLocal appLocal = app as AppLocal;
     return FirestoreIdb(appLocal, this);
   }
 
@@ -235,7 +235,11 @@ class FirestoreIdb extends Object
     return txnGet(localTransaction, documentRef)
         .then((DocumentSnapshotIdb snapshotIdb) {
       var map = snapshotIdb.data;
-      // TODO
+
+      // not found
+      if (map == null) {
+        throw Exception("No document found at $documentRef");
+      }
       map = documentDataToUpdateMap(documentData);
       return localTransaction.transaction
           .objectStore(storeName)
@@ -429,7 +433,7 @@ class QueryIdb extends FirestoreReferenceBase
         .objectStore(firestoreIdb.storeName)
         .openCursor(range: idb.KeyRange.lowerBound(path), autoAdvance: false)
         .listen((cwv) {
-      String docPath = cwv.key;
+      String docPath = cwv.key as String;
       if (dirname(docPath) == path) {
         docs.add(firestoreIdb.documentFromRecordMap(firestoreIdb.doc(docPath),
             (cwv.value as Map)?.cast<String, dynamic>()));

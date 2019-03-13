@@ -50,7 +50,7 @@ Future testFirestoreTest() async {
 }
 
 Future main() async {
-  Future.wait([
+  await Future.wait([
     testFirestore(), testFirestoreBrowser(), testFirestoreSembast(),
     testFirestoreSim(), testFirestoreSimBrowser(), testFirestoreSimIo(),
 

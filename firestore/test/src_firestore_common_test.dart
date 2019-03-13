@@ -76,6 +76,9 @@ class DocumentReferenceMock implements DocumentReference {
 
   @override
   Stream<DocumentSnapshot> onSnapshot() => null;
+
+  @override
+  String toString() => path;
 }
 
 void main() {
@@ -102,11 +105,7 @@ void main() {
 
       queryInfo.limit = 1;
       queryInfo.offset = 2;
-      queryInfo.orderBys = [
-        OrderByInfo()
-          ..fieldPath = "field"
-          ..ascending = true
-      ];
+      queryInfo.orderBys = [OrderByInfo(fieldPath: "field", ascending: true)];
       queryInfo.startAt(
           values: [DateTime.fromMillisecondsSinceEpoch(1234567890123)]);
       queryInfo.endAt(

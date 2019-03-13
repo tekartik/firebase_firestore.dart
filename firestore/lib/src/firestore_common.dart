@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:meta/meta.dart';
 import 'package:tekartik_common_utils/date_time_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
@@ -249,6 +250,8 @@ class OrderByInfo {
   String fieldPath;
   bool ascending;
 
+  OrderByInfo({@required this.fieldPath, @required this.ascending});
+
   @override
   String toString() => '$fieldPath ${ascending ? 'ASC' : 'DESC'}';
 }
@@ -396,9 +399,9 @@ WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, dynamic> map) {
 }
 
 OrderByInfo orderByInfoFromJsonMap(Map<String, dynamic> map) {
-  var orderByInfo = OrderByInfo();
-  orderByInfo.fieldPath = map['fieldPath'] as String;
-  orderByInfo.ascending = map['direction'] as String != orderByDescending;
+  var orderByInfo = OrderByInfo(
+      fieldPath: map['fieldPath'] as String,
+      ascending: map['direction'] as String != orderByDescending);
   return orderByInfo;
 }
 
@@ -676,9 +679,12 @@ abstract class DocumentSnapshotBase implements DocumentSnapshot {
   final RecordMetaData meta;
   @override
   final DocumentReference ref;
+
   int get rev => meta?.rev;
+
   @override
   Timestamp get updateTime => meta?.updateTime;
+
   @override
   Timestamp get createTime => meta?.createTime;
   final DocumentData documentData;

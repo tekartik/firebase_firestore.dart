@@ -1,21 +1,20 @@
 name: tekartik_firebase_firestore_sembast
 description: Firebase firestore sembast
-version: 0.4.0
-#homepage: https://www.example.com
-#author: alex <email@example.com>
+version: 0.4.4
+publish_to: none
 
 environment:
   sdk: '>=2.0.0-dev.54 <3.0.0'
 
 dependencies:
-  sembast: '>=1.12.0-dev.1'
+  sembast: '>=1.15.1'
   uuid: '>=1.0.0'
   tekartik_firebase_firestore:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
       ref: dart2
-    version: '>=0.4.0'
+    version: '>=0.4.2'
   tekartik_firebase_local:
     git:
       url: git://github.com/tekartik/firebase.dart

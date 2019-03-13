@@ -1,5 +1,13 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
+// don't export it yet
+enum FieldValueType {
+  serverTimestamp,
+  delete,
+  arrayUnion,
+  arrayRemove,
+}
+
 DateTime toLocaleTime(DateTime value) {
   if (value == null || !value.isUtc) {
     return value;
@@ -190,6 +198,9 @@ class DocumentDataMap implements DocumentData {
   void setTimestamp(String key, Timestamp value) {
     setValue(key, value);
   }
+
+  @override
+  String toString() => asMap().toString();
 }
 
 enum FieldValueMapValue {

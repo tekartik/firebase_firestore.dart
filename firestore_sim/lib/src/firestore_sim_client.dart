@@ -170,7 +170,7 @@ class DocumentReferenceSim implements DocumentReference {
     ServerSubscriptionSim<DocumentSnapshotSim> subscription;
     FirebaseSimClient simClient;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {
-      firestoreSim.removeSubscription(subscription);
+      await firestoreSim.removeSubscription(subscription);
       await simClient.sendRequest(
           methodFirestoreGetCancel, {paramSubscriptionId: subscription.id});
       await subscription.done;
@@ -185,7 +185,7 @@ class DocumentReferenceSim implements DocumentReference {
       firestoreSim.addSubscription(subscription);
 
       // Loop until cancelled
-      _getStream(simClient, path, subscription);
+      await _getStream(simClient, path, subscription);
     }();
     return subscription.stream;
   }
@@ -226,9 +226,8 @@ abstract class QueryMixinSim implements Query {
             isNull: isNull));
 
   void addOrderBy(String key, String directionStr) {
-    var orderBy = OrderByInfo()
-      ..fieldPath = key
-      ..ascending = directionStr != orderByDescending;
+    var orderBy = OrderByInfo(
+        fieldPath: key, ascending: directionStr != orderByDescending);
     queryInfo.orderBys.add(orderBy);
   }
 
@@ -338,7 +337,7 @@ abstract class QueryMixinSim implements Query {
     FirebaseSimClient simClient;
     ServerSubscriptionSim<QuerySnapshot> subscription;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {
-      firestoreSim.removeSubscription(subscription);
+      await firestoreSim.removeSubscription(subscription);
       await simClient.sendRequest(
           methodFirestoreQueryCancel, {paramSubscriptionId: subscription.id});
       await subscription.done;
@@ -358,7 +357,7 @@ abstract class QueryMixinSim implements Query {
       firestoreSim.addSubscription(subscription);
 
       // Loop until cancelled
-      _getStream(simClient, subscription);
+      await _getStream(simClient, subscription);
     }();
     return subscription.stream;
   }
@@ -377,7 +376,7 @@ class ServerSubscriptionSim<T> {
   Stream<T> get stream => _controller.stream;
 
   Future close() async {
-    notificationSubscription?.cancel();
+    await notificationSubscription?.cancel();
     await _controller.close();
   }
 
@@ -585,6 +584,9 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
   @override
   Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async =>
       await Future.wait(refs.map((ref) => ref.get()));
+
+  @override
+  String toString() => 'FirestoreSim[${identityHashCode(this)}]';
 }
 
 class TransactionSim extends WriteBatchSim implements Transaction {

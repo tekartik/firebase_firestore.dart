@@ -1,15 +1,14 @@
-library tekartik_firebase_firestore_idb.firestore_idb_test;
+@TestOn('browser')
+library tekartik_firebase_firestore_idb.firestore_idb_browser_test;
 
-import 'package:idb_shim/idb_client.dart';
-import 'package:idb_shim/idb_io.dart';
-import 'package:tekartik_firebase_firestore_idb/firestore_idb.dart';
+import 'package:tekartik_firebase_firestore_idb/firestore_idb_browser.dart'
+    as idb;
 import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
 void main() async {
-  IdbFactory idbFactory = idbMemoryFactory;
-  var firestoreService = getFirestoreService(idbFactory);
+  var firestoreService = idb.firestoreService;
   var firebase = FirebaseLocal();
 
   group('browser', () {
@@ -20,5 +19,5 @@ void main() async {
       firebase: firebase,
       firestoreService: firestoreService,
     );
-  });
+  }, skip: true);
 }

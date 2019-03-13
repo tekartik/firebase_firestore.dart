@@ -11,5 +11,5 @@ void main() {
   skipConcurrentTransactionTests = true;
 
   var firebase = firebaseNode;
-  run(firebase: firebase, firestoreService: firestoreService);
+  run(firebase: firebase, firestoreService: firestoreServiceNode);
 }

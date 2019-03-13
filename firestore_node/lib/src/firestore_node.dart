@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:js/js_util.dart' as js;
 import 'package:firebase_admin_interop/firebase_admin_interop.dart' as node;
 import 'package:node_interop/js.dart' as js;
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_node/src/firebase_node.dart';
 // ignore: implementation_imports
@@ -33,7 +35,7 @@ class FirestoreServiceNode implements FirestoreService {
   @override
   Firestore firestore(App app) {
     assert(app is AppNode, 'invalid firebase app type');
-    AppNode appNode = app;
+    AppNode appNode = app as AppNode;
     return FirestoreNode(appNode.nativeInstance.firestore());
   }
 
@@ -41,7 +43,7 @@ class FirestoreServiceNode implements FirestoreService {
   bool get supportsQuerySnapshotCursor => true;
 
   @override
-  bool get supportsFieldValueArray => false;
+  bool get supportsFieldValueArray => true;
 }
 
 FirestoreServiceNode _firestoreServiceNode;
@@ -154,22 +156,26 @@ abstract class QueryMixin implements Query {
   @override
   QueryNode startAt({DocumentSnapshot snapshot, List values}) =>
       _wrapQuery(nativeInstance.startAt(
-          snapshot: _unwrapDocumentSnapshot(snapshot), values: values));
+          snapshot: _unwrapDocumentSnapshot(snapshot),
+          values: _unwrapValues(values)));
 
   @override
   Query startAfter({DocumentSnapshot snapshot, List values}) =>
       _wrapQuery(nativeInstance.startAfter(
-          snapshot: _unwrapDocumentSnapshot(snapshot), values: values));
+          snapshot: _unwrapDocumentSnapshot(snapshot),
+          values: _unwrapValues(values)));
 
   @override
   QueryNode endAt({DocumentSnapshot snapshot, List values}) =>
       _wrapQuery(nativeInstance.endAt(
-          snapshot: _unwrapDocumentSnapshot(snapshot), values: values));
+          snapshot: _unwrapDocumentSnapshot(snapshot),
+          values: _unwrapValues(values)));
 
   @override
   QueryNode endBefore({DocumentSnapshot snapshot, List values}) =>
       _wrapQuery(nativeInstance.endBefore(
-          snapshot: _unwrapDocumentSnapshot(snapshot), values: values));
+          snapshot: _unwrapDocumentSnapshot(snapshot),
+          values: _unwrapValues(values)));
 
   @override
   QueryNode where(
@@ -236,6 +242,10 @@ class CollectionReferenceNode extends QueryNode implements CollectionReference {
   }
 }
 
+/// Unwrap list for startAt, endAt...
+List _unwrapValues(List values) =>
+    values?.map(_unwrapValue)?.toList(growable: false);
+
 dynamic _unwrapValue(value) {
   if (value == null || value is num || value is bool || value is String) {
     return value;
@@ -260,6 +270,10 @@ js.Timestamp _createJsTimestamp(Timestamp ts) {
 }
 */
 
+List listToNative(Iterable list) {
+  return list.map((value) => documentValueToNativeValue(value)).toList();
+}
+
 dynamic documentValueToNativeValue(dynamic value) {
   if (value == null ||
       value is num ||
@@ -274,9 +288,15 @@ dynamic documentValueToNativeValue(dynamic value) {
       return node.Firestore.fieldValues.delete();
     } else if (value == FieldValue.serverTimestamp) {
       return node.Firestore.fieldValues.serverTimestamp();
+    } else if (value is FieldValueArray) {
+      if (value.type == FieldValueType.arrayUnion) {
+        return node.Firestore.fieldValues.arrayUnion(listToNative(value.data));
+      } else if (value.type == FieldValueType.arrayRemove) {
+        return node.Firestore.fieldValues.arrayRemove(listToNative(value.data));
+      }
     }
-  } else if (value is List) {
-    return value.map((value) => documentValueToNativeValue(value)).toList();
+  } else if (value is Iterable) {
+    return listToNative(value);
   } else if (value is Map) {
     return value.map<String, dynamic>((key, value) =>
         MapEntry(key as String, documentValueToNativeValue(value)));

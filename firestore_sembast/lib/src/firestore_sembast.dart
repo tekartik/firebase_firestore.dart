@@ -99,7 +99,7 @@ DocumentSnapshotSembast documentSnapshotFromRecordMap(
 // new format
 int firestoreSembastDatabaseVersion = 1;
 
-const String docStoreName = 'doc';
+final docStore = stringMapStoreFactory.store('doc');
 
 class WriteResultSembast extends WriteResultBase {
   WriteResultSembast(String path) : super(path);
@@ -158,7 +158,7 @@ class FirestoreSembast extends Object
           } else {
             if (newVersion < firestoreSembastDatabaseVersion) {
               // clear store
-              await db.findStore(docStoreName)?.clear();
+              await docStore.delete(db);
             }
           }
         });
@@ -172,8 +172,7 @@ class FirestoreSembast extends Object
 
   Future<Map<String, dynamic>> txnGetRecordMap(
       sembast.Transaction txn, String path) async {
-    Map<String, dynamic> recordMap =
-        await txn.getStore(docStoreName).get(path) as Map<String, dynamic>;
+    var recordMap = await docStore.record(path).get(txn);
     return recordMap;
   }
 
@@ -187,9 +186,8 @@ class FirestoreSembast extends Object
   Future<WriteResultSembast> txnDelete(
       sembast.Transaction txn, DocumentReference ref) async {
     var result = WriteResultSembast(ref.path);
-    var docStore = txn.getStore(docStoreName);
     result.previousSnapshot = await txnGetDocumentSnapshot(txn, ref);
-    await docStore.delete(ref.path);
+    await docStore.record(ref.path).delete(txn);
     return result;
   }
 
@@ -197,7 +195,6 @@ class FirestoreSembast extends Object
       sembast.Transaction txn, DocumentReference ref, DocumentData documentData,
       [SetOptions options]) async {
     var result = WriteResultSembast(ref.path);
-    var docStore = txn.getStore(docStoreName);
     var existingRecordMap = await txnGetRecordMap(txn, ref.path);
     result.previousSnapshot = documentFromRecordMap(ref, existingRecordMap);
     Map<String, dynamic> recordMap;
@@ -225,15 +222,13 @@ class FirestoreSembast extends Object
     }
 
     result.newSnapshot = this.documentFromRecordMap(ref, recordMap);
-    Record record = Record(docStore.store, recordMap, ref.path);
-    await txn.putRecord(record);
+    await docStore.record(ref.path).put(txn, recordMap);
     return result;
   }
 
   Future<WriteResultSembast> txnUpdate(sembast.Transaction txn,
       DocumentReference ref, DocumentData documentData) async {
     var result = WriteResultSembast(ref.path);
-    var docStore = txn.getStore(docStoreName);
 
     // Need to get first to change rev
     var existingRecordMap = await txnGetRecordMap(txn, ref.path);
@@ -252,9 +247,9 @@ class FirestoreSembast extends Object
         (result.previousSnapshot?.createTime ?? now).toIso8601String();
     updateMap[updateTimeKey] = now.toIso8601String();
 
-    Map<String, dynamic> recordMap = (await docStore.update(
-            documentDataToUpdateMap(documentData, existingRecordMap), ref.path))
-        as Map<String, dynamic>;
+    var recordMap = await docStore
+        .record(ref.path)
+        .update(txn, documentDataToUpdateMap(documentData, existingRecordMap));
 
     result.newSnapshot = documentFromRecordMap(ref, recordMap);
     return result;
@@ -409,8 +404,7 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
   @override
   Future<DocumentSnapshot> get() async {
     var db = await firestoreSembast.ready;
-    Map<String, dynamic> recordMap =
-        await db.getStore(docStoreName).get(path) as Map<String, dynamic>;
+    var recordMap = await docStore.record(path).get(db);
     // always create a snapshot even if it doest not exist
     return firestoreSembast.documentFromRecordMap(this, recordMap);
   }
@@ -436,7 +430,7 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
 
     var db = await firestoreSembast.ready;
     await db.transaction((txn) async {
-      var record = await txn.getStore(docStoreName).getRecord(_key);
+      var record = await docStore.record(_key).get(txn);
       if (record == null) {
         throw Exception("update failed, record $path does not exit");
       }
@@ -535,14 +529,12 @@ class QuerySembast extends FirestoreReferenceBase
     var db = await firestoreSembast.ready;
 
     List<DocumentSnapshot> docs = [];
-    for (Record record
-        in await db.getStore(docStoreName).findRecords(Finder())) {
+    for (var record in await docStore.find(db)) {
       String recordPath = record.key;
       String parentPath = url.dirname(recordPath);
       if (parentPath == path) {
         docs.add(firestoreSembast.documentFromRecordMap(
-            firestoreSembast.doc(recordPath),
-            record.value as Map<String, dynamic>));
+            firestoreSembast.doc(recordPath), record.value));
       }
     }
     return docs;

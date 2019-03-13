@@ -183,13 +183,6 @@ abstract class DocumentSnapshot {
   Timestamp get createTime;
 }
 
-enum FieldValueType {
-  serverTimestamp,
-  delete,
-  arrayUnion,
-  arrayRemove,
-}
-
 // Sentinal values for update/set
 class FieldValue {
   dynamic get data => null;
