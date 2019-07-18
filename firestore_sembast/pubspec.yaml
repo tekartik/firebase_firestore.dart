@@ -7,7 +7,7 @@ environment:
   sdk: '>=2.1.0-dev <3.0.0'
 
 dependencies:
-  sembast: '>=1.19.0-dev.1'
+  sembast: '>=1.19.0-dev.3'
   uuid: '>=1.0.0'
   tekartik_firebase_firestore:
     git:

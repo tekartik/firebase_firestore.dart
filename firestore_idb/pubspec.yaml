@@ -19,7 +19,7 @@ dependencies:
       path: firebase_local
       ref: dart2
     version: '>=0.3.7'
-  idb_shim: '>=1.7.0+1'
+  idb_shim: '>=1.8.0+2'
   uuid:
   tekartik_browser_utils:
     git:
