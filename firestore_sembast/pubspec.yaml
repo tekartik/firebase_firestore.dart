@@ -4,10 +4,10 @@ version: 0.4.4
 publish_to: none
 
 environment:
-  sdk: '>=2.0.0-dev.54 <3.0.0'
+  sdk: '>=2.1.0-dev <3.0.0'
 
 dependencies:
-  sembast: '>=1.15.1'
+  sembast: '>=1.19.0-dev.3'
   uuid: '>=1.0.0'
   tekartik_firebase_firestore:
     git:
@@ -28,7 +28,7 @@ dev_dependencies:
   build_test: ">=0.10.3"
   tekartik_firebase_firestore_test:
     path: ../firestore_test
-
+  process_run: '>=0.10.2'
 dependency_overrides:
   tekartik_firebase_firestore:
     path: ../firestore

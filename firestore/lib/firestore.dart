@@ -318,7 +318,7 @@ enum DocumentChangeType {
   modified,
 
   /// Indicates a document within the query was removed (either deleted or no
-  /// longer matches the query.
+  /// longer matches the query).
   removed,
 }
 
