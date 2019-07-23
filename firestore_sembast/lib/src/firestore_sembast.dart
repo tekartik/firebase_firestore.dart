@@ -8,12 +8,12 @@ import 'package:synchronized/synchronized.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-// ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:uuid/uuid.dart';
+// ignore_for_file: implementation_imports
 
 class FirestoreServiceSembast implements FirestoreService {
   final sembast.DatabaseFactory databaseFactory;
@@ -57,7 +57,7 @@ FirestoreServiceSembast _firestoreServiceSembastMemory;
 
 FirestoreServiceSembast get firestoreServiceSembastMemory =>
     _firestoreServiceSembastMemory ??=
-        FirestoreServiceSembast(sembast.memoryDatabaseFactory);
+        FirestoreServiceSembast(sembast.databaseFactoryMemory);
 
 dynamic valueToUpdateValue(dynamic value) {
   if (value == FieldValue.delete) {
