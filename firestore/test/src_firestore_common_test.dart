@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:tekartik_firebase_firestore/src/firestore.dart';
-import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
-import 'package:test/test.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
+import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
+import 'package:test/test.dart';
 
 class FirestoreMock extends Object with FirestoreMixin implements Firestore {
   @override

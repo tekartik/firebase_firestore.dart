@@ -7,10 +7,15 @@ import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
+void idbTestInit() {
+  skipConcurrentTransactionTests = true;
+}
+
 void main() async {
   IdbFactory idbFactory = idbMemoryFactory;
   var firestoreService = getFirestoreService(idbFactory);
   var firebase = FirebaseLocal();
+  idbTestInit();
 
   group('browser', () {
     test('factory', () {

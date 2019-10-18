@@ -12,18 +12,19 @@ dependencies:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
       ref: dart2
-    version: '>=0.4.0'
+    version: '>=0.4.2'
   tekartik_firebase_browser:
     git:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_browser
       ref: dart2
     version: '>=0.3.9'
-  firebase: '>=5.0.2'
+  firebase: '>=6.0.0'
   tekartik_browser_utils:
     git:
       url: git://github.com/tekartik/browser_utils.dart
       ref: dart2
+    version: '>=0.6.8+2'
 
 dev_dependencies:
   test: ">=0.12.37"

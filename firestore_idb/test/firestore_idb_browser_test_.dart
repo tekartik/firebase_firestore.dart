@@ -7,10 +7,12 @@ import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
+import 'firestore_idb_test_.dart';
+
 void main() async {
   var firestoreService = idb.firestoreService;
   var firebase = FirebaseLocal();
-
+  idbTestInit();
   group('browser', () {
     test('factory', () {
       expect(firestoreService.supportsQuerySelect, isFalse);

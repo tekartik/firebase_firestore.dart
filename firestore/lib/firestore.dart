@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_firestore/src/timestamp.dart';
-import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:collection/collection.dart';
+import 'package:tekartik_firebase/firebase.dart';
+import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/timestamp.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
+
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
     show FirestoreSettings, firestoreNameFieldPath;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;

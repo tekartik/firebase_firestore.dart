@@ -4,11 +4,9 @@ import 'package:firebase/firestore.dart' as native;
 import 'package:js/js_util.dart';
 import 'package:tekartik_browser_utils/browser_utils_import.dart' hide Blob;
 import 'package:tekartik_firebase/firebase.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_browser/src/firebase_browser.dart';
+import 'package:tekartik_firebase_browser/src/firebase_browser.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/firestore.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 
 JavascriptScriptLoader firestoreJsLoader = JavascriptScriptLoader(
     "https://www.gstatic.com/firebasejs/$firebaseJsVersion/firebase-firestore.js");
@@ -292,6 +290,8 @@ class DocumentSnapshotBrowser implements DocumentSnapshot {
   // Not supported for browser
   @override
   Timestamp get createTime => null;
+
+  dynamic get(String fieldPath) => _native.get(fieldPath);
 }
 
 native.SetOptions _unwrapOptions(SetOptions options) {
