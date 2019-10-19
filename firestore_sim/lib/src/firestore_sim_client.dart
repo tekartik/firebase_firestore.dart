@@ -5,22 +5,27 @@ import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/firestore.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
+import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_common.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_client.dart';
 import 'package:tekartik_firebase_sim/rpc_message.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_sim/src/firebase_sim_client.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart';
+import 'package:tekartik_firebase_sim/src/firebase_sim_client.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart'; // ignore: implementation_imports
 
-class FirestoreServiceSim implements FirestoreService {
-  Map<App, FirestoreSim> _firestores = <App, FirestoreSim>{};
+class FirestoreServiceSim
+    with FirestoreServiceMixin
+    implements FirestoreService {
+  @override
+  Firestore firestore(App app) {
+    return getInstance(app, () {
+      assert(app is AppSim, 'app not compatible');
+      return FirestoreSim(this, app as AppSim);
+    });
+  }
 
   @override
   bool get supportsQuerySelect => true;
@@ -33,17 +38,6 @@ class FirestoreServiceSim implements FirestoreService {
 
   @override
   bool get supportsTimestamps => true;
-
-  @override
-  Firestore firestore(App app) {
-    assert(app is AppSim, 'app not compatible');
-    var firestore = _firestores[app];
-    if (firestore == null) {
-      firestore = FirestoreSim(this, app as AppSim);
-      _firestores[app] = firestore;
-    }
-    return firestore;
-  }
 
   //TODO
   Future deleteApp(App app) async {}

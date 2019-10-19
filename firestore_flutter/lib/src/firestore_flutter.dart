@@ -1,20 +1,35 @@
 import 'dart:async';
 
-import 'package:path/path.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as native;
+import 'package:path/path.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'; // ignore: implementation_imports
 
 FirestoreServiceFlutter _firestoreServiceFlutter;
 FirestoreService get firestoreService => firestoreServiceFlutter;
 FirestoreService get firestoreServiceFlutter =>
     _firestoreServiceFlutter ?? FirestoreServiceFlutter();
 
-class FirestoreServiceFlutter implements FirestoreService {
+class FirestoreServiceFlutter
+    with FirestoreServiceMixin
+    implements FirestoreService {
+  @override
+  Firestore firestore(App app) {
+    return getInstance(app, () {
+      assert(app is AppFlutter, 'invalid firebase app type');
+      AppFlutter appFlutter = app as AppFlutter;
+      if (appFlutter.isDefault) {
+        return FirestoreFlutter(native.Firestore.instance);
+      } else {
+        return FirestoreFlutter(
+            native.Firestore(app: appFlutter.nativeInstance));
+      }
+    });
+  }
+
   FirestoreServiceFlutter();
 
   @override
@@ -28,17 +43,6 @@ class FirestoreServiceFlutter implements FirestoreService {
 
   @override
   bool get supportsTimestamps => true;
-
-  @override
-  Firestore firestore(App app) {
-    assert(app is AppFlutter, 'invalid firebase app type');
-    AppFlutter appFlutter = app as AppFlutter;
-    if (appFlutter.isDefault) {
-      return FirestoreFlutter(native.Firestore.instance);
-    } else {
-      return FirestoreFlutter(native.Firestore(app: appFlutter.nativeInstance));
-    }
-  }
 
   // Native implementation does not allow passing snapshots
   @override

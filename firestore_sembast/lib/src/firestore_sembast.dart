@@ -14,10 +14,19 @@ import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:uuid/uuid.dart';
 // ignore_for_file: implementation_imports
+import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
 
-class FirestoreServiceSembast implements FirestoreService {
+class FirestoreServiceSembast
+    with FirestoreServiceMixin
+    implements FirestoreService {
+  @override
+  Firestore firestore(App app) {
+    return getInstance(app, () {
+      return FirestoreSembast(this, app);
+    });
+  }
+
   final sembast.DatabaseFactory databaseFactory;
-  Map<App, FirestoreSembast> _firestores = <App, FirestoreSembast>{};
 
   FirestoreServiceSembast(this.databaseFactory);
 
@@ -32,16 +41,6 @@ class FirestoreServiceSembast implements FirestoreService {
 
   @override
   bool get supportsTimestamps => true;
-
-  @override
-  Firestore firestore(App app) {
-    var firestore = _firestores[app];
-    if (firestore == null) {
-      firestore = FirestoreSembast(this, app);
-      _firestores[app] = firestore;
-    }
-    return firestore;
-  }
 
   //TODO
   Future deleteApp(App app) async {}

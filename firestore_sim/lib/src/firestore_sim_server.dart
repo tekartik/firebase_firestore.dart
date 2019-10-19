@@ -2,19 +2,16 @@ import 'dart:async';
 import 'dart:core' hide Error;
 
 import 'package:json_rpc_2/json_rpc_2.dart' as rpc;
+import 'package:pedantic/pedantic.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
+import 'package:tekartik_common_utils/stream/stream_poller.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
+import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_sim/src/firebase_sim_server.dart';
-import 'package:tekartik_common_utils/stream/stream_poller.dart';
-import 'package:pedantic/pedantic.dart';
+import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_sim/src/firebase_sim_server.dart'; // ignore: implementation_imports
 
 class SimSubscription<T> {
   StreamPoller<T> _poller;
