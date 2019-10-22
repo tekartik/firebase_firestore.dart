@@ -12,7 +12,7 @@ import 'package:test/test.dart';
 import 'firestore_idb_test_.dart';
 
 void main() async {
-  IdbFactory idbFactory = getIdbSembastIoFactory(
+  IdbFactory idbFactory = getIdbFactorySembastIo(
       join('.dart_tool', 'tekartik_firestore_firebase_idb', 'test'));
   var firestoreService = getFirestoreService(idbFactory);
   var firebase = FirebaseLocal();

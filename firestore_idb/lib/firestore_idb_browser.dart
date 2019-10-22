@@ -5,4 +5,4 @@ import 'package:tekartik_firebase_firestore_idb/src/firestore_idb.dart'
 
 FirestoreService get firestoreService => firestoreServiceIdbBrowser;
 FirestoreService get firestoreServiceIdbBrowser =>
-    firestore_idb.getFirestoreService(idbNativeFactory);
+    firestore_idb.getFirestoreService(idbFactoryNative);
