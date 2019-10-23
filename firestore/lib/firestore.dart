@@ -184,12 +184,16 @@ abstract class DocumentSnapshot {
   Timestamp get createTime;
 }
 
-// Sentinal values for update/set
+/// Sentinel values for update/set
 class FieldValue {
   dynamic get data => null;
   final FieldValueType type;
+
+  /// Set the field as the current timestamp value.
   static final FieldValue serverTimestamp =
       FieldValue(FieldValueType.serverTimestamp);
+
+  /// Delete the field.
   static final FieldValue delete = FieldValue(FieldValueType.delete);
 
   // Returns a sentinel value that can be used with set(merge: true) or update()
@@ -218,7 +222,7 @@ class FieldValue {
   }
 }
 
-// Use UInt8Array as much as possible
+/// Use UInt8Array as much as possible
 class Blob {
   final Uint8List _data;
 
@@ -285,7 +289,11 @@ const String operatorLessThan = '<';
 const String operatorGreaterThan = '>';
 const String operatorLessThanOrEqual = '<=';
 const String operatorGreaterThanOrEqual = '>=';
-const String opeatorArrayContains = 'array-contains';
+const String operatorArrayContains = 'array-contains';
+
+// compat 2019-10-24, fix mistake
+@deprecated
+const String opeatorArrayContains = operatorArrayContains;
 
 const orderByAscending = "asc";
 const orderByDescending = "desc";

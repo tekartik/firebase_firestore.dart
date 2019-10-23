@@ -393,7 +393,7 @@ WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, dynamic> map) {
       isGreaterThan: (operator == operatorGreaterThan) ? value : null,
       isGreaterThanOrEqualTo:
           (operator == operatorGreaterThanOrEqual) ? value : null,
-      arrayContains: (operator == opeatorArrayContains) ? value : null);
+      arrayContains: (operator == operatorArrayContains) ? value : null);
 
   return whereInfo;
 }
@@ -423,7 +423,7 @@ Map<String, dynamic> whereInfoToJsonMap(WhereInfo whereInfo) {
     map['operator'] = operatorGreaterThan;
     map['value'] = documentDataValueToJson(whereInfo.isGreaterThan);
   } else if (whereInfo.arrayContains != null) {
-    map['operator'] = opeatorArrayContains;
+    map['operator'] = operatorArrayContains;
     map['value'] = documentDataValueToJson(whereInfo.arrayContains);
   } else if (whereInfo.isNull != null) {
     map['operator'] = operatorEqual;

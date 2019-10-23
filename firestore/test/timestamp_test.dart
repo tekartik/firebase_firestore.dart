@@ -1,9 +1,7 @@
 import 'package:tekartik_firebase_firestore/src/timestamp.dart';
 import 'package:test/test.dart';
 
-// Use this test to properly test on all platform
-// pub run test -p chrome,node,vm,firefox .\test\timestamp_test.dart
-bool get _runningAsJavascript => identical(1, 1.0);
+import 'src_firestore_common_test.dart' show runningAsJavascript;
 
 void main() {
   group('timestamp', () {
@@ -61,21 +59,21 @@ void main() {
       _checkToIso8601(
         Timestamp(0, 100000),
         '1970-01-01T00:00:00.000100Z',
-        _runningAsJavascript
+        runningAsJavascript
             ? '1970-01-01T00:00:00.000Z'
             : '1970-01-01T00:00:00.000100Z',
       );
       _checkToIso8601(
         Timestamp(0, 100),
         '1970-01-01T00:00:00.000000100Z',
-        _runningAsJavascript
+        runningAsJavascript
             ? '1970-01-01T00:00:00.000Z'
             : '1970-01-01T00:00:00.000Z',
       );
       _checkToIso8601(
         Timestamp(0, 999999999),
         '1970-01-01T00:00:00.999999999Z',
-        _runningAsJavascript
+        runningAsJavascript
             ? '1970-01-01T00:00:01.000Z' // Precision issue
             : '1970-01-01T00:00:00.999999Z',
       );
@@ -111,19 +109,19 @@ void main() {
       _checkParse(
           '2018-10-20T05:13:45.985343123Z',
           '2018-10-20T05:13:45.985343123Z',
-          _runningAsJavascript
+          runningAsJavascript
               ? '2018-10-20T05:13:45.985Z'
               : '2018-10-20T05:13:45.985343Z');
       _checkParse(
           '2018-10-20T05:13:45.98534312Z',
           '2018-10-20T05:13:45.985343120Z',
-          _runningAsJavascript
+          runningAsJavascript
               ? '2018-10-20T05:13:45.985Z'
               : '2018-10-20T05:13:45.985343Z');
       _checkParse(
           '2018-10-20T05:13:45.985343Z',
           '2018-10-20T05:13:45.985343Z',
-          _runningAsJavascript
+          runningAsJavascript
               ? '2018-10-20T05:13:45.985Z'
               : '2018-10-20T05:13:45.985343Z');
       _checkParse('2018-10-20T05:13:45.985Z', '2018-10-20T05:13:45.985Z',
@@ -142,7 +140,7 @@ void main() {
       _checkParse(
           '2018-10-20T05:13:45.9853431239Z',
           '2018-10-20T05:13:45.985343123Z',
-          _runningAsJavascript
+          runningAsJavascript
               ? '2018-10-20T05:13:45.985Z'
               : '2018-10-20T05:13:45.985343Z');
 
@@ -152,7 +150,7 @@ void main() {
       _checkParse(
           '9999-12-31T23:59:59.999999999Z',
           '9999-12-31T23:59:59.999999999Z',
-          _runningAsJavascript
+          runningAsJavascript
               ? '+010000-01-01T00:00:00.000Z' // Precision issue
               : '9999-12-31T23:59:59.999999Z');
       // Parse local converted to utc
@@ -168,6 +166,26 @@ void main() {
       _checkParseSecondsNanos('0001-01-01T00:00:00Z', -62135596800, 0);
       _checkParseSecondsNanos(
           '9999-12-31T23:59:59.999999999Z', 253402300799, 999999999);
+    });
+
+    test('anyAsTimestamp', () {
+      expect(Timestamp.tryAnyAsTimestamp(1000).toIso8601String(),
+          '1970-01-01T00:00:01.000Z');
+      expect(
+          Timestamp.tryAnyAsTimestamp('1970-01-01T00:00:01.000Z')
+              .toIso8601String(),
+          '1970-01-01T00:00:01.000Z');
+      expect(
+          Timestamp.tryAnyAsTimestamp('1970-01-01T00:00:01.000000Z')
+              .toIso8601String(),
+          '1970-01-01T00:00:01.000Z');
+      expect(Timestamp.tryAnyAsTimestamp(Timestamp(1, 0)).toIso8601String(),
+          '1970-01-01T00:00:01.000Z');
+      expect(
+          Timestamp.tryAnyAsTimestamp(DateTime.fromMillisecondsSinceEpoch(1000))
+              .toIso8601String(),
+          '1970-01-01T00:00:01.000Z');
+      expect(Timestamp.tryAnyAsTimestamp('dummy'), null);
     });
   });
 }

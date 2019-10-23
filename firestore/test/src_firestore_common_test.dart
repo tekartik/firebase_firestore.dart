@@ -1,13 +1,22 @@
 import 'dart:async';
 
 import 'package:path/path.dart';
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:test/test.dart';
 
+// Use this test to properly test on all platform
+// pub run test -p chrome,node,vm,firefox .\test\timestamp_test.dart
+bool get runningAsJavascript => identical(1, 1.0);
+
 class FirestoreMock extends Object with FirestoreMixin implements Firestore {
+  FirestoreMock({FirestoreSettings settings}) {
+    this.firestoreSettings = settings;
+  }
+
   @override
   CollectionReference collection(String path) => null;
 
@@ -145,7 +154,8 @@ void main() {
   });
 
   group('DocumentData', () {
-    Firestore firestore;
+    final firestore =
+        FirestoreMock(settings: FirestoreSettings(timestampsInSnapshots: true));
     test('dateTime', () {
       var utcDate = DateTime.fromMillisecondsSinceEpoch(12345657890123).toUtc();
       var localDate = DateTime.fromMillisecondsSinceEpoch(123456578901234);
@@ -168,12 +178,11 @@ void main() {
       var timestamp = Timestamp(1234567890, 123456000);
       DocumentData documentData = DocumentData();
       documentData.setTimestamp('timestamp', timestamp);
-      expect(documentDataToRecordMap(documentData), {
+      var map = documentDataToRecordMap(documentData);
+      expect(map, {
         'timestamp': {r'$t': 'Timestamp', r'$v': '2009-02-13T23:31:30.123456Z'},
       });
-
-      documentData = documentDataFromRecordMap(
-          firestore, documentDataToRecordMap(documentData));
+      documentData = documentDataFromRecordMap(firestore, map);
       expect(documentData.getTimestamp('timestamp'), timestamp);
     });
 
