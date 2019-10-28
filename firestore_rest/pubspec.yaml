@@ -1,5 +1,5 @@
-name: tekartik_firebase_firestore_sembast
-description: Firebase firestore sembast
+name: tekartik_firebase_firestore_rest
+description: Firebase firestore rest API
 version: 0.4.4
 publish_to: none
 
@@ -21,6 +21,15 @@ dependencies:
       path: firebase_local
       ref: dart2
     version: '>=0.3.7'
+  firebase: '>=6.0.0'
+  googleapis:
+  googleapis_auth:
+  tekartik_http:
+    git:
+      url: git://github.com/tekartik/http.dart
+      path: http
+      ref: dart2
+    version: '>=0.2.0+2'
 
 dev_dependencies:
   test: any
@@ -29,6 +38,15 @@ dev_dependencies:
   tekartik_firebase_firestore_test:
     path: ../firestore_test
   process_run: '>=0.10.2'
+  tekartik_firebase_firestore_sembast:
+    git:
+      url: git://github.com/tekartik/firebase_firestore.dart
+      path: firestore_sembast
+      ref: dart2
+    version: '>=0.3.7+2'
+
 dependency_overrides:
   tekartik_firebase_firestore:
     path: ../firestore
+  tekartik_firebase_firestore_sembast:
+    path: ../firestore_sembast
