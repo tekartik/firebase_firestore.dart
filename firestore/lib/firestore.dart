@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_firestore/src/timestamp.dart';
-import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:collection/collection.dart';
+import 'package:tekartik_firebase/firebase.dart';
+import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/timestamp.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
+
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
     show FirestoreSettings, firestoreNameFieldPath;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
@@ -183,12 +184,16 @@ abstract class DocumentSnapshot {
   Timestamp get createTime;
 }
 
-// Sentinal values for update/set
+/// Sentinel values for update/set
 class FieldValue {
   dynamic get data => null;
   final FieldValueType type;
+
+  /// Set the field as the current timestamp value.
   static final FieldValue serverTimestamp =
       FieldValue(FieldValueType.serverTimestamp);
+
+  /// Delete the field.
   static final FieldValue delete = FieldValue(FieldValueType.delete);
 
   // Returns a sentinel value that can be used with set(merge: true) or update()
@@ -217,7 +222,7 @@ class FieldValue {
   }
 }
 
-// Use UInt8Array as much as possible
+/// Use UInt8Array as much as possible
 class Blob {
   final Uint8List _data;
 
@@ -284,7 +289,11 @@ const String operatorLessThan = '<';
 const String operatorGreaterThan = '>';
 const String operatorLessThanOrEqual = '<=';
 const String operatorGreaterThanOrEqual = '>=';
-const String opeatorArrayContains = 'array-contains';
+const String operatorArrayContains = 'array-contains';
+
+// compat 2019-10-24, fix mistake
+@deprecated
+const String opeatorArrayContains = operatorArrayContains;
 
 const orderByAscending = "asc";
 const orderByDescending = "desc";

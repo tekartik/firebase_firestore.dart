@@ -198,4 +198,18 @@ class Timestamp implements Comparable<Timestamp> {
       return timestamp;
     }
   }
+
+  /// Try to get a Timestamp from either a DateTime, a Timestamp, a text or
+  /// an int (ms since epoch)
+  static Timestamp tryAnyAsTimestamp(dynamic any) {
+    if (any is Timestamp) {
+      return any;
+    } else if (any is DateTime) {
+      return Timestamp.fromDateTime(any);
+    } else if (any is int) {
+      return Timestamp.fromMillisecondsSinceEpoch(any);
+    } else {
+      return tryParse(any?.toString());
+    }
+  }
 }

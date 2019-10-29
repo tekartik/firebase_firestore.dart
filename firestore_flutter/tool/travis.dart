@@ -5,6 +5,5 @@ Future main() async {
 
   await shell.run('''
 flutter analyze
-flutter test
 ''');
 }

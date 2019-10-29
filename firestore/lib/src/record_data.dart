@@ -1,8 +1,8 @@
+import 'package:tekartik_common_utils/map_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
-import 'package:tekartik_common_utils/map_utils.dart';
 
 const revKey = r'$rev';
 

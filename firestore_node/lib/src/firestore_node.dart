@@ -1,17 +1,17 @@
 import 'dart:async';
-import 'package:js/js_util.dart' as js;
+
 import 'package:firebase_admin_interop/firebase_admin_interop.dart' as node;
+import 'package:firebase_admin_interop/src/bindings.dart' // ignore: implementation_imports
+    as js;
+import 'package:js/js_util.dart' as js;
 import 'package:node_interop/js.dart' as js;
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_node/src/firebase_node.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/firestore.dart';
-// ignore: implementation_imports
-import 'package:firebase_admin_interop/src/bindings.dart' as js;
+import 'package:tekartik_firebase_node/src/firebase_node.dart'; // ignore: implementation_imports
 
 js.FirestoreSettings _unwrapSettings(FirestoreSettings settings) {
   var nativeSettings = js.FirestoreSettings(
@@ -19,7 +19,18 @@ js.FirestoreSettings _unwrapSettings(FirestoreSettings settings) {
   return nativeSettings;
 }
 
-class FirestoreServiceNode implements FirestoreService {
+class FirestoreServiceNode
+    with FirestoreServiceMixin
+    implements FirestoreService {
+  @override
+  Firestore firestore(App app) {
+    return getInstance(app, () {
+      assert(app is AppNode, 'invalid firebase app type');
+      AppNode appNode = app as AppNode;
+      return FirestoreNode(appNode.nativeInstance.firestore());
+    });
+  }
+
   @override
   bool get supportsQuerySelect => true;
 
@@ -31,13 +42,6 @@ class FirestoreServiceNode implements FirestoreService {
 
   @override
   bool get supportsTimestamps => true;
-
-  @override
-  Firestore firestore(App app) {
-    assert(app is AppNode, 'invalid firebase app type');
-    AppNode appNode = app as AppNode;
-    return FirestoreNode(appNode.nativeInstance.firestore());
-  }
 
   @override
   bool get supportsQuerySnapshotCursor => true;

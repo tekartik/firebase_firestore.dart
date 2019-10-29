@@ -2,7 +2,14 @@
 
 A new Flutter project.
 
-## Getting Started
+## Setup
 
-For help getting started with Flutter, view our online
-[documentation](https://flutter.io/).
+In `pubspec.yaml`:
+```yaml
+  tekartik_firebase_firestore_flutter:
+    git:
+      url: git://github.com/tekartik/firebase_firestore.dart
+      path: firestore_flutter
+      ref: dart2
+    version: '>=0.4.0'
+```
