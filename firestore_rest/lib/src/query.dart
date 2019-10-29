@@ -1,70 +1,36 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/document_reference_mixin.dart'; // ignore: implementation_imports
 
-class QueryRestImpl implements Query {
-  @override
-  Query endAt({DocumentSnapshot snapshot, List values}) {
-    // TODO: implement endAt
-    return null;
+import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
+import 'package:tekartik_firebase_firestore_rest/src/collection_reference_rest.dart';
+import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
+
+class QueryRestImpl
+    with QueryMixin, PathReferenceMixin, PathReferenceRestMixin
+    implements Query {
+  QueryRestImpl(FirestoreRestImpl firestoreRest, String path) {
+    init(firestoreRest, path);
   }
 
   @override
-  Query endBefore({DocumentSnapshot snapshot, List values}) {
-    // TODO: implement endBefore
-    return null;
+  Stream<QuerySnapshot> onSnapshot() =>
+      throw UnsupportedError('onSnapshot not supported');
+
+  @override
+  QueryMixin clone() {
+    return QueryRestImpl(firestoreRestImpl, path)
+      ..queryInfo = (queryInfo?.clone() ?? QueryInfo());
   }
 
   @override
-  Future<QuerySnapshot> get() {
-    // TODO: implement get
-    return null;
-  }
+  Future<QuerySnapshot> get() => firestoreRestImpl.runQuery(this);
+}
+
+class QuerySnapshotRestImpl implements QuerySnapshot {
+  @override
+  List<DocumentSnapshot> get docs => null;
 
   @override
-  Query limit(int limit) {
-    // TODO: implement limit
-    return null;
-  }
-
-  @override
-  Stream<QuerySnapshot> onSnapshot() {
-    // TODO: implement onSnapshot
-    return null;
-  }
-
-  @override
-  Query orderBy(String key, {bool descending}) {
-    // TODO: implement orderBy
-    return null;
-  }
-
-  @override
-  Query select(List<String> keyPaths) {
-    // TODO: implement select
-    return null;
-  }
-
-  @override
-  Query startAfter({DocumentSnapshot snapshot, List values}) {
-    // TODO: implement startAfter
-    return null;
-  }
-
-  @override
-  Query startAt({DocumentSnapshot snapshot, List values}) {
-    // TODO: implement startAt
-    return null;
-  }
-
-  @override
-  Query where(String fieldPath,
-      {isEqualTo,
-      isLessThan,
-      isLessThanOrEqualTo,
-      isGreaterThan,
-      isGreaterThanOrEqualTo,
-      arrayContains,
-      bool isNull}) {
-    // TODO: implement where
-    return null;
-  }
+  List<DocumentChange> get documentChanges => null;
 }

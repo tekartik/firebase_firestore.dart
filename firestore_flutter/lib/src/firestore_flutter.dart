@@ -50,6 +50,9 @@ class FirestoreServiceFlutter
 
   @override
   bool get supportsFieldValueArray => true;
+
+  @override
+  bool get supportsTrackChanges => true;
 }
 
 class FirestoreFlutter implements Firestore {

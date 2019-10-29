@@ -24,6 +24,10 @@ abstract class FirestoreService {
   bool get supportsDocumentSnapshotTime;
   bool get supportsTimestamps;
   bool get supportsTimestampsInSnapshots;
+
+  /// Return true if it supports tracking changes
+  bool get supportsTrackChanges;
+
   Firestore firestore(App app);
 }
 

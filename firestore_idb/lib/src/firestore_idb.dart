@@ -48,6 +48,9 @@ class FirestoreServiceIdb
 
   @override
   bool get supportsFieldValueArray => false;
+
+  @override
+  bool get supportsTrackChanges => true;
 }
 
 FirestoreService getFirestoreService(idb.IdbFactory idbFactory) =>

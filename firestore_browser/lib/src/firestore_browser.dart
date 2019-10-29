@@ -48,6 +48,9 @@ class FirestoreServiceBrowser
 
   @override
   bool get supportsFieldValueArray => false;
+
+  @override
+  bool get supportsTrackChanges => true;
 }
 
 FirestoreServiceBrowser _firebaseFirestoreServiceBrowser;

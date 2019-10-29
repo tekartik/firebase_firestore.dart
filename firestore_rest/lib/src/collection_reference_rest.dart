@@ -8,11 +8,10 @@ mixin PathReferenceRestMixin implements PathReferenceMixin {
 }
 
 class CollectionReferenceRestImpl extends QueryRestImpl
-    with CollectionReferenceMixin, PathReferenceMixin, PathReferenceRestMixin
+    with CollectionReferenceMixin
     implements CollectionReference {
-  CollectionReferenceRestImpl(FirestoreRestImpl firestoreRest, String path) {
-    init(firestoreRest, path);
-  }
+  CollectionReferenceRestImpl(FirestoreRestImpl firestoreRest, String path)
+      : super(firestoreRest, path);
 
   @override
   Future<DocumentReference> add(Map<String, dynamic> data) =>

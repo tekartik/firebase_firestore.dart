@@ -248,17 +248,19 @@ void runApp(
         // devPrint('createTime ${snapshot.createTime}');
         // devPrint('updateTime ${snapshot.updateTime}');
 
-        // Try using stream
-        snapshot = await docRef.onSnapshot().first;
-        _check();
+        if (firestoreService.supportsTrackChanges) {
+          // Try using stream
+          snapshot = await docRef.onSnapshot().first;
+          _check();
 
-        // Try using col stream
-        snapshot = (await testsRef.onSnapshot().first)
-            .docs
-            .where(
-                (DocumentSnapshot snapshot) => snapshot.ref.path == docRef.path)
-            .first;
-        _check();
+          // Try using col stream
+          snapshot = (await testsRef.onSnapshot().first)
+              .docs
+              .where((DocumentSnapshot snapshot) =>
+                  snapshot.ref.path == docRef.path)
+              .first;
+          _check();
+        }
       });
     });
 
@@ -382,46 +384,43 @@ void runApp(
         await docRef.delete();
       });
 
-      test(
-        'date',
-        () async {
-          var testsRef = getTestsRef();
-          var docRef = testsRef.doc('date');
-          var localDateTime =
-              DateTime.fromMillisecondsSinceEpoch(1234567890).toLocal();
-          var utcDateTime =
-              DateTime.fromMillisecondsSinceEpoch(12345678901).toUtc();
-          await docRef
-              .set({"some_date": localDateTime, "some_utc_date": utcDateTime});
+      test('date', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('date');
+        var localDateTime =
+            DateTime.fromMillisecondsSinceEpoch(1234567890).toLocal();
+        var utcDateTime =
+            DateTime.fromMillisecondsSinceEpoch(12345678901).toUtc();
+        await docRef
+            .set({"some_date": localDateTime, "some_utc_date": utcDateTime});
 
-          void _check(Map data) {
-            if (firestoreService.supportsTimestampsInSnapshots) {
-              //devPrint(data['some_date'].runtimeType);
-              expect(data, {
-                "some_date": Timestamp.fromDateTime(localDateTime),
-                "some_utc_date": Timestamp.fromDateTime(utcDateTime.toLocal())
-              });
-            } else {
-              expect(data, {
-                "some_date": localDateTime,
-                "some_utc_date": utcDateTime.toLocal()
-              });
-            }
+        void _check(Map data) {
+          if (firestoreService.supportsTimestampsInSnapshots) {
+            //devPrint(data['some_date'].runtimeType);
+            expect(data, {
+              "some_date": Timestamp.fromDateTime(localDateTime),
+              "some_utc_date": Timestamp.fromDateTime(utcDateTime.toLocal())
+            });
+          } else {
+            expect(data, {
+              "some_date": localDateTime,
+              "some_utc_date": utcDateTime.toLocal()
+            });
           }
+        }
 
-          _check((await docRef.get()).data);
+        _check((await docRef.get()).data);
 
-          var snapshot = (await testsRef
-                  .where('some_date', isEqualTo: localDateTime)
-                  .where('some_utc_date', isEqualTo: utcDateTime)
-                  .get())
-              .docs
-              .first;
+        var snapshot = (await testsRef
+                .where('some_date', isEqualTo: localDateTime)
+                .where('some_utc_date', isEqualTo: utcDateTime)
+                .get())
+            .docs
+            .first;
 
-          _check(snapshot.data);
-          await docRef.delete();
-        },
-      );
+        _check(snapshot.data);
+        await docRef.delete();
+      });
 
       test('timestamp_nanos', () async {
         var testsRef = getTestsRef();

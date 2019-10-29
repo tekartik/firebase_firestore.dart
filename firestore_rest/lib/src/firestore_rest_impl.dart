@@ -8,13 +8,17 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/document_reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore_rest/firestore_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/collection_reference_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/document_reference_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firebase_app_rest.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore_rest/src/query.dart';
 import 'package:tekartik_http/http.dart';
 
 import 'import.dart';
+
+bool debugRest = false; // devWarning(true);
 
 dynamic fromRestValue(FirestoreRestImpl firestore, Value restValue) {
   if (restValue == null) {
@@ -35,13 +39,14 @@ dynamic fromRestValue(FirestoreRestImpl firestore, Value restValue) {
   } else if (restValue.timestampValue != null) {
     return Timestamp.tryParse(restValue.timestampValue);
   } else if (restValue.mapValue != null) {
-    return mapFromFields(firestore, restValue.mapValue.fields);
+    return mapFromMapValue(firestore, restValue.mapValue);
   } else if (restValue.arrayValue != null) {
     return _listFromArrayValue(firestore, restValue.arrayValue);
   } else if (restValue.bytesValue != null) {
     return Blob(Uint8List.fromList(restValue.bytesValueAsBytes));
   } else if (restValue.referenceValue != null) {
-    return DocumentReferenceRestImpl(firestore, restValue.referenceValue);
+    return DocumentReferenceRestImpl(
+        firestore, firestore.getDocumentPath(restValue.referenceValue));
   } else {
     throw UnsupportedError('type ${restValue.runtimeType}: $restValue');
   }
@@ -53,13 +58,27 @@ Value _mapToRestValue(FirestoreRestImpl firestore, Map map) {
 }
 
 Map<String, Value> _mapToFields(FirestoreRestImpl firestore, Map map) {
+  if (map == null) {
+    return null;
+  }
   var fields = map.map(
       (key, value) => MapEntry(key?.toString(), toRestValue(firestore, value)));
   return fields;
 }
 
+Map<String, dynamic> mapFromMapValue(
+    FirestoreRestImpl firestore, MapValue mapValue) {
+  if (mapValue != null) {
+    return mapFromFields(firestore, mapValue.fields) ?? <String, dynamic>{};
+  }
+  return null;
+}
+
 Map<String, dynamic> mapFromFields(
     FirestoreRestImpl firestore, Map<String, Value> fields) {
+  if (fields == null) {
+    return null;
+  }
   var map = fields.map((key, value) =>
       MapEntry(key.toString(), fromRestValue(firestore, value)));
   return map;
@@ -110,9 +129,16 @@ Value toRestValue(FirestoreRestImpl firestore, dynamic value) {
   } else if (value is Blob) {
     restValue = Value()..bytesValueAsBytes = value.data;
   } else if (value is DocumentReference) {
-    restValue = Value()..referenceValue = firestore.toReferencePath(value.path);
+    restValue = Value()..referenceValue = firestore.getDocumentName(value.path);
     // else  if (value is FieldValue) {
     //restValue = Value()..nullValue= 'NULL_VALUE';
+  } else if (value is FieldValue) {
+    if (value == FieldValue.serverTimestamp) {
+      // TODO for now use local date time
+      restValue = Value()..timestampValue = Timestamp.now().toIso8601String();
+    } else {
+      throw UnsupportedError('type ${value.runtimeType}: $value');
+    }
   } else {
     throw UnsupportedError('type ${value.runtimeType}: $value');
   }
@@ -139,9 +165,19 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
     return CollectionReferenceRestImpl(this, path);
   }
 
-  String toReferencePath(String path) {
-    return url.join(
-        'projects/${projectId}/databases/(default)/documents', path);
+  // join('projects/${projectId}/databases/(default)/documents', path);
+  String getDocumentName(String path) {
+    return url.join('${getDatabaseName()}', 'documents', path);
+  }
+
+  String getDocumentPath(String name) {
+    var parts = url.split(name);
+    return url.joinAll(parts.sublist(5));
+  }
+
+  // 'projects/${projectId}/databases/(default)';
+  String getDatabaseName() {
+    return url.join('projects', projectId, 'databases', '(default)');
   }
 
   @override
@@ -150,11 +186,11 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
   }
 
   Future<DocumentSnapshot> getDocument(String path) async {
-    path = toReferencePath(path);
+    path = getDocumentName(path);
     try {
       var document =
           await appImpl.firestoreApi.projects.databases.documents.get(path);
-      // devPrint(document);
+      // devPrint(jsonPretty(document.toJson()));
       return DocumentSnapshotRestImpl(this, document);
     } catch (e) {
       if (e is api.DetailedApiRequestError) {
@@ -167,10 +203,41 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
     }
   }
 
+  Future deleteDocument(String path) async {
+    if (debugRest) {
+      print('delete $path');
+    }
+    var name = getDocumentName(path);
+    try {
+      await appImpl.firestoreApi.projects.databases.documents.delete(name);
+    } catch (e) {
+      if (e is api.DetailedApiRequestError) {
+        return;
+      }
+      rethrow;
+    }
+  }
+
+  FirestoreApi get firestoreApi => appImpl.firestoreApi;
+
   @override
-  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) {
-    // TODO: implement getAll
-    return null;
+  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async {
+    /// Temp do in a loop
+    var list = <DocumentSnapshot>[];
+    for (var ref in refs) {
+      list.add(await getDocument(ref.path));
+    }
+    return list;
+    /*
+    var request = BatchGetDocumentsRequest()
+      ..documents =
+          refs.map((ref) => getDocumentName(ref.path)).toList(growable: false);
+    var response = await firestoreApi.projects.databases.documents
+        .batchGet(request, getDatabaseName());
+    devPrint('resp: ${response.toJson()}');
+    return [];
+
+     */
   }
 
   @override
@@ -190,9 +257,9 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
       String path, Map<String, dynamic> data) async {
     var document = Document()..fields = _mapToFields(this, data);
 
-    var parent = url.dirname(toReferencePath(path));
+    var parent = url.dirname(getDocumentName(path));
     var collectionId = getPathId(path);
-    document = await appImpl.firestoreApi.projects.databases.documents
+    document = await firestoreApi.projects.databases.documents
         .createDocument(document, parent, collectionId);
     // devPrint(result);
     return DocumentReferenceRestImpl(this, document.name);
@@ -201,9 +268,69 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
   Future<DocumentReference> patchDocument(
       String path, Map<String, dynamic> data) async {
     var document = Document()..fields = _mapToFields(this, data);
-    document = await appImpl.firestoreApi.projects.databases.documents
-        .patch(document, toReferencePath(path));
+    document = await firestoreApi.projects.databases.documents
+        .patch(document, getDocumentName(path));
     return DocumentReferenceRestImpl(this, path);
+  }
+
+  Future<DocumentReference> updateDocument(
+      String path, Map<String, dynamic> data) async {
+    var document = Document()..fields = _mapToFields(this, data);
+    document = await firestoreApi.projects.databases.documents
+        .patch(document, getDocumentName(path), currentDocument_exists: true);
+    return DocumentReferenceRestImpl(this, path);
+  }
+
+  Filter whereToFilter(WhereInfo whereInfo) {
+    if (whereInfo.isNull == true) {
+      return Filter()
+        ..unaryFilter = (UnaryFilter()
+          ..field = (FieldReference()..fieldPath = whereInfo.fieldPath)
+          ..op = 'IS_NULL');
+    }
+    String op;
+    dynamic value;
+    if (whereInfo.isEqualTo != null) {
+      op = 'EQUAL';
+      value = whereInfo.isEqualTo;
+    }
+    if (op != null && value != null) {
+      return Filter()
+        ..fieldFilter = (FieldFilter()
+          ..field = (FieldReference()..fieldPath = whereInfo.fieldPath)
+          ..op = op
+          ..value = toRestValue(this, value));
+    }
+    throw 'filter $whereInfo not supported';
+  }
+
+  StructuredQuery toStructuredQuery(QueryRestImpl queryRestImpl) {
+    var queryInfo = queryRestImpl.queryInfo;
+    var structuredQuery = StructuredQuery();
+    if (queryInfo?.wheres?.isNotEmpty ?? false) {
+      if (queryInfo.wheres.length == 1) {
+        structuredQuery.where = whereToFilter(queryInfo.wheres.first);
+      } else {
+        structuredQuery.where = Filter()
+          ..compositeFilter = (CompositeFilter()
+            ..op = 'AND'
+            ..filters = queryInfo.wheres
+                .map((whereInfo) => whereToFilter(whereInfo))
+                .toList(growable: false));
+      }
+    }
+    return structuredQuery;
+  }
+
+  Future<QuerySnapshot> runQuery(QueryRestImpl queryRestImpl) async {
+    var structuredQuery = toStructuredQuery(queryRestImpl);
+
+    var request = RunQueryRequest()..structuredQuery = structuredQuery;
+    // devPrint(request.toJson());
+    var parent = url.dirname(getDocumentName(queryRestImpl.path));
+    await firestoreApi.projects.databases.documents.runQuery(request, parent);
+    // devPrint(response.document.toJson());
+    return null;
   }
 }
 
@@ -217,7 +344,6 @@ class FirestoreServiceRestImpl
   }
 
   @override
-  // TODO: implement supportsDocumentSnapshotTime
   bool get supportsDocumentSnapshotTime => true;
 
   @override
@@ -237,4 +363,7 @@ class FirestoreServiceRestImpl
 
   @override
   bool get supportsTimestampsInSnapshots => true;
+
+  @override
+  bool get supportsTrackChanges => false;
 }

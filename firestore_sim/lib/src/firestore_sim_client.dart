@@ -47,6 +47,9 @@ class FirestoreServiceSim
 
   @override
   bool get supportsFieldValueArray => false;
+
+  @override
+  bool get supportsTrackChanges => true;
 }
 
 FirestoreServiceSim _firestoreServiceSim;

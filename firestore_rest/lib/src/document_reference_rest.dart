@@ -12,29 +12,22 @@ class DocumentReferenceRestImpl
   }
 
   @override
-  Future delete() {
-    // TODO: implement delete
-    return null;
-  }
+  Future delete() => firestoreRestImpl.deleteDocument(path);
 
   @override
   Future<DocumentSnapshot> get() => firestoreRestImpl.getDocument(path);
 
   @override
-  Stream<DocumentSnapshot> onSnapshot() {
-    // TODO: implement onSnapshot
-    return null;
-  }
+  Stream<DocumentSnapshot> onSnapshot() =>
+      throw UnsupportedError('onSnapshot not supported');
 
   @override
   Future set(Map<String, dynamic> data, [SetOptions options]) =>
       firestoreRestImpl.patchDocument(path, data);
 
   @override
-  Future update(Map<String, dynamic> data) {
-    // TODO: implement update
-    return null;
-  }
+  Future update(Map<String, dynamic> data) =>
+      firestoreRestImpl.updateDocument(path, data);
 }
 
 class DocumentSnapshotRestImpl implements DocumentSnapshot {
@@ -45,12 +38,14 @@ class DocumentSnapshotRestImpl implements DocumentSnapshot {
   @override
   Timestamp get createTime => Timestamp.tryParse(impl.createTime);
 
+  /// Never null
   @override
   Map<String, dynamic> get data =>
-      mapFromFields(firestoreRestImpl, impl.fields);
+      mapFromFields(firestoreRestImpl, impl.fields) ?? <String, dynamic>{};
 
+  /// Sometimes in get we have a Document will all fields null.
   @override
-  bool get exists => impl != null;
+  bool get exists => impl?.name != null;
 
   @override
   DocumentReference get ref =>
