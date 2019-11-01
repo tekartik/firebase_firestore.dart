@@ -4,6 +4,9 @@ import 'package:tekartik_firebase_firestore/src/common/document_reference_mixin.
 import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore_rest/src/collection_reference_rest.dart';
+import 'package:tekartik_firebase_firestore_rest/src/document_reference_rest.dart';
+import 'package:tekartik_firebase_firestore_rest/src/firestore/v1beta1.dart'
+    show RunQueryFixedResponse;
 import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 
 class QueryRestImpl
@@ -28,8 +31,19 @@ class QueryRestImpl
 }
 
 class QuerySnapshotRestImpl implements QuerySnapshot {
+  final FirestoreRestImpl firestoreRest;
+  final RunQueryFixedResponse response;
+
+  QuerySnapshotRestImpl(this.firestoreRest, this.response);
+
+  List<DocumentSnapshot> _docs;
   @override
-  List<DocumentSnapshot> get docs => null;
+  List<DocumentSnapshot> get docs => _docs ??= () {
+        return response?.documents
+            ?.map((document) =>
+                DocumentSnapshotRestImpl(firestoreRest, document.document))
+            ?.toList(growable: false);
+      }();
 
   @override
   List<DocumentChange> get documentChanges => null;

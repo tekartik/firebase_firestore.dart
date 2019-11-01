@@ -972,6 +972,42 @@ class ProjectsDatabasesDocumentsResourceApi {
     return _response.then((data) => RunQueryResponse.fromJson(data));
   }
 
+  /// Fixing...
+  async.Future<RunQueryFixedResponse> runQueryFixed(
+      RunQueryRequest request, core.String parent,
+      {core.String $fields}) async {
+    var _url;
+    var _queryParams = core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia;
+    var _uploadOptions;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body;
+
+    if (request != null) {
+      _body = convert.json.encode((request).toJson());
+    }
+    if (parent == null) {
+      throw core.ArgumentError("Parameter parent is required.");
+    }
+    if ($fields != null) {
+      _queryParams["fields"] = [$fields];
+    }
+
+    _url = 'v1beta1/' +
+        commons.Escaper.ecapeVariableReserved('$parent') +
+        ':runQuery';
+
+    var _response = await _requester.request(_url, "POST",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+
+    core.print(_response);
+    return RunQueryFixedResponse.fromJson(_response as core.List);
+  }
+
   /// Streams batches of document updates and deletes, in order.
   ///
   /// [request] - The metadata request object.
@@ -3587,6 +3623,27 @@ class RunQueryResponse {
       _json["transaction"] = transaction;
     }
     return _json;
+  }
+}
+
+/// The response for Firestore.RunQuery.
+class RunQueryFixedResponse {
+  /// A query result.
+  /// Not set when reporting partial progress.
+  core.List<RunQueryResponse> documents;
+
+  RunQueryFixedResponse();
+
+  RunQueryFixedResponse.fromJson(core.List _json) {
+    documents = _json
+        .map((documentJson) => RunQueryResponse.fromJson(documentJson))
+        .toList(growable: false);
+  }
+
+  core.List<core.Object> toJson() {
+    return documents
+        .map((document) => document.toJson())
+        ?.toList(growable: false);
   }
 }
 

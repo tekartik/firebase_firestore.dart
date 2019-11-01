@@ -1,7 +1,7 @@
 import 'dart:typed_data';
-
-import 'package:googleapis/firestore/v1.dart';
-import 'package:googleapis/firestore/v1.dart' as api;
+import 'package:tekartik_firebase_firestore_rest/src/firestore/v1beta1.dart';
+import 'package:tekartik_firebase_firestore_rest/src/firestore/v1beta1.dart'
+    as api;
 import 'package:path/path.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
@@ -167,9 +167,14 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
 
   // join('projects/${projectId}/databases/(default)/documents', path);
   String getDocumentName(String path) {
-    return url.join('${getDatabaseName()}', 'documents', path);
+    return url.join(getDocumentRootName(), path);
   }
 
+  String getDocumentRootName() {
+    return url.join('${getDatabaseName()}', 'documents');
+  }
+
+  /// Remove
   String getDocumentPath(String name) {
     var parts = url.split(name);
     return url.joinAll(parts.sublist(5));
@@ -306,7 +311,12 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
 
   StructuredQuery toStructuredQuery(QueryRestImpl queryRestImpl) {
     var queryInfo = queryRestImpl.queryInfo;
+    var collectionPath = queryRestImpl.path;
     var structuredQuery = StructuredQuery();
+    structuredQuery.from = [
+      CollectionSelector()..collectionId = getPathId(collectionPath)
+    ];
+
     if (queryInfo?.wheres?.isNotEmpty ?? false) {
       if (queryInfo.wheres.length == 1) {
         structuredQuery.where = whereToFilter(queryInfo.wheres.first);
@@ -319,6 +329,7 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
                 .toList(growable: false));
       }
     }
+
     return structuredQuery;
   }
 
@@ -326,11 +337,24 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
     var structuredQuery = toStructuredQuery(queryRestImpl);
 
     var request = RunQueryRequest()..structuredQuery = structuredQuery;
-    // devPrint(request.toJson());
+
     var parent = url.dirname(getDocumentName(queryRestImpl.path));
-    await firestoreApi.projects.databases.documents.runQuery(request, parent);
-    // devPrint(response.document.toJson());
-    return null;
+
+    try {
+      var response = await firestoreApi.projects.databases.documents
+          .runQueryFixed(request, parent);
+
+      // devPrint(jsonPretty(response.toJson()));
+      return QuerySnapshotRestImpl(this, response);
+    } catch (e) {
+      if (e is api.DetailedApiRequestError) {
+        // devPrint(e.status);
+        if (e.status == httpStatusCodeNotFound) {
+          // return DocumentSnapshotRestImpl(this, null);
+        }
+      }
+      rethrow;
+    }
   }
 }
 
