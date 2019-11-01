@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:tekartik_firebase_firestore_rest/src/document_rest_impl.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore/v1beta1.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore/v1beta1.dart'
     as api;
@@ -13,6 +14,7 @@ import 'package:tekartik_firebase_firestore_rest/firestore_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/collection_reference_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/document_reference_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firebase_app_rest.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore_rest/src/patch_document_rest_impl.dart';
 import 'package:tekartik_firebase_firestore_rest/src/query.dart';
 import 'package:tekartik_http/http.dart';
 
@@ -20,7 +22,7 @@ import 'import.dart';
 
 bool debugRest = false; // devWarning(true);
 
-dynamic fromRestValue(FirestoreRestImpl firestore, Value restValue) {
+dynamic fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
   if (restValue == null) {
     return null;
   } else if (restValue.nullValue == 'NULL VALUE') {
@@ -46,7 +48,7 @@ dynamic fromRestValue(FirestoreRestImpl firestore, Value restValue) {
     return Blob(Uint8List.fromList(restValue.bytesValueAsBytes));
   } else if (restValue.referenceValue != null) {
     return DocumentReferenceRestImpl(
-        firestore, firestore.getDocumentPath(restValue.referenceValue));
+        firestore.impl, firestore.getDocumentPath(restValue.referenceValue));
   } else {
     throw UnsupportedError('type ${restValue.runtimeType}: $restValue');
   }
@@ -67,7 +69,7 @@ Map<String, Value> _mapToFields(FirestoreRestImpl firestore, Map map) {
 }
 
 Map<String, dynamic> mapFromMapValue(
-    FirestoreRestImpl firestore, MapValue mapValue) {
+    FirestoreDocumentContext firestore, MapValue mapValue) {
   if (mapValue != null) {
     return mapFromFields(firestore, mapValue.fields) ?? <String, dynamic>{};
   }
@@ -75,7 +77,7 @@ Map<String, dynamic> mapFromMapValue(
 }
 
 Map<String, dynamic> mapFromFields(
-    FirestoreRestImpl firestore, Map<String, Value> fields) {
+    FirestoreDocumentContext firestore, Map<String, Value> fields) {
   if (fields == null) {
     return null;
   }
@@ -93,7 +95,7 @@ Value _listToRestValue(FirestoreRestImpl firestore, Iterable list) {
 }
 
 List<dynamic> _listFromArrayValue(
-    FirestoreRestImpl firestore, ArrayValue arrayValue) {
+    FirestoreDocumentContext firestore, ArrayValue arrayValue) {
   var list = arrayValue?.values
       ?.map((restValue) => fromRestValue(firestore, restValue))
       ?.toList(growable: false);
@@ -136,6 +138,9 @@ Value toRestValue(FirestoreRestImpl firestore, dynamic value) {
     if (value == FieldValue.serverTimestamp) {
       // TODO for now use local date time
       restValue = Value()..timestampValue = Timestamp.now().toIso8601String();
+    }
+    if (value == FieldValue.delete) {
+      restValue = Value()..timestampValue = Timestamp.now().toIso8601String();
     } else {
       throw UnsupportedError('type ${value.runtimeType}: $value');
     }
@@ -145,7 +150,9 @@ Value toRestValue(FirestoreRestImpl firestore, dynamic value) {
   return restValue;
 }
 
-class FirestoreRestImpl with FirestoreMixin implements Firestore {
+class FirestoreRestImpl
+    with FirestoreMixin
+    implements Firestore, FirestoreDocumentContext {
   final AppRestImpl appImpl;
 
   String get projectId => appImpl.options.projectId;
@@ -166,6 +173,7 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
   }
 
   // join('projects/${projectId}/databases/(default)/documents', path);
+  @override
   String getDocumentName(String path) {
     return url.join(getDocumentRootName(), path);
   }
@@ -175,6 +183,7 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
   }
 
   /// Remove
+  @override
   String getDocumentPath(String name) {
     var parts = url.split(name);
     return url.joinAll(parts.sublist(5));
@@ -272,17 +281,25 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
 
   Future<DocumentReference> patchDocument(
       String path, Map<String, dynamic> data) async {
-    var document = Document()..fields = _mapToFields(this, data);
-    document = await firestoreApi.projects.databases.documents
-        .patch(document, getDocumentName(path));
+    var patch = PatchDocument(this, data);
+    // var patchedDocument =
+    var name = getDocumentName(path);
+    // devPrint('patch $name: $data');
+    await firestoreApi.projects.databases.documents
+        .patch(patch.document, name, updateMask_fieldPaths: patch.fieldPaths);
     return DocumentReferenceRestImpl(this, path);
   }
 
   Future<DocumentReference> updateDocument(
       String path, Map<String, dynamic> data) async {
-    var document = Document()..fields = _mapToFields(this, data);
-    document = await firestoreApi.projects.databases.documents
-        .patch(document, getDocumentName(path), currentDocument_exists: true);
+    var patch = PatchDocument(this, data);
+    // var document = Document()..fields = _mapToFields(this, data);
+    // document =
+    var name = getDocumentName(path);
+    // devPrint('update $name: $data');
+
+    await firestoreApi.projects.databases.documents.patch(patch.document, name,
+        currentDocument_exists: true, updateMask_fieldPaths: patch.fieldPaths);
     return DocumentReferenceRestImpl(this, path);
   }
 
@@ -293,11 +310,29 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
           ..field = (FieldReference()..fieldPath = whereInfo.fieldPath)
           ..op = 'IS_NULL');
     }
+    // Operator
+    //A field filter operator.
+    //
+    //Enums
+    //OPERATOR_UNSPECIFIED	Unspecified. This value must not be used.
+    //LESS_THAN	Less than. Requires that the field come first in orderBy.
+    //LESS_THAN_OR_EQUAL	Less than or equal. Requires that the field come first in orderBy.
+    //GREATER_THAN	Greater than. Requires that the field come first in orderBy.
+    //GREATER_THAN_OR_EQUAL	Greater than or equal. Requires that the field come first in orderBy.
+    //EQUAL	Equal.
+    //ARRAY_CONTAINS	Contains. Requires that the field is an array.
+
     String op;
     dynamic value;
     if (whereInfo.isEqualTo != null) {
       op = 'EQUAL';
       value = whereInfo.isEqualTo;
+    } else if (whereInfo.isGreaterThan != null) {
+      op = 'GREATER_THAN';
+      value = whereInfo.isGreaterThan;
+    } else if (whereInfo.isGreaterThanOrEqualTo != null) {
+      op = 'GREATER_THAN_OR_EQUAL';
+      value = whereInfo.isGreaterThanOrEqualTo;
     }
     if (op != null && value != null) {
       return Filter()
@@ -356,6 +391,9 @@ class FirestoreRestImpl with FirestoreMixin implements Firestore {
       rethrow;
     }
   }
+
+  @override
+  FirestoreRestImpl get impl => this;
 }
 
 class FirestoreServiceRestImpl
@@ -371,16 +409,15 @@ class FirestoreServiceRestImpl
   bool get supportsDocumentSnapshotTime => true;
 
   @override
-  // TODO: implement supportsFieldValueArray
-  bool get supportsFieldValueArray => null;
+  // TODO @alex implements?
+  bool get supportsFieldValueArray => false;
 
   @override
-  // TODO: implement supportsQuerySelect
-  bool get supportsQuerySelect => null;
+  // TODO @alex check and implements
+  bool get supportsQuerySelect => false;
 
   @override
-  // TODO: implement supportsQuerySnapshotCursor
-  bool get supportsQuerySnapshotCursor => null;
+  bool get supportsQuerySnapshotCursor => false;
 
   @override
   bool get supportsTimestamps => true;
@@ -390,4 +427,15 @@ class FirestoreServiceRestImpl
 
   @override
   bool get supportsTrackChanges => false;
+}
+
+/// Join ignoring null
+String pathJoin(String path1, String path2) {
+  if (path1 == null) {
+    return path2;
+  } else if (path2 == null) {
+    return path1;
+  } else {
+    return url.join(path1, path2);
+  }
 }
