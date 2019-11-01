@@ -420,7 +420,7 @@ void runApp(
 
         _check(snapshot.data);
         await docRef.delete();
-      });
+      }, solo: true);
 
       test('timestamp_nanos', () async {
         var testsRef = getTestsRef();
