@@ -16,6 +16,7 @@ import 'package:tekartik_firebase_firestore_rest/src/document_reference_rest.dar
 import 'package:tekartik_firebase_firestore_rest/src/firebase_app_rest.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_rest/src/patch_document_rest_impl.dart';
 import 'package:tekartik_firebase_firestore_rest/src/query.dart';
+import 'package:tekartik_firebase_firestore_rest/src/write_batch.dart';
 import 'package:tekartik_http/http.dart';
 
 import 'import.dart';
@@ -87,11 +88,14 @@ Map<String, dynamic> mapFromFields(
 }
 
 Value _listToRestValue(FirestoreRestImpl firestore, Iterable list) {
-  var arrayValue = ArrayValue()
-    ..values = list
-        .map((value) => toRestValue(firestore, value))
-        ?.toList(growable: false);
+  var arrayValue = ArrayValue()..values = listToRestValues(firestore, list);
   return Value()..arrayValue = arrayValue;
+}
+
+List<Value> listToRestValues(FirestoreRestImpl firestore, Iterable list) {
+  return list
+      .map((value) => toRestValue(firestore, value))
+      ?.toList(growable: false);
 }
 
 List<dynamic> _listFromArrayValue(
@@ -162,10 +166,7 @@ class FirestoreRestImpl
   }
 
   @override
-  WriteBatch batch() {
-    // TODO: implement batch
-    return null;
-  }
+  WriteBatch batch() => WriteBatchRestImpl(this);
 
   @override
   CollectionReference collection(String path) {
@@ -200,11 +201,13 @@ class FirestoreRestImpl
   }
 
   Future<DocumentSnapshot> getDocument(String path) async {
-    path = getDocumentName(path);
+    var name = getDocumentName(path);
     try {
+      // devPrint('name $name');
       var document =
-          await appImpl.firestoreApi.projects.databases.documents.get(path);
-      // devPrint(jsonPretty(document.toJson()));
+          await appImpl.firestoreApi.projects.databases.documents.get(name);
+      // Debug read
+      // devPrint('get ${jsonPretty(document.toJson())}');
       return DocumentSnapshotRestImpl(this, document);
     } catch (e) {
       if (e is api.DetailedApiRequestError) {
@@ -280,8 +283,9 @@ class FirestoreRestImpl
   }
 
   Future<DocumentReference> patchDocument(
-      String path, Map<String, dynamic> data) async {
-    var patch = PatchDocument(this, data);
+      String path, Map<String, dynamic> data,
+      {@required bool merge}) async {
+    var patch = PatchDocument(this, data, merge: merge);
     // var patchedDocument =
     var name = getDocumentName(path);
     // devPrint('patch $name: $data');
@@ -292,7 +296,7 @@ class FirestoreRestImpl
 
   Future<DocumentReference> updateDocument(
       String path, Map<String, dynamic> data) async {
-    var patch = PatchDocument(this, data);
+    var patch = PatchDocument(this, data, merge: true);
     // var document = Document()..fields = _mapToFields(this, data);
     // document =
     var name = getDocumentName(path);
@@ -333,6 +337,15 @@ class FirestoreRestImpl
     } else if (whereInfo.isGreaterThanOrEqualTo != null) {
       op = 'GREATER_THAN_OR_EQUAL';
       value = whereInfo.isGreaterThanOrEqualTo;
+    } else if (whereInfo.isLessThan != null) {
+      op = 'LESS_THAN';
+      value = whereInfo.isLessThan;
+    } else if (whereInfo.isLessThanOrEqualTo != null) {
+      op = 'LESS_THAN_OR_EQUAL';
+      value = whereInfo.isLessThanOrEqualTo;
+    } else if (whereInfo.arrayContains != null) {
+      op = 'ARRAY_CONTAINS';
+      value = whereInfo.arrayContains;
     }
     if (op != null && value != null) {
       return Filter()
@@ -348,10 +361,13 @@ class FirestoreRestImpl
     var queryInfo = queryRestImpl.queryInfo;
     var collectionPath = queryRestImpl.path;
     var structuredQuery = StructuredQuery();
+
+    // Support from
     structuredQuery.from = [
       CollectionSelector()..collectionId = getPathId(collectionPath)
     ];
 
+    // Support where
     if (queryInfo?.wheres?.isNotEmpty ?? false) {
       if (queryInfo.wheres.length == 1) {
         structuredQuery.where = whereToFilter(queryInfo.wheres.first);
@@ -365,7 +381,59 @@ class FirestoreRestImpl
       }
     }
 
+    // Support limit and offset
+    structuredQuery.limit = queryInfo?.limit;
+    structuredQuery.offset = queryInfo?.offset;
+
+    List<Value> toRestValues(List list) {
+      var restValues = <Value>[];
+      for (int i = 0; i < list.length; i++) {
+        if (queryInfo.orderBys[i].fieldPath == firestoreNameFieldPath) {
+          // Make it a document reference with an added '/'?????
+          var id = list[i]?.toString();
+          restValues.add(Value()
+            ..referenceValue = getDocumentName(pathJoin(collectionPath, id)));
+        } else {
+          restValues.add(toRestValue(this, list[i]));
+        }
+      }
+      return restValues;
+    }
+
+    // TODO support startAt
+    if (queryInfo?.startLimit != null) {
+      // StartAt/StartAfter
+      structuredQuery.startAt = Cursor()
+        ..before = queryInfo.startLimit.inclusive
+        ..values = toRestValues(queryInfo.startLimit.values);
+    }
+    if (queryInfo?.endLimit != null) {
+      // StartAt/StartAfter
+      structuredQuery.endAt = Cursor()
+        ..before = queryInfo.endLimit.inclusive == false
+        ..values = toRestValues(queryInfo.endLimit.values);
+    }
+
+    structuredQuery.orderBy = queryInfo?.orderBys
+        ?.map((info) => Order()
+          ..field = (FieldReference()..fieldPath = info.fieldPath)
+          ..direction = toRestDirection(info.ascending))
+        ?.toList(growable: false);
+
     return structuredQuery;
+  }
+
+  String toRestDirection(bool ascending) {
+    /// "DIRECTION_UNSPECIFIED";
+    /// "ASCENDING" : Ascending.
+    /// "DESCENDING"
+    if (ascending ?? false) {
+      return "ASCENDING";
+    } else if (ascending == null) {
+      return "DIRECTION_UNSPECIFIED";
+    } else {
+      return "DESCENDING";
+    }
   }
 
   Future<QuerySnapshot> runQuery(QueryRestImpl queryRestImpl) async {
@@ -376,10 +444,14 @@ class FirestoreRestImpl
     var parent = url.dirname(getDocumentName(queryRestImpl.path));
 
     try {
+      // Debug
+      // devPrint('request: ${jsonPretty(request.toJson())}');
+      // devPrint('parent: $parent');
       var response = await firestoreApi.projects.databases.documents
           .runQueryFixed(request, parent);
 
       // devPrint(jsonPretty(response.toJson()));
+      // devPrint('get ${jsonPretty(response.toJson())}');
       return QuerySnapshotRestImpl(this, response);
     } catch (e) {
       if (e is api.DetailedApiRequestError) {
@@ -394,6 +466,86 @@ class FirestoreRestImpl
 
   @override
   FirestoreRestImpl get impl => this;
+
+  Future commitBatch(WriteBatchRestImpl writeBatchRestImpl) async {
+    var beginTransactionRequest = BeginTransactionRequest()
+      ..options = (TransactionOptions()..readWrite = ReadWrite());
+    var database = getDatabaseName();
+    BeginTransactionResponse beginTransactionResponse;
+    try {
+      // Debug
+      // devPrint('beginTransactionRequest: ${jsonPretty(beginTransactionRequest.toJson())}');
+      beginTransactionResponse = await firestoreApi.projects.databases.documents
+          .beginTransaction(beginTransactionRequest, database);
+
+      // devPrint(jsonPretty(response.toJson()));
+      // devPrint('beginTransaction ${jsonPretty(beginTransactionResponse.toJson())}');
+    } catch (e) {
+      // devPrint(e);
+      if (e is api.DetailedApiRequestError) {
+        // devPrint(e.status);
+        if (e.status == httpStatusCodeNotFound) {
+          // return DocumentSnapshotRestImpl(this, null);
+        }
+      }
+      rethrow;
+    }
+    String transaction = beginTransactionResponse.transaction;
+
+    try {
+      for (var operation in writeBatchRestImpl.operations) {
+        // !no transaction here
+        if (operation is WriteBatchOperationDelete) {
+          await firestoreApi.projects.databases.documents
+              .delete(getDocumentName(operation.docRef.path));
+        }
+        throw UnsupportedError('operation $operation not supported');
+      }
+      var request = CommitRequest()..transaction = transaction;
+      try {
+        // Debug
+        // devPrint('commitRequest: ${jsonPretty(request.toJson())}');
+
+        // ignore: unused_local_variable
+        var response = await firestoreApi.projects.databases.documents
+            .commit(request, database);
+
+        // devPrint(jsonPretty(response.toJson()));
+        // devPrint('commit ${jsonPretty(response.toJson())}');
+      } catch (e) {
+        // devPrint(e);
+        if (e is api.DetailedApiRequestError) {
+          // devPrint(e.status);
+          if (e.status == httpStatusCodeNotFound) {
+            // return DocumentSnapshotRestImpl(this, null);
+          }
+        }
+        rethrow;
+      }
+    } catch (e) {
+      try {
+        var rollbackRequest = RollbackRequest()..transaction = transaction;
+        // Debug
+        // devPrint('rollbackRequest: ${jsonPretty(rollbackRequest.toJson())}');
+
+        // ignore: unused_local_variable
+        var response = await firestoreApi.projects.databases.documents
+            .rollback(rollbackRequest, database);
+
+        // devPrint('rollback ${jsonPretty(response.toJson())}');
+      } catch (rollbackError) {
+        // devPrint(e);
+        if (e is api.DetailedApiRequestError) {
+          // devPrint(e.status);
+          if (e.status == httpStatusCodeNotFound) {
+            // return DocumentSnapshotRestImpl(this, null);
+          }
+        }
+      }
+
+      // devPrint(e);
+    }
+  }
 }
 
 class FirestoreServiceRestImpl

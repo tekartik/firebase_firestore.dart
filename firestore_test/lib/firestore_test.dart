@@ -939,20 +939,20 @@ void runApp(
         querySnapshot =
             await collRef.orderBy('value').startAt(values: [2]).get();
         list = querySnapshot.docs;
-        expect(list.length, 1);
+        expect(list.length, 1, reason: "check startAt implementation");
         expect(list.first.ref.id, "two");
 
         // start after
         querySnapshot =
             await collRef.orderBy('value').startAfter(values: [1]).get();
         list = querySnapshot.docs;
-        expect(list.length, 1);
+        expect(list.length, 1, reason: "check startAfter implementation");
         expect(list.first.ref.id, "two");
 
         // end at
         querySnapshot = await collRef.orderBy('value').endAt(values: [1]).get();
         list = querySnapshot.docs;
-        expect(list.length, 1);
+        expect(list.length, 1, reason: 'check endAt implementation');
         expect(list.first.ref.id, "one");
 
         // end before

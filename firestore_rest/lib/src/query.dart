@@ -1,6 +1,5 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/document_reference_mixin.dart'; // ignore: implementation_imports
-
 import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore_rest/src/collection_reference_rest.dart';
@@ -37,14 +36,21 @@ class QuerySnapshotRestImpl implements QuerySnapshot {
   QuerySnapshotRestImpl(this.firestoreRest, this.response);
 
   List<DocumentSnapshot> _docs;
+
   @override
   List<DocumentSnapshot> get docs => _docs ??= () {
         return response?.documents
             ?.map((document) =>
                 DocumentSnapshotRestImpl(firestoreRest, document.document))
+            ?.where((snapshot) => isDocumentSnapshot(snapshot))
             ?.toList(growable: false);
       }();
 
   @override
   List<DocumentChange> get documentChanges => null;
+}
+
+/// For empty result we get this: [{readTime: 2019-11-02T15:24:14.458076Z}]
+bool isDocumentSnapshot(DocumentSnapshotRestImpl snapshot) {
+  return snapshot.exists ?? false;
 }

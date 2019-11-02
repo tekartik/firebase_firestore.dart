@@ -2,24 +2,39 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore_rest/src/document_rest_impl.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 import 'package:path/path.dart';
+import 'package:tekartik_firebase_firestore_rest/src/import.dart';
 
 import 'firestore/v1beta1.dart';
+
+class SetDocument extends PatchDocument {
+  SetDocument(FirestoreDocumentContext firestore, Map data)
+      : super(firestore, data, merge: false);
+}
+
+class UpdateDocument extends PatchDocument {
+  UpdateDocument(FirestoreDocumentContext firestore, Map data)
+      : super(firestore, data, merge: true);
+}
 
 class PatchDocument with DocumentContext {
   @override
   final FirestoreDocumentContext firestore;
+  bool merge;
   final document = Document();
   List<String> fieldPaths;
   Map<String, Value> _fields;
 
-  PatchDocument(this.firestore, Map data) {
+  PatchDocument(this.firestore, Map data, {@required this.merge}) {
+    merge ??= false;
     _fromMap(data);
     document.fields = _fields;
 
-    // add all other field name
-    if (_fields != null) {
-      fieldPaths ??= [];
-      fieldPaths.addAll(_fields.keys);
+    if (merge) {
+      // add all other field name
+      if (_fields != null) {
+        fieldPaths ??= [];
+        fieldPaths.addAll(_fields.keys);
+      }
     }
   }
 

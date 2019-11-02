@@ -609,6 +609,9 @@ class WriteBatchOperationBase implements WriteBatchOperation {
   final DocumentReference docRef;
 
   WriteBatchOperationBase(this.docRef);
+
+  @override
+  String toString() => '$runtimeType(${docRef.path})';
 }
 
 class WriteBatchOperationDelete extends WriteBatchOperationBase {

@@ -24,7 +24,7 @@ class DocumentReferenceRestImpl
 
   @override
   Future set(Map<String, dynamic> data, [SetOptions options]) =>
-      firestoreRestImpl.patchDocument(path, data);
+      firestoreRestImpl.patchDocument(path, data, merge: options?.merge);
 
   @override
   Future update(Map<String, dynamic> data) =>
@@ -49,8 +49,8 @@ class DocumentSnapshotRestImpl implements DocumentSnapshot {
   bool get exists => impl?.name != null;
 
   @override
-  DocumentReference get ref =>
-      DocumentReferenceRestImpl(firestoreRestImpl, impl.name);
+  DocumentReference get ref => DocumentReferenceRestImpl(
+      firestoreRestImpl, firestoreRestImpl.getDocumentPath(impl.name));
 
   @override
   Timestamp get updateTime => Timestamp.tryParse(impl.updateTime);
