@@ -1,5 +1,6 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/document_reference_mixin.dart';
+import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:test/test.dart';
@@ -109,6 +110,29 @@ void main() {
       var doc = mock.doc('my/path');
       expect('my/path', doc.path);
       expect('my', doc.parent.path);
+    });
+  });
+  group('value_key_mixin', () {
+    test('backtick', () {
+      expect(backtickChrCode, 96);
+      expect(isBacktickEnclosed('``'), isTrue);
+      expect(isBacktickEnclosed('`é`'), isTrue);
+      expect(isBacktickEnclosed('```'), isTrue);
+      expect(isBacktickEnclosed(''), isFalse);
+      expect(isBacktickEnclosed('`'), isFalse);
+      expect(isBacktickEnclosed('`_'), isFalse);
+      expect(isBacktickEnclosed('_`'), isFalse);
+    });
+
+    test('expandUpdateData', () {
+      expect(expandUpdateData({'some.data': 1}), {
+        'some': {'data': 1}
+      });
+      expect(expandUpdateData({'some.sub.data': 1}), {
+        'some': {
+          'sub': {'data': 1}
+        }
+      });
     });
   });
 }

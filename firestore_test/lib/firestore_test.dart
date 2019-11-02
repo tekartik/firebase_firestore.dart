@@ -676,6 +676,14 @@ void runApp(
         });
       });
 
+      test('merge sub.field on null', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('merge_sub_field_on_null');
+        await docRef.delete();
+        await docRef.set({'sub.field': 1}, SetOptions()..merge = true);
+        expect((await docRef.get()).data, {'sub.field': 1});
+      });
+
       // This only fails on node
       test('update invalid sub map', () async {
         var testsRef = getTestsRef();

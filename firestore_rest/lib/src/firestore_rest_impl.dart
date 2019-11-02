@@ -56,6 +56,38 @@ dynamic fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
   }
 }
 
+String restValueToString(FirestoreDocumentContext firestore, Value restValue) {
+  if (restValue == null) {
+    return "(null)";
+  } else if (restValue.nullValue == 'NULL VALUE') {
+    return restValue.nullValue;
+  } else if (restValue.stringValue != null) {
+    return restValue.stringValue;
+  } else if (restValue.booleanValue != null) {
+    return restValue.booleanValue.toString();
+  } else if (restValue.integerValue != null) {
+    return restValue.integerValue;
+  } else if (restValue.doubleValue != null) {
+    return restValue.doubleValue.toString();
+  } else if (restValue.geoPointValue != null) {
+    return 'GeoPoint(${restValue.geoPointValue.latitude}, ${restValue.geoPointValue.longitude})';
+  } else if (restValue.timestampValue != null) {
+    return restValue.timestampValue;
+  } else if (restValue.mapValue != null) {
+    return mapFromMapValue(firestore, restValue.mapValue)?.toString();
+  } else if (restValue.arrayValue != null) {
+    return _listFromArrayValue(firestore, restValue.arrayValue)?.toString();
+  } else if (restValue.bytesValue != null) {
+    return Blob(Uint8List.fromList(restValue.bytesValueAsBytes))?.toString();
+  } else if (restValue.referenceValue != null) {
+    return DocumentReferenceRestImpl(
+            firestore.impl, firestore.getDocumentPath(restValue.referenceValue))
+        ?.toString();
+  } else {
+    throw UnsupportedError('type ${restValue.runtimeType}: $restValue');
+  }
+}
+
 Value _mapToRestValue(FirestoreRestImpl firestore, Map map) {
   var mapValue = MapValue()..fields = _mapToFields(firestore, map);
   return Value()..mapValue = mapValue;
@@ -308,7 +340,12 @@ class FirestoreRestImpl
   Future<DocumentReference> writeDocument(
       String path, Map<String, dynamic> data,
       {@required bool merge, String transactionId}) async {
-    var patch = WriteDocument(this, data, merge: merge);
+    WriteDocument patch;
+    if (merge ?? false) {
+      patch = SetMergedDocument(this, data);
+    } else {
+      patch = SetDocument(this, data);
+    }
     // var patchedDocument =
     var name = getDocumentName(path);
     // devPrint('patch $name: $data');
@@ -333,7 +370,7 @@ class FirestoreRestImpl
 
   Future<DocumentReference> updateDocument(
       String path, Map<String, dynamic> data) async {
-    var patch = WriteDocument(this, data, merge: true);
+    var patch = UpdateDocument(this, data);
     // var document = Document()..fields = _mapToFields(this, data);
     // document =
     var name = getDocumentName(path);

@@ -29,11 +29,34 @@ Future main() async {
       patchDocument = UpdateDocument(firestoreMock, {});
       expect(patchDocument.fields, {});
       var data = {'test': 1};
-      patchDocument = UpdateDocument(firestoreMock, {'test': 1});
+      patchDocument = UpdateDocument(firestoreMock, data);
       var readDocument = ReadDocument(firestoreMock, patchDocument.document);
       expect(patchDocument.fields['test'].integerValue, "1");
       expect(readDocument.data, data);
     });
+    test('updateSubfield', () {
+      var data = {'sub.test': 1};
+      var patchDocument = UpdateDocument(firestoreMock, data);
+      var readDocument = ReadDocument(firestoreMock, patchDocument.document);
+      //expect(patchDocument.fields['test'].integerValue, "1");
+      // devPrint(patchDocument);
+      expect(patchDocument.fields.keys, ['sub']);
+      expect(patchDocument.fieldPaths, ['sub.test']);
+      expect(readDocument.data, {
+        'sub': {'test': 1}
+      });
+    });
+    test('setSubfield', () {
+      var data = {'sub.test': 1};
+      var patchDocument = SetDocument(firestoreMock, data);
+      var readDocument = ReadDocument(firestoreMock, patchDocument.document);
+      //expect(patchDocument.fields['test'].integerValue, "1");
+      // devPrint(patchDocument);
+      expect(patchDocument.fields.keys, ['sub.test']);
+      expect(patchDocument.fieldPaths, isNull);
+      expect(readDocument.data, data);
+    });
+
     test('set', () {
       var patchDocument = SetDocument(firestoreMock, null);
       expect(patchDocument.fields, null);
