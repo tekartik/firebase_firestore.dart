@@ -6,17 +6,17 @@ import 'package:tekartik_firebase_firestore_rest/src/import.dart';
 
 import 'firestore/v1beta1.dart';
 
-class SetDocument extends PatchDocument {
+class SetDocument extends WriteDocument {
   SetDocument(FirestoreDocumentContext firestore, Map data)
       : super(firestore, data, merge: false);
 }
 
-class UpdateDocument extends PatchDocument {
+class UpdateDocument extends WriteDocument {
   UpdateDocument(FirestoreDocumentContext firestore, Map data)
       : super(firestore, data, merge: true);
 }
 
-class PatchDocument with DocumentContext {
+class WriteDocument with DocumentContext {
   @override
   final FirestoreDocumentContext firestore;
   bool merge;
@@ -24,7 +24,7 @@ class PatchDocument with DocumentContext {
   List<String> fieldPaths;
   Map<String, Value> _fields;
 
-  PatchDocument(this.firestore, Map data, {@required this.merge}) {
+  WriteDocument(this.firestore, Map data, {@required this.merge}) {
     merge ??= false;
     _fromMap(data);
     document.fields = _fields;

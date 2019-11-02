@@ -16,12 +16,13 @@ import 'package:tekartik_firebase_firestore_rest/src/document_reference_rest.dar
 import 'package:tekartik_firebase_firestore_rest/src/firebase_app_rest.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_rest/src/patch_document_rest_impl.dart';
 import 'package:tekartik_firebase_firestore_rest/src/query.dart';
+import 'package:tekartik_firebase_firestore_rest/src/transaction_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/write_batch.dart';
 import 'package:tekartik_http/http.dart';
 
 import 'import.dart';
 
-bool debugRest = false; // devWarning(true);
+bool debugRest = false; // devWarning(true); // false
 
 dynamic fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
   if (restValue == null) {
@@ -200,14 +201,20 @@ class FirestoreRestImpl
     return DocumentReferenceRestImpl(this, path);
   }
 
-  Future<DocumentSnapshot> getDocument(String path) async {
+  Future<DocumentSnapshot> getDocument(String path,
+      {String transactionId}) async {
     var name = getDocumentName(path);
     try {
       // devPrint('name $name');
-      var document =
-          await appImpl.firestoreApi.projects.databases.documents.get(name);
+      if (debugRest) {
+        print('documentGetRequest: $name, transactionId: $transactionId');
+      }
+      var document = await appImpl.firestoreApi.projects.databases.documents
+          .get(name, transaction: transactionId);
       // Debug read
-      // devPrint('get ${jsonPretty(document.toJson())}');
+      if (debugRest) {
+        print('documentGet: ${jsonPretty(document.toJson())}');
+      }
       return DocumentSnapshotRestImpl(this, document);
     } catch (e) {
       if (e is api.DetailedApiRequestError) {
@@ -258,8 +265,18 @@ class FirestoreRestImpl
   }
 
   @override
-  Future runTransaction(Function(Transaction transaction) updateFunction) {
-    // TODO: implement runTransaction
+  Future runTransaction(
+      Function(Transaction transaction) updateFunction) async {
+    var transaction = TransactionRestImpl(this);
+    var transactionId = transaction.transactionId = await beginTransaction();
+    try {
+      await updateFunction(transaction);
+      await commitBatch(transaction);
+    } catch (e) {
+      await _rollback(transactionId);
+      rethrow;
+    }
+
     return null;
   }
 
@@ -276,34 +293,70 @@ class FirestoreRestImpl
 
     var parent = url.dirname(getDocumentName(path));
     var collectionId = getPathId(path);
+    if (debugRest) {
+      print(
+          'createDocumentRequest: ${jsonPretty(document.toJson())}, parent: $parent, collectionId: $collectionId');
+    }
     document = await firestoreApi.projects.databases.documents
         .createDocument(document, parent, collectionId);
-    // devPrint(result);
+    if (debugRest) {
+      print('createDocument: ${jsonPretty(document.toJson())}');
+    }
     return DocumentReferenceRestImpl(this, document.name);
   }
 
-  Future<DocumentReference> patchDocument(
+  Future<DocumentReference> writeDocument(
       String path, Map<String, dynamic> data,
-      {@required bool merge}) async {
-    var patch = PatchDocument(this, data, merge: merge);
+      {@required bool merge, String transactionId}) async {
+    var patch = WriteDocument(this, data, merge: merge);
     // var patchedDocument =
     var name = getDocumentName(path);
     // devPrint('patch $name: $data');
-    await firestoreApi.projects.databases.documents
-        .patch(patch.document, name, updateMask_fieldPaths: patch.fieldPaths);
+    if (debugRest) {
+      print(
+          'writeDocumentRequest: ${jsonPretty(patch.document.toJson())}, name: $name, updateFieldPaths: ${patch.fieldPaths}');
+    }
+    try {
+      var document = await firestoreApi.projects.databases.documents
+          .patch(patch.document, name, updateMask_fieldPaths: patch.fieldPaths);
+      if (debugRest) {
+        print('writeDocument: ${jsonPretty(document.toJson())}');
+      }
+    } catch (e) {
+      if (debugRest) {
+        print('writeDocument error: $e');
+      }
+      rethrow;
+    }
     return DocumentReferenceRestImpl(this, path);
   }
 
   Future<DocumentReference> updateDocument(
       String path, Map<String, dynamic> data) async {
-    var patch = PatchDocument(this, data, merge: true);
+    var patch = WriteDocument(this, data, merge: true);
     // var document = Document()..fields = _mapToFields(this, data);
     // document =
     var name = getDocumentName(path);
     // devPrint('update $name: $data');
 
-    await firestoreApi.projects.databases.documents.patch(patch.document, name,
-        currentDocument_exists: true, updateMask_fieldPaths: patch.fieldPaths);
+    if (debugRest) {
+      print(
+          'updateDocumentRequest: ${jsonPretty(patch.document.toJson())}, name: $name, updateFieldPaths: ${patch.fieldPaths}');
+    }
+    try {
+      var document = await firestoreApi.projects.databases.documents.patch(
+          patch.document, name,
+          currentDocument_exists: true,
+          updateMask_fieldPaths: patch.fieldPaths);
+      if (debugRest) {
+        print('updateDocument: ${jsonPretty(document.toJson())}');
+      }
+    } catch (e) {
+      if (debugRest) {
+        print('updateDocument error: $e');
+      }
+      rethrow;
+    }
     return DocumentReferenceRestImpl(this, path);
   }
 
@@ -467,19 +520,29 @@ class FirestoreRestImpl
   @override
   FirestoreRestImpl get impl => this;
 
-  Future commitBatch(WriteBatchRestImpl writeBatchRestImpl) async {
+  Future<String> beginTransaction({bool readOnly}) async {
+    readOnly ??= false;
     var beginTransactionRequest = BeginTransactionRequest()
-      ..options = (TransactionOptions()..readWrite = ReadWrite());
+      ..options = (TransactionOptions()
+        ..readWrite = readOnly ? null : ReadWrite()
+        ..readOnly = readOnly ? ReadOnly() : null);
     var database = getDatabaseName();
     BeginTransactionResponse beginTransactionResponse;
     try {
       // Debug
-      // devPrint('beginTransactionRequest: ${jsonPretty(beginTransactionRequest.toJson())}');
+      if (debugRest) {
+        print(
+            'beginTransactionRequest: ${jsonPretty(beginTransactionRequest.toJson())}');
+      }
       beginTransactionResponse = await firestoreApi.projects.databases.documents
           .beginTransaction(beginTransactionRequest, database);
 
       // devPrint(jsonPretty(response.toJson()));
-      // devPrint('beginTransaction ${jsonPretty(beginTransactionResponse.toJson())}');
+      if (debugRest) {
+        print(
+            'beginTransaction ${jsonPretty(beginTransactionResponse.toJson())}');
+      }
+      return beginTransactionResponse.transaction;
     } catch (e) {
       // devPrint(e);
       if (e is api.DetailedApiRequestError) {
@@ -490,28 +553,87 @@ class FirestoreRestImpl
       }
       rethrow;
     }
-    String transaction = beginTransactionResponse.transaction;
+  }
 
+  Future _rollback(String transactionId) async {
+    var database = getDatabaseName();
+    try {
+      var rollbackRequest = RollbackRequest()..transaction = transactionId;
+      // Debug
+      // devPrint('rollbackRequest: ${jsonPretty(rollbackRequest.toJson())}');
+
+      // ignore: unused_local_variable
+      var response = await firestoreApi.projects.databases.documents
+          .rollback(rollbackRequest, database);
+
+      // devPrint('rollback ${jsonPretty(response.toJson())}');
+    } catch (rollbackError) {
+      // devPrint(e);
+      if (rollbackError is api.DetailedApiRequestError) {
+        // devPrint(e.status);
+        if (rollbackError.status == httpStatusCodeNotFound) {
+          // return DocumentSnapshotRestImpl(this, null);
+        }
+      }
+    }
+  }
+
+  Future _commitTransaction(String transactionId) async {
+    var request = CommitRequest()..transaction = transactionId;
+    var database = getDatabaseName();
+    try {
+      // Debug
+      if (debugRest) {
+        print('commitRequest: ${jsonPretty(request.toJson())}');
+      }
+      // devPrint('commitRequest: ${jsonPretty(request.toJson())}');
+
+      // ignore: unused_local_variable
+      var response = await firestoreApi.projects.databases.documents
+          .commit(request, database);
+
+      // devPrint(jsonPretty(response.toJson()));
+      if (debugRest) {
+        print('commit ${jsonPretty(response.toJson())}');
+      }
+    } catch (e) {
+      // devPrint(e);
+      if (e is api.DetailedApiRequestError) {
+        // devPrint(e.status);
+        if (e.status == httpStatusCodeNotFound) {
+          // return DocumentSnapshotRestImpl(this, null);
+        }
+      }
+      rethrow;
+    }
+  }
+
+  Future commitBatch(WriteBatchRestImpl writeBatchRestImpl) async {
+    // begin it needed
+    var transactionId =
+        writeBatchRestImpl.transactionId ??= await beginTransaction();
     try {
       for (var operation in writeBatchRestImpl.operations) {
-        // !no transaction here
+        // Somehow we need unawait here as write operation are blocked until
+        // commit is callback. Still puzzled about operation that could fail
+        // later...
         if (operation is WriteBatchOperationDelete) {
-          await firestoreApi.projects.databases.documents
-              .delete(getDocumentName(operation.docRef.path));
+          unawaited(deleteDocument(operation.docRef.path));
+        } else if (operation is WriteBatchOperationSet) {
+          WriteBatchOperationSet setOperation = operation;
+          unawaited(writeDocument(
+              setOperation.docRef.path, setOperation.documentData.asMap(),
+              merge: setOperation.options?.merge));
+        } else if (operation is WriteBatchOperationUpdate) {
+          unawaited(updateDocument(
+              operation.docRef.path, operation.documentData.asMap()));
+        } else {
+          throw UnsupportedError('operation $operation not supported');
         }
-        throw UnsupportedError('operation $operation not supported');
       }
-      var request = CommitRequest()..transaction = transaction;
+
       try {
-        // Debug
-        // devPrint('commitRequest: ${jsonPretty(request.toJson())}');
-
-        // ignore: unused_local_variable
-        var response = await firestoreApi.projects.databases.documents
-            .commit(request, database);
-
-        // devPrint(jsonPretty(response.toJson()));
-        // devPrint('commit ${jsonPretty(response.toJson())}');
+        await _commitTransaction(transactionId);
       } catch (e) {
         // devPrint(e);
         if (e is api.DetailedApiRequestError) {
@@ -524,15 +646,7 @@ class FirestoreRestImpl
       }
     } catch (e) {
       try {
-        var rollbackRequest = RollbackRequest()..transaction = transaction;
-        // Debug
-        // devPrint('rollbackRequest: ${jsonPretty(rollbackRequest.toJson())}');
-
-        // ignore: unused_local_variable
-        var response = await firestoreApi.projects.databases.documents
-            .rollback(rollbackRequest, database);
-
-        // devPrint('rollback ${jsonPretty(response.toJson())}');
+        await _rollback(transactionId);
       } catch (rollbackError) {
         // devPrint(e);
         if (e is api.DetailedApiRequestError) {
@@ -544,6 +658,7 @@ class FirestoreRestImpl
       }
 
       // devPrint(e);
+      rethrow;
     }
   }
 }

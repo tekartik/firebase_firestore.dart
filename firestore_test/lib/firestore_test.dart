@@ -1364,6 +1364,23 @@ void runApp(
           await firestore.runTransaction((txn) async {
             var data = (await txn.get(ref)).data;
 
+            var map = <String, dynamic>{};
+            map["value"] = (data["value"] as int) + 1;
+            txn.update(ref, map);
+          });
+
+          expect((await ref.get()).data, {"value": 2});
+        });
+
+        test('get_set', () async {
+          var testsRef = getTestsRef();
+          var collRef = testsRef.doc('transaction_test').collection('get_set');
+          var ref = collRef.doc("item");
+          await ref.set({"value": 1});
+
+          await firestore.runTransaction((txn) async {
+            var data = (await txn.get(ref)).data;
+
             data["value"] = (data["value"] as int) + 1;
             txn.set(ref, data);
           });
