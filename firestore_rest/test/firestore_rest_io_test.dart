@@ -10,9 +10,13 @@ import 'test_setup.dart';
 Future main() async {
   skipConcurrentTransactionTests = true;
   var context = await setup();
-  var firebase = firebaseRest;
-  run(
-      firebase: firebase,
-      firestoreService: firestoreServiceRest,
-      options: context.options);
+  group('rest_io', () {
+    if (context != null) {
+      var firebase = firebaseRest;
+      run(
+          firebase: firebase,
+          firestoreService: firestoreServiceRest,
+          options: context.options);
+    }
+  }, skip: context == null);
 }

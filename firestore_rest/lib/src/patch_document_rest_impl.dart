@@ -16,6 +16,15 @@ class SetMergedDocument extends WriteDocument {
   SetMergedDocument(FirestoreDocumentContext firestore, Map data)
       : super(firestore, data, merge: false);
 
+  @override
+  void _fromMap(Map map) {
+    if (map == null) {
+      return null;
+    }
+    _currentParent = null;
+    _fields = _firstMapToFields(map);
+  }
+
   Map<String, Value> _firstMapToFields(Map map) {
     if (map == null) {
       return null;

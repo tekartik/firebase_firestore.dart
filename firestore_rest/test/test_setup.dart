@@ -16,6 +16,9 @@ class Context {
 
   FirebaseClient get fbClient => options?.fbClient;
   AppOptionsRestImpl options;
+
+  /// True if it can be used
+  bool get valid => authClient != null;
 }
 
 const _firestoreScopes = [

@@ -4,6 +4,7 @@ Future main() async {
   var shell = Shell();
 
   for (var dir in [
+    'firestore_rest',
     'firestore',
     'firestore_sembast',
     'firestore',

@@ -46,6 +46,22 @@ Future main() async {
         'sub': {'test': 1}
       });
     });
+
+    test('updateSubfield', () {
+      var data = {'sub.test': 1, 'sub.sub.test': 2};
+      var patchDocument = UpdateDocument(firestoreMock, data);
+      var readDocument = ReadDocument(firestoreMock, patchDocument.document);
+      //expect(patchDocument.fields['test'].integerValue, "1");
+      // devPrint(patchDocument);
+      expect(patchDocument.fields.keys, ['sub']);
+      expect(patchDocument.fieldPaths, ['sub.test', 'sub.sub.test']);
+      expect(readDocument.data, {
+        'sub': {
+          'test': 1,
+          'sub': {'test': 2}
+        }
+      });
+    });
     test('setSubfield', () {
       var data = {'sub.test': 1};
       var patchDocument = SetDocument(firestoreMock, data);
@@ -94,7 +110,9 @@ Future main() async {
 
     test('subField', () {
       var patchDocument = UpdateDocument(firestoreMock, {'test.sub': 1});
-      expect(patchDocument.fields['test.sub'].integerValue, "1");
+      // devPrint(jsonPretty(patchDocument.document.toJson()));
+      expect(patchDocument.fields['test'].mapValue.fields['sub'].integerValue,
+          "1");
       expect(patchDocument.fieldPaths, ['test.sub']);
     });
 

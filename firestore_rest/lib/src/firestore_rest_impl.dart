@@ -24,6 +24,16 @@ import 'import.dart';
 
 bool debugRest = false; // devWarning(true); // false
 
+dynamic dateOrTimestampValue(
+    FirestoreDocumentContext firestore, String timestampValue) {
+  var timestamp = Timestamp.tryParse(timestampValue);
+  if (firestore?.impl?.firestoreSettings?.timestampsInSnapshots ?? true) {
+    return timestamp;
+  } else {
+    return timestamp?.toDateTime();
+  }
+}
+
 dynamic fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
   if (restValue == null) {
     return null;
@@ -41,7 +51,7 @@ dynamic fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
     return GeoPoint(
         restValue.geoPointValue.latitude, restValue.geoPointValue.longitude);
   } else if (restValue.timestampValue != null) {
-    return Timestamp.tryParse(restValue.timestampValue);
+    return dateOrTimestampValue(firestore, restValue.timestampValue);
   } else if (restValue.mapValue != null) {
     return mapFromMapValue(firestore, restValue.mapValue);
   } else if (restValue.arrayValue != null) {

@@ -676,6 +676,32 @@ void runApp(
         });
       });
 
+      test('update nested subfield', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('update_nested_sub_field');
+        await docRef.set({
+          'a': {
+            'b': {'c': 1}
+          }
+        });
+        await docRef.update({
+          'a.added': 2,
+          'a.b.added': 3,
+          'a.b.c.replaced': 4,
+          'x': {'sub.replace': 5}
+        });
+        expect((await docRef.get()).data, {
+          'a': {
+            'added': 2,
+            'b': {
+              'added': 3,
+              'c': {'replaced': 4}
+            }
+          },
+          'x': {'sub.replace': 5}
+        });
+      });
+
       test('merge sub.field on null', () async {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('merge_sub_field_on_null');
