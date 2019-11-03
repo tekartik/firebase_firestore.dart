@@ -13,11 +13,11 @@ import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore_rest/firestore_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/collection_reference_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/document_reference_rest.dart';
-import 'package:tekartik_firebase_firestore_rest/src/firebase_app_rest.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_rest/src/patch_document_rest_impl.dart';
 import 'package:tekartik_firebase_firestore_rest/src/query.dart';
 import 'package:tekartik_firebase_firestore_rest/src/transaction_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/write_batch.dart';
+import 'package:tekartik_firebase_rest/firebase_rest.dart';
 import 'package:tekartik_http/http.dart';
 
 import 'import.dart';
@@ -201,6 +201,9 @@ class FirestoreRestImpl
     with FirestoreMixin
     implements Firestore, FirestoreDocumentContext {
   final AppRestImpl appImpl;
+  api.FirestoreApi _firestoreApi;
+  api.FirestoreApi get firestoreApi =>
+      _firestoreApi ??= FirestoreApi(appImpl.authClient);
 
   String get projectId => appImpl.options.projectId;
 
@@ -251,7 +254,7 @@ class FirestoreRestImpl
       if (debugRest) {
         print('documentGetRequest: $name, transactionId: $transactionId');
       }
-      var document = await appImpl.firestoreApi.projects.databases.documents
+      var document = await firestoreApi.projects.databases.documents
           .get(name, transaction: transactionId);
       // Debug read
       if (debugRest) {
@@ -275,7 +278,7 @@ class FirestoreRestImpl
     }
     var name = getDocumentName(path);
     try {
-      await appImpl.firestoreApi.projects.databases.documents.delete(name);
+      await firestoreApi.projects.databases.documents.delete(name);
     } catch (e) {
       if (e is api.DetailedApiRequestError) {
         return;
@@ -283,8 +286,6 @@ class FirestoreRestImpl
       rethrow;
     }
   }
-
-  FirestoreApi get firestoreApi => appImpl.firestoreApi;
 
   @override
   Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async {

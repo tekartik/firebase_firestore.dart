@@ -15,13 +15,12 @@ dependencies:
       path: firestore
       ref: dart2
     version: '>=0.4.2'
-  tekartik_firebase_local:
+  tekartik_firebase_rest:
     git:
       url: git://github.com/tekartik/firebase.dart
-      path: firebase_local
+      path: firebase_rest
       ref: dart2
-    version: '>=0.3.7'
-  firebase: '>=6.0.0'
+    version: '>=0.6.0'
   googleapis:
   googleapis_auth:
   tekartik_http:
@@ -32,6 +31,12 @@ dependencies:
     version: '>=0.2.0+2'
 
 dev_dependencies:
+  tekartik_firebase_local:
+    git:
+      url: git://github.com/tekartik/firebase.dart
+      path: firebase_local
+      ref: dart2
+    version: '>=0.3.7'
   test: any
   build_runner: ">=0.9.1"
   build_test: ">=0.10.3"

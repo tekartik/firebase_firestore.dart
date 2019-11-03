@@ -9,18 +9,12 @@ Future main() async {
   Context context = await setup();
   print(context);
   group('rest', () {
-    test('basic', () async {
-      // ignore: unused_local_variable
-      var data = await context.fbClient.get(
-          'https://firestore.googleapis.com/v1beta1/projects/tekartik-free-dev/databases/(default)/documents/tests/data-types');
-      // print(data);
-    });
     test('basic_googleapis', () async {
       var firestoreApi = api.FirestoreApi(context.authClient);
       // ignore: unused_local_variable
       var data = await firestoreApi.projects.databases.documents.get(
           'projects/tekartik-free-dev/databases/(default)/documents/tests/data-types');
-      // print(jsonPretty(data.toJson()));
+      //print(jsonPretty(data.toJson()));
     });
   }, skip: context == null);
 
