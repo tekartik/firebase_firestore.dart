@@ -17,7 +17,8 @@ import 'package:tekartik_firebase_firestore_rest/src/patch_document_rest_impl.da
 import 'package:tekartik_firebase_firestore_rest/src/query.dart';
 import 'package:tekartik_firebase_firestore_rest/src/transaction_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/write_batch.dart';
-import 'package:tekartik_firebase_rest/firebase_rest.dart';
+
+import 'package:tekartik_firebase_rest/src/firebase_rest.dart'; // ignore: implementation_imports
 import 'package:tekartik_http/http.dart';
 
 import 'import.dart';
