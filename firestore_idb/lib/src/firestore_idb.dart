@@ -10,6 +10,7 @@ import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: impl
 import 'package:tekartik_firebase_firestore/utils/document_data.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
+import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:uuid/uuid.dart';
 
@@ -199,14 +200,13 @@ class FirestoreIdb extends Object
     return txnGet(localTransaction, documentRef).then((snapshot) {
       result.previousSnapshot = snapshot;
 
-      /*
       Map<String, dynamic> recordMap;
 
       // Update rev
       int rev = (snapshot?.rev ?? 0) + 1;
       // merging?
       if (options?.merge == true) {
-        recordMap = documentDataToRecordMap(documentData, documentFromRecordMap(documentRef, sna, recordMap)existingRecordMap);
+        recordMap = documentDataToRecordMap(documentData, snapshot.data);
       } else {
         recordMap = documentDataToRecordMap(documentData);
       }
@@ -223,13 +223,12 @@ class FirestoreIdb extends Object
         recordMap[updateTimeKey] = now.toIso8601String();
       }
 
+      result.newSnapshot = this.documentFromRecordMap(documentRef, recordMap);
 
-      result.newSnapshot = this.documentFromRecordMap(ref, recordMap);
-      */
       // TODO
       return txn
           .objectStore(storeName)
-          .put(documentDataToRecordMap(documentData), documentRef.path)
+          .put(recordMap, documentRef.path)
           .then((_) {
         return result;
       });
@@ -247,7 +246,7 @@ class FirestoreIdb extends Object
       if (map == null) {
         throw Exception("No document found at $documentRef");
       }
-      map = documentDataToUpdateMap(documentData);
+      map = documentDataToUpdateMap(map, documentData);
       return localTransaction.transaction
           .objectStore(storeName)
           .put(map, documentRef.path)
@@ -341,16 +340,12 @@ dynamic valueToUpdateValue(dynamic value) {
   return valueToRecordValue(value, valueToUpdateValue);
 }
 
-Map<String, dynamic> documentDataToUpdateMap(DocumentData documentData) {
+Map<String, dynamic> documentDataToUpdateMap(
+    Map<String, dynamic> existing, DocumentData documentData) {
   if (documentData == null) {
     return null;
   }
-  var updateMap = <String, dynamic>{};
-
-  documentDataMap(documentData).map.forEach((String key, value) {
-    updateMap[key] = valueToUpdateValue(value);
-  });
-  return updateMap;
+  return documentDataToRecordMap(documentData, existing);
 }
 
 class DocumentSnapshotIdb extends DocumentSnapshotBase {
@@ -431,6 +426,7 @@ class QueryIdb extends FirestoreReferenceBase
       QueryIdb(firestore, path)..queryInfo = queryInfo?.clone();
 
   @override
+  @override
   Future<List<DocumentSnapshot>> getCollectionDocuments() async {
     var localTransaction = await firestoreIdb.getReadWriteTransaction();
     var txn = localTransaction.transaction;
@@ -456,7 +452,9 @@ class QueryIdb extends FirestoreReferenceBase
 
 class CollectionReferenceIdb extends QueryIdb implements CollectionReference {
   CollectionReferenceIdb(FirestoreIdb firestoreIdb, String path)
-      : super(firestoreIdb, path);
+      : super(firestoreIdb, path) {
+    queryInfo = QueryInfo();
+  }
 
   @override
   Future<DocumentReference> add(Map<String, dynamic> data) async =>

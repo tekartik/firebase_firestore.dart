@@ -17,7 +17,7 @@ void main() async {
   var firebase = FirebaseLocal();
   idbTestInit();
 
-  group('browser', () {
+  group('idb', () {
     test('factory', () {
       expect(firestoreService.supportsQuerySelect, isFalse);
     });
@@ -25,5 +25,5 @@ void main() async {
       firebase: firebase,
       firestoreService: firestoreService,
     );
-  }, skip: 'IDB not working yet');
+  }, skip: false); //'IDB not working yet');
 }

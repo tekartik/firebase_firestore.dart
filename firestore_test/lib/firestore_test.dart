@@ -6,9 +6,9 @@ import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
-import 'package:test/test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_collection_test.dart'
     as utils_collection;
+import 'package:test/test.dart';
 
 bool skipConcurrentTransactionTests = false;
 
