@@ -451,7 +451,6 @@ void runApp(
         var docRef = testsRef.doc('timestamp');
         var timestamp = Timestamp(1234567890, 123000);
         await docRef.set({"some_timestamp": timestamp});
-
         void _check(Map<String, dynamic> data) {
           if (firestoreService.supportsTimestampsInSnapshots) {
             expect(
@@ -469,7 +468,6 @@ void runApp(
         }
 
         _check((await docRef.get()).data);
-
         var snapshot =
             (await testsRef.where('some_timestamp', isEqualTo: timestamp).get())
                 .docs

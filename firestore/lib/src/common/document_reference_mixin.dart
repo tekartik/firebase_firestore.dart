@@ -17,6 +17,9 @@ mixin PathReferenceMixin {
 
   /// Child path
   String getChildPath(String child) => url.join(path, child);
+
+  @override
+  String toString() => 'path: $path';
 }
 
 String getParentPath(String path) {

@@ -62,7 +62,7 @@ Map<String, dynamic> sanitizeInputEntryKey(String key, dynamic value) {
 }
 
 /// Expand first level keys
-Map expandUpdateData(Map value) {
+Map<String, dynamic> expandUpdateData(Map value) {
   return sanitizeInputEntry(value);
 }
 
