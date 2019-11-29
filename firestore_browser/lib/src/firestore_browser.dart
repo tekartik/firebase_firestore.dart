@@ -96,8 +96,7 @@ class FirestoreBrowser implements Firestore {
 
 native.Settings _unwrapSettings(FirestoreSettings settings) {
   if (settings != null) {
-    return native.Settings(
-        timestampsInSnapshots: settings.timestampsInSnapshots);
+    return native.Settings();
   }
   return null;
 }
