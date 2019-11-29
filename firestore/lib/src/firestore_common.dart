@@ -405,29 +405,32 @@ OrderByInfo orderByInfoFromJsonMap(Map<String, dynamic> map) {
   return orderByInfo;
 }
 
+const _operatorKey = 'operator';
+const _valueKey = 'value';
+
 Map<String, dynamic> whereInfoToJsonMap(WhereInfo whereInfo) {
   var map = <String, dynamic>{'fieldPath': whereInfo.fieldPath};
   if (whereInfo.isEqualTo != null) {
-    map['operator'] = operatorEqual;
-    map['value'] = documentDataValueToJson(whereInfo.isEqualTo);
+    map[_operatorKey] = operatorEqual;
+    map[_valueKey] = documentDataValueToJson(whereInfo.isEqualTo);
   } else if (whereInfo.isLessThanOrEqualTo != null) {
-    map['operator'] = operatorLessThanOrEqual;
-    map['value'] = documentDataValueToJson(whereInfo.isLessThanOrEqualTo);
+    map[_operatorKey] = operatorLessThanOrEqual;
+    map[_valueKey] = documentDataValueToJson(whereInfo.isLessThanOrEqualTo);
   } else if (whereInfo.isLessThan != null) {
-    map['operator'] = operatorLessThan;
-    map['value'] = documentDataValueToJson(whereInfo.isLessThan);
+    map[_operatorKey] = operatorLessThan;
+    map[_valueKey] = documentDataValueToJson(whereInfo.isLessThan);
   } else if (whereInfo.isGreaterThanOrEqualTo != null) {
-    map['operator'] = operatorGreaterThanOrEqual;
-    map['value'] = documentDataValueToJson(whereInfo.isGreaterThanOrEqualTo);
+    map[_operatorKey] = operatorGreaterThanOrEqual;
+    map[_valueKey] = documentDataValueToJson(whereInfo.isGreaterThanOrEqualTo);
   } else if (whereInfo.isGreaterThan != null) {
-    map['operator'] = operatorGreaterThan;
-    map['value'] = documentDataValueToJson(whereInfo.isGreaterThan);
+    map[_operatorKey] = operatorGreaterThan;
+    map[_valueKey] = documentDataValueToJson(whereInfo.isGreaterThan);
   } else if (whereInfo.arrayContains != null) {
-    map['operator'] = operatorArrayContains;
-    map['value'] = documentDataValueToJson(whereInfo.arrayContains);
+    map[_operatorKey] = operatorArrayContains;
+    map[_valueKey] = documentDataValueToJson(whereInfo.arrayContains);
   } else if (whereInfo.isNull != null) {
-    map['operator'] = operatorEqual;
-    map['value'] = null;
+    map[_operatorKey] = operatorEqual;
+    map[_valueKey] = null;
   }
   return map;
 }
