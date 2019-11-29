@@ -6,9 +6,9 @@ import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
-import 'package:test/test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_collection_test.dart'
     as utils_collection;
+import 'package:test/test.dart';
 
 bool skipConcurrentTransactionTests = false;
 
@@ -248,17 +248,19 @@ void runApp(
         // devPrint('createTime ${snapshot.createTime}');
         // devPrint('updateTime ${snapshot.updateTime}');
 
-        // Try using stream
-        snapshot = await docRef.onSnapshot().first;
-        _check();
+        if (firestoreService.supportsTrackChanges) {
+          // Try using stream
+          snapshot = await docRef.onSnapshot().first;
+          _check();
 
-        // Try using col stream
-        snapshot = (await testsRef.onSnapshot().first)
-            .docs
-            .where(
-                (DocumentSnapshot snapshot) => snapshot.ref.path == docRef.path)
-            .first;
-        _check();
+          // Try using col stream
+          snapshot = (await testsRef.onSnapshot().first)
+              .docs
+              .where((DocumentSnapshot snapshot) =>
+                  snapshot.ref.path == docRef.path)
+              .first;
+          _check();
+        }
       });
     });
 
@@ -382,46 +384,43 @@ void runApp(
         await docRef.delete();
       });
 
-      test(
-        'date',
-        () async {
-          var testsRef = getTestsRef();
-          var docRef = testsRef.doc('date');
-          var localDateTime =
-              DateTime.fromMillisecondsSinceEpoch(1234567890).toLocal();
-          var utcDateTime =
-              DateTime.fromMillisecondsSinceEpoch(12345678901).toUtc();
-          await docRef
-              .set({"some_date": localDateTime, "some_utc_date": utcDateTime});
+      test('date', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('date');
+        var localDateTime =
+            DateTime.fromMillisecondsSinceEpoch(1234567890).toLocal();
+        var utcDateTime =
+            DateTime.fromMillisecondsSinceEpoch(12345678901).toUtc();
+        await docRef
+            .set({"some_date": localDateTime, "some_utc_date": utcDateTime});
 
-          void _check(Map data) {
-            if (firestoreService.supportsTimestampsInSnapshots) {
-              //devPrint(data['some_date'].runtimeType);
-              expect(data, {
-                "some_date": Timestamp.fromDateTime(localDateTime),
-                "some_utc_date": Timestamp.fromDateTime(utcDateTime.toLocal())
-              });
-            } else {
-              expect(data, {
-                "some_date": localDateTime,
-                "some_utc_date": utcDateTime.toLocal()
-              });
-            }
+        void _check(Map data) {
+          if (firestoreService.supportsTimestampsInSnapshots) {
+            //devPrint(data['some_date'].runtimeType);
+            expect(data, {
+              "some_date": Timestamp.fromDateTime(localDateTime),
+              "some_utc_date": Timestamp.fromDateTime(utcDateTime.toLocal())
+            });
+          } else {
+            expect(data, {
+              "some_date": localDateTime,
+              "some_utc_date": utcDateTime.toLocal()
+            });
           }
+        }
 
-          _check((await docRef.get()).data);
+        _check((await docRef.get()).data);
 
-          var snapshot = (await testsRef
-                  .where('some_date', isEqualTo: localDateTime)
-                  .where('some_utc_date', isEqualTo: utcDateTime)
-                  .get())
-              .docs
-              .first;
+        var snapshot = (await testsRef
+                .where('some_date', isEqualTo: localDateTime)
+                .where('some_utc_date', isEqualTo: utcDateTime)
+                .get())
+            .docs
+            .first;
 
-          _check(snapshot.data);
-          await docRef.delete();
-        },
-      );
+        _check(snapshot.data);
+        await docRef.delete();
+      });
 
       test('timestamp_nanos', () async {
         var testsRef = getTestsRef();
@@ -452,7 +451,6 @@ void runApp(
         var docRef = testsRef.doc('timestamp');
         var timestamp = Timestamp(1234567890, 123000);
         await docRef.set({"some_timestamp": timestamp});
-
         void _check(Map<String, dynamic> data) {
           if (firestoreService.supportsTimestampsInSnapshots) {
             expect(
@@ -470,7 +468,6 @@ void runApp(
         }
 
         _check((await docRef.get()).data);
-
         var snapshot =
             (await testsRef.where('some_timestamp', isEqualTo: timestamp).get())
                 .docs
@@ -677,6 +674,40 @@ void runApp(
         });
       });
 
+      test('update nested subfield', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('update_nested_sub_field');
+        await docRef.set({
+          'a': {
+            'b': {'c': 1}
+          }
+        });
+        await docRef.update({
+          'a.added': 2,
+          'a.b.added': 3,
+          'a.b.c.replaced': 4,
+          'x': {'sub.replace': 5}
+        });
+        expect((await docRef.get()).data, {
+          'a': {
+            'added': 2,
+            'b': {
+              'added': 3,
+              'c': {'replaced': 4}
+            }
+          },
+          'x': {'sub.replace': 5}
+        });
+      });
+
+      test('merge sub.field on null', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('merge_sub_field_on_null');
+        await docRef.delete();
+        await docRef.set({'sub.field': 1}, SetOptions()..merge = true);
+        expect((await docRef.get()).data, {'sub.field': 1});
+      });
+
       // This only fails on node
       test('update invalid sub map', () async {
         var testsRef = getTestsRef();
@@ -700,7 +731,9 @@ void runApp(
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('simple_onSnapshot');
         await docRef.set({'test': 1});
-        expect((await docRef.onSnapshot().first).data, {'test': 1});
+        if (firestoreService.supportsTrackChanges) {
+          expect((await docRef.onSnapshot().first).data, {'test': 1});
+        }
       });
 
       test('onSnapshot', () async {
@@ -710,42 +743,44 @@ void runApp(
         // delete it
         await docRef.delete();
 
-        int stepCount = 4;
-        var completers =
-            List.generate(stepCount, (_) => Completer<DocumentSnapshot>());
-        int count = 0;
-        var subscription =
-            docRef.onSnapshot().listen((DocumentSnapshot documentSnapshot) {
-          if (count < stepCount) {
-            completers[count++].complete(documentSnapshot);
-          }
-        });
-        int index = 0;
-        // wait for receiving first data
-        var snapshot = await completers[index++].future;
-        expect(snapshot.exists, isFalse);
+        if (firestoreService.supportsTrackChanges) {
+          int stepCount = 4;
+          var completers =
+              List.generate(stepCount, (_) => Completer<DocumentSnapshot>());
+          int count = 0;
+          var subscription =
+              docRef.onSnapshot().listen((DocumentSnapshot documentSnapshot) {
+            if (count < stepCount) {
+              completers[count++].complete(documentSnapshot);
+            }
+          });
+          int index = 0;
+          // wait for receiving first data
+          var snapshot = await completers[index++].future;
+          expect(snapshot.exists, isFalse);
 
-        // create it
-        await docRef.set({});
-        // wait for receiving change data
-        snapshot = await completers[index++].future;
-        expect(snapshot.exists, isTrue);
-        expect(snapshot.data, {});
+          // create it
+          await docRef.set({});
+          // wait for receiving change data
+          snapshot = await completers[index++].future;
+          expect(snapshot.exists, isTrue);
+          expect(snapshot.data, {});
 
-        // modify it
-        await docRef.set({'value': 1});
-        // wait for receiving change data
-        snapshot = await completers[index++].future;
-        expect(snapshot.exists, isTrue);
-        expect(snapshot.data, {'value': 1});
+          // modify it
+          await docRef.set({'value': 1});
+          // wait for receiving change data
+          snapshot = await completers[index++].future;
+          expect(snapshot.exists, isTrue);
+          expect(snapshot.data, {'value': 1});
 
-        // delete it
-        await docRef.delete();
-        // wait for receiving change data
-        snapshot = await completers[index++].future;
-        expect(snapshot.exists, isFalse);
+          // delete it
+          await docRef.delete();
+          // wait for receiving change data
+          snapshot = await completers[index++].future;
+          expect(snapshot.exists, isFalse);
 
-        await subscription.cancel();
+          await subscription.cancel();
+        }
       });
 
       test('SetOptions', () async {
@@ -936,20 +971,20 @@ void runApp(
         querySnapshot =
             await collRef.orderBy('value').startAt(values: [2]).get();
         list = querySnapshot.docs;
-        expect(list.length, 1);
+        expect(list.length, 1, reason: "check startAt implementation");
         expect(list.first.ref.id, "two");
 
         // start after
         querySnapshot =
             await collRef.orderBy('value').startAfter(values: [1]).get();
         list = querySnapshot.docs;
-        expect(list.length, 1);
+        expect(list.length, 1, reason: "check startAfter implementation");
         expect(list.first.ref.id, "two");
 
         // end at
         querySnapshot = await collRef.orderBy('value').endAt(values: [1]).get();
         list = querySnapshot.docs;
-        expect(list.length, 1);
+        expect(list.length, 1, reason: 'check endAt implementation');
         expect(list.first.ref.id, "one");
 
         // end before
@@ -1212,62 +1247,63 @@ void runApp(
         var docRef = collRef.doc('item');
         // delete it
         await docRef.delete();
+        if (firestoreService.supportsTrackChanges) {
+          var completer1 = Completer();
+          var completer2 = Completer();
+          var completer3 = Completer();
+          var completer4 = Completer();
+          int count = 0;
+          var subscription =
+              collRef.onSnapshot().listen((QuerySnapshot querySnapshot) {
+            if (++count == 1) {
+              // first step ignore the result
+              completer1.complete();
+            } else if (count == 2) {
+              // second step expect an added item
+              expect(querySnapshot.documentChanges.length, 1);
+              expect(querySnapshot.documentChanges.first.type,
+                  DocumentChangeType.added);
 
-        var completer1 = Completer();
-        var completer2 = Completer();
-        var completer3 = Completer();
-        var completer4 = Completer();
-        int count = 0;
-        var subscription =
-            collRef.onSnapshot().listen((QuerySnapshot querySnapshot) {
-          if (++count == 1) {
-            // first step ignore the result
-            completer1.complete();
-          } else if (count == 2) {
-            // second step expect an added item
-            expect(querySnapshot.documentChanges.length, 1);
-            expect(querySnapshot.documentChanges.first.type,
-                DocumentChangeType.added);
+              completer2.complete();
+            } else if (count == 3) {
+              // second step expect a modified item
+              expect(querySnapshot.documentChanges.length, 1);
+              expect(querySnapshot.documentChanges.first.type,
+                  DocumentChangeType.modified);
 
-            completer2.complete();
-          } else if (count == 3) {
-            // second step expect a modified item
-            expect(querySnapshot.documentChanges.length, 1);
-            expect(querySnapshot.documentChanges.first.type,
-                DocumentChangeType.modified);
+              completer3.complete();
+            } else if (count == 4) {
+              // second step expect a deletion
+              expect(querySnapshot.documentChanges.length, 1);
+              expect(querySnapshot.documentChanges.first.type,
+                  DocumentChangeType.removed);
 
-            completer3.complete();
-          } else if (count == 4) {
-            // second step expect a deletion
-            expect(querySnapshot.documentChanges.length, 1);
-            expect(querySnapshot.documentChanges.first.type,
-                DocumentChangeType.removed);
+              completer4.complete();
+            }
+          });
+          // wait for receiving first data
+          await completer1.future;
 
-            completer4.complete();
-          }
-        });
-        // wait for receiving first data
-        await completer1.future;
+          // create it
+          await docRef.set({});
 
-        // create it
-        await docRef.set({});
+          // wait for receiving change data
+          await completer2.future;
 
-        // wait for receiving change data
-        await completer2.future;
+          // modify it
+          await docRef.set({'value': 1});
 
-        // modify it
-        await docRef.set({'value': 1});
+          // wait for receiving change data
+          await completer3.future;
 
-        // wait for receiving change data
-        await completer3.future;
+          // delete it
+          await docRef.delete();
 
-        // delete it
-        await docRef.delete();
+          // wait for receiving change data
+          await completer4.future;
 
-        // wait for receiving change data
-        await completer4.future;
-
-        await subscription.cancel();
+          await subscription.cancel();
+        }
       });
     });
 
@@ -1354,6 +1390,23 @@ void runApp(
           var testsRef = getTestsRef();
           var collRef =
               testsRef.doc('transaction_test').collection('get_update');
+          var ref = collRef.doc("item");
+          await ref.set({"value": 1});
+
+          await firestore.runTransaction((txn) async {
+            var data = (await txn.get(ref)).data;
+
+            var map = <String, dynamic>{};
+            map["value"] = (data["value"] as int) + 1;
+            txn.update(ref, map);
+          });
+
+          expect((await ref.get()).data, {"value": 2});
+        });
+
+        test('get_set', () async {
+          var testsRef = getTestsRef();
+          var collRef = testsRef.doc('transaction_test').collection('get_set');
           var ref = collRef.doc("item");
           await ref.set({"value": 1});
 

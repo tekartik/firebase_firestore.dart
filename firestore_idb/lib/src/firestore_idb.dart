@@ -3,13 +3,16 @@ import 'dart:async';
 import 'package:idb_shim/idb.dart' as idb;
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
+import 'package:tekartik_common_utils/map_utils.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/document_data.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
+import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:uuid/uuid.dart';
 
@@ -32,22 +35,25 @@ class FirestoreServiceIdb
   FirestoreServiceIdb(this.idbFactory);
 
   @override
-  bool get supportsQuerySelect => false;
+  bool get supportsQuerySelect => true;
 
   @override
   bool get supportsDocumentSnapshotTime => true;
 
   @override
-  bool get supportsTimestampsInSnapshots => false;
+  bool get supportsTimestampsInSnapshots => true;
 
   @override
-  bool get supportsTimestamps => false;
+  bool get supportsTimestamps => true;
 
   @override
   bool get supportsQuerySnapshotCursor => true;
 
   @override
   bool get supportsFieldValueArray => false;
+
+  @override
+  bool get supportsTrackChanges => false;
 }
 
 FirestoreService getFirestoreService(idb.IdbFactory idbFactory) =>
@@ -58,8 +64,10 @@ class FirestoreIdb extends Object
     implements Firestore {
   final AppLocal appLocal;
   final FirestoreServiceIdb firestoreServiceIdb;
+
   idb.IdbFactory get idbFactory => firestoreServiceIdb.idbFactory;
   idb.Database _database;
+
   FutureOr<idb.Database> get databaseReady {
     if (_database != null) {
       return _database;
@@ -137,6 +145,7 @@ class FirestoreIdb extends Object
   }
 
   String get storeName => 'documents';
+
   Future<LocalTransaction> getReadWriteTransaction() async {
     idb.Database db = await databaseReady;
     var txn = db.transaction(storeName, idb.idbModeReadWrite);
@@ -196,14 +205,13 @@ class FirestoreIdb extends Object
     return txnGet(localTransaction, documentRef).then((snapshot) {
       result.previousSnapshot = snapshot;
 
-      /*
       Map<String, dynamic> recordMap;
 
       // Update rev
       int rev = (snapshot?.rev ?? 0) + 1;
       // merging?
       if (options?.merge == true) {
-        recordMap = documentDataToRecordMap(documentData, documentFromRecordMap(documentRef, sna, recordMap)existingRecordMap);
+        recordMap = documentDataToRecordMap(documentData, snapshot.data);
       } else {
         recordMap = documentDataToRecordMap(documentData);
       }
@@ -220,13 +228,12 @@ class FirestoreIdb extends Object
         recordMap[updateTimeKey] = now.toIso8601String();
       }
 
+      result.newSnapshot = this.documentFromRecordMap(documentRef, recordMap);
 
-      result.newSnapshot = this.documentFromRecordMap(ref, recordMap);
-      */
       // TODO
       return txn
           .objectStore(storeName)
-          .put(documentDataToRecordMap(documentData), documentRef.path)
+          .put(recordMap, documentRef.path)
           .then((_) {
         return result;
       });
@@ -244,7 +251,7 @@ class FirestoreIdb extends Object
       if (map == null) {
         throw Exception("No document found at $documentRef");
       }
-      map = documentDataToUpdateMap(documentData);
+      map = updateRecordMap(map, documentData);
       return localTransaction.transaction
           .objectStore(storeName)
           .put(map, documentRef.path)
@@ -288,7 +295,9 @@ class LocalTransaction {
   final FirestoreIdb firestoreIdb;
   final idb.Transaction transaction;
   final List<WriteResultIdb> results = [];
+
   LocalTransaction(this.firestoreIdb, this.transaction);
+
   Future get completed => transaction.completed;
 
   void notify() {
@@ -338,16 +347,30 @@ dynamic valueToUpdateValue(dynamic value) {
   return valueToRecordValue(value, valueToUpdateValue);
 }
 
-Map<String, dynamic> documentDataToUpdateMap(DocumentData documentData) {
+Map<String, dynamic> updateRecordMap(
+    Map<String, dynamic> existing, DocumentData documentData,
+    {boo}) {
   if (documentData == null) {
     return null;
   }
-  var updateMap = <String, dynamic>{};
+  Map<String, dynamic> recordMap = (existing != null)
+      ? cloneMap(existing)?.cast<String, dynamic>()
+      : <String, dynamic>{};
 
-  documentDataMap(documentData).map.forEach((String key, value) {
-    updateMap[key] = valueToUpdateValue(value);
+  var map = expandUpdateData(documentDataMap(documentData).map);
+  map.forEach((String key, value) {
+    // devPrint('key $key');
+    // special delete field
+    if (value == FieldValue.delete) {
+      // remove
+      recordMap.remove(key);
+    } else if (value is FieldValueArray) {
+      //recordMap[key] = fieldArrayValueMergeValue(value, existingRecordMap[key]);
+    } else {
+      recordMap[key] = valueToRecordValue(value);
+    }
   });
-  return updateMap;
+  return recordMap;
 }
 
 class DocumentSnapshotIdb extends DocumentSnapshotBase {
@@ -428,6 +451,7 @@ class QueryIdb extends FirestoreReferenceBase
       QueryIdb(firestore, path)..queryInfo = queryInfo?.clone();
 
   @override
+  @override
   Future<List<DocumentSnapshot>> getCollectionDocuments() async {
     var localTransaction = await firestoreIdb.getReadWriteTransaction();
     var txn = localTransaction.transaction;
@@ -441,10 +465,10 @@ class QueryIdb extends FirestoreReferenceBase
       if (dirname(docPath) == path) {
         docs.add(firestoreIdb.documentFromRecordMap(firestoreIdb.doc(docPath),
             (cwv.value as Map)?.cast<String, dynamic>()));
-        // continue
-        cwv.next();
-        return;
       }
+      // continue
+      cwv.next();
+
       // else otherwise just stop
     }).asFuture();
     return docs;
@@ -453,7 +477,9 @@ class QueryIdb extends FirestoreReferenceBase
 
 class CollectionReferenceIdb extends QueryIdb implements CollectionReference {
   CollectionReferenceIdb(FirestoreIdb firestoreIdb, String path)
-      : super(firestoreIdb, path);
+      : super(firestoreIdb, path) {
+    queryInfo = QueryInfo();
+  }
 
   @override
   Future<DocumentReference> add(Map<String, dynamic> data) async =>

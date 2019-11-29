@@ -50,6 +50,9 @@ class FirestoreServiceSembast
 
   @override
   bool get supportsFieldValueArray => true;
+
+  @override
+  bool get supportsTrackChanges => true;
 }
 
 FirestoreServiceSembast _firestoreServiceSembastMemory;

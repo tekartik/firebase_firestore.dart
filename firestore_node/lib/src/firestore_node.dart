@@ -48,6 +48,9 @@ class FirestoreServiceNode
 
   @override
   bool get supportsFieldValueArray => true;
+
+  @override
+  bool get supportsTrackChanges => true;
 }
 
 FirestoreServiceNode _firestoreServiceNode;

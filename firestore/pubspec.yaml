@@ -1,6 +1,6 @@
 name: tekartik_firebase_firestore
 description: Firebase firestore core
-version: 0.5.1
+version: 0.5.3
 author: alex <alex@tekartik.com>
 publish_to: none
 
