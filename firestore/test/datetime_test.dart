@@ -66,8 +66,8 @@ void main() {
       // 2018-10-20T00:00:00.000
 
       /*
-      // Cannot parse this
-      // This works as of dart dev 2.7.1
+      // Cannot parse this before 2.7.1
+      // after of dart dev 2.7.1
       text = '2018-10-20T05:13:45.985343123Z';
       dateTime = DateTime.tryParse(text);
       expect(dateTime, isNull);
