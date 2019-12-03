@@ -147,12 +147,15 @@ void main() {
       // Limit
       _checkParse('0001-01-01T00:00:00Z', '0001-01-01T00:00:00.000Z',
           '0001-01-01T00:00:00.000Z');
-      _checkParse(
-          '9999-12-31T23:59:59.999999999Z',
-          '9999-12-31T23:59:59.999999999Z',
-          runningAsJavascript
-              ? '+010000-01-01T00:00:00.000Z' // Precision issue
-              : '9999-12-31T23:59:59.999999Z');
+      if (!runningAsJavascript) {
+        _checkParse('9999-12-31T23:59:59.999999999Z',
+            '9999-12-31T23:59:59.999999999Z', '9999-12-31T23:59:59.999999Z');
+      } else {
+        // Before 2.7.1
+        // runningAsJavascript ? '+010000-01-01T00:00:00.000Z' // Precision issue
+        // After 2.7.1
+        // Invalid argument(s): invalid seconds part 10000-01-01 00:00:01.000Z
+      }
       // Parse local converted to utc
       expect(Timestamp.tryParse('2018-10-20T05:13:45.985').toIso8601String(),
           endsWith('.985Z'));
@@ -164,8 +167,13 @@ void main() {
 
       // Limit
       _checkParseSecondsNanos('0001-01-01T00:00:00Z', -62135596800, 0);
-      _checkParseSecondsNanos(
-          '9999-12-31T23:59:59.999999999Z', 253402300799, 999999999);
+      if (!runningAsJavascript) {
+        _checkParseSecondsNanos(
+            '9999-12-31T23:59:59.999999999Z', 253402300799, 999999999);
+      } else {
+        // After 2.7.1
+        // Invalid argument(s): invalid seconds part 10000-01-01 00:00:01.000Z
+      }
     });
 
     test('anyAsTimestamp', () {

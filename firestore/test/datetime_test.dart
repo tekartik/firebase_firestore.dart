@@ -48,7 +48,7 @@ void main() {
       dateTime = DateTime.tryParse(text);
       // expect(dateTime, isNotNull);
       // 2018-10-20T05:00:00.000Z
-      print(dateTime.toIso8601String());
+      // print(dateTime.toIso8601String());
 
       text = '2018-10-20Z';
       dateTime = DateTime.tryParse(text);
@@ -58,17 +58,20 @@ void main() {
       dateTime = DateTime.tryParse(text);
       expect(dateTime, isNotNull);
       // 2018-10-20T00:00:00.000
-      print(dateTime.toIso8601String());
+      // print(dateTime.toIso8601String());
 
       text = '2018-10';
       dateTime = DateTime.tryParse(text);
       expect(dateTime, isNull);
       // 2018-10-20T00:00:00.000
 
-      // Cannot parse this
+      /*
+      // Cannot parse this before 2.7.1
+      // after of dart dev 2.7.1
       text = '2018-10-20T05:13:45.985343123Z';
       dateTime = DateTime.tryParse(text);
       expect(dateTime, isNull);
+       */
     });
   });
 }
