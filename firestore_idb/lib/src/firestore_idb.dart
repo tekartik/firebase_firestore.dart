@@ -25,7 +25,7 @@ class FirestoreServiceIdb
   Firestore firestore(App app) {
     return getInstance(app, () {
       assert(app is AppLocal, 'invalid firebase app type');
-      AppLocal appLocal = app as AppLocal;
+      final appLocal = app as AppLocal;
       return FirestoreIdb(appLocal, this);
     });
   }
@@ -147,9 +147,9 @@ class FirestoreIdb extends Object
   String get storeName => 'documents';
 
   Future<LocalTransaction> getReadWriteTransaction() async {
-    idb.Database db = await databaseReady;
+    final db = await databaseReady;
     var txn = db.transaction(storeName, idb.idbModeReadWrite);
-    LocalTransaction localTransaction = LocalTransaction(this, txn);
+    final localTransaction = LocalTransaction(this, txn);
     return localTransaction;
   }
 
@@ -180,7 +180,7 @@ class FirestoreIdb extends Object
         .getObject(documentReferenceIdb.path)
         .then((value) {
       // we assume it is always a map
-      Map<String, dynamic> recordMap = (value as Map)?.cast<String, dynamic>();
+      final recordMap = (value as Map)?.cast<String, dynamic>();
 
       return DocumentSnapshotIdb(
           documentReferenceIdb,
@@ -208,7 +208,7 @@ class FirestoreIdb extends Object
       Map<String, dynamic> recordMap;
 
       // Update rev
-      int rev = (snapshot?.rev ?? 0) + 1;
+      final rev = (snapshot?.rev ?? 0) + 1;
       // merging?
       if (options?.merge == true) {
         recordMap = documentDataToRecordMap(documentData, snapshot.data);
@@ -228,7 +228,7 @@ class FirestoreIdb extends Object
         recordMap[updateTimeKey] = now.toIso8601String();
       }
 
-      result.newSnapshot = this.documentFromRecordMap(documentRef, recordMap);
+      result.newSnapshot = documentFromRecordMap(documentRef, recordMap);
 
       // TODO
       return txn
@@ -249,7 +249,7 @@ class FirestoreIdb extends Object
 
       // not found
       if (map == null) {
-        throw Exception("No document found at $documentRef");
+        throw Exception('No document found at $documentRef');
       }
       map = updateRecordMap(map, documentData);
       return localTransaction.transaction
@@ -353,7 +353,7 @@ Map<String, dynamic> updateRecordMap(
   if (documentData == null) {
     return null;
   }
-  Map<String, dynamic> recordMap = (existing != null)
+  final recordMap = (existing != null)
       ? cloneMap(existing)?.cast<String, dynamic>()
       : <String, dynamic>{};
 
@@ -461,7 +461,7 @@ class QueryIdb extends FirestoreReferenceBase
         .objectStore(firestoreIdb.storeName)
         .openCursor(range: idb.KeyRange.lowerBound(path), autoAdvance: false)
         .listen((cwv) {
-      String docPath = cwv.key as String;
+      final docPath = cwv.key as String;
       if (dirname(docPath) == path) {
         docs.add(firestoreIdb.documentFromRecordMap(firestoreIdb.doc(docPath),
             (cwv.value as Map)?.cast<String, dynamic>()));
@@ -493,7 +493,7 @@ class CollectionReferenceIdb extends QueryIdb implements CollectionReference {
 
   @override
   DocumentReference get parent {
-    String parentPath = this.parentPath;
+    final parentPath = this.parentPath;
     if (parentPath == null) {
       return null;
     } else {
@@ -512,7 +512,7 @@ class WriteBatchIdb extends WriteBatchBase implements WriteBatch {
   WriteBatchIdb(this.firestore);
 
   Future<List<WriteResultIdb>> txnCommit(LocalTransaction txn) async {
-    List<WriteResultIdb> results = [];
+    final results = <WriteResultIdb>[];
     for (var operation in operations) {
       if (operation is WriteBatchOperationDelete) {
         results.add(await firestore.txnDelete(

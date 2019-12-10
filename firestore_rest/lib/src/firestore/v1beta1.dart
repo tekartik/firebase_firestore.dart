@@ -7,6 +7,7 @@ library firestore_googleapis.firestore.v1beta1;
 // ignore_for_file: unused_import, unnecessary_cast, prefer_collection_literals
 // ignore_for_file: empty_constructor_bodies, constant_identifier_names, invalid_assignment, argument_type_not_assignable, directives_ordering
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: prefer_single_quotes, omit_local_variable_types
 
 import 'dart:core' as core;
 import 'dart:async' as async;

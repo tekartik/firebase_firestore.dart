@@ -13,8 +13,8 @@ void runApp(
 
     test('deleteCollection', () async {
       var ref = firestore
-          .collection(url.join(testsRefPath, "utils_collection", "delete"));
-      var itemDoc = ref.doc("item");
+          .collection(url.join(testsRefPath, 'utils_collection', 'delete'));
+      var itemDoc = ref.doc('item');
       // create an item
       await itemDoc.set({});
 

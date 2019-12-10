@@ -126,7 +126,7 @@ dynamic fieldArrayValueMergeValue(
 }
 
 dynamic valueToRecordValue(dynamic value,
-    [dynamic chainConverter(dynamic value)]) {
+    [dynamic Function(dynamic value) chainConverter]) {
   chainConverter ??= valueToRecordValue;
   if (value == null || value is num || value is bool || value is String) {
     return value;

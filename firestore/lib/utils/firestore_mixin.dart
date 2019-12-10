@@ -45,11 +45,11 @@ mixin FirestoreMixin implements Firestore {
 
   @override
   void settings(FirestoreSettings settings) {
-    if (this.firestoreSettings != null) {
+    if (firestoreSettings != null) {
       throw StateError(
           'firestore settings already set to $firestoreSettings cannot set to $settings');
     }
-    this.firestoreSettings = settings;
+    firestoreSettings = settings;
   }
 }
 
@@ -107,7 +107,7 @@ mixin FirestoreSubscriptionMixin on Firestore {
   }
 
   FirestoreSubscription<T> _addSubscription<T>(
-      String path, FirestoreSubscription<T> create()) {
+      String path, FirestoreSubscription<T> Function() create) {
     var subscription = findSubscription<T>(path);
     if (subscription == null) {
       subscription = create()..path = path;
@@ -282,10 +282,10 @@ class ComparableList<E> with ListMixin<E> implements Comparable<List<E>> {
 
   @override
   int compareTo(List other) {
-    for (int i = 0; i < min(other.length, this.length); i++) {
+    for (var i = 0; i < min(other.length, length); i++) {
       var item1 = _getComparable(this[i]);
       var item2 = _getComparable(other[i]);
-      int result = item1.compareTo(item2);
+      final result = item1.compareTo(item2);
       if (result != 0) {
         return result;
       }
@@ -330,15 +330,15 @@ class ComparableMap<K, V> with MapMixin<K, V> implements Comparable<Map<K, V>> {
   int compareTo(Map<K, V> other) {
     var keys1 = keys.toList(growable: false)..sort();
     var keys2 = other.keys.toList(growable: false)..sort();
-    for (int i = 0; i < min(length, other.length); i++) {
-      K key1 = keys1[i];
-      K key2 = keys2[i];
-      int result = _getComparable(key1).compareTo(_getComparable(key2));
+    for (var i = 0; i < min(length, other.length); i++) {
+      final key1 = keys1[i];
+      final key2 = keys2[i];
+      var result = _getComparable(key1).compareTo(_getComparable(key2));
       if (result != 0) {
         return result;
       }
-      V value1 = this[key1];
-      V value2 = other[key2];
+      final value1 = this[key1];
+      final value2 = other[key2];
       result = _getComparable(value1).compareTo(_getComparable(value2));
       if (result != 0) {
         return result;
@@ -349,7 +349,7 @@ class ComparableMap<K, V> with MapMixin<K, V> implements Comparable<Map<K, V>> {
 }
 
 int _compare(Comparable value1, Comparable value2, bool ascending) {
-  int compareValue = Comparable.compare(value1, value2);
+  final compareValue = Comparable.compare(value1, value2);
   if (ascending != false) {
     return compareValue;
   } else {
@@ -379,7 +379,7 @@ bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
 
   // Ignore if one sorted field is null
   if (queryInfo.orderBys.isNotEmpty) {
-    for (int i = 0; i < queryInfo.orderBys.length; i++) {
+    for (var i = 0; i < queryInfo.orderBys.length; i++) {
       var fieldPath = queryInfo.orderBys[i].fieldPath;
       // Must be non null and comparable
       if (getComparableValue(fieldPath) == null) {
@@ -400,12 +400,12 @@ bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
               queryInfo.endLimit?.values != null) &&
           queryInfo.orderBys.isNotEmpty) ||
       queryInfo.wheres.isNotEmpty) {
-    int startCompare = 0;
-    int endCompare = 0;
-    for (int i = 0; i < queryInfo.orderBys.length; i++) {
+    var startCompare = 0;
+    var endCompare = 0;
+    for (var i = 0; i < queryInfo.orderBys.length; i++) {
       var orderBy = queryInfo.orderBys[i];
       var fieldPath = orderBy.fieldPath;
-      Comparable value = getComparableValue(fieldPath);
+      final value = getComparableValue(fieldPath);
 
       // Start
       dynamic rawLimitValue = safeGetItem(queryInfo.startLimit?.values, i);
@@ -456,7 +456,7 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
 
   // Ignore if one sorted field is null
   if (queryInfo.orderBys.isNotEmpty) {
-    for (int i = 0; i < queryInfo.orderBys.length; i++) {
+    for (var i = 0; i < queryInfo.orderBys.length; i++) {
       var fieldPath = queryInfo.orderBys[i].fieldPath;
       if (fieldPath != firestoreNameFieldPath) {
         dynamic value = documentData.valueAtFieldPath(fieldPath);
@@ -479,7 +479,7 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
               queryInfo.endLimit?.values != null) &&
           queryInfo.orderBys.isNotEmpty) ||
       queryInfo.wheres.isNotEmpty) {
-    for (int i = 0; i < queryInfo.orderBys.length; i++) {
+    for (var i = 0; i < queryInfo.orderBys.length; i++) {
       var orderBy = queryInfo.orderBys[i];
       final value =
           documentData.valueAtFieldPath(orderBy.fieldPath) as Comparable;
@@ -555,7 +555,7 @@ mixin FirestoreQueryMixin implements Query {
   @override
   Future<QuerySnapshot> get() async {
     // Get and filter
-    List<DocumentSnapshot> docs = [];
+    var docs = <DocumentSnapshot>[];
     for (var doc in await getCollectionDocuments()) {
       if (snapshotMapQueryInfo(doc as DocumentSnapshotBase, queryInfo)) {
         docs.add(doc);
@@ -563,7 +563,7 @@ mixin FirestoreQueryMixin implements Query {
     }
 
     // if firestoreNameFieldPath (__name__) is not specified, add it
-    bool fieldPathFound = false;
+    var fieldPathFound = false;
 
     var orderBys = List.from(queryInfo.orderBys);
     for (var orderBy in orderBys) {
@@ -574,7 +574,7 @@ mixin FirestoreQueryMixin implements Query {
     }
 
     docs.sort((DocumentSnapshot snapshot1, DocumentSnapshot snapshot2) {
-      int cmp = 0;
+      var cmp = 0;
 
       if (!fieldPathFound) {
         orderBys.add(
@@ -582,8 +582,8 @@ mixin FirestoreQueryMixin implements Query {
       }
 
       for (var orderBy in orderBys) {
-        String keyPath = orderBy.fieldPath as String;
-        bool ascending = orderBy.ascending as bool;
+        final keyPath = orderBy.fieldPath as String;
+        final ascending = orderBy.ascending as bool;
 
         int _rawCompare(Comparable object1, Comparable object2) {
           if (object2 == null) {
@@ -600,7 +600,7 @@ mixin FirestoreQueryMixin implements Query {
         }
 
         int _compare(Comparable object1, Comparable object2) {
-          int rawCompare = _rawCompare(object1, object2);
+          final rawCompare = _rawCompare(object1, object2);
           if (ascending) {
             return rawCompare;
           } else {
@@ -630,10 +630,10 @@ mixin FirestoreQueryMixin implements Query {
     });
 
     // Handle snapshot filtering (after ordering)
-    List<DocumentSnapshot> filteredDocs = [];
+    final filteredDocs = <DocumentSnapshot>[];
     if (queryInfo.startLimit?.documentId != null ||
         queryInfo.endLimit?.documentId != null) {
-      bool add = true;
+      var add = true;
       if (queryInfo.startLimit?.documentId != null) {
         add = false;
       }
@@ -667,8 +667,8 @@ mixin FirestoreQueryMixin implements Query {
 
     // offset && limit
     if (queryInfo.limit != null || queryInfo.offset != null) {
-      List<DocumentSnapshot> limitedDocs = [];
-      int index = 0;
+      final limitedDocs = <DocumentSnapshot>[];
+      var index = 0;
       for (var snapshot in docs) {
         if (queryInfo.offset != null) {
           if (index < queryInfo.offset) {
@@ -689,7 +689,7 @@ mixin FirestoreQueryMixin implements Query {
 
     // Apply select
     if (queryInfo?.selectKeyPaths != null) {
-      List<DocumentSnapshot> selectedDocs = [];
+      final selectedDocs = <DocumentSnapshot>[];
       for (var snapshot in docs) {
         var meta = (snapshot as DocumentSnapshotBase).meta;
         var data =
@@ -774,8 +774,7 @@ mixin FirestoreQueryMixin implements Query {
 
     querySubscription = collectionSubscription.streamController.stream.listen(
         (DocumentChange collectionDocumentChange) async {
-      DocumentChangeBase documentChange =
-          collectionDocumentChange as DocumentChangeBase;
+      final documentChange = collectionDocumentChange as DocumentChangeBase;
       // get the base data
       var querySnapshot = await get() as QuerySnapshotBase;
       if (snapshotMapQueryInfo(
@@ -802,7 +801,7 @@ mixin FirestoreQueryMixin implements Query {
     get().then((QuerySnapshot querySnaphost) {
       var querySnapshotBase = querySnaphost as QuerySnapshotBase;
       // set index
-      int index = 0;
+      var index = 0;
       for (var doc in querySnaphost.docs) {
         querySnapshotBase.documentChanges.add(subscriptionMixin.documentChange(
             DocumentChangeType.added, doc, index++, -1));
@@ -828,14 +827,14 @@ abstract class AttributesMixin implements ReferenceAttributes {
 
   @override
   String get parentPath {
-    String dirPath = url.dirname(path);
+    final dirPath = url.dirname(path);
     if (dirPath?.isEmpty == true) {
       return null;
-    } else if (dirPath == ".") {
-      // Mimic firestore behavior where the top document has a "" path
+    } else if (dirPath == '.') {
+      // Mimic firestore behavior where the top document has a '' path
       return '';
-    } else if (dirPath == "/") {
-      // Mimic firestore behavior where the top document has a "" path
+    } else if (dirPath == '/') {
+      // Mimic firestore behavior where the top document has a '' path
       return '';
     }
     return dirPath;

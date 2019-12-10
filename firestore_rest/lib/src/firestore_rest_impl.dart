@@ -69,7 +69,7 @@ dynamic fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
 
 String restValueToString(FirestoreDocumentContext firestore, Value restValue) {
   if (restValue == null) {
-    return "(null)";
+    return '(null)';
   } else if (restValue.nullValue == 'NULL VALUE') {
     return restValue.nullValue;
   } else if (restValue.stringValue != null) {
@@ -489,7 +489,7 @@ class FirestoreRestImpl
 
     List<Value> toRestValues(List list) {
       var restValues = <Value>[];
-      for (int i = 0; i < list.length; i++) {
+      for (var i = 0; i < list.length; i++) {
         if (queryInfo.orderBys[i].fieldPath == firestoreNameFieldPath) {
           // Make it a document reference with an added '/'?????
           var id = list[i]?.toString();
@@ -526,15 +526,15 @@ class FirestoreRestImpl
   }
 
   String toRestDirection(bool ascending) {
-    /// "DIRECTION_UNSPECIFIED";
-    /// "ASCENDING" : Ascending.
-    /// "DESCENDING"
+    /// 'DIRECTION_UNSPECIFIED';
+    /// 'ASCENDING' : Ascending.
+    /// 'DESCENDING'
     if (ascending ?? false) {
-      return "ASCENDING";
+      return 'ASCENDING';
     } else if (ascending == null) {
-      return "DIRECTION_UNSPECIFIED";
+      return 'DIRECTION_UNSPECIFIED';
     } else {
-      return "DESCENDING";
+      return 'DESCENDING';
     }
   }
 
@@ -669,7 +669,7 @@ class FirestoreRestImpl
         if (operation is WriteBatchOperationDelete) {
           unawaited(deleteDocument(operation.docRef.path));
         } else if (operation is WriteBatchOperationSet) {
-          WriteBatchOperationSet setOperation = operation;
+          final setOperation = operation;
           unawaited(writeDocument(
               setOperation.docRef.path, setOperation.documentData.asMap(),
               merge: setOperation.options?.merge));

@@ -7,16 +7,16 @@ import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 
-const String jsonTypeField = r"$t";
-const String jsonValueField = r"$v";
-const String typeDateTime = "DateTime";
-const String typeTimestamp = "Timestamp";
-const String typeFieldValue = "FieldValue";
-const String typeDocumentReference = "DocumentReference";
-const String typeGeoPoint = "GeoPoint";
-const String typeBlob = "Blob";
-const String valueFieldValueDelete = "~delete";
-const String valueFieldValueServerTimestamp = "~serverTimestamp";
+const String jsonTypeField = r'$t';
+const String jsonValueField = r'$v';
+const String typeDateTime = 'DateTime';
+const String typeTimestamp = 'Timestamp';
+const String typeFieldValue = 'FieldValue';
+const String typeDocumentReference = 'DocumentReference';
+const String typeGeoPoint = 'GeoPoint';
+const String typeBlob = 'Blob';
+const String valueFieldValueDelete = '~delete';
+const String valueFieldValueServerTimestamp = '~serverTimestamp';
 
 Map<String, dynamic> typeValueToJson(String type, dynamic value) {
   return <String, dynamic>{jsonTypeField: type, jsonValueField: value};
@@ -41,8 +41,8 @@ Map<String, dynamic> fieldValueToJsonValue(FieldValue fieldValue) {
   } else if (fieldValue == FieldValue.serverTimestamp) {
     return typeValueToJson(typeFieldValue, valueFieldValueServerTimestamp);
   }
-  throw ArgumentError.value(fieldValue, "${fieldValue.runtimeType}",
-      "Unsupported value for fieldValueToJsonValue");
+  throw ArgumentError.value(fieldValue, '${fieldValue.runtimeType}',
+      'Unsupported value for fieldValueToJsonValue');
 }
 
 FieldValue fieldValueFromJsonValue(dynamic value) {
@@ -51,8 +51,8 @@ FieldValue fieldValueFromJsonValue(dynamic value) {
   } else if (value == valueFieldValueServerTimestamp) {
     return FieldValue.serverTimestamp;
   }
-  throw ArgumentError.value(value, "${value.runtimeType}",
-      "Unsupported value for fieldValueFromJsonValue");
+  throw ArgumentError.value(value, '${value.runtimeType}',
+      'Unsupported value for fieldValueFromJsonValue');
 }
 
 DateTime jsonValueToDateTime(Map map) {
@@ -144,8 +144,8 @@ dynamic documentDataValueToJson(dynamic value) {
   } else if (value is GeoPoint) {
     return geoPointToJsonValue(value);
   } else {
-    throw ArgumentError.value(value, "${value.runtimeType}",
-        "Unsupported value for documentDataValueToJson");
+    throw ArgumentError.value(value, '${value.runtimeType}',
+        'Unsupported value for documentDataValueToJson');
   }
 }
 
@@ -186,15 +186,15 @@ dynamic jsonToDocumentDataValue(Firestore firestore, dynamic value) {
         case typeGeoPoint:
           return jsonValueToGeoPoint(value);
         default:
-          throw UnsupportedError("value $value");
+          throw UnsupportedError('value $value');
       }
     } else {
       return value.map<String, dynamic>((key, value) =>
           MapEntry(key as String, jsonToDocumentDataValue(firestore, value)));
     }
   } else {
-    throw ArgumentError.value(value, "${value.runtimeType}",
-        "Unsupported value for jsonToDocumentDataValue");
+    throw ArgumentError.value(value, '${value.runtimeType}',
+        'Unsupported value for jsonToDocumentDataValue');
   }
 }
 
@@ -289,7 +289,7 @@ class WhereInfo {
             isGreaterThan != null ||
             isGreaterThanOrEqualTo != null ||
             arrayContains != null,
-        "Empty where");
+        'Empty where');
   }
 
   dynamic isEqualTo;
@@ -438,7 +438,7 @@ Map<String, dynamic> whereInfoToJsonMap(WhereInfo whereInfo) {
 Map<String, dynamic> orderByInfoToJsonMap(OrderByInfo orderByInfo) {
   var map = <String, dynamic>{
     'fieldPath': orderByInfo.fieldPath,
-    "direction":
+    'direction':
         orderByInfo.ascending == true ? orderByAscending : orderByDescending
   };
   return map;
@@ -506,7 +506,7 @@ Map<String, dynamic> queryInfoToJsonMap(QueryInfo queryInfo) {
 }
 
 QueryInfo queryInfoFromJsonMap(Firestore firestore, Map<String, dynamic> map) {
-  QueryInfo queryInfo = QueryInfo();
+  final queryInfo = QueryInfo();
   if (map.containsKey('limit')) {
     queryInfo.limit = map['limit'] as int;
   }
@@ -539,9 +539,9 @@ QueryInfo queryInfoFromJsonMap(Firestore firestore, Map<String, dynamic> map) {
   return queryInfo;
 }
 
-const changeTypeAdded = "added";
-const changeTypeModified = "modified";
-const changeTypeRemoved = "removed";
+const changeTypeAdded = 'added';
+const changeTypeModified = 'modified';
+const changeTypeRemoved = 'removed';
 
 DocumentChangeType documentChangeTypeFromString(String type) {
   // [:added:], [:removed:] or [:modified:]

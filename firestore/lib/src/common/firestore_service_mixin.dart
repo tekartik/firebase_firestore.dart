@@ -6,7 +6,7 @@ mixin FirestoreServiceMixin implements FirestoreService {
   static final _instances = <App, Firestore>{};
 
   T getInstance<T extends Firestore>(App app, T Function() createIfNotFound) {
-    T instance = _instances[app] as T;
+    var instance = _instances[app] as T;
     if (instance == null) {
       instance = createIfNotFound();
       _instances[app] = instance;

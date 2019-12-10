@@ -55,7 +55,7 @@ abstract class Firestore {
   /// completed successfully of was explicitly aborted by returning a Future
   /// with an error. If [updateFunction] throws then returned Future completes
   /// with the same error.
-  Future runTransaction(dynamic updateFunction(Transaction transaction));
+  Future runTransaction(dynamic Function(Transaction transaction) action);
 
   /// Specifies custom settings to be used to configure the `Firestore`
   /// instance.
@@ -263,7 +263,7 @@ class GeoPoint {
   bool operator ==(other) {
     if (identical(this, other)) return true;
     if (other is GeoPoint) {
-      GeoPoint point = other;
+      final point = other;
       return latitude == point.latitude && longitude == point.longitude;
     } else {
       return false;
@@ -277,7 +277,7 @@ class GeoPoint {
           : 0;
 
   @override
-  String toString() => "[$latitude° N, $longitude° E]";
+  String toString() => '[$latitude° N, $longitude° E]';
 }
 
 class SetOptions {
@@ -299,8 +299,8 @@ const String operatorArrayContains = 'array-contains';
 @deprecated
 const String opeatorArrayContains = operatorArrayContains;
 
-const orderByAscending = "asc";
-const orderByDescending = "desc";
+const orderByAscending = 'asc';
+const orderByDescending = 'desc';
 
 abstract class WriteBatch {
   void delete(DocumentReference ref);

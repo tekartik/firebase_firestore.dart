@@ -31,7 +31,7 @@ class SetMergedDocument extends WriteDocument {
     }
     var fields = <String, Value>{};
     map.forEach((key, value) {
-      String stringKey = key.toString();
+      final stringKey = key.toString();
       fields[stringKey] = patchToRestValue(stringKey, value);
 
       fieldPaths ??= [];
@@ -61,7 +61,7 @@ class UpdateDocument extends WriteDocument {
     }
     var fields = <String, Value>{};
     map.forEach((key, value) {
-      String stringKey = key.toString();
+      final stringKey = key.toString();
 
       fieldPaths ??= [];
       fieldPaths.add(stringKey);
@@ -70,7 +70,7 @@ class UpdateDocument extends WriteDocument {
     var expanded = expandUpdateData(map);
 
     expanded.forEach((key, value) {
-      String stringKey = key.toString();
+      final stringKey = key.toString();
 
       if (value == FieldValue.delete) {
         // Don't set it  in the fields but add
@@ -92,7 +92,7 @@ class UpdateDocument extends WriteDocument {
     }
     var fields = <String, Value>{};
     map.forEach((key, value) {
-      String stringKey = key.toString();
+      final stringKey = key.toString();
 
       if (value == FieldValue.delete) {
         // Don't set it  in the fields but added in field paths
@@ -147,7 +147,7 @@ class WriteDocument with DocumentContext {
     }
     var fields = <String, Value>{};
     map.forEach((key, value) {
-      String stringKey = key.toString();
+      final stringKey = key.toString();
 
       if (value == FieldValue.delete) {
         // Don't set it  in the fileds but add

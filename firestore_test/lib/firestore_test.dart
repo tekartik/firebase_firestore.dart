@@ -16,7 +16,7 @@ void run(
     {@required Firebase firebase,
     @required FirestoreService firestoreService,
     AppOptions options}) {
-  App app = firebase.initializeApp(options: options);
+  final app = firebase.initializeApp(options: options);
 
   tearDownAll(() {
     return app.delete();
@@ -60,7 +60,7 @@ void runNoTimestampsInSnapshots(
       return firestore.collection(testsRefPath);
     }
 
-    group("Data", () {
+    group('Data', () {
       test('date', () async {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('date');
@@ -69,10 +69,10 @@ void runNoTimestampsInSnapshots(
         var utcDateTime =
             DateTime.fromMillisecondsSinceEpoch(12345678901).toUtc();
         await docRef
-            .set({"some_date": localDateTime, "some_utc_date": utcDateTime});
+            .set({'some_date': localDateTime, 'some_utc_date': utcDateTime});
         expect((await docRef.get()).data, {
-          "some_date": localDateTime,
-          "some_utc_date": utcDateTime.toLocal()
+          'some_date': localDateTime,
+          'some_utc_date': utcDateTime.toLocal()
         });
 
         var snapshot = (await testsRef
@@ -82,8 +82,8 @@ void runNoTimestampsInSnapshots(
             .docs
             .first;
         expect(snapshot.data, {
-          "some_date": localDateTime,
-          "some_utc_date": utcDateTime.toLocal()
+          'some_date': localDateTime,
+          'some_utc_date': utcDateTime.toLocal()
         });
         await docRef.delete();
       });
@@ -109,7 +109,7 @@ void runApp(
 
     group('DocumentReference', () {
       test('create', () async {
-        var ref = firestore.doc(url.join(testsRefPath, "document_reference"));
+        var ref = firestore.doc(url.join(testsRefPath, 'document_reference'));
         try {
           await ref.delete();
         } catch (_) {}
@@ -173,7 +173,7 @@ void runApp(
       });
 
       test('update_dummy', () async {
-        bool failed = false;
+        var failed = false;
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('dummy_id_that_should_never_exists');
         try {
@@ -264,21 +264,21 @@ void runApp(
       });
     });
 
-    group("DocumentData", () {
+    group('DocumentData', () {
       test('property', () async {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('property');
         var documentData = DocumentData();
-        expect(documentData.has("some_property"), isFalse);
+        expect(documentData.has('some_property'), isFalse);
         expect(documentData.keys, isEmpty);
-        documentData.setProperty("some_property", "test_1");
-        expect(documentData.keys, ["some_property"]);
-        expect(documentData.has("some_property"), isTrue);
+        documentData.setProperty('some_property', 'test_1');
+        expect(documentData.keys, ['some_property']);
+        expect(documentData.has('some_property'), isTrue);
         await docRef.set(documentData.asMap());
         documentData = DocumentData((await docRef.get()).data);
-        expect(documentData.has("some_property"), isTrue);
-        expect(documentData.keys, ["some_property"]);
-        expect(documentData.has("other_property"), isFalse);
+        expect(documentData.has('some_property'), isTrue);
+        expect(documentData.keys, ['some_property']);
+        expect(documentData.has('other_property'), isFalse);
         await docRef.delete();
       });
 
@@ -293,13 +293,13 @@ void runApp(
           var timestamp = Timestamp(123456789, 123456000);
           var docRef = testsRef.doc('all_fields');
           var documentData = DocumentData();
-          documentData.setString("string", "string_value");
+          documentData.setString('string', 'string_value');
 
-          documentData.setInt("int", 12345678901);
-          documentData.setNum("num", 3.1416);
-          documentData.setBool("bool", true);
-          documentData.setDateTime("localDateTime", localDateTime);
-          documentData.setDateTime("utcDateTime", utcDateTime);
+          documentData.setInt('int', 12345678901);
+          documentData.setNum('num', 3.1416);
+          documentData.setBool('bool', true);
+          documentData.setDateTime('localDateTime', localDateTime);
+          documentData.setDateTime('utcDateTime', utcDateTime);
           documentData.setTimestamp('timestamp', timestamp);
           documentData.setList('intList', <int>[4, 3]);
           documentData.setDocumentReference(
@@ -308,26 +308,26 @@ void runApp(
           documentData.setGeoPoint('geoPoint', GeoPoint(1.2, 4));
 
           documentData.setFieldValue(
-              "serverTimestamp", FieldValue.serverTimestamp);
+              'serverTimestamp', FieldValue.serverTimestamp);
 
           var subData = DocumentData();
-          subData.setDateTime("localDateTime", localDateTime);
-          documentData.setData("subData", subData);
+          subData.setDateTime('localDateTime', localDateTime);
+          documentData.setData('subData', subData);
 
           var subSubData = DocumentData();
-          subData.setData("inner", subSubData);
+          subData.setData('inner', subSubData);
 
           await docRef.set(documentData.asMap());
           documentData = DocumentData((await docRef.get()).data);
-          expect(documentData.getString("string"), "string_value");
+          expect(documentData.getString('string'), 'string_value');
 
-          expect(documentData.getInt("int"), 12345678901);
-          expect(documentData.getNum("num"), 3.1416);
-          expect(documentData.getBool("bool"), true);
+          expect(documentData.getInt('int'), 12345678901);
+          expect(documentData.getNum('num'), 3.1416);
+          expect(documentData.getBool('bool'), true);
 
-          expect(documentData.getDateTime("localDateTime"), localDateTime);
+          expect(documentData.getDateTime('localDateTime'), localDateTime);
           expect(
-              documentData.getDateTime("utcDateTime"), utcDateTime.toLocal());
+              documentData.getDateTime('utcDateTime'), utcDateTime.toLocal());
           // Might only get milliseconds in the browser
           expect(
               documentData.getTimestamp('timestamp'),
@@ -339,27 +339,27 @@ void runApp(
           expect(documentData.getGeoPoint('geoPoint'), GeoPoint(1.2, 4));
           expect(
               documentData
-                      .getDateTime("serverTimestamp")
+                      .getDateTime('serverTimestamp')
                       .millisecondsSinceEpoch >
                   0,
               isTrue);
-          List<int> list = documentData.getList('intList');
+          final list = documentData.getList<int>('intList');
           expect(list, [4, 3]);
 
-          subData = documentData.getData("subData");
-          expect(subData.getDateTime("localDateTime"), localDateTime);
+          subData = documentData.getData('subData');
+          expect(subData.getDateTime('localDateTime'), localDateTime);
 
-          subSubData = subData.getData("inner");
+          subSubData = subData.getData('inner');
           expect(subSubData, isNotNull);
         },
       );
     });
-    group("Data", () {
+    group('Data', () {
       test('string', () async {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('string');
-        await docRef.set({"some_key": "some_value"});
-        expect((await docRef.get()).data, {"some_key": "some_value"});
+        await docRef.set({'some_key': 'some_value'});
+        expect((await docRef.get()).data, {'some_key': 'some_value'});
         await docRef.delete();
       });
 
@@ -367,19 +367,19 @@ void runApp(
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('list');
         await docRef.set({
-          "some_key": [
-            {"sub_key": "some_value"}
+          'some_key': [
+            {'sub_key': 'some_value'}
           ]
         });
         var snapshot = await docRef.get();
         var documentData = DocumentData(snapshot.data);
         expect(snapshot.data, {
-          "some_key": [
-            {"sub_key": "some_value"}
+          'some_key': [
+            {'sub_key': 'some_value'}
           ]
         });
         var list = documentData.getList('some_key');
-        DocumentData sub = DocumentData(list[0] as Map<String, dynamic>);
+        final sub = DocumentData(list[0] as Map<String, dynamic>);
         expect(sub.getString('sub_key'), 'some_value');
         await docRef.delete();
       });
@@ -392,19 +392,19 @@ void runApp(
         var utcDateTime =
             DateTime.fromMillisecondsSinceEpoch(12345678901).toUtc();
         await docRef
-            .set({"some_date": localDateTime, "some_utc_date": utcDateTime});
+            .set({'some_date': localDateTime, 'some_utc_date': utcDateTime});
 
         void _check(Map data) {
           if (firestoreService.supportsTimestampsInSnapshots) {
             //devPrint(data['some_date'].runtimeType);
             expect(data, {
-              "some_date": Timestamp.fromDateTime(localDateTime),
-              "some_utc_date": Timestamp.fromDateTime(utcDateTime.toLocal())
+              'some_date': Timestamp.fromDateTime(localDateTime),
+              'some_utc_date': Timestamp.fromDateTime(utcDateTime.toLocal())
             });
           } else {
             expect(data, {
-              "some_date": localDateTime,
-              "some_utc_date": utcDateTime.toLocal()
+              'some_date': localDateTime,
+              'some_utc_date': utcDateTime.toLocal()
             });
           }
         }
@@ -426,7 +426,7 @@ void runApp(
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('timestamp');
         var timestamp = Timestamp(1234567890, 1234);
-        await docRef.set({"some_timestamp": timestamp});
+        await docRef.set({'some_timestamp': timestamp});
 
         var data = (await docRef.get()).data;
 
@@ -434,13 +434,13 @@ void runApp(
           expect(
               data,
               {
-                "some_timestamp": timestamp,
+                'some_timestamp': timestamp,
               },
               reason:
                   'nanos: ${timestamp.nanoseconds} vs ${(data['some_timestamp'] as Timestamp).nanoseconds}');
         } else {
           expect(data, {
-            "some_timestamp": timestamp.toDateTime(),
+            'some_timestamp': timestamp.toDateTime(),
           });
         }
         await docRef.delete();
@@ -450,19 +450,19 @@ void runApp(
         var testsRef = getTestsRef().doc('lookup').collection('timestamp');
         var docRef = testsRef.doc('timestamp');
         var timestamp = Timestamp(1234567890, 123000);
-        await docRef.set({"some_timestamp": timestamp});
+        await docRef.set({'some_timestamp': timestamp});
         void _check(Map<String, dynamic> data) {
           if (firestoreService.supportsTimestampsInSnapshots) {
             expect(
                 data,
                 {
-                  "some_timestamp": timestamp,
+                  'some_timestamp': timestamp,
                 },
                 reason:
                     'nanos: ${timestamp.nanoseconds} vs ${(data['some_timestamp'] as Timestamp).nanoseconds}');
           } else {
             expect(data, {
-              "some_timestamp": timestamp.toDateTime(),
+              'some_timestamp': timestamp.toDateTime(),
             });
           }
         }
@@ -496,21 +496,21 @@ void runApp(
           var timestamp = Timestamp(1234567890, 123000);
           var docRef = testsRef.doc('all_fields');
           var data = {
-            "string": "string_value",
-            "int": 12345678901,
-            "num": 3.1416,
-            "bool": true,
-            "localDateTime": localDateTime,
-            "utcDateTime": utcDateTime,
+            'string': 'string_value',
+            'int': 12345678901,
+            'num': 3.1416,
+            'bool': true,
+            'localDateTime': localDateTime,
+            'utcDateTime': utcDateTime,
             'timestamp': timestamp,
             'intList': <int>[4, 3],
             'docRef': firestore.doc('tests/doc'),
             'blob': Blob(Uint8List.fromList([1, 2, 3])),
             'geoPoint': GeoPoint(1.2, 4),
-            "serverTimestamp": FieldValue.serverTimestamp,
-            "subData": {
-              "localDateTime": localDateTime,
-              "inner": {'int': 1234}
+            'serverTimestamp': FieldValue.serverTimestamp,
+            'subData': {
+              'localDateTime': localDateTime,
+              'inner': {'int': 1234}
             }
           };
 
@@ -526,14 +526,14 @@ void runApp(
           data.remove('serverTimestamp');
           data.remove('docRef');
           expect(data, {
-            "string": "string_value",
-            "int": 12345678901,
-            "num": 3.1416,
-            "bool": true,
-            "localDateTime": firestoreService.supportsTimestampsInSnapshots
+            'string': 'string_value',
+            'int': 12345678901,
+            'num': 3.1416,
+            'bool': true,
+            'localDateTime': firestoreService.supportsTimestampsInSnapshots
                 ? Timestamp.fromDateTime(localDateTime)
                 : localDateTime,
-            "utcDateTime": firestoreService.supportsTimestampsInSnapshots
+            'utcDateTime': firestoreService.supportsTimestampsInSnapshots
                 ? Timestamp.fromDateTime(utcDateTime)
                 : utcDateTime.toLocal(),
             'timestamp': firestoreService.supportsTimestampsInSnapshots
@@ -542,11 +542,11 @@ void runApp(
             'intList': <int>[4, 3],
             'blob': Blob(Uint8List.fromList([1, 2, 3])),
             'geoPoint': GeoPoint(1.2, 4),
-            "subData": {
-              "localDateTime": firestoreService.supportsTimestampsInSnapshots
+            'subData': {
+              'localDateTime': firestoreService.supportsTimestampsInSnapshots
                   ? Timestamp.fromDateTime(localDateTime)
                   : localDateTime,
-              "inner": {'int': 1234}
+              'inner': {'int': 1234}
             }
           });
         },
@@ -554,89 +554,89 @@ void runApp(
 
       test('deleteField', () async {
         var testsRef = getTestsRef();
-        var docRef = testsRef.doc("delete_field");
+        var docRef = testsRef.doc('delete_field');
         var data = <String, dynamic>{
-          "some_key": "some_value",
-          "other_key": "other_value"
+          'some_key': 'some_value',
+          'other_key': 'other_value'
         };
         await docRef.set(data);
         data = (await docRef.get()).data;
-        expect(data, {"some_key": "some_value", "other_key": "other_value"});
+        expect(data, {'some_key': 'some_value', 'other_key': 'other_value'});
 
-        data = {"some_key": FieldValue.delete};
+        data = {'some_key': FieldValue.delete};
         await docRef.update(data);
         data = (await docRef.get()).data;
-        expect(data, {"other_key": "other_value"});
+        expect(data, {'other_key': 'other_value'});
       });
       test('array', () async {
         if (firestoreService.supportsFieldValueArray) {
           var testsRef = getTestsRef();
-          var docRef = testsRef.doc("array_union");
+          var docRef = testsRef.doc('array_union');
 
           // Test creating an array
           var data = <String, dynamic>{
-            "some_array": FieldValue.arrayUnion([1]),
+            'some_array': FieldValue.arrayUnion([1]),
             // create to be updated later as an array
-            "not_array": 2,
+            'not_array': 2,
           };
           await docRef.set(data);
           data = (await docRef.get()).data;
           expect(data, {
-            "some_array": [1],
-            "not_array": 2
+            'some_array': [1],
+            'not_array': 2
           });
 
           // Test update arrayUnion and overriding a non array field
           data = <String, dynamic>{
-            "some_array": FieldValue.arrayUnion([3]),
-            "not_array": FieldValue.arrayUnion([4, 5]),
+            'some_array': FieldValue.arrayUnion([3]),
+            'not_array': FieldValue.arrayUnion([4, 5]),
           };
           await docRef.update(data);
           data = (await docRef.get()).data;
           expect(data, {
-            "some_array": [1, 3],
-            "not_array": [4, 5],
+            'some_array': [1, 3],
+            'not_array': [4, 5],
           });
 
           // Test arrayRemove
           data = <String, dynamic>{
-            "some_array": FieldValue.arrayRemove([1]),
-            "not_array": FieldValue.arrayRemove([4, 6]),
-            "not_existing": FieldValue.arrayRemove([7]),
+            'some_array': FieldValue.arrayRemove([1]),
+            'not_array': FieldValue.arrayRemove([4, 6]),
+            'not_existing': FieldValue.arrayRemove([7]),
           };
           await docRef.update(data);
           data = (await docRef.get()).data;
           expect(data, {
-            "some_array": [3],
-            "not_array": [5],
-            "not_existing": []
+            'some_array': [3],
+            'not_array': [5],
+            'not_existing': []
           });
 
           // Test update using set with merge
           data = <String, dynamic>{
-            "some_array": FieldValue.arrayUnion([8]),
-            "not_array": FieldValue.arrayRemove([5]),
-            "merged_not_existing": FieldValue.arrayRemove([9])
+            'some_array': FieldValue.arrayUnion([8]),
+            'not_array': FieldValue.arrayRemove([5]),
+            'merged_not_existing': FieldValue.arrayRemove([9])
           };
           await docRef.set(data, SetOptions(merge: true));
           data = (await docRef.get()).data;
           expect(data, {
-            "some_array": [3, 8],
-            "not_array": [],
-            "not_existing": [],
-            "merged_not_existing": [],
+            'some_array': [3, 8],
+            'not_array': [],
+            'not_existing': [],
+            'merged_not_existing': [],
           });
 
           // Test update using set no merge
           data = <String, dynamic>{
-            "some_array": FieldValue.arrayUnion([3, 6]),
-            "no_merge_not_existing": FieldValue.arrayRemove([10]),
+            'some_array': FieldValue.arrayUnion([3, 6]),
+            'no_merge_not_existing': FieldValue.arrayRemove([10]),
           };
           await docRef.set(data);
           data = (await docRef.get()).data;
           expect(data, {
-            "some_array": [3, 6],
-            "no_merge_not_existing": []
+            'some_array': [3, 6],
+            'no_merge_not_existing': []
           });
         }
       });
@@ -648,10 +648,10 @@ void runApp(
       test('attributes', () {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('document_test_attributes');
-        expect(docRef.id, "document_test_attributes");
-        expect(docRef.path, "${testsRef.path}/document_test_attributes");
+        expect(docRef.id, 'document_test_attributes');
+        expect(docRef.path, '${testsRef.path}/document_test_attributes');
         expect(docRef.parent, const TypeMatcher<CollectionReference>());
-        expect(docRef.parent.id, "tests");
+        expect(docRef.parent.id, 'tests');
       });
 
       test('set subfield', () async {
@@ -659,7 +659,7 @@ void runApp(
         var docRef = testsRef.doc('document_set_sub_field');
         await docRef.set({'sub.field': 1});
         expect((await docRef.get()).data, {'sub.field': 1});
-      }); //skip: "Not working with sembast yet");
+      }); //skip: 'Not working with sembast yet');
 
       test('update sub.field', () async {
         var testsRef = getTestsRef();
@@ -744,17 +744,17 @@ void runApp(
         await docRef.delete();
 
         if (firestoreService.supportsTrackChanges) {
-          int stepCount = 4;
+          var stepCount = 4;
           var completers =
               List.generate(stepCount, (_) => Completer<DocumentSnapshot>());
-          int count = 0;
+          var count = 0;
           var subscription =
               docRef.onSnapshot().listen((DocumentSnapshot documentSnapshot) {
             if (count < stepCount) {
               completers[count++].complete(documentSnapshot);
             }
           });
-          int index = 0;
+          var index = 0;
           // wait for receiving first data
           var snapshot = await completers[index++].future;
           expect(snapshot.exists, isFalse);
@@ -804,23 +804,23 @@ void runApp(
       test('attributes', () {
         var testsRef = getTestsRef();
         var collRef = testsRef.doc('collection_test').collection('attributes');
-        expect(collRef.id, "attributes");
-        expect(collRef.path, "${testsRef.path}/collection_test/attributes");
+        expect(collRef.id, 'attributes');
+        expect(collRef.path, '${testsRef.path}/collection_test/attributes');
         expect(collRef.parent, const TypeMatcher<DocumentReference>());
-        expect(collRef.parent.id, "collection_test");
+        expect(collRef.parent.id, 'collection_test');
 
         // it seems the parent is not null as expected here...
         // however the path is empty...
         // Not supported on browser
-        // expect(firestore.collection("tests").parent.path, '');
+        // expect(firestore.collection('tests').parent.path, '');
         // Not supported on browser
-        // expect(firestore.collection("/tests").parent.path, '');
+        // expect(firestore.collection('/tests').parent.path, '');
       });
 
       test('empty', () async {
         var testsRef = getTestsRef();
         var collRef = testsRef.doc('collection_test').collection('empty');
-        QuerySnapshot querySnapshot = await collRef.get();
+        final querySnapshot = await collRef.get();
         var list = querySnapshot.docs;
         expect(list, isEmpty);
       });
@@ -830,10 +830,10 @@ void runApp(
         var collRef = testsRef.doc('collection_test').collection('single');
         var docRef = collRef.doc('one');
         await docRef.set({});
-        QuerySnapshot querySnapshot = await collRef.get();
+        final querySnapshot = await collRef.get();
         var list = querySnapshot.docs;
         expect(list.length, 1);
-        expect(list.first.ref.id, "one");
+        expect(list.first.ref.id, 'one');
       });
 
       test('select', () async {
@@ -841,7 +841,7 @@ void runApp(
         var collRef = testsRef.doc('collection_test').collection('select');
         var docRef = collRef.doc('one');
         await docRef.set({'field1': 1, 'field2': 2});
-        QuerySnapshot querySnapshot = await collRef.select(['field1']).get();
+        var querySnapshot = await collRef.select(['field1']).get();
         var data = querySnapshot.docs.first.data;
         if (firestoreService.supportsQuerySelect) {
           expect(data, {'field1': 1});
@@ -869,7 +869,7 @@ void runApp(
         await twoRef.set({});
         var oneRef = collRef.doc('one');
         await oneRef.set({});
-        QuerySnapshot querySnapshot = await collRef.get();
+        var querySnapshot = await collRef.get();
         // Order by name by default
         expect(querySnapshot.docs[0].ref.path, oneRef.path);
         expect(querySnapshot.docs[1].ref.path, twoRef.path);
@@ -932,7 +932,7 @@ void runApp(
           'sub': {'value': 'a'}
         });
         // limit
-        QuerySnapshot querySnapshot = await collRef.limit(1).get();
+        var querySnapshot = await collRef.limit(1).get();
         list = querySnapshot.docs;
         expect(list.length, 1);
 
@@ -947,52 +947,52 @@ void runApp(
         querySnapshot = await collRef.orderBy('value').get();
         list = querySnapshot.docs;
         expect(list.length, 2);
-        expect(list.first.ref.id, "one");
+        expect(list.first.ref.id, 'one');
 
         // order by date
         querySnapshot = await collRef.orderBy('date').get();
         list = querySnapshot.docs;
         expect(list.length, 2);
-        expect(list.first.ref.id, "two");
+        expect(list.first.ref.id, 'two');
 
         // order by sub field
         querySnapshot = await collRef.orderBy('sub.value').get();
         list = querySnapshot.docs;
         expect(list.length, 2);
-        expect(list.first.ref.id, "two");
+        expect(list.first.ref.id, 'two');
 
         // desc
         querySnapshot = await collRef.orderBy('value', descending: true).get();
         list = querySnapshot.docs;
         expect(list.length, 2);
-        expect(list.first.ref.id, "two");
+        expect(list.first.ref.id, 'two');
 
         // start at
         querySnapshot =
             await collRef.orderBy('value').startAt(values: [2]).get();
         list = querySnapshot.docs;
-        expect(list.length, 1, reason: "check startAt implementation");
-        expect(list.first.ref.id, "two");
+        expect(list.length, 1, reason: 'check startAt implementation');
+        expect(list.first.ref.id, 'two');
 
         // start after
         querySnapshot =
             await collRef.orderBy('value').startAfter(values: [1]).get();
         list = querySnapshot.docs;
-        expect(list.length, 1, reason: "check startAfter implementation");
-        expect(list.first.ref.id, "two");
+        expect(list.length, 1, reason: 'check startAfter implementation');
+        expect(list.first.ref.id, 'two');
 
         // end at
         querySnapshot = await collRef.orderBy('value').endAt(values: [1]).get();
         list = querySnapshot.docs;
         expect(list.length, 1, reason: 'check endAt implementation');
-        expect(list.first.ref.id, "one");
+        expect(list.first.ref.id, 'one');
 
         // end before
         querySnapshot =
             await collRef.orderBy('value').endBefore(values: [2]).get();
         list = querySnapshot.docs;
         expect(list.length, 1);
-        expect(list.first.ref.id, "one");
+        expect(list.first.ref.id, 'one');
 
         if (firestoreService.supportsQuerySnapshotCursor) {
           // start after using snapshot
@@ -1002,40 +1002,40 @@ void runApp(
               .get();
           list = querySnapshot.docs;
           expect(list.length, 1);
-          expect(list.first.ref.id, "two");
+          expect(list.first.ref.id, 'two');
         }
 
         // where >
         querySnapshot = await collRef.where('value', isGreaterThan: 1).get();
         list = querySnapshot.docs;
         expect(list.length, 1);
-        expect(list.first.ref.id, "two");
+        expect(list.first.ref.id, 'two');
 
         // where >=
         querySnapshot =
             await collRef.where('value', isGreaterThanOrEqualTo: 2).get();
         list = querySnapshot.docs;
         expect(list.length, 1);
-        expect(list.first.ref.id, "two");
+        expect(list.first.ref.id, 'two');
 
         // where <
         querySnapshot = await collRef.where('value', isLessThan: 2).get();
         list = querySnapshot.docs;
         expect(list.length, 1);
-        expect(list.first.ref.id, "one");
+        expect(list.first.ref.id, 'one');
 
         // where <=
         querySnapshot =
             await collRef.where('value', isLessThanOrEqualTo: 1).get();
         list = querySnapshot.docs;
         expect(list.length, 1);
-        expect(list.first.ref.id, "one");
+        expect(list.first.ref.id, 'one');
 
         // array contains
         querySnapshot = await collRef.where('array', arrayContains: 4).get();
         list = querySnapshot.docs;
         expect(list.length, 1);
-        expect(list.first.ref.id, "one");
+        expect(list.first.ref.id, 'one');
 
         querySnapshot = await collRef.where('array', arrayContains: 5).get();
         list = querySnapshot.docs;
@@ -1046,13 +1046,13 @@ void runApp(
             await collRef.where('sub', isEqualTo: {'value': 'a'}).get();
         list = querySnapshot.docs;
         expect(list.length, 1);
-        expect(list.first.ref.id, "two");
+        expect(list.first.ref.id, 'two');
 
         // ordered by sub (complex object)
         querySnapshot = await collRef.orderBy('sub').get();
         list = querySnapshot.docs;
         expect(list.length, 2);
-        expect(list.first.ref.id, "two");
+        expect(list.first.ref.id, 'two');
       });
 
       test('order', () async {
@@ -1098,35 +1098,35 @@ void runApp(
           var querySnapshot = await collRef.orderBy(field).get();
           list = querySnapshot.docs;
           expect(list.length, 2);
-          expect(list.first.ref.id, "one", reason: reason);
+          expect(list.first.ref.id, 'one', reason: reason);
 
           // start at
           querySnapshot =
               await collRef.orderBy(field).startAt(values: [value2]).get();
           list = querySnapshot.docs;
           expect(list.length, 1, reason: reason);
-          expect(list.first.ref.id, "two");
+          expect(list.first.ref.id, 'two');
 
           // start after
           querySnapshot =
               await collRef.orderBy(field).startAfter(values: [value1]).get();
           list = querySnapshot.docs;
           expect(list.length, 1);
-          expect(list.first.ref.id, "two");
+          expect(list.first.ref.id, 'two');
 
           // end at
           querySnapshot =
               await collRef.orderBy(field).endAt(values: [value1]).get();
           list = querySnapshot.docs;
           expect(list.length, 1);
-          expect(list.first.ref.id, "one");
+          expect(list.first.ref.id, 'one');
 
           // end before
           querySnapshot =
               await collRef.orderBy(field).endBefore(values: [value2]).get();
           list = querySnapshot.docs;
           expect(list.length, 1);
-          expect(list.first.ref.id, "one");
+          expect(list.first.ref.id, 'one');
 
           if (firestoreService.supportsQuerySnapshotCursor) {
             // start after using snapshot
@@ -1136,7 +1136,7 @@ void runApp(
                 .get();
             list = querySnapshot.docs;
             expect(list.length, 1);
-            expect(list.first.ref.id, "two");
+            expect(list.first.ref.id, 'two');
           }
 
           // where >
@@ -1144,27 +1144,27 @@ void runApp(
               await collRef.where(field, isGreaterThan: value1).get();
           list = querySnapshot.docs;
           expect(list.length, 1);
-          expect(list.first.ref.id, "two");
+          expect(list.first.ref.id, 'two');
 
           // where >=
           querySnapshot =
               await collRef.where(field, isGreaterThanOrEqualTo: value2).get();
           list = querySnapshot.docs;
           expect(list.length, 1);
-          expect(list.first.ref.id, "two");
+          expect(list.first.ref.id, 'two');
 
           // where <
           querySnapshot = await collRef.where(field, isLessThan: value2).get();
           list = querySnapshot.docs;
           expect(list.length, 1);
-          expect(list.first.ref.id, "one");
+          expect(list.first.ref.id, 'one');
 
           // where <=
           querySnapshot =
               await collRef.where(field, isLessThanOrEqualTo: value1).get();
           list = querySnapshot.docs;
           expect(list.length, 1);
-          expect(list.first.ref.id, "one");
+          expect(list.first.ref.id, 'one');
         }
 
         await testField('int', 1, 2);
@@ -1252,7 +1252,7 @@ void runApp(
           var completer2 = Completer();
           var completer3 = Completer();
           var completer4 = Completer();
-          int count = 0;
+          var count = 0;
           var subscription =
               collRef.onSnapshot().listen((QuerySnapshot querySnapshot) {
             if (++count == 1) {
@@ -1365,59 +1365,59 @@ void runApp(
           var testsRef = getTestsRef();
           var collRef =
               testsRef.doc('transaction_test').collection('get_update');
-          var ref = collRef.doc("item");
-          await ref.set({"value": 1});
+          var ref = collRef.doc('item');
+          await ref.set({'value': 1});
 
-          int modifiedCount = 0;
+          var modifiedCount = 0;
           await firestore.runTransaction((txn) async {
             var data = (await txn.get(ref)).data;
             // devPrint('get ${data}');
             if (modifiedCount++ == 0) {
-              await ref.set({"value": 10});
+              await ref.set({'value': 10});
             }
 
-            data["value"] = (data["value"] as int) + 1;
+            data['value'] = (data['value'] as int) + 1;
             txn.update(ref, data);
           });
 
           // we should run the transaction twice...
           expect(modifiedCount, 2);
 
-          expect((await ref.get()).data, {"value": 11});
+          expect((await ref.get()).data, {'value': 11});
         }, skip: skipConcurrentTransactionTests);
 
         test('get_update', () async {
           var testsRef = getTestsRef();
           var collRef =
               testsRef.doc('transaction_test').collection('get_update');
-          var ref = collRef.doc("item");
-          await ref.set({"value": 1});
+          var ref = collRef.doc('item');
+          await ref.set({'value': 1});
 
           await firestore.runTransaction((txn) async {
             var data = (await txn.get(ref)).data;
 
             var map = <String, dynamic>{};
-            map["value"] = (data["value"] as int) + 1;
+            map['value'] = (data['value'] as int) + 1;
             txn.update(ref, map);
           });
 
-          expect((await ref.get()).data, {"value": 2});
+          expect((await ref.get()).data, {'value': 2});
         });
 
         test('get_set', () async {
           var testsRef = getTestsRef();
           var collRef = testsRef.doc('transaction_test').collection('get_set');
-          var ref = collRef.doc("item");
-          await ref.set({"value": 1});
+          var ref = collRef.doc('item');
+          await ref.set({'value': 1});
 
           await firestore.runTransaction((txn) async {
             var data = (await txn.get(ref)).data;
 
-            data["value"] = (data["value"] as int) + 1;
+            data['value'] = (data['value'] as int) + 1;
             txn.set(ref, data);
           });
 
-          expect((await ref.get()).data, {"value": 2});
+          expect((await ref.get()).data, {'value': 2});
         });
 
         // make sure that after the transaction we're still fine
@@ -1425,18 +1425,18 @@ void runApp(
           var testsRef = getTestsRef();
           var collRef =
               testsRef.doc('transaction_test').collection('get_update');
-          var ref = collRef.doc("item");
-          await ref.set({"value": 1});
+          var ref = collRef.doc('item');
+          await ref.set({'value': 1});
         });
       });
       // TODO implement
     });
     test('bug_limit', () async {
       var query = firestore
-          .collection("tests")
-          .doc("firebase_shim_test")
-          .collection("tests")
-          .orderBy("timestamp")
+          .collection('tests')
+          .doc('firebase_shim_test')
+          .collection('tests')
+          .orderBy('timestamp')
           .limit(10)
           .select([]);
       expect((await query.get()).docs, isNotEmpty);

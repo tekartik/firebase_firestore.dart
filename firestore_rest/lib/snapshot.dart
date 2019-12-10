@@ -6,7 +6,7 @@ import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: impl
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
 String _basePath(App app) {
-  return "projects/${app.options?.projectId}/databases/(default)/documents";
+  return 'projects/${app.options?.projectId}/databases/(default)/documents';
 }
 
 Map<String, dynamic> documentDataToJson(App app, DocumentData data,
@@ -68,7 +68,7 @@ dynamic documentDataValueToJson(App app, dynamic value) {
     return <String, dynamic>{'timestampValue': value.toIso8601String()};
   } else if (value is DocumentReference) {
     return <String, dynamic>{
-      "referenceValue": url.join(_basePath(app), value.path)
+      'referenceValue': url.join(_basePath(app), value.path)
     };
   } else if (value is Blob) {
     return <String, dynamic>{'bytesValue': base64.encode(value.data)};
@@ -80,7 +80,7 @@ dynamic documentDataValueToJson(App app, dynamic value) {
       }
     };
   } else {
-    throw ArgumentError.value(value, "${value.runtimeType}",
-        "Unsupported value for documentDataValueToJson");
+    throw ArgumentError.value(value, '${value.runtimeType}',
+        'Unsupported value for documentDataValueToJson');
   }
 }

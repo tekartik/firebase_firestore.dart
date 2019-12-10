@@ -29,7 +29,7 @@ Timestamp parseTimestamp(dynamic value) {
   } else if (value is DateTime) {
     return Timestamp.fromDateTime(value);
   } else if (value is String) {
-    String text = value;
+    final text = value;
     return Timestamp.tryParse(text);
   }
   return null;
@@ -50,8 +50,8 @@ dynamic valueToDocumentValue(dynamic value) {
         .map((key, value) => MapEntry(key, valueToDocumentValue(value)))
         .cast<String, dynamic>();
   } else {
-    throw ArgumentError.value(value, "${value.runtimeType}",
-        "Unsupported value for fieldValueFromJsonValue");
+    throw ArgumentError.value(value, '${value.runtimeType}',
+        'Unsupported value for fieldValueFromJsonValue');
   }
 }
 
@@ -77,10 +77,10 @@ class DocumentDataMap implements DocumentData {
   void setValue(String key, dynamic value) => map[key] = value;
 
   dynamic valueAtFieldPath(String fieldPath) {
-    List<String> parts = fieldPath.split("\.");
+    final parts = fieldPath.split('\.');
     Map parent = map;
     var value;
-    for (int i = 0; i < parts.length; i++) {
+    for (var i = 0; i < parts.length; i++) {
       var part = parts[i];
       value = parent[part];
       if (value is Map) {

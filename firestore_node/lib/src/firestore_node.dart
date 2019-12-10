@@ -26,7 +26,7 @@ class FirestoreServiceNode
   Firestore firestore(App app) {
     return getInstance(app, () {
       assert(app is AppNode, 'invalid firebase app type');
-      AppNode appNode = app as AppNode;
+      final appNode = app as AppNode;
       return FirestoreNode(appNode.nativeInstance.firestore());
     });
   }
@@ -266,7 +266,7 @@ dynamic _unwrapValue(value) {
     return value.map(_unwrapValue).toList(growable: false);
   } else {
     throw ArgumentError.value(
-        value, "${value.runtimeType}", "Unsupported value for _unwrapValue");
+        value, '${value.runtimeType}', 'Unsupported value for _unwrapValue');
   }
 }
 
@@ -315,8 +315,8 @@ dynamic documentValueToNativeValue(dynamic value) {
   } else if (value is Blob) {
     return node.Blob.fromUint8List(value.data);
   } else {
-    throw ArgumentError.value(value, "${value.runtimeType}",
-        "Unsupported value for documentValueToNativeValue");
+    throw ArgumentError.value(value, '${value.runtimeType}',
+        'Unsupported value for documentValueToNativeValue');
   }
 }
 
@@ -345,8 +345,8 @@ dynamic documentValueFromNativeValue(dynamic value) {
   } else if (value is node.DocumentReference) {
     return DocumentReferenceNode._(value);
   } else {
-    throw ArgumentError.value(value, "${value.runtimeType}",
-        "Unsupported value for documentValueFromNativeValue");
+    throw ArgumentError.value(value, '${value.runtimeType}',
+        'Unsupported value for documentValueFromNativeValue');
   }
 }
 
@@ -354,7 +354,7 @@ node.DocumentData documentDataToNativeDocumentData(DocumentData documentData) {
   if (documentData != null) {
     var map = (documentData as DocumentDataMap).map;
     var nativeMap = documentValueToNativeValue(map) as Map<String, dynamic>;
-    node.DocumentData nativeInstance = node.DocumentData.fromMap(nativeMap);
+    final nativeInstance = node.DocumentData.fromMap(nativeMap);
     return nativeInstance;
   }
   return null;
@@ -375,7 +375,7 @@ node.UpdateData documentDataToNativeUpdateData(DocumentData documentData) {
   if (documentData != null) {
     var map = (documentData as DocumentDataMap).map;
     var nativeMap = documentValueToNativeValue(map) as Map<String, dynamic>;
-    node.UpdateData nativeInstance = node.UpdateData.fromMap(nativeMap);
+    final nativeInstance = node.UpdateData.fromMap(nativeMap);
     return nativeInstance;
   }
   return null;
