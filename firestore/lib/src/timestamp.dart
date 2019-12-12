@@ -4,7 +4,7 @@
 ///
 /// Timestamps are encoded using the Proleptic Gregorian Calendar, which extends
 /// the Gregorian calendar backwards to year one. Timestamps assume all minutes
-/// are 60 seconds long, i.e. leap seconds are "smeared" so that no leap second
+/// are 60 seconds long, i.e. leap seconds are 'smeared' so that no leap second
 /// table is needed for interpretation. Possible timestamp values range from
 /// 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z.
 class Timestamp implements Comparable<Timestamp> {
@@ -121,7 +121,7 @@ class Timestamp implements Comparable<Timestamp> {
   int get hashCode => (seconds ?? 0) + (nanoseconds ?? 0);
 
   /// The number of milliseconds since
-  /// the "Unix epoch" 1970-01-01T00:00:00Z (UTC).
+  /// the 'Unix epoch' 1970-01-01T00:00:00Z (UTC).
   int get millisecondsSinceEpoch {
     return seconds * 1000 + (nanoseconds ~/ 10000000);
   }
@@ -139,9 +139,9 @@ class Timestamp implements Comparable<Timestamp> {
   }
 
   static String _threeDigits(int n) {
-    if (n >= 100) return "$n";
-    if (n >= 10) return "0$n";
-    return "00$n";
+    if (n >= 100) return '$n';
+    if (n >= 10) return '0$n';
+    return '00$n';
   }
 
   static String _formatNanos(int nanoseconds) {

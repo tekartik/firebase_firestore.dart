@@ -11,7 +11,7 @@ import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.d
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 
 JavascriptScriptLoader firestoreJsLoader = JavascriptScriptLoader(
-    "https://www.gstatic.com/firebasejs/$firebaseJsVersion/firebase-firestore.js");
+    'https://www.gstatic.com/firebasejs/$firebaseJsVersion/firebase-firestore.js');
 
 // Put js in HTML instead
 @deprecated
@@ -26,7 +26,7 @@ class FirestoreServiceBrowser
   Firestore firestore(App app) {
     return getInstance(app, () {
       assert(app is AppBrowser, 'invalid firebase app type');
-      AppBrowser appBrowser = app as AppBrowser;
+      final appBrowser = app as AppBrowser;
       return FirestoreBrowser(appBrowser.nativeApp.firestore());
     });
   }
@@ -208,22 +208,22 @@ dynamic fromNativeValue(nativeValue) {
 
 bool _isNativeBlob(dynamic native) {
   // value [toBase64, toUint8Array, toString, isEqual, n]
-  // devPrint("value ${objectKeys(getProperty(native, "__proto__"))}");
+  // devPrint('value ${objectKeys(getProperty(native, '__proto__'))}');
   var proto = getProperty(native, '__proto__');
   if (proto != null) {
-    return hasProperty(proto, "toBase64") == true &&
-        hasProperty(proto, "toUint8Array") == true;
+    return hasProperty(proto, 'toBase64') == true &&
+        hasProperty(proto, 'toUint8Array') == true;
   }
   return false;
 }
 
 bool _isNativeGeoPoint(dynamic native) {
   //  [latitude, longitude, isEqual, n]
-  // devPrint("value ${objectKeys(getProperty(native, "__proto__"))}");
+  // devPrint('value ${objectKeys(getProperty(native, '__proto__'))}');
   var proto = getProperty(native, '__proto__');
   if (proto != null) {
-    return hasProperty(proto, "latitude") == true &&
-        hasProperty(proto, "longitude") == true;
+    return hasProperty(proto, 'latitude') == true &&
+        hasProperty(proto, 'longitude') == true;
   }
   return false;
 }

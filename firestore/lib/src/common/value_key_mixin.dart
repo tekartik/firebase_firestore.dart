@@ -45,9 +45,9 @@ Map<String, dynamic> sanitizeInputEntryKey(String key, dynamic value) {
   //if (parts.length == 1) {
   //  return <String, dynamic>{key: map[key]};
   //}
-  Map<String, dynamic> currentChild = sanitized;
+  var currentChild = sanitized;
 
-  for (int i = 0; i < parts.length; i++) {
+  for (var i = 0; i < parts.length; i++) {
     var part = parts[i];
     if (i < parts.length - 1) {
       var newChild = <String, dynamic>{};
@@ -137,25 +137,24 @@ Map<String, dynamic> mergeSanitizedMap(Map existingValue, Map newValue) {
     return existingValue?.cast<String, dynamic>();
   }
 
-  Map<String, dynamic> mergedMap =
-      cloneValue(existingValue) as Map<String, dynamic>;
-  Map currentMap = mergedMap;
-  Map currentExistingMap = currentMap;
-  Map currentMergedMap = newValue;
+  final mergedMap = cloneValue(existingValue) as Map<String, dynamic>;
+  final currentMap = mergedMap;
+  final currentExistingMap = currentMap;
+  final currentMergedMap = newValue;
 
   // Here we have the new key and values to merge
-  void merge(key, value) {
-    String stringKey = key as String;
+  void merge(dynamic key, dynamic value) {
+    final stringKey = key?.toString();
 
     void _keep() {
-      currentMap[key] = value;
+      currentMap[stringKey] = value;
     }
 
     if (value is Map) {
       var existing = currentExistingMap[stringKey];
       if (existing is Map) {
         var newValue = mergeSanitizedMap(existing, value);
-        currentMap[key] = newValue;
+        currentMap[stringKey] = newValue;
       } else {
         _keep();
       }

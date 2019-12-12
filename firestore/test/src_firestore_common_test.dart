@@ -14,7 +14,7 @@ bool get runningAsJavascript => identical(1, 1.0);
 
 class FirestoreMock extends Object with FirestoreMixin implements Firestore {
   FirestoreMock({FirestoreSettings settings}) {
-    this.firestoreSettings = settings;
+    firestoreSettings = settings;
   }
 
   @override
@@ -114,13 +114,13 @@ void main() {
 
       queryInfo.limit = 1;
       queryInfo.offset = 2;
-      queryInfo.orderBys = [OrderByInfo(fieldPath: "field", ascending: true)];
+      queryInfo.orderBys = [OrderByInfo(fieldPath: 'field', ascending: true)];
       queryInfo.startAt(
           values: [DateTime.fromMillisecondsSinceEpoch(1234567890123)]);
       queryInfo.endAt(
           snapshot:
-              DocumentSnapshotMock(DocumentReferenceMock("path/to/dock")));
-      queryInfo.addWhere(WhereInfo("whereField",
+              DocumentSnapshotMock(DocumentReferenceMock('path/to/dock')));
+      queryInfo.addWhere(WhereInfo('whereField',
           isLessThanOrEqualTo:
               DateTime.fromMillisecondsSinceEpoch(12345678901234)));
 
@@ -147,19 +147,39 @@ void main() {
       };
       expect(queryInfoToJsonMap(queryInfo), expected);
 
+      var expected2 = {
+        'limit': 1,
+        'offset': 2,
+        'wheres': [
+          {
+            'fieldPath': 'whereField',
+            'operator': '<=',
+            'value': {r'$t': 'Timestamp', r'$v': '2361-03-21T19:15:01.234Z'}
+          }
+        ],
+        'orderBys': [
+          {'fieldPath': 'field', 'direction': 'asc'}
+        ],
+        'startLimit': {
+          'inclusive': true,
+          'values': [
+            {r'$t': 'Timestamp', r'$v': '2009-02-13T23:31:30.123Z'}
+          ]
+        },
+        'endLimit': {'inclusive': true, 'documentId': 'dock'}
+      };
       // round trip
       expect(queryInfoToJsonMap(queryInfoFromJsonMap(firestore, expected)),
-          expected);
+          expected2);
     });
   });
 
   group('DocumentData', () {
-    final firestore =
-        FirestoreMock(settings: FirestoreSettings(timestampsInSnapshots: true));
+    final firestore = FirestoreMock(settings: FirestoreSettings());
     test('dateTime', () {
       var utcDate = DateTime.fromMillisecondsSinceEpoch(12345657890123).toUtc();
       var localDate = DateTime.fromMillisecondsSinceEpoch(123456578901234);
-      DocumentData documentData = DocumentData();
+      var documentData = DocumentData();
       documentData.setDateTime('utcDateTime', utcDate);
       documentData.setDateTime('dateTime', localDate);
       expect(documentDataToRecordMap(documentData), {
@@ -176,7 +196,7 @@ void main() {
 
     test('timestamp', () {
       var timestamp = Timestamp(1234567890, 123456000);
-      DocumentData documentData = DocumentData();
+      var documentData = DocumentData();
       documentData.setTimestamp('timestamp', timestamp);
       var map = documentDataToRecordMap(documentData);
       expect(map, {
@@ -187,8 +207,8 @@ void main() {
     });
 
     test('sub data', () {
-      DocumentDataMap documentData = DocumentDataMap();
-      DocumentData subData = DocumentData();
+      var documentData = DocumentDataMap();
+      var subData = DocumentData();
       subData.setInt('test', 1234);
       documentData.setData('sub', subData);
       // store as a map
@@ -205,9 +225,9 @@ void main() {
     });
 
     test('sub data', () {
-      DocumentDataMap documentData = DocumentDataMap();
-      DocumentData subData = DocumentData();
-      DocumentData subSubData = DocumentData();
+      var documentData = DocumentDataMap();
+      var subData = DocumentData();
+      var subSubData = DocumentData();
       subSubData.setInt('test', 1234);
       documentData.setData('sub', subData);
       subData.setData('subsub', subSubData);
@@ -234,8 +254,8 @@ void main() {
     });
 
     test('sub field', () {
-      DocumentDataMap documentData = DocumentDataMap();
-      DocumentData subData = DocumentData();
+      var documentData = DocumentDataMap();
+      var subData = DocumentData();
       subData.setInt('test', 1234);
       documentData.setData('sub', subData);
       // store as a map
@@ -252,7 +272,7 @@ void main() {
     });
 
     test('list', () {
-      DocumentData documentData = DocumentData();
+      var documentData = DocumentData();
       documentData.setList('test', [1, 2]);
       expect(documentDataToRecordMap(documentData), {
         'test': [1, 2]
@@ -289,9 +309,9 @@ void main() {
 
     test('complex', () {
       var date = DateTime.fromMillisecondsSinceEpoch(12345657890123);
-      DocumentData documentData = DocumentData();
-      DocumentData subData = DocumentData();
-      DocumentData listItemDocumentData = DocumentData();
+      var documentData = DocumentData();
+      final subData = DocumentData();
+      final listItemDocumentData = DocumentData();
       listItemDocumentData.setDateTime('date', date);
       listItemDocumentData.setInt('test', 12345);
       documentData.setData('sub', subData);

@@ -2,7 +2,7 @@ import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group("message", () {
+  group('message', () {
     test('DocumentSnapshotData', () {
       var map = {
         'path': 'path',

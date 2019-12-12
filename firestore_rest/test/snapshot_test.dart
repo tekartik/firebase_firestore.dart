@@ -26,7 +26,7 @@ class DocumentSnapshotMock implements DocumentSnapshot {
 void main() {
   var firebase = FirebaseLocal();
   var firestoreService = firestoreServiceMemory;
-  App app = firebase.initializeApp(options: AppOptions(projectId: 'my_app'));
+  final app = firebase.initializeApp(options: AppOptions(projectId: 'my_app'));
   var firestore = firestoreService.firestore(app);
 
   tearDownAll(() {
@@ -48,32 +48,32 @@ void main() {
       data.setData(
           'nested', DocumentData()..setString('nestedKey', 'much nested'));
       expect(documentDataToJson(app, data), {
-        "fields": {
-          "string": {"stringValue": "text"},
+        'fields': {
+          'string': {'stringValue': 'text'},
           'int': {'integerValue': '1'},
-          "bool": {"booleanValue": true},
+          'bool': {'booleanValue': true},
           'dateTime': {'timestampValue': '2018-10-23T16:04:46.071Z'},
-          "geo": {
-            "geoPointValue": {"latitude": 23.03, "longitude": 19.84}
+          'geo': {
+            'geoPointValue': {'latitude': 23.03, 'longitude': 19.84}
           },
-          "blob": {"bytesValue": "AQID"},
-          "double": {"doubleValue": 19.84},
-          "ref": {
-            "referenceValue":
-                "projects/my_app/databases/(default)/documents/path"
+          'blob': {'bytesValue': 'AQID'},
+          'double': {'doubleValue': 19.84},
+          'ref': {
+            'referenceValue':
+                'projects/my_app/databases/(default)/documents/path'
           },
-          "list": {
-            "arrayValue": {
-              "values": [
-                {"integerValue": "2"},
-                {"stringValue": "item"}
+          'list': {
+            'arrayValue': {
+              'values': [
+                {'integerValue': '2'},
+                {'stringValue': 'item'}
               ]
             }
           },
-          "nested": {
-            "mapValue": {
-              "fields": {
-                "nestedKey": {"stringValue": "much nested"}
+          'nested': {
+            'mapValue': {
+              'fields': {
+                'nestedKey': {'stringValue': 'much nested'}
               }
             }
           },
