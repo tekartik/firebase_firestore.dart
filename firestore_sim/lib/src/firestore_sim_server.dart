@@ -186,7 +186,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
 
   Future handleFirestoreGetListen(rpc.Parameters parameters) async {
     var subscriptionId = newSubscriptionId;
-    String path = parameters[paramPath]?.value as String;
+    final path = parameters[paramPath]?.value as String;
     return await transactionLock.synchronized(() async {
       var ref = firestore.doc(path);
 
@@ -206,7 +206,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
   Future handleFirestoreGetStream(rpc.Parameters parameters) async {
     // New stream?
     var subscriptionId = parameters[paramSubscriptionId].value as int;
-    SimSubscription<DocumentSnapshot> subscription =
+    final subscription =
         subscriptions[subscriptionId] as SimSubscription<DocumentSnapshot>;
     var event = await subscription?.getNext();
     var map = {};
@@ -222,14 +222,14 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
   Future handleFirestoreQuery(rpc.Parameters parameters) async {
     var queryData = FirestoreQueryData()
       ..firestoreFromMap(firestore, rpcParams(parameters));
-    Query query = await getQuery(queryData);
+    final query = await getQuery(queryData);
 
     return await transactionLock.synchronized(() async {
       var querySnapshot = await query.get();
 
       var data = FirestoreQuerySnapshotData();
       data.list = <DocumentSnapshotData>[];
-      for (DocumentSnapshot doc in querySnapshot.docs) {
+      for (final doc in querySnapshot.docs) {
         data.list.add(DocumentSnapshotData.fromSnapshot(doc));
       }
       return data.toMap();
@@ -241,7 +241,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     var queryData = FirestoreQueryData()
       ..firestoreFromMap(firestore, rpcParams(parameters));
     return await transactionLock.synchronized(() async {
-      Query query = await getQuery(queryData);
+      final query = await getQuery(queryData);
 
       subscriptions[subscriptionId] =
           SimSubscription<QuerySnapshot>(query.onSnapshot());
@@ -260,7 +260,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
   Future handleFirestoreQueryStream(rpc.Parameters parameters) async {
     // New stream?
     var subscriptionId = parameters[paramSubscriptionId].value as int;
-    SimSubscription<QuerySnapshot> subscription =
+    final subscription =
         subscriptions[subscriptionId] as SimSubscription<QuerySnapshot>;
     try {
       var event = await subscription?.getNext();
@@ -269,10 +269,10 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
         map[paramDone] = event.done;
         return map;
       }
-      QuerySnapshot querySnapshot = event.data;
+      final querySnapshot = event.data;
       var data = FirestoreQuerySnapshotData();
       data.list = <DocumentSnapshotData>[];
-      for (DocumentSnapshot doc in querySnapshot.docs) {
+      for (final doc in querySnapshot.docs) {
         data.list.add(DocumentSnapshotData.fromSnapshot(doc));
       }
       // Changes

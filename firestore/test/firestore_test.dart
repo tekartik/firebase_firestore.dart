@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
-import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:test/test.dart';
 
 import 'src_firestore_common_test.dart';
@@ -99,8 +98,7 @@ void main() {
       });
 
       // As timestamp
-      firestore.firestoreSettings =
-          FirestoreSettings(timestampsInSnapshots: true);
+      firestore.firestoreSettings = FirestoreSettings();
       data = documentDataFromJsonMap(firestore, map);
       expect(data.getTimestamp('timestamp'), Timestamp(12345678901, 123456000));
       expect(data.asMap()['timestamp'], Timestamp(12345678901, 123456000));
@@ -109,16 +107,20 @@ void main() {
       firestore.firestoreSettings = null;
       data = documentDataFromJsonMap(firestore, map);
       expect(
-          data.getTimestamp('timestamp'),
+        data.getTimestamp('timestamp'),
+        Timestamp(12345678901, 123456000),
+        /*
           dateTimeHasMicros
               ? Timestamp(12345678901, 123456000)
-              : Timestamp(12345678901, 123000000));
+              : Timestamp(12345678901, 123000000)*/
+      );
+      /* 2019/12/12 no longer date time
       expect(
           data.asMap()['timestamp'],
           dateTimeHasMicros
               ? DateTime.parse('2361-03-21T19:15:01.123456Z').toLocal()
               : DateTime.parse('2361-03-21T19:15:01.123Z').toLocal());
-
+      */
       data.setTimestamp('timestamp', null);
       expect(documentDataToJsonMap(data), {'timestamp': null});
       expect(data.getTimestamp('timestamp'), null);
@@ -169,7 +171,7 @@ void main() {
           'list': [
             'test',
             null,
-            {r'$t': 'DateTime', r'$v': '5882-03-08T14:08:21.234Z'}
+            {r'$t': 'Timestamp', r'$v': '5882-03-08T14:08:21.234Z'}
           ],
           'int': 1,
           'delete': {r'$t': 'FieldValue', r'$v': '~delete'},

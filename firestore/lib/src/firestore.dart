@@ -213,12 +213,15 @@ const String firestoreNameFieldPath = '__name__';
 class FirestoreSettings {
   /// Enables the use of `Timestamp`s for timestamp fields in
   /// `DocumentSnapshot`s.
+  @deprecated
   final bool timestampsInSnapshots;
 
-  FirestoreSettings({this.timestampsInSnapshots});
+  // ignore: deprecated_member_use_from_same_package
+  FirestoreSettings({@deprecated this.timestampsInSnapshots});
 
   @override
   String toString() {
+    // ignore: deprecated_member_use_from_same_package
     var map = {'timestampsInSnapshots': timestampsInSnapshots};
     return map.toString();
   }

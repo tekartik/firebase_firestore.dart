@@ -313,7 +313,7 @@ abstract class QueryMixinSim implements Query {
             // find in doc
             snapshot = snapshotsFindById(docs, changeData.id);
           }
-          DocumentChangeSim change = DocumentChangeSim(
+          final change = DocumentChangeSim(
               documentChangeTypeFromString(changeData.type),
               snapshot,
               changeData.newIndex,
@@ -550,8 +550,7 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
         await simClient.sendRequest(methodFirestoreTransaction, {}));
 
     var responseData = FirestoreTransactionResponseData()..fromMap(result);
-    TransactionSim transactionSim =
-        TransactionSim(this, responseData.transactionId);
+    final transactionSim = TransactionSim(this, responseData.transactionId);
     try {
       await updateFunction(transactionSim);
       await transactionSim.commit();

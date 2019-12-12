@@ -26,14 +26,17 @@ void run(
   runApp(firestoreService: firestoreService, firestore: firestore);
   utils_collection.runApp(
       firestoreService: firestoreService, firestore: firestore);
+  /*
   if (firestoreService.supportsTimestampsInSnapshots) {
     runNoTimestampsInSnapshots(
         firestoreService: firestoreService,
         firebase: firebase,
         options: options);
   }
+   */
 }
 
+@deprecated
 void runNoTimestampsInSnapshots(
     {@required FirestoreService firestoreService,
     @required FirebaseAsync firebase,
@@ -48,7 +51,7 @@ void runNoTimestampsInSnapshots(
       firestore = firestoreService.firestore(appNoTimestampsInSnapshots);
       //devPrint('App name: ${app.name}');
 
-      firestore.settings(FirestoreSettings(timestampsInSnapshots: false));
+      firestore.settings(FirestoreSettings());
     });
 
     tearDownAll(() async {
@@ -97,7 +100,7 @@ void runApp(
   setUpAll(() async {
     if (firestoreService.supportsTimestampsInSnapshots) {
       // force support
-      firestore.settings(FirestoreSettings(timestampsInSnapshots: true));
+      // firestore.settings(FirestoreSettings(timestampsInSnapshots: true));
     }
   });
   group('firestore', () {

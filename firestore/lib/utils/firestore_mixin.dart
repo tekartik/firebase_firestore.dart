@@ -34,10 +34,12 @@ export 'package:tekartik_firebase_firestore/src/record_data.dart'
 
 // might evolve to be always true
 bool firestoreTimestampsInSnapshots(Firestore firestore) {
+  /*
   if (firestore is FirestoreMixin) {
     return firestore.firestoreSettings?.timestampsInSnapshots == true;
   }
-  return false;
+   */
+  return true;
 }
 
 mixin FirestoreMixin implements Firestore {

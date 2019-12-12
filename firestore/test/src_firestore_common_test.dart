@@ -147,15 +147,35 @@ void main() {
       };
       expect(queryInfoToJsonMap(queryInfo), expected);
 
+      var expected2 = {
+        'limit': 1,
+        'offset': 2,
+        'wheres': [
+          {
+            'fieldPath': 'whereField',
+            'operator': '<=',
+            'value': {r'$t': 'Timestamp', r'$v': '2361-03-21T19:15:01.234Z'}
+          }
+        ],
+        'orderBys': [
+          {'fieldPath': 'field', 'direction': 'asc'}
+        ],
+        'startLimit': {
+          'inclusive': true,
+          'values': [
+            {r'$t': 'Timestamp', r'$v': '2009-02-13T23:31:30.123Z'}
+          ]
+        },
+        'endLimit': {'inclusive': true, 'documentId': 'dock'}
+      };
       // round trip
       expect(queryInfoToJsonMap(queryInfoFromJsonMap(firestore, expected)),
-          expected);
+          expected2);
     });
   });
 
   group('DocumentData', () {
-    final firestore =
-        FirestoreMock(settings: FirestoreSettings(timestampsInSnapshots: true));
+    final firestore = FirestoreMock(settings: FirestoreSettings());
     test('dateTime', () {
       var utcDate = DateTime.fromMillisecondsSinceEpoch(12345657890123).toUtc();
       var localDate = DateTime.fromMillisecondsSinceEpoch(123456578901234);

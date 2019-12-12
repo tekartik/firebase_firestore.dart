@@ -15,6 +15,7 @@ import 'package:tekartik_firebase_node/src/firebase_node.dart'; // ignore: imple
 
 js.FirestoreSettings _unwrapSettings(FirestoreSettings settings) {
   var nativeSettings = js.FirestoreSettings(
+      // ignore: deprecated_member_use
       timestampsInSnapshots: settings.timestampsInSnapshots);
   return nativeSettings;
 }

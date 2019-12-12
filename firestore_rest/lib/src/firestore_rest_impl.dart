@@ -28,11 +28,14 @@ bool debugRest = false; // devWarning(true); // false
 dynamic dateOrTimestampValue(
     FirestoreDocumentContext firestore, String timestampValue) {
   var timestamp = Timestamp.tryParse(timestampValue);
+  /*
   if (firestore?.impl?.firestoreSettings?.timestampsInSnapshots ?? true) {
     return timestamp;
   } else {
     return timestamp?.toDateTime();
   }
+   */
+  return timestamp;
 }
 
 dynamic fromRestValue(FirestoreDocumentContext firestore, Value restValue) {

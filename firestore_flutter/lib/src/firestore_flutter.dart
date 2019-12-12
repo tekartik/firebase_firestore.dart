@@ -82,7 +82,8 @@ class FirestoreFlutter implements Firestore {
   @override
   void settings(FirestoreSettings settings) {
     nativeInstance.settings(
-        timestampsInSnapshotsEnabled: settings?.timestampsInSnapshots == true);
+        //    timestampsInSnapshotsEnabled: settings?.timestampsInSnapshots == true
+        );
   }
 
   @override
