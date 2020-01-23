@@ -591,7 +591,7 @@ void runApp(
 
           // Test update arrayUnion and overriding a non array field
           data = <String, dynamic>{
-            'some_array': FieldValue.arrayUnion([3]),
+            'some_array': FieldValue.arrayUnion([1, 3]),
             'not_array': FieldValue.arrayUnion([4, 5]),
           };
           await docRef.update(data);
@@ -641,6 +641,8 @@ void runApp(
             'some_array': [3, 6],
             'no_merge_not_existing': []
           });
+        } else {
+          print('supportsFieldValueArray false');
         }
       });
 
