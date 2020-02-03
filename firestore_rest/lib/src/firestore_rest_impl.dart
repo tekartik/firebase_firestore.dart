@@ -66,7 +66,9 @@ dynamic fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
     return DocumentReferenceRestImpl(
         firestore.impl, firestore.getDocumentPath(restValue.referenceValue));
   } else {
-    throw UnsupportedError('type ${restValue.runtimeType}: $restValue');
+    // This is null!
+    // throw UnsupportedError('type ${restValue.runtimeType}: $restValue');
+    return null;
   }
 }
 

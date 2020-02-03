@@ -286,76 +286,71 @@ void runApp(
       });
 
       // All fields that we do not delete
-      test(
-        'allFields',
-        () async {
-          var testsRef = getTestsRef();
-          var localDateTime = DateTime.fromMillisecondsSinceEpoch(1234567890);
-          var utcDateTime =
-              DateTime.fromMillisecondsSinceEpoch(1234567890, isUtc: true);
-          var timestamp = Timestamp(123456789, 123456000);
-          var docRef = testsRef.doc('all_fields');
-          var documentData = DocumentData();
-          documentData.setString('string', 'string_value');
+      test('allFields', () async {
+        var testsRef = getTestsRef();
+        var localDateTime = DateTime.fromMillisecondsSinceEpoch(1234567890);
+        var utcDateTime =
+            DateTime.fromMillisecondsSinceEpoch(1234567890, isUtc: true);
+        var timestamp = Timestamp(123456789, 123456000);
+        var docRef = testsRef.doc('all_fields');
+        var documentData = DocumentData();
+        documentData.setString('string', 'string_value');
 
-          documentData.setInt('int', 12345678901);
-          documentData.setNum('num', 3.1416);
-          documentData.setBool('bool', true);
-          documentData.setDateTime('localDateTime', localDateTime);
-          documentData.setDateTime('utcDateTime', utcDateTime);
-          documentData.setTimestamp('timestamp', timestamp);
-          documentData.setList('intList', <int>[4, 3]);
-          documentData.setDocumentReference(
-              'docRef', firestore.doc('tests/doc'));
-          documentData.setBlob('blob', Blob(Uint8List.fromList([1, 2, 3])));
-          documentData.setGeoPoint('geoPoint', GeoPoint(1.2, 4));
+        documentData.setInt('int', 12345678901);
+        documentData.setNum('num', 3.1416);
+        documentData.setBool('bool', true);
+        documentData.setDateTime('localDateTime', localDateTime);
+        documentData.setDateTime('utcDateTime', utcDateTime);
+        documentData.setTimestamp('timestamp', timestamp);
+        documentData.setList('intList', <int>[4, 3]);
+        documentData.setDocumentReference('docRef', firestore.doc('tests/doc'));
+        documentData.setBlob('blob', Blob(Uint8List.fromList([1, 2, 3])));
+        documentData.setGeoPoint('geoPoint', GeoPoint(1.2, 4));
 
-          documentData.setFieldValue(
-              'serverTimestamp', FieldValue.serverTimestamp);
+        documentData.setFieldValue(
+            'serverTimestamp', FieldValue.serverTimestamp);
+        documentData.setFieldValue('null', null);
 
-          var subData = DocumentData();
-          subData.setDateTime('localDateTime', localDateTime);
-          documentData.setData('subData', subData);
+        var subData = DocumentData();
+        subData.setDateTime('localDateTime', localDateTime);
+        documentData.setData('subData', subData);
 
-          var subSubData = DocumentData();
-          subData.setData('inner', subSubData);
+        var subSubData = DocumentData();
+        subData.setData('inner', subSubData);
 
-          await docRef.set(documentData.asMap());
-          documentData = DocumentData((await docRef.get()).data);
-          expect(documentData.getString('string'), 'string_value');
+        await docRef.set(documentData.asMap());
+        documentData = DocumentData((await docRef.get()).data);
+        expect(documentData.getString('string'), 'string_value');
 
-          expect(documentData.getInt('int'), 12345678901);
-          expect(documentData.getNum('num'), 3.1416);
-          expect(documentData.getBool('bool'), true);
+        expect(documentData.getInt('int'), 12345678901);
+        expect(documentData.getNum('num'), 3.1416);
+        expect(documentData.getBool('bool'), true);
 
-          expect(documentData.getDateTime('localDateTime'), localDateTime);
-          expect(
-              documentData.getDateTime('utcDateTime'), utcDateTime.toLocal());
-          // Might only get milliseconds in the browser
-          expect(
-              documentData.getTimestamp('timestamp'),
-              firestoreService.supportsTimestamps
-                  ? timestamp
-                  : Timestamp(123456789, 123000000));
-          expect(documentData.getDocumentReference('docRef').path, 'tests/doc');
-          expect(documentData.getBlob('blob').data, [1, 2, 3]);
-          expect(documentData.getGeoPoint('geoPoint'), GeoPoint(1.2, 4));
-          expect(
-              documentData
-                      .getDateTime('serverTimestamp')
-                      .millisecondsSinceEpoch >
-                  0,
-              isTrue);
-          final list = documentData.getList<int>('intList');
-          expect(list, [4, 3]);
+        expect(documentData.getDateTime('localDateTime'), localDateTime);
+        expect(documentData.getDateTime('utcDateTime'), utcDateTime.toLocal());
+        // Might only get milliseconds in the browser
+        expect(
+            documentData.getTimestamp('timestamp'),
+            firestoreService.supportsTimestamps
+                ? timestamp
+                : Timestamp(123456789, 123000000));
+        expect(documentData.getDocumentReference('docRef').path, 'tests/doc');
+        expect(documentData.getBlob('blob').data, [1, 2, 3]);
+        expect(documentData.getGeoPoint('geoPoint'), GeoPoint(1.2, 4));
+        expect(
+            documentData.getDateTime('serverTimestamp').millisecondsSinceEpoch >
+                0,
+            isTrue);
+        expect(documentData.has('null'), isTrue);
+        final list = documentData.getList<int>('intList');
+        expect(list, [4, 3]);
 
-          subData = documentData.getData('subData');
-          expect(subData.getDateTime('localDateTime'), localDateTime);
+        subData = documentData.getData('subData');
+        expect(subData.getDateTime('localDateTime'), localDateTime);
 
-          subSubData = subData.getData('inner');
-          expect(subSubData, isNotNull);
-        },
-      );
+        subSubData = subData.getData('inner');
+        expect(subSubData, isNotNull);
+      });
     });
     group('Data', () {
       test('string', () async {
