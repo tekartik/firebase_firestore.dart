@@ -3,11 +3,9 @@ import 'dart:async';
 import 'package:idb_shim/idb.dart' as idb;
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
-import 'package:tekartik_common_utils/map_utils.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/document_data.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
@@ -50,7 +48,7 @@ class FirestoreServiceIdb
   bool get supportsQuerySnapshotCursor => true;
 
   @override
-  bool get supportsFieldValueArray => false;
+  bool get supportsFieldValueArray => true;
 
   @override
   bool get supportsTrackChanges => false;
@@ -251,7 +249,7 @@ class FirestoreIdb extends Object
       if (map == null) {
         throw Exception('No document found at $documentRef');
       }
-      map = updateRecordMap(map, documentData);
+      map = recordMapUpdate(map, documentData);
       return localTransaction.transaction
           .objectStore(storeName)
           .put(map, documentRef.path)
@@ -345,32 +343,6 @@ dynamic valueToUpdateValue(dynamic value) {
     // return sembast.FieldValue.delete;
   }
   return valueToRecordValue(value, valueToUpdateValue);
-}
-
-Map<String, dynamic> updateRecordMap(
-    Map<String, dynamic> existing, DocumentData documentData,
-    {boo}) {
-  if (documentData == null) {
-    return null;
-  }
-  final recordMap = (existing != null)
-      ? cloneMap(existing)?.cast<String, dynamic>()
-      : <String, dynamic>{};
-
-  var map = expandUpdateData(documentDataMap(documentData).map);
-  map.forEach((String key, value) {
-    // devPrint('key $key');
-    // special delete field
-    if (value == FieldValue.delete) {
-      // remove
-      recordMap.remove(key);
-    } else if (value is FieldValueArray) {
-      //recordMap[key] = fieldArrayValueMergeValue(value, existingRecordMap[key]);
-    } else {
-      recordMap[key] = valueToRecordValue(value);
-    }
-  });
-  return recordMap;
 }
 
 class DocumentSnapshotIdb extends DocumentSnapshotBase {

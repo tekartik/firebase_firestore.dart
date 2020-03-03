@@ -4,11 +4,12 @@ import 'package:firebase/firestore.dart' as native;
 import 'package:js/js_util.dart';
 import 'package:tekartik_browser_utils/browser_utils_import.dart' hide Blob;
 import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_browser/src/firebase_browser.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_browser/src/common/firebase_js_version.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_browser/src/firebase_browser.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart'; // ignore: implementation_imports
 
 JavascriptScriptLoader firestoreJsLoader = JavascriptScriptLoader(
     'https://www.gstatic.com/firebasejs/$firebaseJsVersion/firebase-firestore.js');
@@ -47,13 +48,14 @@ class FirestoreServiceBrowser
   bool get supportsQuerySnapshotCursor => true;
 
   @override
-  bool get supportsFieldValueArray => false;
+  bool get supportsFieldValueArray => true;
 
   @override
   bool get supportsTrackChanges => true;
 }
 
 FirestoreServiceBrowser _firebaseFirestoreServiceBrowser;
+
 FirestoreService get firestoreService =>
     _firebaseFirestoreServiceBrowser ??= FirestoreServiceBrowser();
 
@@ -131,6 +133,7 @@ class TransactionBrowser implements Transaction {
   final native.Transaction nativeInstance;
 
   TransactionBrowser(this.nativeInstance);
+
   @override
   void delete(DocumentReference documentRef) {
     nativeInstance.delete(_unwrapDocumentReference(documentRef));
@@ -228,6 +231,9 @@ bool _isNativeGeoPoint(dynamic native) {
   return false;
 }
 
+List<dynamic> toNativeValues(Iterable<dynamic> values) =>
+    values?.map((value) => toNativeValue(value))?.toList(growable: false);
+
 dynamic toNativeValue(value) {
   if (isCommonValue(value)) {
     return value;
@@ -248,6 +254,13 @@ dynamic toNativeValue(value) {
       //  return native.FieldValue.arrayUnion(value.data as List);
       // } else if (value.type == FieldValueType.arrayRemove) {
       //  return native.FieldValue.arrayRemove(value.data as List);
+    } else if (value is FieldValueArray) {
+      var type = value.type;
+      if (type == FieldValueType.arrayUnion) {
+        return native.FieldValue.arrayUnion(toNativeValues(value.data));
+      } else if (type == FieldValueType.arrayRemove) {
+        return native.FieldValue.arrayRemove(toNativeValues(value.data));
+      }
     }
   } else if (value is DocumentReferenceBrowser) {
     return value.nativeInstance;

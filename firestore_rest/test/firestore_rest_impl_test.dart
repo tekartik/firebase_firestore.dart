@@ -11,10 +11,13 @@ Future main() async {
   group('rest', () {
     test('basic_googleapis', () async {
       var firestoreApi = api.FirestoreApi(context.authClient);
+
+      // curl "https://firestore.googleapis.com/v1beta1/projects/tekartik-free-dev/databases/(default)/documents/tests/data-types"
+      // curl "https://firestore.googleapis.com/projects/tekartik-free-dev/databases/(default)/documents/tests/data-types"
       // ignore: unused_local_variable
       var data = await firestoreApi.projects.databases.documents.get(
           'projects/tekartik-free-dev/databases/(default)/documents/tests/data-types');
-      //print(jsonPretty(data.toJson()));
+      print(jsonPretty(data.toJson()));
     });
   }, skip: context == null);
 

@@ -11,6 +11,10 @@ import 'test_setup.dart';
 void main() async {
   var options = await setup();
   if (options == null) {
+    // Dummy test to avoid a test error
+    test('browser', () {
+      print('browser tests skipped');
+    });
     return;
   }
   var firebase = firebaseBrowser;

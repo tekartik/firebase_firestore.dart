@@ -1,5 +1,6 @@
 import 'package:tekartik_common_utils/map_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
@@ -14,6 +15,32 @@ Timestamp recordMapUpdateTime(Map<String, dynamic> recordMap) =>
 
 Timestamp recordMapCreateTime(Map<String, dynamic> recordMap) =>
     mapCreateTime(recordMap);
+
+/// Generic record update
+Map<String, dynamic> recordMapUpdate(
+    Map<String, dynamic> existing, DocumentData documentData) {
+  if (documentData == null) {
+    return null;
+  }
+  final recordMap = (existing != null)
+      ? cloneMap(existing)?.cast<String, dynamic>()
+      : <String, dynamic>{};
+
+  var map = expandUpdateData(documentDataMap(documentData).map);
+  map.forEach((String key, value) {
+    // devPrint('key $key');
+    // special delete field
+    if (value == FieldValue.delete) {
+      // remove
+      recordMap.remove(key);
+    } else if (value is FieldValueArray) {
+      recordMap[key] = fieldArrayValueMergeValue(value, recordMap[key]);
+    } else {
+      recordMap[key] = valueToRecordValue(value);
+    }
+  });
+  return recordMap;
+}
 
 DocumentDataMap documentDataFromRecordMap(
     Firestore firestore, Map<String, dynamic> recordMap,
@@ -118,7 +145,8 @@ dynamic fieldArrayValueMergeValue(
     list = [];
   }
   if (fieldValueArray.type == FieldValueType.arrayUnion) {
-    list.addAll(fieldValueArray.data);
+    list.addAll(List.from(fieldValueArray.data)
+      ..removeWhere((value) => list.contains(value)));
   } else if (fieldValueArray.type == FieldValueType.arrayRemove) {
     list.removeWhere((item) => fieldValueArray.data.contains(item));
   }

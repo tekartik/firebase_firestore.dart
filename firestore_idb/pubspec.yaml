@@ -1,6 +1,6 @@
 name: tekartik_firebase_firestore_idb
 description: Firebase firestore on top of idb_shim
-version: 0.6.0
+version: 0.6.1
 publish_to: none
 
 environment:
