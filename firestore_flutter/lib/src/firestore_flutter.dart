@@ -20,7 +20,7 @@ class FirestoreServiceFlutter
   Firestore firestore(App app) {
     return getInstance(app, () {
       assert(app is AppFlutter, 'invalid firebase app type');
-      AppFlutter appFlutter = app as AppFlutter;
+      var appFlutter = app as AppFlutter;
       if (appFlutter.isDefault) {
         return FirestoreFlutter(native.Firestore.instance);
       } else {
