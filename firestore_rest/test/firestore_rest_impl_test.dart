@@ -12,7 +12,7 @@ Future main() async {
   final context = await setup();
   AppOptions accessTokenAppOptions;
   if (context != null) {
-    accessTokenAppOptions = await getAppOptionsFromAccessToken(
+    accessTokenAppOptions = getAppOptionsFromAccessToken(
         Client(), context.accessToken.data,
         projectId: context.options.projectId, scopes: firebaseBaseScopes);
   }
