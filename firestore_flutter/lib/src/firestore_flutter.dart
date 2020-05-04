@@ -341,6 +341,9 @@ class CollectionReferenceFlutter extends QueryFlutter
 
   @override
   String get path => nativeInstance.path;
+
+  @override
+  String toString() => 'CollRef($path)';
 }
 
 native.DocumentReference _unwrapDocumentReference(DocumentReference ref) =>
@@ -416,6 +419,9 @@ class DocumentReferenceFlutter implements DocumentReference {
   @override
   Future update(Map<String, dynamic> data) =>
       nativeInstance.updateData(documentDataToFlutterData(DocumentData(data)));
+
+  @override
+  String toString() => 'DocRef($path)';
 }
 
 class DocumentSnapshotFlutter implements DocumentSnapshot {
