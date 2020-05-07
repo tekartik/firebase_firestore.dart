@@ -147,6 +147,7 @@ void runApp(
         var docRef = testsRef.doc('dummy_id_that_should_never_exists');
         var snapshot = await docRef.get();
         expect(snapshot.exists, isFalse);
+        expect(snapshot.data, isNull);
       });
 
       test('get_all', () async {

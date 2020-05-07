@@ -172,11 +172,17 @@ abstract class DocumentData {
   GeoPoint getGeoPoint(String key);
 }
 
+/// A DocumentSnapshot contains data read from a document in your Cloud
+/// Firestore database.
 abstract class DocumentSnapshot {
+  /// Gets the reference to the document.
   DocumentReference get ref;
 
+  /// Returns the fields of the document as a Map or null if the document
+  /// doesn't exist.
   Map<String, dynamic> get data;
 
+  /// true if the document existed in this snapshot.
   bool get exists;
 
   /// The time the document was last updated (at the time the snapshot was

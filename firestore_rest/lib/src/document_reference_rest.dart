@@ -43,10 +43,11 @@ class DocumentSnapshotRestImpl implements DocumentSnapshot {
   @override
   Timestamp get createTime => Timestamp.tryParse(impl.createTime);
 
-  /// Never null
+  /// Never null if it exists.
   @override
-  Map<String, dynamic> get data =>
-      mapFromFields(firestoreRestImpl, impl.fields) ?? <String, dynamic>{};
+  Map<String, dynamic> get data => exists
+      ? (mapFromFields(firestoreRestImpl, impl.fields) ?? <String, dynamic>{})
+      : null;
 
   /// Sometimes in get we have a Document will all fields null.
   @override
