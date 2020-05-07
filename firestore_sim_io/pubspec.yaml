@@ -1,6 +1,6 @@
 name: tekartik_firebase_firestore_sim_io
 description: Firebase firestore simulation
-version: 0.6.0
+version: 0.7.0
 publish_to: none
 
 environment:
@@ -18,13 +18,13 @@ dependencies:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore_sim
       ref: dart2
-    version: '>=0.6.0'
+    version: '>=0.7.0'
   tekartik_firebase_firestore_sembast:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore_sembast
       ref: dart2
-    version: '>=0.6.0'
+    version: '>=0.7.0'
 
 dev_dependencies:
   test: "^1.0.0"

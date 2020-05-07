@@ -17,6 +17,8 @@ void utilsTest(
     test('onDocumentSnapshots', () async {
       var ref1 = getTestsRef().doc('onDocumentSnapshots1');
       var ref2 = getTestsRef().doc('onDocumentSnapshots2');
+      await ref1.delete();
+      await ref2.delete();
       DocumentSnapshots snapshots;
       Completer completer;
 

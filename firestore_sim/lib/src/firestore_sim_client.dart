@@ -6,6 +6,7 @@ import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
@@ -81,13 +82,14 @@ class DocumentSnapshotSim implements DocumentSnapshot {
   final Timestamp createTime;
 }
 
-class DocumentReferenceSim implements DocumentReference {
-  final FirestoreSim firestoreSim;
+class DocumentReferenceSim
+    with DocumentReferenceMixin, PathReferenceImplMixin, PathReferenceMixin
+    implements DocumentReference {
+  FirestoreSim get firestoreSim => firestore as FirestoreSim;
 
-  @override
-  final String path;
-
-  DocumentReferenceSim(this.firestoreSim, this.path);
+  DocumentReferenceSim(Firestore firestore, String path) {
+    init(firestore, path);
+  }
 
   @override
   CollectionReference collection(String path) =>
@@ -106,13 +108,6 @@ class DocumentReferenceSim implements DocumentReference {
     var requestData = FirestoreGetRequestData()..path = path;
     return firestoreSim.get(requestData);
   }
-
-  @override
-  String get id => url.basename(path);
-
-  @override
-  CollectionReference get parent =>
-      CollectionReferenceSim(firestoreSim, url.dirname(path));
 
   @override
   Future set(Map<String, dynamic> data, [SetOptions options]) async {
