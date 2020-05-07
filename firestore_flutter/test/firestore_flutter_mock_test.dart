@@ -14,8 +14,12 @@ void main() {
       var docRef = firestore.doc('test/doc');
       expect(docRef.path, 'test/doc');
       expect(docRef.toString(), 'DocRef(test/doc)');
+      expect(docRef, firestore.doc('test/doc'));
+      expect(docRef, isNot(firestore.doc('test/doc2')));
 
       var collRef = firestore.collection('test');
+      // NOT supported expect(collRef, firestore.collection('test'));
+      // NOT supported expect(collRef, isNot(firestore.collection('test2')));
       expect(collRef.path, 'test');
       expect(collRef.toString(), 'CollRef(test)');
     });

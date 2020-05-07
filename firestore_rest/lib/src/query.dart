@@ -1,5 +1,5 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/document_reference_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore_rest/src/collection_reference_rest.dart';
@@ -9,7 +9,11 @@ import 'package:tekartik_firebase_firestore_rest/src/firestore/v1beta1.dart'
 import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 
 class QueryRestImpl
-    with QueryMixin, PathReferenceMixin, PathReferenceRestMixin
+    with
+        QueryMixin,
+        PathReferenceMixin,
+        PathReferenceImplMixin,
+        PathReferenceRestMixin
     implements Query {
   QueryRestImpl(FirestoreRestImpl firestoreRest, String path) {
     init(firestoreRest, path);

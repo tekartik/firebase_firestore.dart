@@ -1,12 +1,16 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/document_reference_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_rest/src/collection_reference_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore/v1beta1.dart'
     as api;
 
 class DocumentReferenceRestImpl
-    with DocumentReferenceMixin, PathReferenceMixin, PathReferenceRestMixin
+    with
+        DocumentReferenceMixin,
+        PathReferenceImplMixin,
+        PathReferenceMixin,
+        PathReferenceRestMixin
     implements DocumentReference {
   DocumentReferenceRestImpl(FirestoreRestImpl firestoreRest, String path) {
     init(firestoreRest, path);

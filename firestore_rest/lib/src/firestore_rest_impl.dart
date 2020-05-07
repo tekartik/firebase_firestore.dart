@@ -6,7 +6,7 @@ import 'package:tekartik_firebase_firestore_rest/src/firestore/v1beta1.dart'
 import 'package:path/path.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/document_reference_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
