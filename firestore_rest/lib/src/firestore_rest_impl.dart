@@ -208,8 +208,11 @@ class FirestoreRestImpl
     implements Firestore, FirestoreDocumentContext {
   final AppRestImpl appImpl;
   api.FirestoreApi _firestoreApi;
+  api.FirestoreFixedApi _firestoreFixedApi;
   api.FirestoreApi get firestoreApi =>
       _firestoreApi ??= FirestoreApi(appImpl.authClient);
+  api.FirestoreFixedApi get firestoreFixedApi =>
+      _firestoreFixedApi ??= FirestoreFixedApi(appImpl.authClient);
 
   String get projectId => appImpl.options.projectId;
 
@@ -554,7 +557,7 @@ class FirestoreRestImpl
       // Debug
       // devPrint('request: ${jsonPretty(request.toJson())}');
       // devPrint('parent: $parent');
-      var response = await firestoreApi.projects.databases.documents
+      var response = await firestoreFixedApi.projects.databases.documents
           .runQueryFixed(request, parent);
 
       // devPrint(jsonPretty(response.toJson()));
