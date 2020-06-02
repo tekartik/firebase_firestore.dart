@@ -8,6 +8,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
 import 'package:tekartik_firebase_firestore_test/utils_collection_test.dart'
     as utils_collection;
+import 'package:tekartik_firebase_firestore_test/utils_test.dart';
 import 'package:test/test.dart';
 
 bool skipConcurrentTransactionTests = false;
@@ -34,6 +35,7 @@ void run(
         options: options);
   }
    */
+  utilsTest(firestoreService: firestoreService, firestore: firestore);
 }
 
 @deprecated
@@ -145,6 +147,7 @@ void runApp(
         var docRef = testsRef.doc('dummy_id_that_should_never_exists');
         var snapshot = await docRef.get();
         expect(snapshot.exists, isFalse);
+        expect(snapshot.data, isNull);
       });
 
       test('get_all', () async {
@@ -645,6 +648,18 @@ void runApp(
     });
 
     group('DocumentReference', () {
+      test('equals', () {
+        var ref1 = firestore.doc('test/doc1');
+        var ref2 = firestore.doc('test/doc1');
+        expect(ref1, ref2);
+        expect(ref1.hashCode, ref2.hashCode);
+        ref2 = firestore.doc('test/doc2');
+        expect(ref1, isNot(ref2));
+        expect(
+            ref1.hashCode,
+            isNot(ref2
+                .hashCode)); // This could be wrong though but at least ensure it could be true also!
+      });
       test('attributes', () {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('document_test_attributes');

@@ -1,5 +1,5 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/document_reference_mixin.dart';
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
@@ -36,7 +36,11 @@ class FirestoreMock with FirestoreMixin {
 }
 
 class CollectionReferenceMock
-    with CollectionReferenceMixin, PathReferenceMixin, FirestoreQueryMixin {
+    with
+        CollectionReferenceMixin,
+        PathReferenceImplMixin,
+        PathReferenceMixin,
+        FirestoreQueryMixin {
   CollectionReferenceMock(FirestoreMock firestoreMock, String path) {
     init(firestoreMock, path);
   }
@@ -67,7 +71,8 @@ class CollectionReferenceMock
   QueryInfo get queryInfo => null;
 }
 
-class DocumentReferenceMock with DocumentReferenceMixin, PathReferenceMixin {
+class DocumentReferenceMock
+    with DocumentReferenceMixin, PathReferenceImplMixin, PathReferenceMixin {
   DocumentReferenceMock(FirestoreMock firestoreMock, String path) {
     init(firestoreMock, path);
   }

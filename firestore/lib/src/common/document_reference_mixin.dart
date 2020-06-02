@@ -1,5 +1,9 @@
+@Deprecated('include reference_mixin - since 2020/05/07')
+library tekartik_firebase_firestore.src.common.document_reference_mixin;
+
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:path/path.dart';
+export 'reference_mixin.dart';
 
 mixin PathReferenceMixin {
   Firestore firestore;
@@ -20,6 +24,23 @@ mixin PathReferenceMixin {
 
   @override
   String toString() => 'path: $path';
+
+  @override
+  int get hashCode => path.hashCode;
+
+  @override
+  bool operator ==(other) {
+    if (other is CollectionReferenceMixin) {
+      if (firestore != (other).firestore) {
+        return false;
+      }
+      if (path != (other).path) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
 }
 
 String getParentPath(String path) {

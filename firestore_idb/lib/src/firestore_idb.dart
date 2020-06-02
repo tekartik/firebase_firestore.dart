@@ -6,6 +6,7 @@ import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/document_data.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
@@ -360,7 +361,9 @@ class DocumentSnapshotIdb extends DocumentSnapshotBase {
         );
 }
 
-class DocumentReferenceIdb implements DocumentReference {
+class DocumentReferenceIdb
+    with DocumentReferenceMixin, PathReferenceMixin
+    implements DocumentReference {
   final FirestoreIdb firestoreIdb;
 
   @override
@@ -394,6 +397,9 @@ class DocumentReferenceIdb implements DocumentReference {
 
   @override
   Stream<DocumentSnapshot> onSnapshot() => firestoreIdb.onSnapshot(this);
+
+  @override
+  Firestore get firestore => firestoreIdb;
 }
 
 class QuerySnapshotIdb extends QuerySnapshotBase {

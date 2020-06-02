@@ -1,7 +1,7 @@
 language: dart
 dart:
   - stable
-  - 2.7.0
+  - beta
   - dev
 sudo: required
 addons:

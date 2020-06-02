@@ -9,6 +9,7 @@ import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
@@ -380,7 +381,7 @@ class DocumentSnapshotSembast extends DocumentSnapshotBase {
 }
 
 class DocumentReferenceSembast extends FirestoreReferenceBase
-    with AttributesMixin
+    with AttributesMixin, DocumentReferenceMixin
     implements DocumentReference {
   DocumentReferenceSembast(Firestore firestore, String path)
       : super(firestore, path);
@@ -440,16 +441,6 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
     });
     if (result != null) {
       firestoreSembast.notify(result);
-    }
-  }
-
-  @override
-  CollectionReference get parent {
-    final parentPath = this.parentPath;
-    if (parentPath == null) {
-      return null;
-    } else {
-      return CollectionReferenceSembast(firestore, parentPath);
     }
   }
 

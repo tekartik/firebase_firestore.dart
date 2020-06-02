@@ -8,6 +8,7 @@ import 'package:tekartik_firebase_browser/src/common/firebase_js_version.dart'; 
 import 'package:tekartik_firebase_browser/src/firebase_browser.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart'; // ignore: implementation_imports
 
@@ -327,7 +328,9 @@ native.DocumentReference _unwrapDocumentReference(DocumentReference ref) {
   return (ref as DocumentReferenceBrowser)?.nativeInstance;
 }
 
-class DocumentReferenceBrowser implements DocumentReference {
+class DocumentReferenceBrowser
+    with PathReferenceMixin
+    implements DocumentReference, PathReference {
   final native.DocumentReference nativeInstance;
 
   DocumentReferenceBrowser(this.nativeInstance);
@@ -371,6 +374,23 @@ class DocumentReferenceBrowser implements DocumentReference {
       sink.add(_wrapDocumentSnapshot(nativeDocumentSnapshot));
     });
     return nativeInstance.onSnapshot.transform(transformer);
+  }
+
+  @override
+  int get hashCode => path.hashCode;
+
+  @override
+  bool operator ==(other) {
+    if (other is DocumentReferenceBrowser) {
+      if (nativeInstance.firestore != (other).nativeInstance.firestore) {
+        return false;
+      }
+      if (path != (other).path) {
+        return false;
+      }
+      return true;
+    }
+    return false;
   }
 }
 

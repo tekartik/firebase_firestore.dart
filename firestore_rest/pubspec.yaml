@@ -1,6 +1,6 @@
 name: tekartik_firebase_firestore_rest
 description: Firebase firestore rest API
-version: 0.6.1
+version: 0.7.2
 publish_to: none
 
 environment:
@@ -14,14 +14,15 @@ dependencies:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
       ref: dart2
-    version: '>=0.6.1'
+    version: '>=0.7.0'
   tekartik_firebase_rest:
     git:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_rest
       ref: dart2
-    version: '>=0.6.2'
+    version: '>=0.6.4'
   googleapis:
+  googleapis_beta:
   googleapis_auth:
   tekartik_http:
     git:
@@ -36,7 +37,7 @@ dev_dependencies:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_local
       ref: dart2
-    version: '>=0.3.7'
+    version: '>=0.6.3'
   test: any
   build_runner: ">=0.9.1"
   build_test: ">=0.10.3"
@@ -55,3 +56,6 @@ dependency_overrides:
     path: ../firestore
   tekartik_firebase_firestore_sembast:
     path: ../firestore_sembast
+  # tmp
+  # tekartik_firebase_rest:
+  #   path: ../../firebase.dart/firebase_rest

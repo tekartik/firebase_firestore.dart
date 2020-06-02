@@ -6,7 +6,7 @@ import 'package:tekartik_firebase_firestore_rest/src/firestore/v1beta1.dart'
 import 'package:path/path.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/document_reference_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
@@ -208,8 +208,11 @@ class FirestoreRestImpl
     implements Firestore, FirestoreDocumentContext {
   final AppRestImpl appImpl;
   api.FirestoreApi _firestoreApi;
+  api.FirestoreFixedApi _firestoreFixedApi;
   api.FirestoreApi get firestoreApi =>
       _firestoreApi ??= FirestoreApi(appImpl.authClient);
+  api.FirestoreFixedApi get firestoreFixedApi =>
+      _firestoreFixedApi ??= FirestoreFixedApi(appImpl.authClient);
 
   String get projectId => appImpl.options.projectId;
 
@@ -554,7 +557,7 @@ class FirestoreRestImpl
       // Debug
       // devPrint('request: ${jsonPretty(request.toJson())}');
       // devPrint('parent: $parent');
-      var response = await firestoreApi.projects.databases.documents
+      var response = await firestoreFixedApi.projects.databases.documents
           .runQueryFixed(request, parent);
 
       // devPrint(jsonPretty(response.toJson()));
