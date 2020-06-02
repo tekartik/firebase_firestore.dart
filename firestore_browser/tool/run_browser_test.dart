@@ -1,10 +1,8 @@
 import 'dart:async';
 
-import 'package:tekartik_build_utils/cmd_run.dart';
+import 'package:process_run/shell_run.dart';
 
 Future main() async {
-  await runCmd(
-      PbrCmd(
-          ['test', '--fail-on-severe', '--', '-p', 'chrome', '-r', 'expanded']),
-      verbose: true);
+  await run(
+      'pub run build_runner test --fail-on-severe -- -p chrome -r expanded');
 }
