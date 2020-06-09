@@ -974,7 +974,6 @@ void runApp(
         // order by timestamp
         querySnapshot = await collRef.orderBy('timestamp').get();
         list = querySnapshot.docs;
-        devPrint(list);
         expect(list.length, 1);
         expect(list.first.ref.id, 'one');
 
@@ -1120,7 +1119,7 @@ void runApp(
         list = querySnapshot.docs;
         expect(list.length, 2);
         expect(list.first.ref.id, 'two');
-      }, solo: true);
+      });
 
       test('array_complex', () async {
         var testsRef = getTestsRef();
@@ -1158,7 +1157,7 @@ void runApp(
             await collRef.where('array', arrayContainsAny: []).get();
             fail('should fail');
           } catch (e) {
-            devPrint(e);
+            // devPrint(e);
             // FirebaseError: [code=invalid-argument]: Invalid Query. A non-empty array is required for 'array-contains-any' filters.
           }
 
@@ -1168,7 +1167,6 @@ void runApp(
           expect(list.length, 1);
           expect(list.first.ref.id, 'one');
 
-          devPrint('3');
           querySnapshot =
               await collRef.where('array', arrayContainsAny: [4, 5]).get();
           list = querySnapshot.docs;
