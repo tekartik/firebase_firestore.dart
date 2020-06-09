@@ -280,6 +280,8 @@ class WhereInfo {
     this.isGreaterThan,
     this.isGreaterThanOrEqualTo,
     this.arrayContains,
+    this.arrayContainsAny,
+    this.whereIn,
     this.isNull,
   }) {
     assert(
@@ -288,8 +290,12 @@ class WhereInfo {
             isLessThanOrEqualTo != null ||
             isGreaterThan != null ||
             isGreaterThanOrEqualTo != null ||
-            arrayContains != null,
+            arrayContains != null ||
+            arrayContainsAny != null ||
+            whereIn != null,
         'Empty where');
+    assert(arrayContainsAny == null || arrayContainsAny.isNotEmpty,
+        'Invalid Query. A non-empty array is required for \'array-contains-any\' filters.');
   }
 
   dynamic isEqualTo;
@@ -298,6 +304,8 @@ class WhereInfo {
   dynamic isGreaterThan;
   dynamic isGreaterThanOrEqualTo;
   dynamic arrayContains;
+  List<dynamic> arrayContainsAny;
+  List<dynamic> whereIn;
   bool isNull;
 
   @override
@@ -316,6 +324,10 @@ class WhereInfo {
       return '$fieldPath >= $isGreaterThanOrEqualTo';
     } else if (arrayContains != null) {
       return '$fieldPath array-contains $arrayContains';
+    } else if (arrayContainsAny != null) {
+      return '$fieldPath array-contains-any $arrayContainsAny';
+    } else if (whereIn != null) {
+      return '$fieldPath in $whereIn';
     }
     return super.toString();
   }

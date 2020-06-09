@@ -14,7 +14,7 @@ dependencies:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
       ref: dart2
-    version: '>=0.7.0'
+    version: '>=0.8.0'
   tekartik_firebase_rest:
     git:
       url: git://github.com/tekartik/firebase.dart
@@ -49,7 +49,7 @@ dev_dependencies:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore_sembast
       ref: dart2
-    version: '>=0.3.7+2'
+    version: '>=0.8.0'
 
 dependency_overrides:
   tekartik_firebase_firestore:

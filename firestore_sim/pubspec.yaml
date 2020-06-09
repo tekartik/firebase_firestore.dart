@@ -18,7 +18,7 @@ dependencies:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
       ref: dart2
-    version: '>=0.7.0'
+    version: '>=0.8.0'
   meta: any
   synchronized: '>=1.5.0-dev.2'
   logging: any

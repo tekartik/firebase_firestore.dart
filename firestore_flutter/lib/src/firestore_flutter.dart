@@ -158,13 +158,16 @@ bool isCommonValue(value) {
       value is bool);
 }
 
+List<dynamic> toNativeValues(Iterable<dynamic> values) =>
+    values.map((e) => toNativeValue(e)).toList(growable: false);
+
 dynamic toNativeValue(value) {
   if (isCommonValue(value)) {
     return value;
   } else if (value is Timestamp) {
     return native.Timestamp(value.seconds, value.nanoseconds);
   } else if (value is Iterable) {
-    return value.map((nativeValue) => toNativeValue(nativeValue)).toList();
+    return toNativeValues(value);
   } else if (value is Map) {
     return value.map<String, dynamic>(
         (key, value) => MapEntry(key as String, toNativeValue(value)));
@@ -294,12 +297,14 @@ class QueryFlutter implements Query {
 
   @override
   Query where(String fieldPath,
-      {isEqualTo,
-      isLessThan,
-      isLessThanOrEqualTo,
-      isGreaterThan,
-      isGreaterThanOrEqualTo,
-      arrayContains,
+      {dynamic isEqualTo,
+      dynamic isLessThan,
+      dynamic isLessThanOrEqualTo,
+      dynamic isGreaterThan,
+      dynamic isGreaterThanOrEqualTo,
+      dynamic arrayContains,
+      List<dynamic> arrayContainsAny,
+      List<dynamic> whereIn,
       bool isNull}) {
     return _wrapQuery(nativeInstance.where(fieldPath,
         isEqualTo: toNativeValue(isEqualTo),
@@ -308,6 +313,8 @@ class QueryFlutter implements Query {
         isGreaterThan: toNativeValue(isGreaterThan),
         isGreaterThanOrEqualTo: toNativeValue(isGreaterThanOrEqualTo),
         arrayContains: toNativeValue(arrayContains),
+        arrayContainsAny: toNativeValues(arrayContainsAny),
+        whereIn: toNativeValues(whereIn),
         isNull: isNull));
   }
 }

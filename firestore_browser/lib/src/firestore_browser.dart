@@ -472,13 +472,16 @@ class QueryBrowser implements Query {
   QueryBrowser(this._native);
 
   @override
-  Query endAt({DocumentSnapshot snapshot, List values}) => _wrapQuery(_native
-      .endAt(snapshot: _unwrapDocumentSnapshot(snapshot), fieldValues: values));
+  Query endAt({DocumentSnapshot snapshot, List values}) =>
+      _wrapQuery(_native.endAt(
+          snapshot: _unwrapDocumentSnapshot(snapshot),
+          fieldValues: toNativeValues(values)));
 
   @override
   Query endBefore({DocumentSnapshot snapshot, List values}) =>
       _wrapQuery(_native.endBefore(
-          snapshot: _unwrapDocumentSnapshot(snapshot), fieldValues: values));
+          snapshot: _unwrapDocumentSnapshot(snapshot),
+          fieldValues: toNativeValues(values)));
 
   @override
   Future<QuerySnapshot> get() async => _wrapQuerySnapshot(await _native.get());
@@ -496,47 +499,51 @@ class QueryBrowser implements Query {
   @override
   Query startAfter({DocumentSnapshot snapshot, List values}) =>
       _wrapQuery(_native.startAfter(
-          snapshot: _unwrapDocumentSnapshot(snapshot), fieldValues: values));
+          snapshot: _unwrapDocumentSnapshot(snapshot),
+          fieldValues: toNativeValues(values)));
 
   @override
   Query startAt({DocumentSnapshot snapshot, List values}) =>
       _wrapQuery(_native.startAt(
-          snapshot: _unwrapDocumentSnapshot(snapshot), fieldValues: values));
+          snapshot: _unwrapDocumentSnapshot(snapshot),
+          fieldValues: toNativeValues(values)));
 
   @override
   Query where(String fieldPath,
-      {isEqualTo,
-      isLessThan,
-      isLessThanOrEqualTo,
-      isGreaterThan,
-      isGreaterThanOrEqualTo,
-      arrayContains,
+      {dynamic isEqualTo,
+      dynamic isLessThan,
+      dynamic isLessThanOrEqualTo,
+      dynamic isGreaterThan,
+      dynamic isGreaterThanOrEqualTo,
+      dynamic arrayContains,
+      List<dynamic> arrayContainsAny,
+      List<dynamic> whereIn,
       bool isNull}) {
     String opStr;
     dynamic value;
     if (isEqualTo != null) {
       opStr = '==';
-      value = isEqualTo;
+      value = toNativeValue(isEqualTo);
     }
     if (isLessThan != null) {
       assert(opStr == null);
       opStr = '<';
-      value = isLessThan;
+      value = toNativeValue(isLessThan);
     }
     if (isLessThanOrEqualTo != null) {
       assert(opStr == null);
       opStr = '<=';
-      value = isLessThanOrEqualTo;
+      value = toNativeValue(isLessThanOrEqualTo);
     }
     if (isGreaterThan != null) {
       assert(opStr == null);
       opStr = '>';
-      value = isGreaterThan;
+      value = toNativeValue(isGreaterThan);
     }
     if (isGreaterThanOrEqualTo != null) {
       assert(opStr == null);
       opStr = '>=';
-      value = isGreaterThanOrEqualTo;
+      value = toNativeValue(isGreaterThanOrEqualTo);
     }
     if (isNull != null) {
       assert(opStr == null);
@@ -546,7 +553,17 @@ class QueryBrowser implements Query {
     if (arrayContains != null) {
       assert(opStr == null);
       opStr = 'array-contains';
-      value = arrayContains;
+      value = toNativeValue(arrayContains);
+    }
+    if (arrayContainsAny != null) {
+      assert(opStr == null);
+      opStr = 'array-contains-any';
+      value = toNativeValues(arrayContainsAny);
+    }
+    if (whereIn != null) {
+      assert(opStr == null);
+      opStr = 'in';
+      value = toNativeValues(whereIn);
     }
     return _wrapQuery(_native.where(fieldPath, opStr, value));
   }
