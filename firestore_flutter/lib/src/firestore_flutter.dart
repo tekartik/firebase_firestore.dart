@@ -159,7 +159,7 @@ bool isCommonValue(value) {
 }
 
 List<dynamic> toNativeValues(Iterable<dynamic> values) =>
-    values.map((e) => toNativeValue(e)).toList(growable: false);
+    values?.map((e) => toNativeValue(e))?.toList(growable: false);
 
 dynamic toNativeValue(value) {
   if (isCommonValue(value)) {
