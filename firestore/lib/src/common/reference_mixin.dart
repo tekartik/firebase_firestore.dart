@@ -1,5 +1,7 @@
+import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:path/path.dart';
+import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
 abstract class PathReference {
   // Firestore get firestore;
@@ -88,5 +90,34 @@ mixin DocumentReferenceMixin
       return true;
     }
     return false;
+  }
+}
+
+/// Remove 'projects/<project>/databases/(default)/documents if any
+List<String> localPathReferenceParts(String path) {
+  var parts = url.split(sanitizeReferencePath(path));
+  if (parts.length > 6 &&
+      parts[0] == 'projects' &&
+      parts[2] == 'databases' &&
+      parts[4] == 'documents') {
+    parts = parts.sublist(5);
+  }
+  return parts;
+}
+
+/// Throw if not valid - debug only
+void checkCollectionReferencePath(String path) {
+  if (isDebug) {
+    var parts = localPathReferenceParts(path);
+    assert(parts.length % 2 == 1,
+        'Collection references must have an odd number of segments, but $path ($parts) has length ${parts.length}');
+  }
+}
+
+void checkDocumentReferencePath(String path) {
+  if (isDebug) {
+    var parts = localPathReferenceParts(path);
+    assert(parts.length % 2 == 0,
+        'Document references must have an even number of segments, but $path ($parts) has length ${parts.length}');
   }
 }

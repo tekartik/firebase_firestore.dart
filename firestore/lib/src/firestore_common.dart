@@ -7,6 +7,8 @@ import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 
+import 'common/reference_mixin.dart';
+
 const String jsonTypeField = r'$t';
 const String jsonValueField = r'$v';
 const String typeDateTime = 'DateTime';
@@ -595,7 +597,7 @@ bool isDocumentReferencePath(String path) {
   if (path == null) {
     return true;
   }
-  var count = sanitizeReferencePath(path).split('/').length;
+  var count = localPathReferenceParts(path).length;
   return (count % 2) == 0;
 }
 

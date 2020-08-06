@@ -386,7 +386,7 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
     implements DocumentReference {
   DocumentReferenceSembast(Firestore firestore, String path)
       : super(firestore, path) {
-    _checkDocumentRef(this);
+    checkDocumentReferencePath(this.path);
   }
 
   FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
@@ -465,7 +465,7 @@ class CollectionReferenceSembast extends QuerySembast
   CollectionReferenceSembast(Firestore firestore, String path)
       : super(firestore, path) {
     queryInfo = QueryInfo();
-    _checkCollectionRef(this);
+    checkCollectionReferencePath(this.path);
   }
 
   @override
@@ -550,14 +550,4 @@ class QuerySnapshotSembast extends QuerySnapshotBase {
   QuerySnapshotSembast(
       List<DocumentSnapshot> docs, List<DocumentChange> documentChanges)
       : super(docs, documentChanges);
-}
-
-void _checkDocumentRef(DocumentReference ref) {
-  assert(url.split(ref.path).length % 2 == 0,
-      'Document references must have an even number of segments, but $ref has ${url.split(ref.path).length}');
-}
-
-void _checkCollectionRef(CollectionReference ref) {
-  assert(url.split(ref.path).length % 2 == 1,
-      'Collection references must have an odd number of segments, but $ref has ${url.split(ref.path).length}');
 }
