@@ -1,6 +1,6 @@
 name: tekartik_firebase_firestore_idb
 description: Firebase firestore on top of idb_shim
-version: 0.8.0
+version: 0.8.2
 publish_to: none
 
 environment:
@@ -12,7 +12,7 @@ dependencies:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
       ref: dart2
-    version: '>=0.8.0'
+    version: '>=0.8.2'
   tekartik_firebase_local:
     git:
       url: git://github.com/tekartik/firebase.dart

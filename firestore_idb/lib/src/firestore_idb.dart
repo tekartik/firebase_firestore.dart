@@ -119,7 +119,7 @@ class FirestoreIdb extends Object
     var documentData = DocumentData(data);
     var localTransaction = await getReadWriteTransaction();
     var txn = localTransaction.transaction;
-    var documentRef = getDocumentRef(_generateId());
+    var documentRef = getDocumentRef(url.join(path, _generateId()));
     await txn
         .objectStore(storeName)
         .add(documentDataToJsonMap(documentData), documentRef.path);
@@ -369,7 +369,9 @@ class DocumentReferenceIdb
   @override
   final String path;
 
-  DocumentReferenceIdb(this.firestoreIdb, this.path);
+  DocumentReferenceIdb(this.firestoreIdb, this.path) {
+    checkDocumentReferencePath(path);
+  }
 
   @override
   CollectionReference collection(String path) =>
@@ -422,7 +424,9 @@ class QueryIdb extends FirestoreReferenceBase
   @override
   QueryInfo queryInfo;
 
-  QueryIdb(Firestore firestore, String path) : super(firestore, path);
+  QueryIdb(Firestore firestore, String path) : super(firestore, path) {
+    checkCollectionReferencePath(this.path);
+  }
 
   @override
   FirestoreQueryMixin clone() =>
