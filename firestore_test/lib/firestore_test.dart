@@ -106,7 +106,7 @@ void runApp(
     }
   });
   group('firestore', () {
-    var testsRefPath = 'tests/tekartik_firebase/tests';
+    var testsRefPath = 'tests/tekartik_firestore/tests';
 
     CollectionReference getTestsRef() {
       return firestore.collection(testsRefPath);
@@ -191,6 +191,23 @@ void runApp(
         }
         expect(failed, isTrue);
       });
+
+      test('doc is as mail', () async {
+        var collRef =
+            firestore.collection(url.join(testsRefPath, 'email', 'emails'));
+        var docRef = collRef.doc('some+1@email.com');
+        await docRef.set({'test': 1});
+        /*
+        TODO fix for REST
+        var refs = (await collRef.get()).docs.map((e) => e.ref);
+        for (var ref in refs) {
+          // var value = (await ref.get()).data;
+          //devPrint('get $ref: $value');
+        }
+         */
+        expect((await docRef.get()).data, {'test': 1});
+        // await docRef.delete();
+      });
     });
 
     group('DocumentSnapshot', () {
@@ -210,6 +227,17 @@ void runApp(
         var snapshot = await docRef.get();
         expect(snapshot.data, {});
         expect(snapshot.exists, isTrue);
+      });
+
+      test('bad path', () async {
+        var testsRef = getTestsRef();
+        try {
+          testsRef.doc('bad/path');
+          fail('should fail');
+          // Document references must have an even number of segments,
+        } catch (e) {
+          expect(e, isNot(TypeMatcher<TestFailure>()));
+        }
       });
 
       test('documentTime', () async {
@@ -816,6 +844,17 @@ void runApp(
     });
 
     group('CollectionReference', () {
+      test('bad path', () async {
+        var testsRef = getTestsRef();
+        try {
+          testsRef.doc('path').collection('bad/path');
+          fail('should fail');
+          // Document references must have an even number of segments,
+        } catch (e) {
+          expect(e, isNot(TypeMatcher<TestFailure>()));
+        }
+      });
+
       test('attributes', () {
         var testsRef = getTestsRef();
         var collRef = testsRef.doc('collection_test').collection('attributes');

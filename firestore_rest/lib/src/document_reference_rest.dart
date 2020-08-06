@@ -1,9 +1,11 @@
+import 'package:path/path.dart';
+import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_rest/src/collection_reference_rest.dart';
-import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore/v1beta1.dart'
     as api;
+import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 
 class DocumentReferenceRestImpl
     with
@@ -14,6 +16,7 @@ class DocumentReferenceRestImpl
     implements DocumentReference {
   DocumentReferenceRestImpl(FirestoreRestImpl firestoreRest, String path) {
     init(firestoreRest, path);
+    _checkDocumentRef(this);
   }
 
   @override
@@ -40,6 +43,7 @@ class DocumentSnapshotRestImpl implements DocumentSnapshot {
   final api.Document impl;
 
   DocumentSnapshotRestImpl(this.firestoreRestImpl, this.impl);
+
   @override
   Timestamp get createTime => Timestamp.tryParse(impl.createTime);
 
@@ -59,4 +63,12 @@ class DocumentSnapshotRestImpl implements DocumentSnapshot {
 
   @override
   Timestamp get updateTime => Timestamp.tryParse(impl.updateTime);
+}
+
+void _checkDocumentRef(DocumentReference ref) {
+  if (isDebug) {
+    var parts = fixedPathReferenceParts(ref.path);
+    assert(parts.length % 2 == 0,
+        'Document references must have an even number of segments, but $ref ($parts) has ${parts.length}');
+  }
 }
