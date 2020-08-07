@@ -89,6 +89,7 @@ class DocumentReferenceSim
 
   DocumentReferenceSim(Firestore firestore, String path) {
     init(firestore, path);
+    checkDocumentReferencePath(this.path);
   }
 
   @override
@@ -440,7 +441,9 @@ class CollectionReferenceSim extends Object
   @override
   final String path;
 
-  CollectionReferenceSim(this.firestoreSim, this.path);
+  CollectionReferenceSim(this.firestoreSim, this.path) {
+    checkCollectionReferencePath(path);
+  }
 
   @override
   Future<DocumentReference> add(Map<String, dynamic> data) async {
