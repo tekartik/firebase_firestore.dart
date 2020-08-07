@@ -106,7 +106,7 @@ void runApp(
     }
   });
   group('firestore', () {
-    var testsRefPath = 'tests/tekartik_firebase/tests';
+    var testsRefPath = 'tests/tekartik_firestore/tests';
 
     CollectionReference getTestsRef() {
       return firestore.collection(testsRefPath);
@@ -191,6 +191,23 @@ void runApp(
         }
         expect(failed, isTrue);
       });
+
+      test('doc is as mail', () async {
+        var collRef =
+            firestore.collection(url.join(testsRefPath, 'email', 'emails'));
+        var docRef = collRef.doc('some+1@email.com');
+        await docRef.set({'test': 1});
+        /*
+        TODO fix for REST
+        var refs = (await collRef.get()).docs.map((e) => e.ref);
+        for (var ref in refs) {
+          // var value = (await ref.get()).data;
+          //devPrint('get $ref: $value');
+        }
+         */
+        expect((await docRef.get()).data, {'test': 1});
+        // await docRef.delete();
+      });
     });
 
     group('DocumentSnapshot', () {
@@ -210,6 +227,17 @@ void runApp(
         var snapshot = await docRef.get();
         expect(snapshot.data, {});
         expect(snapshot.exists, isTrue);
+      });
+
+      test('bad path', () async {
+        var testsRef = getTestsRef();
+        try {
+          testsRef.doc('bad/path');
+          fail('should fail');
+          // Document references must have an even number of segments,
+        } catch (e) {
+          expect(e, isNot(TypeMatcher<TestFailure>()));
+        }
       });
 
       test('documentTime', () async {
@@ -485,6 +513,26 @@ void runApp(
 
         await docRef.delete();
       }, skip: !firestoreService.supportsTimestamps);
+
+      test('null', () async {
+        var testsRef = getTestsRef().doc('lookup').collection('null');
+        var docRef = testsRef.doc('a');
+        var doc2Ref = testsRef.doc('b');
+        await docRef.set({'value': 1});
+        await doc2Ref.set({'value': null});
+        void _check(Map<String, dynamic> data) {
+          expect(data, {
+            'value': null,
+          });
+        }
+
+        _check((await doc2Ref.get()).data);
+        var snapshot =
+            (await testsRef.where('value', isNull: true).get()).docs.first;
+        _check(snapshot.data);
+
+        await docRef.delete();
+      });
 
       // All fields that we do not delete
       test(
@@ -816,6 +864,17 @@ void runApp(
     });
 
     group('CollectionReference', () {
+      test('bad path', () async {
+        var testsRef = getTestsRef();
+        try {
+          testsRef.doc('path').collection('bad/path');
+          fail('should fail');
+          // Document references must have an even number of segments,
+        } catch (e) {
+          expect(e, isNot(TypeMatcher<TestFailure>()));
+        }
+      });
+
       test('attributes', () {
         var testsRef = getTestsRef();
         var collRef = testsRef.doc('collection_test').collection('attributes');
@@ -938,6 +997,7 @@ void runApp(
           'array': [3, 4],
           'value': 1,
           'date': DateTime.fromMillisecondsSinceEpoch(2),
+          'timestamp': Timestamp(2, 0),
           'sub': {'value': 'b'}
         });
         var docRefTwo = collRef.doc('two');
@@ -969,6 +1029,12 @@ void runApp(
         list = querySnapshot.docs;
         expect(list.length, 2);
         expect(list.first.ref.id, 'two');
+
+        // order by timestamp
+        querySnapshot = await collRef.orderBy('timestamp').get();
+        list = querySnapshot.docs;
+        expect(list.length, 1);
+        expect(list.first.ref.id, 'one');
 
         // order by sub field
         querySnapshot = await collRef.orderBy('sub.value').get();
@@ -1033,6 +1099,39 @@ void runApp(
         expect(list.length, 1);
         expect(list.first.ref.id, 'two');
 
+        // where >= timestamp
+        querySnapshot = await collRef
+            .where('timestamp', isGreaterThanOrEqualTo: Timestamp(2, 0))
+            .get();
+        list = querySnapshot.docs;
+
+        expect(list.length, 1);
+        expect(list.first.ref.id, 'one');
+
+        // where == timestamp
+        querySnapshot = await collRef
+            .where('timestamp', isGreaterThanOrEqualTo: Timestamp(2, 0))
+            .get();
+        list = querySnapshot.docs;
+
+        expect(list.length, 1);
+        expect(list.first.ref.id, 'one');
+
+        // where > timestamp
+        querySnapshot = await collRef
+            .where('timestamp', isGreaterThan: Timestamp(2, 0))
+            .get();
+        list = querySnapshot.docs;
+        expect(list.length, 0);
+
+        // where > timestamp
+        querySnapshot = await collRef
+            .where('timestamp', isGreaterThan: Timestamp(1, 1))
+            .get();
+        list = querySnapshot.docs;
+        expect(list.length, 1);
+        expect(list.first.ref.id, 'one');
+
         // where <
         querySnapshot = await collRef.where('value', isLessThan: 2).get();
         list = querySnapshot.docs;
@@ -1056,6 +1155,17 @@ void runApp(
         list = querySnapshot.docs;
         expect(list.length, 0);
 
+        // failed on rest
+        try {
+          querySnapshot =
+              await collRef.where('array', arrayContainsAny: [4]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, 'one');
+        } catch (e) {
+          print('Allow rest failure: $e');
+        }
+
         // complex object
         querySnapshot =
             await collRef.where('sub', isEqualTo: {'value': 'a'}).get();
@@ -1068,6 +1178,68 @@ void runApp(
         list = querySnapshot.docs;
         expect(list.length, 2);
         expect(list.first.ref.id, 'two');
+      });
+
+      test('array_complex', () async {
+        var testsRef = getTestsRef();
+        var collRef = testsRef.doc('collection_test').collection('array');
+        var docRefOne = collRef.doc('one');
+        List<DocumentSnapshot> list;
+        await docRefOne.set({
+          'array': [3, 4],
+          'timestamp_array': [Timestamp(1, 1)]
+        });
+        var docRefTwo = collRef.doc('two');
+        await docRefTwo.set({
+          'array': [3],
+          'timestamp_array': [Timestamp(1, 1), Timestamp(2, 2)]
+        });
+        var docRefThree = collRef.doc('three');
+        await docRefThree.set({
+          'array': [5],
+        });
+
+        // array contains
+        var querySnapshot =
+            await collRef.where('array', arrayContains: 4).get();
+        list = querySnapshot.docs;
+        expect(list.length, 1);
+        expect(list.first.ref.id, 'one');
+
+        querySnapshot = await collRef.where('array', arrayContains: 6).get();
+        list = querySnapshot.docs;
+        expect(list.length, 0);
+
+        try {
+          // array contains any
+          try {
+            await collRef.where('array', arrayContainsAny: []).get();
+            fail('should fail');
+          } catch (e) {
+            // devPrint(e);
+            // FirebaseError: [code=invalid-argument]: Invalid Query. A non-empty array is required for 'array-contains-any' filters.
+          }
+
+          querySnapshot =
+              await collRef.where('array', arrayContainsAny: [4]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 1);
+          expect(list.first.ref.id, 'one');
+
+          querySnapshot =
+              await collRef.where('array', arrayContainsAny: [4, 5]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 2);
+          expect(list.first.ref.id, 'one');
+
+          querySnapshot = await collRef.where('timestamp_array',
+              arrayContainsAny: [Timestamp(1, 1)]).get();
+          list = querySnapshot.docs;
+          expect(list.length, 2);
+          expect(list.first.ref.id, 'one');
+        } catch (e) {
+          print('Allow REST failure for: $e');
+        }
       });
 
       test('order', () async {

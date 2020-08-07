@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
@@ -104,6 +105,28 @@ void main() {
       expect(isDocumentReferencePath('tests/doc'), isTrue);
       expect(isDocumentReferencePath('tests/doc/'), isTrue);
       expect(isDocumentReferencePath('tests/doc/coll/doc'), isTrue);
+      expect(
+          isDocumentReferencePath(
+              'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many/one'),
+          isTrue);
+      checkDocumentReferencePath(
+          'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many/one');
+      checkCollectionReferencePath(
+          'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many');
+      try {
+        checkDocumentReferencePath(
+            'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many');
+        fail('should fail');
+      } catch (e) {
+        expect(e, isNot(const TypeMatcher<TestFailure>()));
+      }
+      try {
+        checkCollectionReferencePath(
+            'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many/one');
+        fail('should fail');
+      } catch (e) {
+        expect(e, isNot(const TypeMatcher<TestFailure>()));
+      }
     });
   });
   group('queryInfo', () {

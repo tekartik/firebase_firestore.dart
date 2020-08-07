@@ -7,6 +7,8 @@ import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 
+import 'common/reference_mixin.dart';
+
 const String jsonTypeField = r'$t';
 const String jsonValueField = r'$v';
 const String typeDateTime = 'DateTime';
@@ -280,6 +282,8 @@ class WhereInfo {
     this.isGreaterThan,
     this.isGreaterThanOrEqualTo,
     this.arrayContains,
+    this.arrayContainsAny,
+    this.whereIn,
     this.isNull,
   }) {
     assert(
@@ -288,8 +292,13 @@ class WhereInfo {
             isLessThanOrEqualTo != null ||
             isGreaterThan != null ||
             isGreaterThanOrEqualTo != null ||
-            arrayContains != null,
+            arrayContains != null ||
+            arrayContainsAny != null ||
+            whereIn != null ||
+            isNull != null,
         'Empty where');
+    assert(arrayContainsAny == null || arrayContainsAny.isNotEmpty,
+        'Invalid Query. A non-empty array is required for \'array-contains-any\' filters.');
   }
 
   dynamic isEqualTo;
@@ -298,6 +307,8 @@ class WhereInfo {
   dynamic isGreaterThan;
   dynamic isGreaterThanOrEqualTo;
   dynamic arrayContains;
+  List<dynamic> arrayContainsAny;
+  List<dynamic> whereIn;
   bool isNull;
 
   @override
@@ -316,6 +327,10 @@ class WhereInfo {
       return '$fieldPath >= $isGreaterThanOrEqualTo';
     } else if (arrayContains != null) {
       return '$fieldPath array-contains $arrayContains';
+    } else if (arrayContainsAny != null) {
+      return '$fieldPath array-contains-any $arrayContainsAny';
+    } else if (whereIn != null) {
+      return '$fieldPath in $whereIn';
     }
     return super.toString();
   }
@@ -583,7 +598,7 @@ bool isDocumentReferencePath(String path) {
   if (path == null) {
     return true;
   }
-  var count = sanitizeReferencePath(path).split('/').length;
+  var count = localPathReferenceParts(path).length;
   return (count % 2) == 0;
 }
 

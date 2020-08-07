@@ -89,6 +89,7 @@ class DocumentReferenceSim
 
   DocumentReferenceSim(Firestore firestore, String path) {
     init(firestore, path);
+    checkDocumentReferencePath(this.path);
   }
 
   @override
@@ -205,6 +206,8 @@ abstract class QueryMixinSim implements Query {
     dynamic isGreaterThan,
     dynamic isGreaterThanOrEqualTo,
     dynamic arrayContains,
+    List<dynamic> arrayContainsAny,
+    List<dynamic> whereIn,
     bool isNull,
   }) =>
       clone()
@@ -215,6 +218,8 @@ abstract class QueryMixinSim implements Query {
             isGreaterThan: isGreaterThan,
             isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
             arrayContains: arrayContains,
+            arrayContainsAny: arrayContainsAny,
+            whereIn: whereIn,
             isNull: isNull));
 
   void addOrderBy(String key, String directionStr) {
@@ -436,7 +441,9 @@ class CollectionReferenceSim extends Object
   @override
   final String path;
 
-  CollectionReferenceSim(this.firestoreSim, this.path);
+  CollectionReferenceSim(this.firestoreSim, this.path) {
+    checkCollectionReferencePath(path);
+  }
 
   @override
   Future<DocumentReference> add(Map<String, dynamic> data) async {

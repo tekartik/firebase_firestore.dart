@@ -194,16 +194,25 @@ abstract class QueryMixin implements Query {
     dynamic isGreaterThan,
     dynamic isGreaterThanOrEqualTo,
     dynamic arrayContains,
+    List<dynamic> arrayContainsAny,
+    List<dynamic> whereIn,
     bool isNull,
-  }) =>
-      _wrapQuery(nativeInstance.where(fieldPath,
-          isEqualTo: _unwrapValue(isEqualTo),
-          isLessThan: _unwrapValue(isLessThan),
-          isLessThanOrEqualTo: _unwrapValue(isLessThanOrEqualTo),
-          isGreaterThan: _unwrapValue(isGreaterThan),
-          isGreaterThanOrEqualTo: _unwrapValue(isGreaterThanOrEqualTo),
-          arrayContains: _unwrapValue(arrayContains),
-          isNull: isNull));
+  }) {
+    if (arrayContainsAny != null) {
+      throw UnsupportedError('arrayContainsAny');
+    }
+    if (whereIn != null) {
+      throw UnsupportedError('whereIn');
+    }
+    return _wrapQuery(nativeInstance.where(fieldPath,
+        isEqualTo: _unwrapValue(isEqualTo),
+        isLessThan: _unwrapValue(isLessThan),
+        isLessThanOrEqualTo: _unwrapValue(isLessThanOrEqualTo),
+        isGreaterThan: _unwrapValue(isGreaterThan),
+        isGreaterThanOrEqualTo: _unwrapValue(isGreaterThanOrEqualTo),
+        arrayContains: _unwrapValue(arrayContains),
+        isNull: isNull));
+  }
 
   @override
   Stream<QuerySnapshot> onSnapshot() {

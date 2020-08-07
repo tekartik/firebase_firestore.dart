@@ -15,6 +15,8 @@ mixin QueryMixin implements Query {
     dynamic isGreaterThan,
     dynamic isGreaterThanOrEqualTo,
     dynamic arrayContains,
+    List<dynamic> arrayContainsAny,
+    List<dynamic> whereIn,
     bool isNull,
   }) =>
       clone()
@@ -25,6 +27,8 @@ mixin QueryMixin implements Query {
             isGreaterThan: isGreaterThan,
             isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
             arrayContains: arrayContains,
+            arrayContainsAny: arrayContainsAny,
+            whereIn: whereIn,
             isNull: isNull));
 
   void addOrderBy(String key, String directionStr) {

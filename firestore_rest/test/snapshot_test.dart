@@ -43,7 +43,7 @@ void main() {
       data.setGeoPoint('geo', GeoPoint(23.03, 19.84));
       data.setBlob('blob', Blob.fromList([1, 2, 3]));
       data.setNum('double', 19.84);
-      data.setDocumentReference('ref', firestore.doc('path'));
+      data.setDocumentReference('ref', firestore.doc('doc/path'));
       data.setList('list', [2, 'item']);
       data.setData(
           'nested', DocumentData()..setString('nestedKey', 'much nested'));
@@ -60,7 +60,7 @@ void main() {
           'double': {'doubleValue': 19.84},
           'ref': {
             'referenceValue':
-                'projects/my_app/databases/(default)/documents/path'
+                'projects/my_app/databases/(default)/documents/doc/path'
           },
           'list': {
             'arrayValue': {

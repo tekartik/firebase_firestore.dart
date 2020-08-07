@@ -27,7 +27,7 @@ void main() {
         var app = firebase.initializeApp(name: 'default_v1');
         var ioFirestore = service.firestore(app) as FirestoreSembast;
         expect(ioFirestore.dbPath, dst);
-        var snapshot = await ioFirestore.doc('all_fields').get();
+        var snapshot = await ioFirestore.doc('all_fields/doc').get();
         expect(
             snapshot.updateTime.toIso8601String(), '2018-10-23T00:00:00.000Z');
       });
@@ -63,12 +63,12 @@ void main() {
     test('db_format', () async {
       var app = firebase.initializeApp(name: 'format');
       var firestore = service.firestore(app);
-      await firestore.doc('doc_path').delete();
-      await firestore.doc('doc_path').set({'test': 1});
+      await firestore.doc('doc/path').delete();
+      await firestore.doc('doc/path').set({'test': 1});
       var db = (firestore as FirestoreSembast).db;
       var map = await sembast.stringMapStoreFactory
           .store('doc')
-          .record('doc_path')
+          .record('doc/path')
           .get(db);
       expect(map['test'], 1);
       expect(map[r'$rev'], 1);

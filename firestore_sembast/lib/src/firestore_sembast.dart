@@ -8,14 +8,13 @@ import 'package:synchronized/synchronized.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
-import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
+import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:uuid/uuid.dart';
-// ignore_for_file: implementation_imports
-import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
 
 class FirestoreServiceSembast
     with FirestoreServiceMixin
@@ -106,8 +105,10 @@ final docStore = stringMapStoreFactory.store('doc');
 
 class WriteResultSembast extends WriteResultBase {
   WriteResultSembast(String path) : super(path);
+
   DocumentSnapshotSembast get previousSnapshotSembast =>
       previousSnapshot as DocumentSnapshotSembast;
+
   DocumentSnapshotSembast get newSnapshotSembast =>
       newSnapshot as DocumentSnapshotSembast;
 }
@@ -384,9 +385,12 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
     with AttributesMixin, DocumentReferenceMixin
     implements DocumentReference {
   DocumentReferenceSembast(Firestore firestore, String path)
-      : super(firestore, path);
+      : super(firestore, path) {
+    checkDocumentReferencePath(this.path);
+  }
 
   FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
+
   @override
   CollectionReference collection(String path) =>
       CollectionReferenceSembast(firestore, url.join(this.path, path));
@@ -461,6 +465,7 @@ class CollectionReferenceSembast extends QuerySembast
   CollectionReferenceSembast(Firestore firestore, String path)
       : super(firestore, path) {
     queryInfo = QueryInfo();
+    checkCollectionReferencePath(this.path);
   }
 
   @override
@@ -477,8 +482,9 @@ class CollectionReferenceSembast extends QuerySembast
     final path = url.join(this.path, id);
 
     WriteResultSembast result;
-
     var db = await firestoreSembast.ready;
+    final documentReference = DocumentReferenceSembast(firestore, path);
+
     await db.transaction((txn) async {
       result = await firestoreSembast.txnSet(
           txn, firestoreSembast.doc(path), DocumentData(data));
@@ -487,7 +493,6 @@ class CollectionReferenceSembast extends QuerySembast
       firestoreSembast.notify(result);
     }
 
-    final documentReference = DocumentReferenceSembast(firestore, path);
     return documentReference;
   }
 
@@ -519,7 +524,6 @@ class QuerySembast extends FirestoreReferenceBase
   @override
   Future<List<DocumentSnapshot>> getCollectionDocuments() async {
     var db = await firestoreSembast.ready;
-
     final docs = <DocumentSnapshot>[];
     for (var record in await docStore.find(db)) {
       final recordPath = record.key;

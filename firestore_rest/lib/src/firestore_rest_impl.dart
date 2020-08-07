@@ -456,6 +456,12 @@ class FirestoreRestImpl
     } else if (whereInfo.arrayContains != null) {
       op = 'ARRAY_CONTAINS';
       value = whereInfo.arrayContains;
+    } else if (whereInfo.arrayContainsAny != null) {
+      op = 'ARRAY_CONTAINS_ANY';
+      value = whereInfo.arrayContainsAny;
+    } else if (whereInfo.whereIn != null) {
+      op = 'IN';
+      value = whereInfo.whereIn;
     }
     if (op != null && value != null) {
       return Filter()
@@ -464,7 +470,7 @@ class FirestoreRestImpl
           ..op = op
           ..value = toRestValue(this, value));
     }
-    throw 'filter $whereInfo not supported';
+    throw UnsupportedError('where $whereInfo');
   }
 
   StructuredQuery toStructuredQuery(QueryRestImpl queryRestImpl) {

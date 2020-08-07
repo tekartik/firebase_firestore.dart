@@ -207,13 +207,13 @@ bool mapWhere(DocumentData documentData, WhereInfo where) {
     return fieldValue != null;
   } else if (where.isEqualTo != null) {
     return (fieldValue == null
-        ? (where.isEqualTo == null)
+        ? false
         : (fieldValue.compareTo(_fixValue(where.isEqualTo)) == 0));
   } else if (where.isGreaterThan != null) {
-    return (fieldValue == null) ||
+    return (fieldValue != null) &&
         (fieldValue.compareTo(_fixValue(where.isGreaterThan)) > 0);
   } else if (where.isGreaterThanOrEqualTo != null) {
-    return (fieldValue == null) ||
+    return (fieldValue != null) &&
         (fieldValue.compareTo(_fixValue(where.isGreaterThanOrEqualTo)) >= 0);
   } else if (where.isLessThan != null) {
     return fieldValue != null &&
@@ -222,9 +222,22 @@ bool mapWhere(DocumentData documentData, WhereInfo where) {
     return fieldValue != null &&
         (fieldValue.compareTo(_fixValue(where.isLessThanOrEqualTo)) <= 0);
   } else if (where.arrayContains != null) {
-    return fieldValue != null &&
-        (fieldValue is Iterable) &&
-        ((fieldValue as Iterable).contains(_fixValue(where.arrayContains)));
+    if (fieldValue != null && (fieldValue is Iterable)) {
+      return ((fieldValue as Iterable)
+          .contains(_fixValue(where.arrayContains)));
+    }
+  } else if (where.arrayContainsAny != null) {
+    if (fieldValue != null && fieldValue is Iterable) {
+      for (var any in where.arrayContainsAny) {
+        if ((fieldValue as Iterable).contains(_fixValue(any))) {
+          return true;
+        }
+      }
+    }
+  } else if (where.whereIn != null) {
+    return where.whereIn.contains(fieldValue);
+  } else {
+    // devWarning(throw UnsupportedError('where: $where on $documentData'));
   }
   return false;
 }
@@ -732,6 +745,8 @@ mixin FirestoreQueryMixin implements Query {
     dynamic isGreaterThan,
     dynamic isGreaterThanOrEqualTo,
     dynamic arrayContains,
+    List<dynamic> arrayContainsAny,
+    List<dynamic> whereIn,
     bool isNull,
   }) =>
       clone()
@@ -742,6 +757,8 @@ mixin FirestoreQueryMixin implements Query {
             isGreaterThan: isGreaterThan,
             isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
             arrayContains: arrayContains,
+            arrayContainsAny: arrayContainsAny,
+            whereIn: whereIn,
             isNull: isNull));
 
   void addOrderBy(String key, String directionStr) {
