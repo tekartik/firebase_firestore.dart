@@ -514,6 +514,26 @@ void runApp(
         await docRef.delete();
       }, skip: !firestoreService.supportsTimestamps);
 
+      test('null', () async {
+        var testsRef = getTestsRef().doc('lookup').collection('null');
+        var docRef = testsRef.doc('a');
+        var doc2Ref = testsRef.doc('b');
+        await docRef.set({'value': 1});
+        await doc2Ref.set({'value': null});
+        void _check(Map<String, dynamic> data) {
+          expect(data, {
+            'value': null,
+          });
+        }
+
+        _check((await doc2Ref.get()).data);
+        var snapshot =
+            (await testsRef.where('value', isNull: true).get()).docs.first;
+        _check(snapshot.data);
+
+        await docRef.delete();
+      });
+
       // All fields that we do not delete
       test(
         'allFields',

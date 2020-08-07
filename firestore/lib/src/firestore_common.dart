@@ -294,7 +294,8 @@ class WhereInfo {
             isGreaterThanOrEqualTo != null ||
             arrayContains != null ||
             arrayContainsAny != null ||
-            whereIn != null,
+            whereIn != null ||
+            isNull != null,
         'Empty where');
     assert(arrayContainsAny == null || arrayContainsAny.isNotEmpty,
         'Invalid Query. A non-empty array is required for \'array-contains-any\' filters.');
