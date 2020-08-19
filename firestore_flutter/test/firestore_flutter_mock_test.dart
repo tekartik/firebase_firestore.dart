@@ -9,7 +9,7 @@ void main() {
 
   group('firestore_flutter_mock', () {
     test('ref', () {
-      var firestore = FirestoreFlutter(Firestore.instance);
+      var firestore = FirestoreFlutter(FirebaseFirestore.instance);
 
       var docRef = firestore.doc('test/doc');
       expect(docRef.path, 'test/doc');
