@@ -357,12 +357,11 @@ class CollectionReferenceFlutter extends QueryFlutter
   String toString() => 'CollRef($path)';
 
   @override
-  int get hashCode => nativeInstance.hashCode;
+  int get hashCode => path.hashCode;
 
   @override
   bool operator ==(other) =>
-      (other is CollectionReferenceFlutter) &&
-      nativeInstance == other.nativeInstance;
+      (other is CollectionReferenceFlutter) && path == other.path;
 }
 
 native.DocumentReference _unwrapDocumentReference(DocumentReference ref) =>
@@ -443,12 +442,11 @@ class DocumentReferenceFlutter implements DocumentReference {
   String toString() => 'DocRef($path)';
 
   @override
-  int get hashCode => nativeInstance.hashCode;
+  int get hashCode => path.hashCode;
 
   @override
   bool operator ==(other) =>
-      (other is DocumentReferenceFlutter) &&
-      nativeInstance == other.nativeInstance;
+      (other is DocumentReferenceFlutter) && path == other.path;
 }
 
 class DocumentSnapshotFlutter implements DocumentSnapshot {

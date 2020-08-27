@@ -1,6 +1,6 @@
 name: tekartik_firebase_firestore_flutter
 description: Firebase firestore for flutter
-version: 0.9.0
+version: 0.9.1
 publish_to: none
 
 environment:
