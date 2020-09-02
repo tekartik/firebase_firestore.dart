@@ -607,4 +607,22 @@ class CollectionReferenceBrowser extends QueryBrowser
 
   @override
   String get path => _nativeCollectionReference.path;
+
+  @override
+  int get hashCode => path.hashCode;
+
+  @override
+  bool operator ==(other) {
+    if (other is CollectionReferenceBrowser) {
+      if (_nativeCollectionReference.firestore !=
+          (other)._nativeCollectionReference.firestore) {
+        return false;
+      }
+      if (path != (other).path) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
 }
