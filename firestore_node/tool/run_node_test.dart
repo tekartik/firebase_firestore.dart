@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:process_run/shell_run.dart';
+import 'package:tekartik_app_node_build/app_build.dart';
 
 Future main() async {
-  await run('pub run test -p node -r expanded');
+  await nodeRunTest();
 }
