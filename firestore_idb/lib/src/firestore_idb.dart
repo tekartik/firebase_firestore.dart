@@ -402,6 +402,20 @@ class DocumentReferenceIdb
 
   @override
   Firestore get firestore => firestoreIdb;
+
+  @override
+  int get hashCode => path.hashCode;
+
+  @override
+  bool operator ==(other) {
+    if (other is DocumentReference) {
+      if (path != other.path) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
 }
 
 class QuerySnapshotIdb extends QuerySnapshotBase {
@@ -481,6 +495,20 @@ class CollectionReferenceIdb extends QueryIdb implements CollectionReference {
     } else {
       return DocumentReferenceIdb(firestoreIdb, parentPath);
     }
+  }
+
+  @override
+  int get hashCode => path.hashCode;
+
+  @override
+  bool operator ==(other) {
+    if (other is CollectionReference) {
+      if (path != other.path) {
+        return false;
+      }
+      return true;
+    }
+    return false;
   }
 }
 

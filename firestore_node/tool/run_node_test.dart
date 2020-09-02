@@ -1,8 +1,7 @@
 import 'dart:async';
 
-import 'package:tekartik_build_utils/cmd_run.dart';
+import 'package:tekartik_app_node_build/app_build.dart';
 
 Future main() async {
-  await runCmd(PubCmd(['run', 'test', '-p', 'node', '-r', 'expanded']),
-      verbose: true);
+  await nodeRunTest();
 }

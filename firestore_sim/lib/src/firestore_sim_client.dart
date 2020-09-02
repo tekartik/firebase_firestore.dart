@@ -469,6 +469,20 @@ class CollectionReferenceSim extends Object
   @override
   DocumentReference get parent =>
       DocumentReferenceSim(firestoreSim, url.dirname(path));
+
+  @override
+  int get hashCode => path.hashCode;
+
+  @override
+  bool operator ==(other) {
+    if (other is CollectionReference) {
+      if (path != (other).path) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
 }
 
 class FirestoreSim extends Object with FirestoreMixin implements Firestore {

@@ -7,6 +7,9 @@
  Update to latest node package
   
      npm install --save @google-cloud/firestore
+     npm install -save firebase-admin
+
+     _package.json
      
 ## Test
 

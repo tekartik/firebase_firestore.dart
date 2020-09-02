@@ -30,7 +30,7 @@ mixin PathReferenceMixin {
 
   @override
   bool operator ==(other) {
-    if (other is CollectionReferenceMixin) {
+    if (other is PathReferenceMixin) {
       if (firestore != (other).firestore) {
         return false;
       }

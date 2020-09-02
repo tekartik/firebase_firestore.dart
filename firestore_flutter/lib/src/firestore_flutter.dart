@@ -22,10 +22,10 @@ class FirestoreServiceFlutter
       assert(app is AppFlutter, 'invalid firebase app type');
       var appFlutter = app as AppFlutter;
       if (appFlutter.isDefault) {
-        return FirestoreFlutter(native.Firestore.instance);
+        return FirestoreFlutter(native.FirebaseFirestore.instance);
       } else {
-        return FirestoreFlutter(
-            native.Firestore(app: appFlutter.nativeInstance));
+        return FirestoreFlutter(native.FirebaseFirestore.instanceFor(
+            app: appFlutter.nativeInstance));
       }
     });
   }
@@ -56,7 +56,7 @@ class FirestoreServiceFlutter
 }
 
 class FirestoreFlutter implements Firestore {
-  final native.Firestore nativeInstance;
+  final native.FirebaseFirestore nativeInstance;
 
   FirestoreFlutter(this.nativeInstance);
 
@@ -69,7 +69,7 @@ class FirestoreFlutter implements Firestore {
 
   @override
   DocumentReference doc(String path) =>
-      _wrapDocumentReference(nativeInstance.document(path));
+      _wrapDocumentReference(nativeInstance.doc(path));
 
   @override
   Future runTransaction(Function(Transaction transaction) updateFunction) {
@@ -81,9 +81,7 @@ class FirestoreFlutter implements Firestore {
 
   @override
   void settings(FirestoreSettings settings) {
-    nativeInstance.settings(
-        //    timestampsInSnapshotsEnabled: settings?.timestampsInSnapshots == true
-        );
+    nativeInstance.settings = native.Settings();
   }
 
   @override
@@ -123,6 +121,11 @@ class TransactionFlutter implements Transaction {
   }
 }
 
+native.SetOptions unwrapSetOption(SetOptions options) =>
+    options == null ? null : native.SetOptions(merge: options.merge ?? false);
+SetOptions wrapSetOption(native.SetOptions options) =>
+    options == null ? null : SetOptions(merge: options.merge ?? false);
+
 class WriteBatchFlutter implements WriteBatch {
   final native.WriteBatch nativeInstance;
 
@@ -138,14 +141,15 @@ class WriteBatchFlutter implements WriteBatch {
   @override
   void set(DocumentReference ref, Map<String, dynamic> data,
       [SetOptions options]) {
-    nativeInstance.setData(_unwrapDocumentReference(ref),
+    nativeInstance.set(
+        _unwrapDocumentReference(ref),
         documentDataToFlutterData(DocumentData(data)),
-        merge: options?.merge == true);
+        unwrapSetOption(options));
   }
 
   @override
   void update(DocumentReference ref, Map<String, dynamic> data) =>
-      nativeInstance.updateData(_unwrapDocumentReference(ref),
+      nativeInstance.update(_unwrapDocumentReference(ref),
           documentDataToFlutterData(DocumentData(data)));
 }
 
@@ -256,7 +260,7 @@ class QueryFlutter implements Query {
 
   @override
   Future<QuerySnapshot> get() async =>
-      _wrapQuerySnapshot(await nativeInstance.getDocuments());
+      _wrapQuerySnapshot(await nativeInstance.get());
 
   @override
   Query limit(int limit) {
@@ -334,7 +338,7 @@ class CollectionReferenceFlutter extends QueryFlutter
 
   @override
   DocumentReference doc([String path]) {
-    return _wrapDocumentReference(nativeInstance.document(path));
+    return _wrapDocumentReference(nativeInstance.doc(path));
   }
 
   @override
@@ -343,7 +347,7 @@ class CollectionReferenceFlutter extends QueryFlutter
   @override
   DocumentReference get parent {
     return _wrapDocumentReference(
-        nativeInstance.firestore.document(url.dirname(path)));
+        nativeInstance.firestore.doc(url.dirname(path)));
   }
 
   @override
@@ -353,12 +357,11 @@ class CollectionReferenceFlutter extends QueryFlutter
   String toString() => 'CollRef($path)';
 
   @override
-  int get hashCode => nativeInstance.hashCode;
+  int get hashCode => path.hashCode;
 
   @override
   bool operator ==(other) =>
-      (other is CollectionReferenceFlutter) &&
-      nativeInstance == other.nativeInstance;
+      (other is CollectionReferenceFlutter) && path == other.path;
 }
 
 native.DocumentReference _unwrapDocumentReference(DocumentReference ref) =>
@@ -406,7 +409,7 @@ class DocumentReferenceFlutter implements DocumentReference {
       _wrapDocumentSnapshot(await nativeInstance.get());
 
   @override
-  String get id => nativeInstance.documentID;
+  String get id => nativeInstance.id;
 
   @override
   Stream<DocumentSnapshot> onSnapshot() {
@@ -428,23 +431,22 @@ class DocumentReferenceFlutter implements DocumentReference {
 
   @override
   Future set(Map<String, dynamic> data, [SetOptions options]) =>
-      nativeInstance.setData(documentDataToFlutterData(DocumentData(data)),
-          merge: options?.merge == true);
+      nativeInstance.set(documentDataToFlutterData(DocumentData(data)),
+          unwrapSetOption(options));
 
   @override
   Future update(Map<String, dynamic> data) =>
-      nativeInstance.updateData(documentDataToFlutterData(DocumentData(data)));
+      nativeInstance.update(documentDataToFlutterData(DocumentData(data)));
 
   @override
   String toString() => 'DocRef($path)';
 
   @override
-  int get hashCode => nativeInstance.hashCode;
+  int get hashCode => path.hashCode;
 
   @override
   bool operator ==(other) =>
-      (other is DocumentReferenceFlutter) &&
-      nativeInstance == other.nativeInstance;
+      (other is DocumentReferenceFlutter) && path == other.path;
 }
 
 class DocumentSnapshotFlutter implements DocumentSnapshot {
@@ -454,7 +456,7 @@ class DocumentSnapshotFlutter implements DocumentSnapshot {
 
   @override
   Map<String, dynamic> get data =>
-      documentDataFromFlutterData(nativeInstance.data)?.asMap();
+      documentDataFromFlutterData(nativeInstance.data())?.asMap();
 
   @override
   bool get exists => nativeInstance.exists;
@@ -477,12 +479,12 @@ class QuerySnapshotFlutter implements QuerySnapshot {
   QuerySnapshotFlutter(this.nativeInstance);
 
   @override
-  List<DocumentSnapshot> get docs => nativeInstance.documents
+  List<DocumentSnapshot> get docs => nativeInstance.docs
       ?.map((nativeInstance) => _wrapDocumentSnapshot(nativeInstance))
       ?.toList();
 
   @override
-  List<DocumentChange> get documentChanges => nativeInstance.documentChanges
+  List<DocumentChange> get documentChanges => nativeInstance.docChanges
       ?.map((nativeInstance) => _wrapDocumentChange(nativeInstance))
       ?.toList();
 }
