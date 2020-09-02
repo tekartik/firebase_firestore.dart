@@ -382,7 +382,7 @@ class DocumentSnapshotSembast extends DocumentSnapshotBase {
 }
 
 class DocumentReferenceSembast extends FirestoreReferenceBase
-    with AttributesMixin, DocumentReferenceMixin
+    with AttributesMixin, DocumentReferenceMixin, PathReferenceMixin
     implements DocumentReference {
   DocumentReferenceSembast(Firestore firestore, String path)
       : super(firestore, path) {
@@ -504,6 +504,23 @@ class CollectionReferenceSembast extends QuerySembast
     } else {
       return DocumentReferenceSembast(firestore, parentPath);
     }
+  }
+
+  @override
+  int get hashCode => path.hashCode;
+
+  @override
+  bool operator ==(other) {
+    if (other is CollectionReferenceSembast) {
+      if (firestore != (other).firestore) {
+        return false;
+      }
+      if (path != (other).path) {
+        return false;
+      }
+      return true;
+    }
+    return false;
   }
 }
 

@@ -52,6 +52,9 @@ class FirestoreServiceNode
 
   @override
   bool get supportsTrackChanges => true;
+
+  @override
+  String toString() => 'FirestoreServiceNode()';
 }
 
 FirestoreServiceNode _firestoreServiceNode;
@@ -91,6 +94,9 @@ class FirestoreNode implements Firestore {
   Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async =>
       _wrapDocumentSnapshots(
           await nativeInstance.getAll(_unwrapDocumentReferences(refs)));
+
+  @override
+  String toString() => 'FirestoreNode()';
 }
 
 FirestoreNode firestore(node.Firestore _impl) =>
@@ -256,6 +262,19 @@ class CollectionReferenceNode extends QueryNode implements CollectionReference {
   @override
   String toString() {
     return 'CollectionReferenceNode($path)';
+  }
+
+  /// Equality based on path
+  @override
+  int get hashCode => path.hashCode;
+
+  /// Equality based on path
+  @override
+  bool operator ==(Object other) {
+    if (other is CollectionReference) {
+      return other.path == path;
+    }
+    return false;
   }
 }
 
@@ -449,6 +468,19 @@ class DocumentReferenceNode implements DocumentReference {
   String toString() {
     return 'DocumentReferenceNode($path)';
   }
+
+  /// Equality based on path
+  @override
+  int get hashCode => path.hashCode;
+
+  /// Equality based on path
+  @override
+  bool operator ==(Object other) {
+    if (other is DocumentReference) {
+      return other.path == path;
+    }
+    return false;
+  }
 }
 
 class DocumentSnapshotNode implements DocumentSnapshot {
@@ -457,8 +489,9 @@ class DocumentSnapshotNode implements DocumentSnapshot {
   DocumentSnapshotNode._(this.nativeInstance);
 
   @override
-  Map<String, dynamic> get data =>
-      documentDataFromNativeDocumentData(nativeInstance.data)?.asMap();
+  Map<String, dynamic> get data => exists
+      ? documentDataFromNativeDocumentData(nativeInstance.data)?.asMap()
+      : null;
 
   @override
   DocumentReference get ref => _wrapDocumentReference(nativeInstance.reference);
