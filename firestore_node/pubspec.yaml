@@ -1,6 +1,6 @@
 name: tekartik_firebase_firestore_node
 description: Firebase firestore server node
-version: 0.8.0
+version: 0.8.1
 publish_to: none
 
 environment:
@@ -16,6 +16,12 @@ dependencies:
       path: firestore
       ref: dart2
     version: '>=0.8.0'
+  tekartik_firebase_firestore_sembast:
+    git:
+      url: git://github.com/tekartik/firebase_firestore.dart
+      path: firestore_sembast
+      ref: dart2
+    version: '>=0.8.2'
   tekartik_firebase_node:
     git:
       url: git://github.com/tekartik/firebase.dart
@@ -49,6 +55,9 @@ dependency_overrides:
     path: ../firestore_test
   tekartik_firebase_firestore:
     path: ../firestore
+  tekartik_firebase_firestore_sembast:
+    path: ../firestore_sembast
+
   quiver_hashcode: '>=1.0.0'
 #  firebase_admin_interop:
 #    path: ../../firebase-admin-interop
