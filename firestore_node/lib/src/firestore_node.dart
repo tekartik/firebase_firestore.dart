@@ -486,7 +486,7 @@ class DocumentReferenceNode implements DocumentReference {
 class DocumentSnapshotNode implements DocumentSnapshot {
   final node.DocumentSnapshot nativeInstance;
 
-  DocumentSnapshotNode._(this.nativeInstance);
+  DocumentSnapshotNode(this.nativeInstance);
 
   @override
   Map<String, dynamic> get data => exists
@@ -611,7 +611,7 @@ QueryNode _wrapQuery(node.DocumentQuery nativeInstance) =>
 
 DocumentSnapshotNode _wrapDocumentSnapshot(
         node.DocumentSnapshot nativeInstance) =>
-    nativeInstance != null ? DocumentSnapshotNode._(nativeInstance) : null;
+    nativeInstance != null ? DocumentSnapshotNode(nativeInstance) : null;
 
 List<DocumentSnapshotNode> _wrapDocumentSnapshots(
         Iterable<node.DocumentSnapshot> nativeInstances) =>

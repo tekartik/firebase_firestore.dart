@@ -110,8 +110,10 @@ class TransactionFlutter implements Transaction {
   void set(DocumentReference documentRef, Map<String, dynamic> data,
       [SetOptions options]) {
     // Warning merge is not handle yet!
-    nativeInstance.set(_unwrapDocumentReference(documentRef),
-        documentDataToFlutterData(DocumentData(data)));
+    nativeInstance.set(
+        _unwrapDocumentReference(documentRef),
+        documentDataToFlutterData(DocumentData(data)),
+        unwrapSetOption(options));
   }
 
   @override
