@@ -13,6 +13,9 @@ import 'package:test/test.dart';
 
 bool skipConcurrentTransactionTests = false;
 
+List<DocumentReference> docsKeys(List<DocumentSnapshot> snashots) =>
+    snashots.map((e) => e.ref).toList();
+
 void run(
     {@required Firebase firebase,
     @required FirestoreService firestoreService,
@@ -965,6 +968,29 @@ void runApp(
         expect(querySnapshot.docs[0].ref.path, oneRef.path);
         expect(querySnapshot.docs[1].ref.path, twoRef.path);
       });
+
+      /// Requires an index
+      test('where_and_order_by_name', () async {
+        var testsRef = getTestsRef();
+        var collRef =
+            testsRef.doc('collection_test').collection('where_and_order');
+        await deleteCollection(firestore, collRef);
+        var oneRef = collRef.doc('one');
+        var twoRef = collRef.doc('two');
+        var threeRef = collRef.doc('three');
+        await firestore.runTransaction((transaction) {
+          transaction.set(oneRef, {'name': 1, 'target': 1});
+          transaction.set(twoRef, {'name': 2, 'target': 1});
+          transaction.set(threeRef, {'name': 3, 'target': 2});
+        });
+
+        var querySnapshot = await collRef
+            .where('target', isEqualTo: 1)
+            .orderBy('name', descending: true)
+            .get();
+        // Order by name by default
+        expect(docsKeys(querySnapshot.docs), [twoRef, oneRef]);
+      }, skip: true);
 
       bool isNodePlatform() {
         return firestoreService.toString().contains('FirestoreServiceNode');
