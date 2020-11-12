@@ -497,7 +497,7 @@ class DocumentChangeFlutter implements DocumentChange {
   DocumentChangeFlutter(this.nativeInstance);
 
   @override
-  DocumentSnapshot get document => null;
+  DocumentSnapshot get document => _wrapDocumentSnapshot(nativeInstance.doc);
 
   @override
   int get newIndex => nativeInstance.newIndex;
