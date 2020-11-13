@@ -483,6 +483,13 @@ class FirestoreRestImpl
       CollectionSelector()..collectionId = getPathId(collectionPath)
     ];
 
+    // Support select
+    if (queryInfo.selectKeyPaths != null) {
+      structuredQuery.select = Projection()
+        ..fields = queryInfo.selectKeyPaths
+            .map((key) => FieldReference()..fieldPath = key)
+            .toList(growable: false);
+    }
     // Support where
     if (queryInfo?.wheres?.isNotEmpty ?? false) {
       if (queryInfo.wheres.length == 1) {
@@ -743,8 +750,7 @@ class FirestoreServiceRestImpl
   bool get supportsFieldValueArray => false;
 
   @override
-  // TODO @alex check and implements
-  bool get supportsQuerySelect => false;
+  bool get supportsQuerySelect => true;
 
   @override
   bool get supportsQuerySnapshotCursor => false;
