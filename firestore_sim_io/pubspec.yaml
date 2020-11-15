@@ -4,7 +4,7 @@ version: 0.8.0
 publish_to: none
 
 environment:
-  sdk: '>=2.5.0 <3.0.0'
+  sdk: '>=2.10.0-0 <3.0.0'
 
 dependencies:
   tekartik_firebase_sim_io:
@@ -42,4 +42,3 @@ dependency_overrides:
     path: ../firestore
   tekartik_firebase_firestore_sembast:
     path: ../firestore_sembast
-
