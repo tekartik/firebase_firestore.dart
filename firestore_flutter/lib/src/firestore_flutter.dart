@@ -159,7 +159,7 @@ class WriteBatchFlutter implements WriteBatch {
 bool isCommonValue(value) {
   return (value == null ||
       value is String ||
-      value is DateTime ||
+      // value is DateTime ||
       value is num ||
       value is bool);
 }
@@ -172,6 +172,8 @@ dynamic toNativeValue(value) {
     return value;
   } else if (value is Timestamp) {
     return native.Timestamp(value.seconds, value.nanoseconds);
+  } else if (value is DateTime) {
+    return native.Timestamp.fromDate(value);
   } else if (value is Iterable) {
     return toNativeValues(value);
   } else if (value is Map) {

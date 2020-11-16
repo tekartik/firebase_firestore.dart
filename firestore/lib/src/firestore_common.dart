@@ -211,6 +211,7 @@ DocumentData documentDataFromSnapshotJsonMap(
   return documentDataFromJsonMap(firestore, map);
 }
 
+/// Read a document data from a json map
 DocumentData documentDataFromJsonMap(
     Firestore firestore, Map<String, dynamic> map) {
   if (map == null) {
@@ -220,7 +221,13 @@ DocumentData documentDataFromJsonMap(
       map: jsonToDocumentDataValue(firestore, map) as Map<String, dynamic>);
 }
 
-// will return null if map is null
+/// Read as data ready to set in firestore.set
+Map<String, dynamic> documentDataMapFromJsonMap(
+    Firestore firestore, Map<String, dynamic> map) {
+  return documentDataFromJsonMap(firestore, map)?.asMap();
+}
+
+/// will return null if map is null
 DocumentData documentDataFromMap(Map<String, dynamic> map) {
   if (map != null) {
     return null;

@@ -88,13 +88,13 @@ abstract class DocumentReference {
 
   CollectionReference collection(String path);
 
-  Future delete();
+  Future<void> delete();
 
   Future<DocumentSnapshot> get();
 
-  Future set(Map<String, dynamic> data, [SetOptions options]);
+  Future<void> set(Map<String, dynamic> data, [SetOptions options]);
 
-  Future update(Map<String, dynamic> data);
+  Future<void> update(Map<String, dynamic> data);
 
   Stream<DocumentSnapshot> onSnapshot();
 }
