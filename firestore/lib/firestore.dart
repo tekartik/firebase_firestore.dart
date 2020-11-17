@@ -22,6 +22,8 @@ abstract class FirestoreService {
   bool get supportsQuerySnapshotCursor;
 
   bool get supportsDocumentSnapshotTime;
+
+  /// Where it supports timestamp precision on date and time values in document data
   bool get supportsTimestamps;
   bool get supportsTimestampsInSnapshots;
 
