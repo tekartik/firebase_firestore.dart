@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:firebase_admin_interop/firebase_admin_interop.dart' as node;
 import 'package:firebase_admin_interop/src/bindings.dart' // ignore: implementation_imports
     as js;
-import 'package:js/js_util.dart' as js;
-import 'package:node_interop/js.dart' as js;
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
