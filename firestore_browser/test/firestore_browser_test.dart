@@ -18,6 +18,7 @@ void main() async {
     return;
   }
   var firebase = firebaseBrowser;
+  var firestoreService = firestoreServiceBrowser;
 
   group('browser', () {
     test('factory', () {

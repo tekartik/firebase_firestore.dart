@@ -6,6 +6,7 @@ import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
+import 'package:tekartik_firebase_firestore_test/timestamp_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_collection_test.dart'
     as utils_collection;
 import 'package:tekartik_firebase_firestore_test/utils_test.dart';
@@ -111,6 +112,7 @@ void runApp(
   group('firestore', () {
     var testsRefPath = 'tests/tekartik_firestore/tests';
 
+    timestampGroup(service: firestoreService, firestore: firestore);
     CollectionReference getTestsRef() {
       return firestore.collection(testsRefPath);
     }
@@ -363,11 +365,8 @@ void runApp(
         expect(documentData.getDateTime('localDateTime'), localDateTime);
         expect(documentData.getDateTime('utcDateTime'), utcDateTime.toLocal());
         // Might only get milliseconds in the browser
-        expect(
-            documentData.getTimestamp('timestamp'),
-            firestoreService.supportsTimestamps
-                ? timestamp
-                : Timestamp(123456789, 123000000));
+        expect(documentData.getTimestamp('timestamp'),
+            timestampAdaptPrecision(firestoreService, timestamp));
         expect(documentData.getDocumentReference('docRef').path, 'tests/doc');
         expect(documentData.getBlob('blob').data, [1, 2, 3]);
         expect(documentData.getGeoPoint('geoPoint'), GeoPoint(1.2, 4));
@@ -589,7 +588,7 @@ void runApp(
                 ? Timestamp.fromDateTime(utcDateTime)
                 : utcDateTime.toLocal(),
             'timestamp': firestoreService.supportsTimestampsInSnapshots
-                ? timestamp
+                ? timestampAdaptPrecision(firestoreService, timestamp)
                 : timestamp.toDateTime(),
             'intList': <int>[4, 3],
             'blob': Blob(Uint8List.fromList([1, 2, 3])),
@@ -1680,4 +1679,28 @@ void runApp(
       expect((await query.get()).docs, isNotEmpty);
     }, skip: true);
   });
+}
+
+/// Test root path to override
+String testRootPath;
+
+/// To get a safe path if specified in setup
+String getTestPath(String path) {
+  if (testRootPath == null) {
+    return path;
+  } else {
+    return url.join(testRootPath, path);
+  }
+}
+
+/// Adapt expected precision, removing micros if timestamps precision is not
+/// supported
+Timestamp timestampAdaptPrecision(
+    FirestoreService service, Timestamp timestamp) {
+  if (service.supportsTimestamps) {
+    return timestamp;
+  } else {
+    return Timestamp(
+        timestamp.seconds, (timestamp.nanoseconds ~/ 1000000) * 1000000);
+  }
 }

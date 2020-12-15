@@ -40,10 +40,11 @@ class FirestoreServiceBrowser
   bool get supportsDocumentSnapshotTime => false;
 
   @override
-  bool get supportsTimestampsInSnapshots => false;
+  bool get supportsTimestampsInSnapshots => true; // new as of 2020/11/20
 
   @override
-  bool get supportsTimestamps => false;
+  bool get supportsTimestamps =>
+      false; // Not this precision yet, maybe in the future
 
   @override
   bool get supportsQuerySnapshotCursor => true;
@@ -177,7 +178,7 @@ DocumentReferenceBrowser _wrapDocumentReference(
 bool isCommonValue(value) {
   return (value == null ||
       value is String ||
-      value is DateTime ||
+      // value is DateTime ||
       value is num ||
       value is bool);
 }
@@ -205,6 +206,9 @@ dynamic fromNativeValue(nativeValue) {
   } else if (_isNativeGeoPoint(nativeValue)) {
     var nativeGeoPoint = nativeValue as native.GeoPoint;
     return GeoPoint(nativeGeoPoint.latitude, nativeGeoPoint.longitude);
+  } else if (nativeValue is DateTime) {
+    // Supporting only timestamp
+    return Timestamp.fromDateTime(nativeValue);
   } else {
     throw 'not supported ${nativeValue} type ${nativeValue.runtimeType}';
   }
@@ -269,6 +273,9 @@ dynamic toNativeValue(value) {
     return native.Blob.fromUint8Array(value.data);
   } else if (value is GeoPoint) {
     return native.GeoPoint(value.latitude, value.longitude);
+  } else if (value is DateTime) {
+    // Currently rounded to date time
+    return value;
   }
 
   throw 'not supported ${value} type ${value.runtimeType}';

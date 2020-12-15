@@ -224,6 +224,9 @@ dynamic fromNativeValue(nativeValue) {
     return GeoPoint(nativeValue.latitude, nativeValue.longitude);
   } else if (nativeValue is native.Timestamp) {
     return Timestamp(nativeValue.seconds, nativeValue.nanoseconds);
+  } else if (nativeValue is DateTime) {
+    // Compat
+    return Timestamp.fromDateTime(nativeValue);
   } else {
     throw 'not supported ${nativeValue} type ${nativeValue.runtimeType}';
   }
