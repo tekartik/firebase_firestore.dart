@@ -17,4 +17,7 @@ doc/api/
 *.iml
 
 # VSCode
-.vscode
+.vscode/
+
+# Local files
+.local/

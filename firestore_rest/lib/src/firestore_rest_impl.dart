@@ -210,9 +210,9 @@ class FirestoreRestImpl
   api.FirestoreApi _firestoreApi;
   api.FirestoreFixedApi _firestoreFixedApi;
   api.FirestoreApi get firestoreApi =>
-      _firestoreApi ??= FirestoreApi(appImpl.authClient);
+      _firestoreApi ??= FirestoreApi(appImpl.client);
   api.FirestoreFixedApi get firestoreFixedApi =>
-      _firestoreFixedApi ??= FirestoreFixedApi(appImpl.authClient);
+      _firestoreFixedApi ??= FirestoreFixedApi(appImpl.client);
 
   String get projectId => appImpl.options.projectId;
 
