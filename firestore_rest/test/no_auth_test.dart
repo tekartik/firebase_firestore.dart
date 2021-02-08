@@ -1,6 +1,6 @@
 import 'package:process_run/shell.dart';
 import 'package:test/test.dart';
-
+import 'package:path/path.dart';
 import 'no_auth_firestore.dart';
 
 void main() {
@@ -16,6 +16,10 @@ void main() {
       var snapshot = await firestore.doc(rootPath).get();
       expect(snapshot.data, isNotNull,
           reason: 'Missing test data in $projectId at $rootPath');
+
+      var querySnapshot =
+          await firestore.collection(url.dirname(rootPath)).get();
+      expect(querySnapshot.docs.isNotEmpty, isTrue);
     });
   }, skip: (projectId == null || rootPath == null));
 }

@@ -484,7 +484,7 @@ class FirestoreRestImpl
     ];
 
     // Support select
-    if (queryInfo.selectKeyPaths != null) {
+    if (queryInfo?.selectKeyPaths != null) {
       structuredQuery.select = Projection()
         ..fields = queryInfo.selectKeyPaths
             .map((key) => FieldReference()..fieldPath = key)
