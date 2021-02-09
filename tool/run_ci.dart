@@ -11,7 +11,7 @@ Future<void> main() async {
     'firestore_browser',
     // 'firestore_flutter ',
     'firestore_idb',
-    'firestore_node',
+    //'firestore_node',
     'firestore_sim',
     'firestore_sim_browser',
     'firestore_sim_io',
