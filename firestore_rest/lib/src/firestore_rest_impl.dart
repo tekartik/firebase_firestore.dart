@@ -738,8 +738,7 @@ class FirestoreServiceRestImpl
     implements FirestoreServiceRest {
   @override
   Firestore firestore(App app) {
-    // TODO: implement firestore
-    return FirestoreRestImpl(app as AppRestImpl);
+    return getInstance(app, () => FirestoreRestImpl(app as AppRestImpl));
   }
 
   @override
