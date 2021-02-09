@@ -65,7 +65,25 @@ mixin CollectionReferenceMixin
 
   @override
   DocumentReference doc([String path]) => firestore.doc(getChildPath(path));
+
+  @override
+  int get hashCode => path.hashCode;
+
+  @override
+  bool operator ==(other) {
+    if (other is CollectionReferenceMixin) {
+      if (firestore != (other).firestore) {
+        return false;
+      }
+      if (path != (other).path) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
 }
+
 mixin DocumentReferenceMixin
     implements DocumentReference, FirestorePathReference {
   @override
