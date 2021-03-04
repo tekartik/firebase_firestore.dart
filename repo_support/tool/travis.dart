@@ -1,3 +1,4 @@
+import 'package:path/path.dart';
 import 'package:process_run/shell.dart';
 import 'package:process_run/which.dart';
 
@@ -18,7 +19,7 @@ Future main() async {
     'firestore_sim_io',
     'firestore_test'
   ]) {
-    shell = shell.pushd(dir);
+    shell = shell.pushd(join('..', dir));
     await shell.run('''
     
     pub get
@@ -32,7 +33,7 @@ Future main() async {
     for (var dir in [
       'firestore_flutter',
     ]) {
-      shell = shell.pushd(dir);
+      shell = shell.pushd(join('..', dir));
       await shell.run('''
     
   pub get

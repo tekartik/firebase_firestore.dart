@@ -404,7 +404,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
         batch.update(firestore.doc(item.path),
             documentDataFromJsonMap(firestore, item.data)?.asMap());
       } else {
-        throw 'not supported ${item}';
+        throw 'not supported $item';
       }
     }
     await batch.commit();

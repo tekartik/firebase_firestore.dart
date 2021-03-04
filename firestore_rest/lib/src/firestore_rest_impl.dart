@@ -333,7 +333,7 @@ class FirestoreRestImpl
   }
 
   String get baseUri =>
-      'https://firestore.googleapis.com/v1beta1/${projectId}/tekartik-free-dev/databases/(default)';
+      'https://firestore.googleapis.com/v1beta1/$projectId/tekartik-free-dev/databases/(default)';
 
   String getUriPath(String path) {
     return url.join(baseUri, path);

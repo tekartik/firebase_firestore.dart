@@ -230,7 +230,7 @@ class FieldValue {
   FieldValue(this.type);
   @override
   String toString() {
-    return '${type}${data != null ? '($data)' : ''}';
+    return '$type${data != null ? '($data)' : ''}';
   }
 }
 
