@@ -210,7 +210,7 @@ dynamic fromNativeValue(nativeValue) {
     // Supporting only timestamp
     return Timestamp.fromDateTime(nativeValue);
   } else {
-    throw 'not supported ${nativeValue} type ${nativeValue.runtimeType}';
+    throw 'not supported $nativeValue type ${nativeValue.runtimeType}';
   }
 }
 
@@ -278,7 +278,7 @@ dynamic toNativeValue(value) {
     return value;
   }
 
-  throw 'not supported ${value} type ${value.runtimeType}';
+  throw 'not supported $value type ${value.runtimeType}';
 }
 
 Map<String, dynamic> documentDataToNativeMap(DocumentData documentData) {

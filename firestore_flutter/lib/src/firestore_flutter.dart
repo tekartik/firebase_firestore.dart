@@ -198,7 +198,7 @@ dynamic toNativeValue(value) {
         value.latitude?.toDouble(), value.longitude?.toDouble());
   }
 
-  throw 'not supported ${value} type ${value.runtimeType}';
+  throw 'not supported $value type ${value.runtimeType}';
 }
 
 dynamic fromNativeValue(nativeValue) {
@@ -228,7 +228,7 @@ dynamic fromNativeValue(nativeValue) {
     // Compat
     return Timestamp.fromDateTime(nativeValue);
   } else {
-    throw 'not supported ${nativeValue} type ${nativeValue.runtimeType}';
+    throw 'not supported $nativeValue type ${nativeValue.runtimeType}';
   }
 }
 

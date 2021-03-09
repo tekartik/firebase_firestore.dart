@@ -155,7 +155,7 @@ class FirestoreSembast extends Object
         // If it is a name (no path, no extension) use it as id
 
         final name = dbPath;
-        print('opening database ${name}');
+        print('opening database $name');
         var db = await firestoreService.databaseFactory
             .openDatabase(name, version: firestoreSembastDatabaseVersion,
                 onVersionChanged: (db, oldVersion, newVersion) async {

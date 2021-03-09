@@ -333,7 +333,7 @@ class FirestoreRestImpl
   }
 
   String get baseUri =>
-      'https://firestore.googleapis.com/v1beta1/${projectId}/tekartik-free-dev/databases/(default)';
+      'https://firestore.googleapis.com/v1beta1/$projectId/tekartik-free-dev/databases/(default)';
 
   String getUriPath(String path) {
     return url.join(baseUri, path);
@@ -484,7 +484,7 @@ class FirestoreRestImpl
     ];
 
     // Support select
-    if (queryInfo.selectKeyPaths != null) {
+    if (queryInfo?.selectKeyPaths != null) {
       structuredQuery.select = Projection()
         ..fields = queryInfo.selectKeyPaths
             .map((key) => FieldReference()..fieldPath = key)
@@ -738,8 +738,7 @@ class FirestoreServiceRestImpl
     implements FirestoreServiceRest {
   @override
   Firestore firestore(App app) {
-    // TODO: implement firestore
-    return FirestoreRestImpl(app as AppRestImpl);
+    return getInstance(app, () => FirestoreRestImpl(app as AppRestImpl));
   }
 
   @override
