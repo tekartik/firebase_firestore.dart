@@ -2,7 +2,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
 mixin QueryMixin implements Query {
-  QueryInfo queryInfo;
+  late QueryInfo queryInfo;
 
   QueryMixin clone();
 
@@ -15,9 +15,9 @@ mixin QueryMixin implements Query {
     dynamic isGreaterThan,
     dynamic isGreaterThanOrEqualTo,
     dynamic arrayContains,
-    List<dynamic> arrayContainsAny,
-    List<dynamic> whereIn,
-    bool isNull,
+    List<Object?>? arrayContainsAny,
+    List<Object?>? whereIn,
+    bool? isNull,
   }) =>
       clone()
         ..queryInfo.addWhere(WhereInfo(fieldPath,
@@ -38,19 +38,19 @@ mixin QueryMixin implements Query {
   }
 
   @override
-  Query startAt({DocumentSnapshot snapshot, List values}) =>
+  Query startAt({DocumentSnapshot? snapshot, List? values}) =>
       clone()..queryInfo.startAt(snapshot: snapshot, values: values);
 
   @override
-  Query startAfter({DocumentSnapshot snapshot, List values}) =>
+  Query startAfter({DocumentSnapshot? snapshot, List? values}) =>
       clone()..queryInfo.startAfter(snapshot: snapshot, values: values);
 
   @override
-  Query endAt({DocumentSnapshot snapshot, List values}) =>
+  Query endAt({DocumentSnapshot? snapshot, List? values}) =>
       clone()..queryInfo.endAt(snapshot: snapshot, values: values);
 
   @override
-  Query endBefore({DocumentSnapshot snapshot, List values}) =>
+  Query endBefore({DocumentSnapshot? snapshot, List? values}) =>
       clone()..queryInfo.endBefore(snapshot: snapshot, values: values);
 
   @override
@@ -62,7 +62,7 @@ mixin QueryMixin implements Query {
   Query limit(int limit) => clone()..queryInfo.limit = limit;
 
   @override
-  Query orderBy(String key, {bool descending}) => clone()
+  Query orderBy(String key, {bool? descending}) => clone()
     ..addOrderBy(
         key, descending == true ? orderByDescending : orderByAscending);
 }

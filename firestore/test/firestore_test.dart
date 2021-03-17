@@ -44,7 +44,7 @@ void main() {
     test('list', () {
       var data = DocumentData();
       expect(data.getList('list'), isNull);
-      data.setList('list', <dynamic>[1, 3]);
+      data.setList('list', <Object?>[1, 3]);
       final list = data.getList('list');
       expect(list, [1, 3]);
     });
@@ -56,15 +56,15 @@ void main() {
         'blob': {r'$t': 'Blob', r'$v': null}
       });
 
-      data.setBlob('blob', null);
+      data.setNull('blob');
       expect(documentDataToJsonMap(data), {'blob': null});
 
       data.setBlob('blob', Blob(Uint8List.fromList([1, 2, 3])));
       expect(documentDataToJsonMap(data), {
         'blob': {r'$t': 'Blob', r'$v': 'AQID'}
       });
-      data = documentDataFromJsonMap(firestore, documentDataToJsonMap(data));
-      var blob = data.getBlob('blob');
+      data = documentDataFromJsonMap(firestore, documentDataToJsonMap(data))!;
+      var blob = data.getBlob('blob')!;
       expect(blob.data, [1, 2, 3]);
     });
 
@@ -78,13 +78,13 @@ void main() {
         }
       });
 
-      data.setGeoPoint('geo', null);
+      data.setNull('geo');
       expect(documentDataToJsonMap(data), {'geo': null});
 
       data.setGeoPoint('geo', GeoPoint(3.5, 4.0));
 
-      data = documentDataFromJsonMap(firestore, documentDataToJsonMap(data));
-      var geoPoint = data.getGeoPoint('geo');
+      data = documentDataFromJsonMap(firestore, documentDataToJsonMap(data))!;
+      var geoPoint = data.getGeoPoint('geo')!;
       expect(geoPoint.latitude, 3.5);
       expect(geoPoint.longitude, 4.0);
     });
@@ -99,13 +99,13 @@ void main() {
 
       // As timestamp
       firestore.firestoreSettings = FirestoreSettings();
-      data = documentDataFromJsonMap(firestore, map);
+      data = documentDataFromJsonMap(firestore, map)!;
       expect(data.getTimestamp('timestamp'), Timestamp(12345678901, 123456000));
       expect(data.asMap()['timestamp'], Timestamp(12345678901, 123456000));
 
       // As date
       firestore.firestoreSettings = null;
-      data = documentDataFromJsonMap(firestore, map);
+      data = documentDataFromJsonMap(firestore, map)!;
       expect(
         data.getTimestamp('timestamp'),
         Timestamp(12345678901, 123456000),
@@ -121,7 +121,7 @@ void main() {
               ? DateTime.parse('2361-03-21T19:15:01.123456Z').toLocal()
               : DateTime.parse('2361-03-21T19:15:01.123Z').toLocal());
       */
-      data.setTimestamp('timestamp', null);
+      data.setNull('timestamp');
       expect(documentDataToJsonMap(data), {'timestamp': null});
       expect(data.getTimestamp('timestamp'), null);
     });
@@ -131,10 +131,10 @@ void main() {
       expect(documentDataToJsonMap(data), {
         'ref': {r'$t': 'DocumentReference', r'$v': 'tests/doc'}
       });
-      expect(data.getDocumentReference('ref').path, 'tests/doc');
-      data.setDocumentReference('ref', null);
+      expect(data.getDocumentReference('ref')!.path, 'tests/doc');
+      data.setNull('ref');
       expect(documentDataToJsonMap(data), {'ref': null});
-      data = documentDataFromJsonMap(firestore, documentDataToJsonMap(data));
+      data = documentDataFromJsonMap(firestore, documentDataToJsonMap(data))!;
       expect(data.getDocumentReference('ref'), isNull);
     });
 
@@ -185,7 +185,7 @@ void main() {
     group('DocumentData', () {
       test('sub_empty', () async {
         var documentData = DocumentData();
-        var subData = DocumentData();
+        DocumentData? subData = DocumentData();
         documentData.setData('sub', subData);
         subData = documentData.getData('sub');
         expect(subData, isNotNull);
@@ -196,7 +196,7 @@ void main() {
         var subData = DocumentData();
         documentData.setData('sub', subData);
         subData.setString('test', 'test_value');
-        subData = documentData.getData('sub');
+        subData = documentData.getData('sub')!;
         expect(subData.getString('test'), 'test_value');
       });
 
@@ -207,8 +207,8 @@ void main() {
         var subSubData = DocumentData();
         subData.setData('inner', subSubData);
         subSubData.setString('test', 'test_value');
-        subData = documentData.getData('sub');
-        subSubData = subData.getData('inner');
+        subData = documentData.getData('sub')!;
+        subSubData = subData.getData('inner')!;
         expect(subSubData.getString('test'), 'test_value');
       });
     });

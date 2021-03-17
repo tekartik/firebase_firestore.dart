@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
@@ -14,28 +13,30 @@ import 'package:test/test.dart';
 bool get runningAsJavascript => identical(1, 1.0);
 
 class FirestoreMock extends Object with FirestoreMixin implements Firestore {
-  FirestoreMock({FirestoreSettings settings}) {
+  FirestoreMock({FirestoreSettings? settings}) {
     firestoreSettings = settings;
   }
 
   @override
-  CollectionReference collection(String path) => null;
+  CollectionReference? collection(String path) => throw UnimplementedError();
 
   @override
   DocumentReference doc(String path) => DocumentReferenceMock(path);
 
   @override
-  WriteBatch batch() => null;
+  WriteBatch? batch() => null;
 
   @override
-  Future runTransaction(Function(Transaction transaction) updateFunction) =>
-      null;
+  Future<T> runTransaction<T>(
+          FutureOr<T> Function(Transaction transaction) updateFunction) =>
+      throw UnimplementedError();
 
   @override
-  void settings(FirestoreSettings settings) {}
+  void settings(FirestoreSettings settings) => throw UnimplementedError();
 
   @override
-  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) => null;
+  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) =>
+      throw UnimplementedError();
 }
 
 class DocumentSnapshotMock implements DocumentSnapshot {
@@ -45,47 +46,48 @@ class DocumentSnapshotMock implements DocumentSnapshot {
   DocumentSnapshotMock(this.ref);
 
   @override
-  Map<String, dynamic> get data => null;
+  Map<String, Object?>? get data => null;
 
   @override
-  bool get exists => null;
+  bool get exists => throw UnimplementedError();
 
   @override
-  Timestamp get updateTime => null;
+  Timestamp? get updateTime => null;
 
   @override
-  Timestamp get createTime => null;
+  Timestamp? get createTime => null;
 }
 
 class DocumentReferenceMock implements DocumentReference {
   DocumentReferenceMock(this.path);
 
   @override
-  CollectionReference collection(String path) => null;
+  CollectionReference? collection(String path) => throw UnimplementedError();
 
   @override
-  Future delete() => null;
+  Future<void> delete() => throw UnimplementedError();
 
   @override
-  Future<DocumentSnapshot> get() => null;
+  Future<DocumentSnapshot> get() => throw UnimplementedError();
 
   @override
-  String get id => url.basename(path);
+  String get id => getPathId(path);
 
   @override
-  CollectionReference get parent => null;
+  CollectionReference? get parent => throw UnimplementedError();
 
   @override
   final String path;
 
   @override
-  Future set(Map<String, dynamic> data, [SetOptions options]) => null;
+  Future<void> set(Map<String, Object?> data, [SetOptions? options]) =>
+      throw UnimplementedError();
 
   @override
-  Future update(Map<String, dynamic> data) => null;
+  Future<void> update(Map<String, Object?> data) => throw UnimplementedError();
 
   @override
-  Stream<DocumentSnapshot> onSnapshot() => null;
+  Stream<DocumentSnapshot>? onSnapshot() => throw UnimplementedError();
 
   @override
   String toString() => path;
@@ -211,7 +213,7 @@ void main() {
       });
 
       documentData = documentDataFromRecordMap(
-          firestore, documentDataToRecordMap(documentData));
+          firestore, documentDataToRecordMap(documentData))!;
       // this is local time
       expect(documentData.getDateTime('utcDateTime'), utcDate.toLocal());
       expect(documentData.getDateTime('dateTime'), localDate);
@@ -225,7 +227,7 @@ void main() {
       expect(map, {
         'timestamp': {r'$t': 'Timestamp', r'$v': '2009-02-13T23:31:30.123456Z'},
       });
-      documentData = documentDataFromRecordMap(firestore, map);
+      documentData = documentDataFromRecordMap(firestore, map)!;
       expect(documentData.getTimestamp('timestamp'), timestamp);
     });
 
@@ -242,8 +244,8 @@ void main() {
 
       documentData = documentDataFromRecordMap(firestore, {
         'sub': {'test': 1234}
-      });
-      subData = documentData.getData('sub');
+      })!;
+      subData = documentData.getData('sub')!;
       expect(subData.getInt('test'), 1234);
     });
 
@@ -270,9 +272,9 @@ void main() {
         'sub': {
           'subsub': {'test': 1234}
         }
-      });
-      subData = documentData.getData('sub');
-      subSubData = subData.getData('subsub');
+      })!;
+      subData = documentData.getData('sub')!;
+      subSubData = subData.getData('subsub')!;
       expect(subSubData.getInt('test'), 1234);
     });
 
@@ -289,8 +291,8 @@ void main() {
 
       documentData = documentDataFromRecordMap(firestore, {
         'sub': {'test': 1234}
-      });
-      subData = documentData.getData('sub');
+      })!;
+      subData = documentData.getData('sub')!;
       expect(subData.getInt('test'), 1234);
     });
 
@@ -303,7 +305,7 @@ void main() {
 
       documentData = documentDataFromRecordMap(firestore, {
         'test': [1, 2]
-      });
+      })!;
       expect(documentData.getList('test'), [1, 2]);
     });
 
@@ -358,7 +360,7 @@ void main() {
         }
       };
       expect(documentDataToRecordMap(documentData), expected);
-      documentData = documentDataFromRecordMap(firestore, expected);
+      documentData = documentDataFromRecordMap(firestore, expected)!;
       expect(documentDataToRecordMap(documentData), expected);
     });
   });

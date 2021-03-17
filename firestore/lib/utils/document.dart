@@ -6,42 +6,42 @@ abstract class DocumentSnapshots {
   List<DocumentReference> get refs;
 
   /// The snapshots reference in the same order
-  List<DocumentSnapshot> get docs;
-  DocumentSnapshot getDocument(DocumentReference reference);
+  List<DocumentSnapshot?> get docs;
+  DocumentSnapshot? getDocument(DocumentReference reference);
 }
 
 class _DocumentSnapshots implements DocumentSnapshots {
-  Map<DocumentReference, DocumentSnapshot> _map;
+  Map<DocumentReference, DocumentSnapshot?>? _map;
 
   _DocumentSnapshots(this.refs, this.docs);
   @override
-  DocumentSnapshot getDocument(DocumentReference reference) {
+  DocumentSnapshot? getDocument(DocumentReference reference) {
     _map ??= () {
-      var map = <DocumentReference, DocumentSnapshot>{};
+      var map = <DocumentReference, DocumentSnapshot?>{};
       for (var i = 0; i < refs.length; i++) {
         map[refs[i]] = docs[i];
       }
       return map;
     }();
-    return _map[reference];
+    return _map![reference];
   }
 
   @override
   final List<DocumentReference> refs;
 
   @override
-  final List<DocumentSnapshot> docs;
+  final List<DocumentSnapshot?> docs;
 }
 
 /// Retrieve a list of documents by references
 Stream<DocumentSnapshots> onDocumentSnapshots(
     List<DocumentReference> references) {
-  List<StreamSubscription> subscriptions;
-  StreamController<DocumentSnapshots> controller;
+  List<StreamSubscription?>? subscriptions;
+  late StreamController<DocumentSnapshots> controller;
   controller = StreamController<DocumentSnapshots>(onListen: () {
     var count = references.length;
-    final docs = List<DocumentSnapshot>.generate(count, (index) => null);
-    subscriptions = List<StreamSubscription>.generate(count, (index) => null);
+    final docs = List<DocumentSnapshot?>.generate(count, (index) => null);
+    subscriptions = List<StreamSubscription?>.generate(count, (index) => null);
     // remainings before the first full get
     var remainings = Set<DocumentReference>.from(references);
 
@@ -55,17 +55,17 @@ Stream<DocumentSnapshots> onDocumentSnapshots(
       final index = i;
       final reference = references[index];
       // ignore: cancel_subscriptions
-      var subscription = reference.onSnapshot().listen((snapshot) {
+      var subscription = reference.onSnapshot()!.listen((snapshot) {
         docs[index] = snapshot;
         remainings.remove(reference);
         _notify();
       });
-      subscriptions[index] = subscription;
+      subscriptions![index] = subscription;
     }
   }, onCancel: () {
     if (subscriptions != null) {
-      for (var subscription in subscriptions) {
-        subscription.cancel();
+      for (var subscription in subscriptions!) {
+        subscription!.cancel();
       }
     }
   });

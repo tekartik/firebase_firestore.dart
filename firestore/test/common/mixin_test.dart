@@ -1,3 +1,4 @@
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart';
@@ -7,9 +8,8 @@ import 'package:test/test.dart';
 
 class FirestoreMock with FirestoreMixin {
   @override
-  WriteBatch batch() {
-    // TODO: implement batch
-    return null;
+  WriteBatch? batch() {
+    throw UnimplementedError();
   }
 
   @override
@@ -24,14 +24,13 @@ class FirestoreMock with FirestoreMixin {
 
   @override
   Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) {
-    // TODO: implement getAll
-    return null;
+    throw UnimplementedError();
   }
 
   @override
-  Future runTransaction(Function(Transaction transaction) updateFunction) {
-    // TODO: implement runTransaction
-    return null;
+  Future<T> runTransaction<T>(
+      FutureOr<T> Function(Transaction transaction) updateFunction) {
+    throw UnimplementedError();
   }
 }
 
@@ -45,30 +44,25 @@ class CollectionReferenceMock
     init(firestoreMock, path);
   }
   @override
-  Future<DocumentReference> add(Map<String, dynamic> data) {
-    // TODO: implement add
-    return null;
+  Future<DocumentReference>? add(Map<String, Object?> data) {
+    throw UnimplementedError();
   }
 
   @override
   FirestoreQueryMixin clone() {
-    // TODO: implement clone
-    return null;
+    throw UnimplementedError();
   }
 
   @override
   Future<List<DocumentSnapshot>> getCollectionDocuments() {
-    // TODO: implement getCollectionDocuments
-    return null;
+    throw UnimplementedError();
   }
 
   @override
-  // TODO: implement parent
-  DocumentReference get parent => null;
+  DocumentReference? get parent => null;
 
   @override
-  // TODO: implement queryInfo
-  QueryInfo get queryInfo => null;
+  QueryInfo? get queryInfo => null;
 }
 
 class DocumentReferenceMock
@@ -78,33 +72,28 @@ class DocumentReferenceMock
   }
 
   @override
-  Future delete() {
-    // TODO: implement delete
-    return null;
+  Future<void> delete() async {
+    throw UnimplementedError();
   }
 
   @override
   Future<DocumentSnapshot> get() {
-    // TODO: implement get
-    return null;
+    throw UnimplementedError();
   }
 
   @override
   Stream<DocumentSnapshot> onSnapshot() {
-    // TODO: implement onSnapshot
-    return null;
+    throw UnimplementedError();
   }
 
   @override
-  Future set(Map<String, dynamic> data, [SetOptions options]) {
-    // TODO: implement set
-    return null;
+  Future<void> set(Map<String, Object?> data, [SetOptions? options]) {
+    throw UnimplementedError();
   }
 
   @override
-  Future update(Map<String, dynamic> data) {
-    // TODO: implement update
-    return null;
+  Future<void> update(Map<String, Object?> data) {
+    throw UnimplementedError();
   }
 }
 
@@ -114,7 +103,7 @@ void main() {
     test('path', () {
       var doc = mock.doc('my/path');
       expect('my/path', doc.path);
-      expect('my', doc.parent.path);
+      expect('my', doc.parent!.path);
     });
   });
   group('value_key_mixin', () {

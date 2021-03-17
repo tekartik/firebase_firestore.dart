@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:meta/meta.dart';
 import 'package:tekartik_common_utils/date_time_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
@@ -20,24 +19,24 @@ const String typeBlob = 'Blob';
 const String valueFieldValueDelete = '~delete';
 const String valueFieldValueServerTimestamp = '~serverTimestamp';
 
-Map<String, dynamic> typeValueToJson(String type, dynamic value) {
-  return <String, dynamic>{jsonTypeField: type, jsonValueField: value};
+Map<String, Object?> typeValueToJson(String type, dynamic value) {
+  return <String, Object?>{jsonTypeField: type, jsonValueField: value};
 }
 
-Map<String, dynamic> dateTimeToJsonValue(DateTime dateTime) =>
+Map<String, Object?> dateTimeToJsonValue(DateTime dateTime) =>
     typeValueToJson(typeDateTime, dateTimeToString(dateTime));
 
-Map<String, dynamic> timestampToJsonValue(Timestamp timestamp) =>
-    typeValueToJson(typeTimestamp, timestamp?.toIso8601String());
+Map<String, Object?> timestampToJsonValue(Timestamp timestamp) =>
+    typeValueToJson(typeTimestamp, timestamp.toIso8601String());
 
-Map<String, dynamic> documentReferenceToJsonValue(
+Map<String, Object?> documentReferenceToJsonValue(
         DocumentReference documentReference) =>
-    typeValueToJson(typeDocumentReference, documentReference?.path);
+    typeValueToJson(typeDocumentReference, documentReference.path);
 
-Map<String, dynamic> blobToJsonValue(Blob blob) => typeValueToJson(
-    typeBlob, blob.data != null ? base64.encode(blob.data) : null);
+Map<String, Object?> blobToJsonValue(Blob blob) => typeValueToJson(
+    typeBlob, blob.data != null ? base64.encode(blob.data!) : null);
 
-Map<String, dynamic> fieldValueToJsonValue(FieldValue fieldValue) {
+Map<String, Object?> fieldValueToJsonValue(FieldValue fieldValue) {
   if (fieldValue == FieldValue.delete) {
     return typeValueToJson(typeFieldValue, valueFieldValueDelete);
   } else if (fieldValue == FieldValue.serverTimestamp) {
@@ -57,37 +56,25 @@ FieldValue fieldValueFromJsonValue(dynamic value) {
       'Unsupported value for fieldValueFromJsonValue');
 }
 
-DateTime jsonValueToDateTime(Map map) {
-  if (map == null) {
-    return null;
-  }
+DateTime? jsonValueToDateTime(Map map) {
   assert(map[jsonTypeField] == typeDateTime);
   return anyToDateTime(map[jsonValueField]);
 }
 
-Timestamp jsonValueToTimestamp(Map map) {
-  if (map == null) {
-    return null;
-  }
+Timestamp? jsonValueToTimestamp(Map map) {
   assert(map[jsonTypeField] == typeDateTime ||
       map[jsonTypeField] == typeTimestamp);
   return parseTimestamp(map[jsonValueField]);
 }
 
 DocumentReference jsonValueToDocumentReference(Firestore firestore, Map map) {
-  if (map == null) {
-    return null;
-  }
   assert(map[jsonTypeField] == typeDocumentReference);
   return firestore.doc(map[jsonValueField] as String);
 }
 
 Blob jsonValueToBlob(Map map) {
-  if (map == null) {
-    return null;
-  }
   assert(map[jsonTypeField] == typeBlob);
-  var base64value = map[jsonValueField] as String;
+  var base64value = map[jsonValueField] as String?;
   if (base64value == null) {
     return Blob(null);
   } else {
@@ -95,21 +82,15 @@ Blob jsonValueToBlob(Map map) {
   }
 }
 
-Map<String, dynamic> geoPointToJsonValue(GeoPoint geoPoint) {
-  if (geoPoint == null) {
-    return null;
-  }
+Map<String, Object?> geoPointToJsonValue(GeoPoint geoPoint) {
   return typeValueToJson(typeGeoPoint,
       {'latitude': geoPoint.latitude, 'longitude': geoPoint.longitude});
 }
 
 GeoPoint jsonValueToGeoPoint(Map map) {
-  if (map == null) {
-    return null;
-  }
   assert(map[jsonTypeField] == typeGeoPoint);
   var valueMap = map[jsonValueField] as Map;
-  return GeoPoint(valueMap['latitude'] as num, valueMap['longitude'] as num);
+  return GeoPoint(valueMap['latitude'] as num?, valueMap['longitude'] as num?);
 }
 
 // utilities
@@ -128,7 +109,7 @@ dynamic documentDataValueToJson(dynamic value) {
   } else if (value is List) {
     return value.map((value) => documentDataValueToJson(value)).toList();
   } else if (value is Map) {
-    return value.map<String, dynamic>((key, value) =>
+    return value.map<String, Object?>((key, value) =>
         MapEntry(key as String, documentDataValueToJson(value)));
   } else if (value is DocumentData) {
     // Handle this that could happen from a map
@@ -160,14 +141,14 @@ dynamic jsonToDocumentDataValue(Firestore firestore, dynamic value) {
         .toList();
   } else if (value is Map) {
     // Check encoded value
-    var type = value[jsonTypeField] as String;
+    var type = value[jsonTypeField] as String?;
     if (type != null) {
       switch (type) {
         case typeDateTime:
           {
             var dateTime = anyToDateTime(value[jsonValueField])?.toLocal();
             if (firestoreTimestampsInSnapshots(firestore)) {
-              return Timestamp.fromDateTime(dateTime);
+              return Timestamp.fromDateTime(dateTime!);
             }
             return dateTime;
           }
@@ -177,7 +158,7 @@ dynamic jsonToDocumentDataValue(Firestore firestore, dynamic value) {
             if (firestoreTimestampsInSnapshots(firestore)) {
               return timestamp;
             }
-            return timestamp.toDateTime();
+            return timestamp!.toDateTime();
           }
         case typeFieldValue:
           return fieldValueFromJsonValue(value[jsonValueField]);
@@ -191,7 +172,7 @@ dynamic jsonToDocumentDataValue(Firestore firestore, dynamic value) {
           throw UnsupportedError('value $value');
       }
     } else {
-      return value.map<String, dynamic>((key, value) =>
+      return value.map<String, Object?>((key, value) =>
           MapEntry(key as String, jsonToDocumentDataValue(firestore, value)));
     }
   } else {
@@ -201,45 +182,39 @@ dynamic jsonToDocumentDataValue(Firestore firestore, dynamic value) {
 }
 
 // remove createTime and updateTime
-DocumentData documentDataFromSnapshotJsonMap(
-    Firestore firestore, Map<String, dynamic> map) {
-  if (map == null) {
-    return null;
-  }
+DocumentData? documentDataFromSnapshotJsonMap(
+    Firestore firestore, Map<String, Object?> map) {
   map.remove(createTimeKey);
   map.remove(updateTimeKey);
   return documentDataFromJsonMap(firestore, map);
 }
 
 /// Read a document data from a json map
-DocumentData documentDataFromJsonMap(
-    Firestore firestore, Map<String, dynamic> map) {
+DocumentData? documentDataFromJsonMap(
+    Firestore firestore, Map<String, Object?>? map) {
   if (map == null) {
     return null;
   }
   return DocumentDataMap(
-      map: jsonToDocumentDataValue(firestore, map) as Map<String, dynamic>);
+      map: jsonToDocumentDataValue(firestore, map) as Map<String, Object?>?);
 }
 
 /// Read as data ready to set in firestore.set
-Map<String, dynamic> documentDataMapFromJsonMap(
-    Firestore firestore, Map<String, dynamic> map) {
+Map<String, Object?>? documentDataMapFromJsonMap(
+    Firestore firestore, Map<String, Object?> map) {
   return documentDataFromJsonMap(firestore, map)?.asMap();
 }
 
 /// will return null if map is null
-DocumentData documentDataFromMap(Map<String, dynamic> map) {
-  if (map != null) {
-    return null;
-  }
+DocumentData documentDataFromMap(Map<String, Object?> map) {
   return DocumentData(map);
 }
 
-DocumentData documentDataFromSnapshot(DocumentSnapshot snapshot) =>
-    snapshot?.exists == true ? DocumentData(snapshot.data) : null;
+DocumentData? documentDataFromSnapshot(DocumentSnapshot snapshot) =>
+    snapshot.exists == true ? DocumentData(snapshot.data) : null;
 
-Map<String, dynamic> snapshotToJsonMap(DocumentSnapshot snapshot) {
-  if (snapshot?.exists == true) {
+Map<String, Object?>? snapshotToJsonMap(DocumentSnapshot snapshot) {
+  if (snapshot.exists == true) {
     var map = documentDataToJsonMap(documentDataFromSnapshot(snapshot));
     return map;
   } else {
@@ -247,28 +222,28 @@ Map<String, dynamic> snapshotToJsonMap(DocumentSnapshot snapshot) {
   }
 }
 
-Map<String, dynamic> documentDataToJsonMap(DocumentData documentData) {
+Map<String, Object?>? documentDataToJsonMap(DocumentData? documentData) {
   if (documentData == null) {
     return null;
   }
   return documentDataValueToJson((documentData as DocumentDataMap).map)
-      as Map<String, dynamic>;
+      as Map<String, Object?>?;
 }
 
 class OrderByInfo {
-  String fieldPath;
+  String? fieldPath;
   bool ascending;
 
-  OrderByInfo({@required this.fieldPath, @required this.ascending});
+  OrderByInfo({required this.fieldPath, required this.ascending});
 
   @override
   String toString() => '$fieldPath ${ascending ? 'ASC' : 'DESC'}';
 }
 
 class LimitInfo {
-  String documentId;
-  List values;
-  bool inclusive; // true = At
+  String? documentId;
+  List? values;
+  bool? inclusive; // true = At
 
   LimitInfo clone() {
     return LimitInfo()
@@ -279,7 +254,7 @@ class LimitInfo {
 }
 
 class WhereInfo {
-  String fieldPath;
+  String? fieldPath;
 
   WhereInfo(
     this.fieldPath, {
@@ -304,7 +279,7 @@ class WhereInfo {
             whereIn != null ||
             isNull != null,
         'Empty where');
-    assert(arrayContainsAny == null || arrayContainsAny.isNotEmpty,
+    assert(arrayContainsAny == null || arrayContainsAny!.isNotEmpty,
         'Invalid Query. A non-empty array is required for \'array-contains-any\' filters.');
   }
 
@@ -314,9 +289,9 @@ class WhereInfo {
   dynamic isGreaterThan;
   dynamic isGreaterThanOrEqualTo;
   dynamic arrayContains;
-  List<dynamic> arrayContainsAny;
-  List<dynamic> whereIn;
-  bool isNull;
+  List<Object?>? arrayContainsAny;
+  List<Object?>? whereIn;
+  bool? isNull;
 
   @override
   String toString() {
@@ -345,14 +320,14 @@ class WhereInfo {
 
 // Mutable, must be clone before
 class QueryInfo {
-  List<String> selectKeyPaths;
+  List<String>? selectKeyPaths;
   List<OrderByInfo> orderBys = [];
 
-  LimitInfo startLimit;
-  LimitInfo endLimit;
+  LimitInfo? startLimit;
+  LimitInfo? endLimit;
 
-  int limit;
-  int offset;
+  int? limit;
+  int? offset;
   List<WhereInfo> wheres = [];
 
   QueryInfo clone() {
@@ -366,25 +341,25 @@ class QueryInfo {
       ..orderBys = List.from(orderBys);
   }
 
-  void startAt({DocumentSnapshot snapshot, List values}) =>
+  void startAt({DocumentSnapshot? snapshot, List? values}) =>
       startLimit = (LimitInfo()
         ..documentId = snapshot?.ref?.id
         ..values = values
         ..inclusive = true);
 
-  void startAfter({DocumentSnapshot snapshot, List values}) =>
+  void startAfter({DocumentSnapshot? snapshot, List? values}) =>
       startLimit = (LimitInfo()
         ..documentId = snapshot?.ref?.id
         ..values = values
         ..inclusive = false);
 
-  void endAt({DocumentSnapshot snapshot, List values}) =>
+  void endAt({DocumentSnapshot? snapshot, List? values}) =>
       endLimit = (LimitInfo()
         ..documentId = snapshot?.ref?.id
         ..values = values
         ..inclusive = true);
 
-  void endBefore({DocumentSnapshot snapshot, List values}) =>
+  void endBefore({DocumentSnapshot? snapshot, List? values}) =>
       endLimit = (LimitInfo()
         ..documentId = snapshot?.ref?.id
         ..values = values
@@ -395,8 +370,8 @@ class QueryInfo {
   }
 }
 
-WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, dynamic> map) {
-  bool isNull;
+WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
+  bool? isNull;
   var isEqualTo;
   var value = jsonToDocumentDataValue(firestore, map['value']);
   var operator = map['operator'];
@@ -407,7 +382,7 @@ WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, dynamic> map) {
       isEqualTo = value;
     }
   } else if (operator == operatorLessThan) {}
-  var whereInfo = WhereInfo(map['fieldPath'] as String,
+  var whereInfo = WhereInfo(map['fieldPath'] as String?,
       isEqualTo: isEqualTo,
       isNull: isNull,
       isLessThan: (operator == operatorLessThan) ? value : null,
@@ -420,18 +395,18 @@ WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, dynamic> map) {
   return whereInfo;
 }
 
-OrderByInfo orderByInfoFromJsonMap(Map<String, dynamic> map) {
+OrderByInfo orderByInfoFromJsonMap(Map<String, Object?> map) {
   var orderByInfo = OrderByInfo(
-      fieldPath: map['fieldPath'] as String,
-      ascending: map['direction'] as String != orderByDescending);
+      fieldPath: map['fieldPath'] as String?,
+      ascending: (map['direction'] as String?) != orderByDescending);
   return orderByInfo;
 }
 
 const _operatorKey = 'operator';
 const _valueKey = 'value';
 
-Map<String, dynamic> whereInfoToJsonMap(WhereInfo whereInfo) {
-  var map = <String, dynamic>{'fieldPath': whereInfo.fieldPath};
+Map<String, Object?> whereInfoToJsonMap(WhereInfo whereInfo) {
+  var map = <String, Object?>{'fieldPath': whereInfo.fieldPath};
   if (whereInfo.isEqualTo != null) {
     map[_operatorKey] = operatorEqual;
     map[_valueKey] = documentDataValueToJson(whereInfo.isEqualTo);
@@ -457,8 +432,8 @@ Map<String, dynamic> whereInfoToJsonMap(WhereInfo whereInfo) {
   return map;
 }
 
-Map<String, dynamic> orderByInfoToJsonMap(OrderByInfo orderByInfo) {
-  var map = <String, dynamic>{
+Map<String, Object?> orderByInfoToJsonMap(OrderByInfo orderByInfo) {
+  var map = <String, Object?>{
     'fieldPath': orderByInfo.fieldPath,
     'direction':
         orderByInfo.ascending == true ? orderByAscending : orderByDescending
@@ -466,13 +441,13 @@ Map<String, dynamic> orderByInfoToJsonMap(OrderByInfo orderByInfo) {
   return map;
 }
 
-Map<String, dynamic> limitInfoToJsonMap(LimitInfo limitInfo) {
-  var map = <String, dynamic>{};
+Map<String, Object?> limitInfoToJsonMap(LimitInfo limitInfo) {
+  var map = <String, Object?>{};
   if (limitInfo.inclusive == true) {
     map['inclusive'] = true;
   }
   if (limitInfo.values != null) {
-    map['values'] = limitInfo.values
+    map['values'] = limitInfo.values!
         .map((value) => documentDataValueToJson(value))
         .toList();
   }
@@ -482,7 +457,7 @@ Map<String, dynamic> limitInfoToJsonMap(LimitInfo limitInfo) {
   return map;
 }
 
-LimitInfo limitInfoFromJsonMap(Firestore firestore, Map<String, dynamic> map) {
+LimitInfo limitInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   var limitInfo = LimitInfo();
   if (map.containsKey('inclusive')) {
     limitInfo.inclusive = map['inclusive'] == true;
@@ -492,13 +467,13 @@ LimitInfo limitInfoFromJsonMap(Firestore firestore, Map<String, dynamic> map) {
         .map((value) => jsonToDocumentDataValue(firestore, value))
         .toList();
   } else if (map.containsKey('documentId')) {
-    limitInfo.documentId = map['documentId'] as String;
+    limitInfo.documentId = map['documentId'] as String?;
   }
   return limitInfo;
 }
 
-Map<String, dynamic> queryInfoToJsonMap(QueryInfo queryInfo) {
-  var map = <String, dynamic>{};
+Map<String, Object?> queryInfoToJsonMap(QueryInfo queryInfo) {
+  var map = <String, Object?>{};
   if (queryInfo.limit != null) {
     map['limit'] = queryInfo.limit;
   }
@@ -519,32 +494,32 @@ Map<String, dynamic> queryInfoToJsonMap(QueryInfo queryInfo) {
     map['selectKeyPaths'] = queryInfo.selectKeyPaths;
   }
   if (queryInfo.startLimit != null) {
-    map['startLimit'] = limitInfoToJsonMap(queryInfo.startLimit);
+    map['startLimit'] = limitInfoToJsonMap(queryInfo.startLimit!);
   }
   if (queryInfo.endLimit != null) {
-    map['endLimit'] = limitInfoToJsonMap(queryInfo.endLimit);
+    map['endLimit'] = limitInfoToJsonMap(queryInfo.endLimit!);
   }
   return map;
 }
 
-QueryInfo queryInfoFromJsonMap(Firestore firestore, Map<String, dynamic> map) {
+QueryInfo queryInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   final queryInfo = QueryInfo();
   if (map.containsKey('limit')) {
-    queryInfo.limit = map['limit'] as int;
+    queryInfo.limit = map['limit'] as int?;
   }
   if (map.containsKey('offset')) {
-    queryInfo.offset = map['offset'] as int;
+    queryInfo.offset = map['offset'] as int?;
   }
   if (map.containsKey('wheres')) {
     queryInfo.wheres = (map['wheres'] as List)
         .map<WhereInfo>((map) =>
-            whereInfoFromJsonMap(firestore, map as Map<String, dynamic>))
+            whereInfoFromJsonMap(firestore, map as Map<String, Object?>))
         .toList();
   }
   if (map.containsKey('orderBys')) {
     queryInfo.orderBys = (map['orderBys'] as List)
         .map<OrderByInfo>(
-            (map) => orderByInfoFromJsonMap(map as Map<String, dynamic>))
+            (map) => orderByInfoFromJsonMap(map as Map<String, Object?>))
         .toList();
   }
   if (map.containsKey('selectKeyPaths')) {
@@ -552,11 +527,11 @@ QueryInfo queryInfoFromJsonMap(Firestore firestore, Map<String, dynamic> map) {
   }
   if (map.containsKey('startLimit')) {
     queryInfo.startLimit = limitInfoFromJsonMap(
-        firestore, map['startLimit'] as Map<String, dynamic>);
+        firestore, map['startLimit'] as Map<String, Object?>);
   }
   if (map.containsKey('endLimit')) {
     queryInfo.endLimit = limitInfoFromJsonMap(
-        firestore, map['endLimit'] as Map<String, dynamic>);
+        firestore, map['endLimit'] as Map<String, Object?>);
   }
   return queryInfo;
 }
@@ -565,7 +540,7 @@ const changeTypeAdded = 'added';
 const changeTypeModified = 'modified';
 const changeTypeRemoved = 'removed';
 
-DocumentChangeType documentChangeTypeFromString(String type) {
+DocumentChangeType? documentChangeTypeFromString(String type) {
   // [:added:], [:removed:] or [:modified:]
   if (type == changeTypeAdded) {
     return DocumentChangeType.added;
@@ -577,7 +552,7 @@ DocumentChangeType documentChangeTypeFromString(String type) {
   return null;
 }
 
-String documentChangeTypeToString(DocumentChangeType type) {
+String? documentChangeTypeToString(DocumentChangeType type) {
   switch (type) {
     case DocumentChangeType.added:
       return changeTypeAdded;
@@ -586,10 +561,9 @@ String documentChangeTypeToString(DocumentChangeType type) {
     case DocumentChangeType.modified:
       return changeTypeModified;
   }
-  return null;
 }
 
-String sanitizeReferencePath(String path) {
+String? sanitizeReferencePath(String? path) {
   if (path != null) {
     if (path.startsWith('/')) {
       path = path.substring(1);
@@ -601,7 +575,7 @@ String sanitizeReferencePath(String path) {
   return path;
 }
 
-bool isDocumentReferencePath(String path) {
+bool isDocumentReferencePath(String? path) {
   if (path == null) {
     return true;
   }
@@ -613,17 +587,17 @@ abstract class WriteBatchBase implements WriteBatch {
   final List<WriteBatchOperation> operations = [];
 
   @override
-  void delete(DocumentReference ref) =>
+  void delete(DocumentReference? ref) =>
       operations.add(WriteBatchOperationDelete(ref));
 
   @override
-  void set(DocumentReference ref, Map<String, dynamic> data,
-      [SetOptions options]) {
+  void set(DocumentReference ref, Map<String, Object?> data,
+      [SetOptions? options]) {
     operations.add(WriteBatchOperationSet(ref, DocumentData(data), options));
   }
 
   @override
-  void update(DocumentReference ref, Map<String, dynamic> data) {
+  void update(DocumentReference ref, Map<String, Object?> data) {
     operations.add(WriteBatchOperationUpdate(ref, DocumentData(data)));
   }
 }
@@ -631,21 +605,21 @@ abstract class WriteBatchBase implements WriteBatch {
 abstract class WriteBatchOperation {}
 
 class WriteBatchOperationBase implements WriteBatchOperation {
-  final DocumentReference docRef;
+  final DocumentReference? docRef;
 
   WriteBatchOperationBase(this.docRef);
 
   @override
-  String toString() => '$runtimeType(${docRef.path})';
+  String toString() => '$runtimeType(${docRef!.path})';
 }
 
 class WriteBatchOperationDelete extends WriteBatchOperationBase {
-  WriteBatchOperationDelete(DocumentReference docRef) : super(docRef);
+  WriteBatchOperationDelete(DocumentReference? docRef) : super(docRef);
 }
 
 class WriteBatchOperationSet extends WriteBatchOperationBase {
   final DocumentData documentData;
-  final SetOptions options;
+  final SetOptions? options;
 
   WriteBatchOperationSet(
       DocumentReference docRef, this.documentData, this.options)
@@ -674,8 +648,8 @@ abstract class WriteResultBase {
 
   bool get newExists => newSnapshot?.exists == true;
 
-  DocumentSnapshot previousSnapshot;
-  DocumentSnapshot newSnapshot;
+  DocumentSnapshot? previousSnapshot;
+  DocumentSnapshot? newSnapshot;
 
   bool get shouldNotify => previousExists || newExists;
 
@@ -704,30 +678,30 @@ class DocumentChangeBase implements DocumentChange {
 }
 
 abstract class DocumentSnapshotBase implements DocumentSnapshot {
-  final RecordMetaData meta;
+  final RecordMetaData? meta;
   @override
-  final DocumentReference ref;
+  final DocumentReference? ref;
 
-  int get rev => meta?.rev;
-
-  @override
-  Timestamp get updateTime => meta?.updateTime;
+  int? get rev => meta?.rev;
 
   @override
-  Timestamp get createTime => meta?.createTime;
-  final DocumentData documentData;
+  Timestamp? get updateTime => meta?.updateTime;
 
-  bool _exists;
+  @override
+  Timestamp? get createTime => meta?.createTime;
+  final DocumentData? documentData;
+
+  late bool _exists;
 
   @override
   bool get exists => _exists;
 
-  DocumentSnapshotBase(this.ref, this.meta, this.documentData, {bool exists}) {
+  DocumentSnapshotBase(this.ref, this.meta, this.documentData, {bool? exists}) {
     _exists = exists ?? (documentData != null);
   }
 
   @override
-  Map<String, dynamic> get data => documentData?.asMap();
+  Map<String, Object?>? get data => documentData?.asMap();
 
   @override
   String toString() {
@@ -746,7 +720,7 @@ class QuerySnapshotBase implements QuerySnapshot {
 
   bool contains(DocumentSnapshotBase document) {
     for (var doc in docs) {
-      if (doc.ref.path == document.ref.path) {
+      if (doc.ref!.path == document.ref!.path) {
         return true;
       }
     }
@@ -755,8 +729,8 @@ class QuerySnapshotBase implements QuerySnapshot {
 }
 
 // TODO handle sub field name
-Map<String, dynamic> toSelectedMap(Map map, List<String> fields) {
-  var selectedMap = <String, dynamic>{};
+Map<String, Object?> toSelectedMap(Map map, List<String> fields) {
+  var selectedMap = <String, Object?>{};
   for (var key in fields) {
     if (map.containsKey(key)) {
       selectedMap[key] = map[key];

@@ -5,9 +5,9 @@ import 'dart:async';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
 Future deleteCollection(Firestore firestore, CollectionReference collectionRef,
-    {int batchSize}) async {
+    {int? batchSize}) async {
   batchSize ??= 4;
-  var query = collectionRef.orderBy(firestoreNameFieldPath).limit(batchSize);
+  var query = collectionRef.orderBy(firestoreNameFieldPath)!.limit(batchSize)!;
 
   int snapshotSize;
   do {
@@ -20,7 +20,7 @@ Future deleteCollection(Firestore firestore, CollectionReference collectionRef,
     }
 
     // Delete documents in a batch
-    var batch = firestore.batch();
+    var batch = firestore.batch()!;
     for (var doc in snapshot.docs) {
       batch.delete(doc.ref);
     }

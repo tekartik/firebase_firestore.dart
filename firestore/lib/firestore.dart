@@ -37,14 +37,14 @@ abstract class FirestoreService {
 /// Firestore operations.
 abstract class Firestore {
   /// Gets a [CollectionReference] for the specified Firestore path.
-  CollectionReference collection(String path);
+  CollectionReference? collection(String path);
 
   /// Gets a [DocumentReference] for the specified Firestore path.
   DocumentReference doc(String path);
 
   /// Creates a write batch, used for performing multiple writes as a single
   /// atomic operation.
-  WriteBatch batch();
+  WriteBatch? batch();
 
   /// Executes the given [updateFunction] and commits the changes applied within
   /// the transaction.
@@ -57,7 +57,8 @@ abstract class Firestore {
   /// completed successfully of was explicitly aborted by returning a Future
   /// with an error. If [updateFunction] throws then returned Future completes
   /// with the same error.
-  Future runTransaction(dynamic Function(Transaction transaction) action);
+  Future<T> runTransaction<T>(
+      FutureOr<T> Function(Transaction transaction) action);
 
   /// Specifies custom settings to be used to configure the `Firestore`
   /// instance.
@@ -74,39 +75,40 @@ abstract class CollectionReference extends Query {
 
   String get id;
 
-  DocumentReference get parent;
+  DocumentReference? get parent;
 
-  DocumentReference doc([String path]);
+  DocumentReference doc([String? path]);
 
-  Future<DocumentReference> add(Map<String, dynamic> data);
+  Future<DocumentReference>? add(Map<String, Object?> data);
 }
 
 abstract class DocumentReference {
   String get id;
 
-  String get path;
+  String? get path;
 
-  CollectionReference get parent;
+  CollectionReference? get parent;
 
-  CollectionReference collection(String path);
+  CollectionReference? collection(String path);
 
   Future<void> delete();
 
   Future<DocumentSnapshot> get();
 
-  Future<void> set(Map<String, dynamic> data, [SetOptions options]);
+  Future<void> set(Map<String, Object?> data, [SetOptions? options]);
 
-  Future<void> update(Map<String, dynamic> data);
+  Future<void> update(Map<String, Object?> data);
 
-  Stream<DocumentSnapshot> onSnapshot();
+  Stream<DocumentSnapshot>? onSnapshot();
 }
 
 abstract class DocumentData {
-  factory DocumentData([Map<String, dynamic> map]) => DocumentDataMap(map: map);
+  factory DocumentData([Map<String, Object?>? map]) =>
+      DocumentDataMap(map: map);
 
   void setString(String key, String value);
 
-  String getString(String key);
+  String? getString(String key);
 
   void setNull(String key);
 
@@ -114,29 +116,29 @@ abstract class DocumentData {
 
   void setInt(String key, int value);
 
-  int getInt(String key);
+  int? getInt(String key);
 
   void setNum(String key, num value);
 
   void setBool(String key, bool value);
 
-  num getNum(String key);
+  num? getNum(String key);
 
-  bool getBool(String key);
+  bool? getBool(String key);
 
   void setDateTime(String key, DateTime value);
 
-  DateTime getDateTime(String key);
+  DateTime? getDateTime(String key);
 
   void setTimestamp(String key, Timestamp value);
 
-  Timestamp getTimestamp(String key);
+  Timestamp? getTimestamp(String key);
 
   void setList<T>(String key, List<T> list);
 
-  List<T> getList<T>(String key);
+  List<T>? getList<T>(String key);
 
-  DocumentData getData(String key);
+  DocumentData? getData(String key);
 
   void setData(String key, DocumentData value);
 
@@ -152,7 +154,7 @@ abstract class DocumentData {
   // Return the key list
   Iterable<String> get keys;
 
-  Map<String, dynamic> asMap();
+  Map<String, Object?> asMap();
 
   // use hasProperty
   @deprecated
@@ -162,38 +164,38 @@ abstract class DocumentData {
   void setDocumentReference(String key, DocumentReference doc);
 
   // Document reference
-  DocumentReference getDocumentReference(String key);
+  DocumentReference? getDocumentReference(String key);
 
   // blob
   void setBlob(String key, Blob blob);
 
-  Blob getBlob(String key);
+  Blob? getBlob(String key);
 
   void setGeoPoint(String key, GeoPoint geoPoint);
 
-  GeoPoint getGeoPoint(String key);
+  GeoPoint? getGeoPoint(String key);
 }
 
 /// A DocumentSnapshot contains data read from a document in your Cloud
 /// Firestore database.
 abstract class DocumentSnapshot {
   /// Gets the reference to the document.
-  DocumentReference get ref;
+  DocumentReference? get ref;
 
   /// Returns the fields of the document as a Map or null if the document
   /// doesn't exist.
-  Map<String, dynamic> get data;
+  Map<String, Object?>? get data;
 
   /// true if the document existed in this snapshot.
   bool get exists;
 
   /// The time the document was last updated (at the time the snapshot was
   /// generated). Not set for documents that don't exist.
-  Timestamp get updateTime;
+  Timestamp? get updateTime;
 
   /// The time the document was created. Not set for documents that don't
   /// exist.
-  Timestamp get createTime;
+  Timestamp? get createTime;
 }
 
 /// Sentinel values for update/set
@@ -214,7 +216,7 @@ class FieldValue {
   // exist in the array will be added to the end. If the field being modified
   // is not already an array it will be overwritten with an array containing
   // exactly the specified elements.
-  factory FieldValue.arrayUnion(List<dynamic> data) {
+  factory FieldValue.arrayUnion(List<Object?> data) {
     return FieldValueArray(FieldValueType.arrayUnion, data);
   }
 
@@ -224,7 +226,7 @@ class FieldValue {
   // exists on the server. All instances of each element specified will be
   // removed from the array. If the field being modified is not already an array
   // it will be overwritten with an empty array.
-  factory FieldValue.arrayRemove(List<dynamic> data) {
+  factory FieldValue.arrayRemove(List<Object?> data) {
     return FieldValueArray(FieldValueType.arrayRemove, data);
   }
   FieldValue(this.type);
@@ -236,16 +238,16 @@ class FieldValue {
 
 /// Use UInt8Array as much as possible
 class Blob {
-  final Uint8List _data;
+  final Uint8List? _data;
 
   Blob.fromList(List<int> data) : _data = Uint8List.fromList(data);
 
-  Uint8List get data => _data;
+  Uint8List? get data => _data;
 
   Blob(this._data);
 
   @override
-  int get hashCode => (_data?.isNotEmpty == true) ? _data.first.hashCode : 0;
+  int get hashCode => (_data?.isNotEmpty == true) ? _data!.first.hashCode : 0;
 
   @override
   bool operator ==(other) {
@@ -257,13 +259,13 @@ class Blob {
 
   @override
   String toString() {
-    return base64.encode(data);
+    return base64.encode(data!);
   }
 }
 
 class GeoPoint {
-  final num latitude;
-  final num longitude;
+  final num? latitude;
+  final num? longitude;
 
   GeoPoint(this.latitude, this.longitude);
 
@@ -279,10 +281,7 @@ class GeoPoint {
   }
 
   @override
-  int get hashCode =>
-      (latitude != null ? latitude.hashCode : 0) * 17 + longitude != null
-          ? longitude.hashCode
-          : 0;
+  int get hashCode => latitude.hashCode * 17 + longitude.hashCode;
 
   @override
   String toString() => '[$latitude° N, $longitude° E]';
@@ -291,7 +290,7 @@ class GeoPoint {
 class SetOptions {
   /// Set to true to replace only the values from the new data.
   /// Fields omitted will remain untouched.
-  bool merge;
+  bool? merge;
 
   SetOptions({this.merge});
 }
@@ -311,12 +310,12 @@ const orderByAscending = 'asc';
 const orderByDescending = 'desc';
 
 abstract class WriteBatch {
-  void delete(DocumentReference ref);
+  void delete(DocumentReference? ref);
 
-  void set(DocumentReference ref, Map<String, dynamic> data,
-      [SetOptions options]);
+  void set(DocumentReference ref, Map<String, Object?> data,
+      [SetOptions? options]);
 
-  void update(DocumentReference ref, Map<String, dynamic> data);
+  void update(DocumentReference ref, Map<String, Object?> data);
 
   Future commit();
 }
@@ -376,23 +375,23 @@ abstract class Query {
 
   Stream<QuerySnapshot> onSnapshot();
 
-  Query limit(int limit);
+  Query? limit(int limit);
 
-  Query orderBy(String key, {bool descending});
+  Query? orderBy(String key, {bool? descending});
 
-  Query select(List<String> keyPaths);
+  Query? select(List<String> keyPaths);
 
   // Query offset(int offset);
 
-  Query startAt({DocumentSnapshot snapshot, List values});
+  Query? startAt({DocumentSnapshot? snapshot, List? values});
 
-  Query startAfter({DocumentSnapshot snapshot, List<dynamic> values});
+  Query? startAfter({DocumentSnapshot? snapshot, List<Object?>? values});
 
-  Query endAt({DocumentSnapshot snapshot, List values});
+  Query? endAt({DocumentSnapshot? snapshot, List? values});
 
-  Query endBefore({DocumentSnapshot snapshot, List values});
+  Query? endBefore({DocumentSnapshot? snapshot, List? values});
 
-  Query where(
+  Query? where(
     String fieldPath, {
     dynamic isEqualTo,
     dynamic isLessThan,
@@ -400,9 +399,9 @@ abstract class Query {
     dynamic isGreaterThan,
     dynamic isGreaterThanOrEqualTo,
     dynamic arrayContains,
-    List<dynamic> arrayContainsAny,
-    List<dynamic> whereIn,
-    bool isNull,
+    List<Object?>? arrayContainsAny,
+    List<Object?>? whereIn,
+    bool? isNull,
   });
 }
 
@@ -437,8 +436,8 @@ abstract class Transaction {
   /// Pass [: {merge: true} :] to only replace the values specified in the
   /// data argument. Fields omitted will remain untouched.
   /// Value must not be null.
-  void set(DocumentReference documentRef, Map<String, dynamic> data,
-      [SetOptions options]);
+  void set(DocumentReference documentRef, Map<String, Object?> data,
+      [SetOptions? options]);
 
   /// Updates fields in the document referred to by this [DocumentReference].
   /// The update will fail if applied to a document that does not exist.
@@ -452,5 +451,5 @@ abstract class Transaction {
   ///
   /// The [fieldsAndValues] param is the List alternating between fields
   /// (as String or [FieldPath] objects) and values.
-  void update(DocumentReference documentRef, Map<String, dynamic> data);
+  void update(DocumentReference documentRef, Map<String, Object?> data);
 }
