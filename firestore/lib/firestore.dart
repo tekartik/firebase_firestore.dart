@@ -383,13 +383,13 @@ abstract class Query {
 
   // Query offset(int offset);
 
-  Query? startAt({DocumentSnapshot? snapshot, List? values});
+  Query? startAt({DocumentSnapshot? snapshot, List<Object?>? values});
 
   Query? startAfter({DocumentSnapshot? snapshot, List<Object?>? values});
 
-  Query? endAt({DocumentSnapshot? snapshot, List? values});
+  Query? endAt({DocumentSnapshot? snapshot, List<Object?>? values});
 
-  Query? endBefore({DocumentSnapshot? snapshot, List? values});
+  Query? endBefore({DocumentSnapshot? snapshot, List<Object?>? values});
 
   Query? where(
     String fieldPath, {
