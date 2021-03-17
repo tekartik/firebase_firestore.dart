@@ -9,7 +9,7 @@ import '../src_firestore_common_test.dart';
 
 class DocumentSnapshotMock extends DocumentSnapshotBase {
   DocumentSnapshotMock(
-      {DocumentReference? ref,
+      {required DocumentReference ref,
       RecordMetaData? meta,
       DocumentDataMap? documentData,
       bool? exists})

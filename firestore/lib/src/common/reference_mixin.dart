@@ -8,7 +8,7 @@ abstract class PathReference {
   String get path;
 
   /// Parent path.
-  String get parentPath;
+  String? get parentPath;
 
   String get id;
 
@@ -17,7 +17,7 @@ abstract class PathReference {
 }
 
 abstract class FirestorePathReference extends PathReference {
-  Firestore? get firestore;
+  Firestore get firestore;
 }
 
 /// Only for implementation that needs it
@@ -39,14 +39,14 @@ mixin PathReferenceImplMixin implements FirestorePathReference {
 mixin PathReferenceMixin implements PathReference {
   /// Parent path.
   @override
-  String get parentPath => getParentPath(path);
+  String? get parentPath => getParentPath(path);
 
   @override
   String get id => getPathId(path);
 
   /// Child path
   @override
-  String getChildPath(String? child) => url.join(path, child);
+  String getChildPath(String child) => url.join(path, child);
 
   @override
   String toString() => 'path: $path';
@@ -61,10 +61,13 @@ String getPathId(String path) => url.basename(path);
 mixin CollectionReferenceMixin
     implements CollectionReference, PathReferenceMixin, PathReferenceImplMixin {
   @override
-  DocumentReference? get parent => firestore.doc(parentPath);
+  DocumentReference? get parent {
+    var parentPath = this.parentPath;
+    return parentPath == null ? null : firestore.doc(parentPath);
+  }
 
   @override
-  DocumentReference doc([String? path]) => firestore.doc(getChildPath(path));
+  DocumentReference doc(String path) => firestore.doc(getChildPath(path));
 
   @override
   int get hashCode => path.hashCode;
@@ -87,11 +90,14 @@ mixin CollectionReferenceMixin
 mixin DocumentReferenceMixin
     implements DocumentReference, FirestorePathReference {
   @override
-  CollectionReference? get parent => firestore!.collection(parentPath);
+  CollectionReference? get parent {
+    var parentPath = this.parentPath;
+    return parentPath == null ? null : firestore.collection(parentPath);
+  }
 
   @override
-  CollectionReference? collection(String path) =>
-      firestore!.collection(getChildPath(path));
+  CollectionReference collection(String path) =>
+      firestore.collection(getChildPath(path));
 
   @override
   int get hashCode => path.hashCode;

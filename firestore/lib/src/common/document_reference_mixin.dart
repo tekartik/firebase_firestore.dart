@@ -1,13 +1,14 @@
 @Deprecated('include reference_mixin - since 2020/05/07')
 library tekartik_firebase_firestore.src.common.document_reference_mixin;
 
+/*
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:path/path.dart';
 export 'reference_mixin.dart';
 
 mixin PathReferenceMixin {
-  Firestore? firestore;
-  String? path;
+  late Firestore firestore;
+  late String path;
 
   void init(Firestore firestore, String path) {
     this.firestore = firestore;
@@ -20,7 +21,7 @@ mixin PathReferenceMixin {
   String? get id => path == null ? null : url.basename(path!);
 
   /// Child path
-  String getChildPath(String? child) => url.join(path!, child);
+  String getChildPath(String child) => url.join(path!, child);
 
   @override
   String toString() => 'path: $path';
@@ -65,3 +66,4 @@ mixin DocumentReferenceMixin implements DocumentReference, PathReferenceMixin {
   CollectionReference? collection(String path) =>
       firestore!.collection(getChildPath(path));
 }
+*/

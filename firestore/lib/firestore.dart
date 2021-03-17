@@ -37,7 +37,7 @@ abstract class FirestoreService {
 /// Firestore operations.
 abstract class Firestore {
   /// Gets a [CollectionReference] for the specified Firestore path.
-  CollectionReference? collection(String path);
+  CollectionReference collection(String path);
 
   /// Gets a [DocumentReference] for the specified Firestore path.
   DocumentReference doc(String path);
@@ -77,19 +77,19 @@ abstract class CollectionReference extends Query {
 
   DocumentReference? get parent;
 
-  DocumentReference doc([String? path]);
+  DocumentReference doc(String path);
 
-  Future<DocumentReference>? add(Map<String, Object?> data);
+  Future<DocumentReference> add(Map<String, Object?> data);
 }
 
 abstract class DocumentReference {
   String get id;
 
-  String? get path;
+  String get path;
 
   CollectionReference? get parent;
 
-  CollectionReference? collection(String path);
+  CollectionReference collection(String path);
 
   Future<void> delete();
 
@@ -99,7 +99,7 @@ abstract class DocumentReference {
 
   Future<void> update(Map<String, Object?> data);
 
-  Stream<DocumentSnapshot>? onSnapshot();
+  Stream<DocumentSnapshot> onSnapshot();
 }
 
 abstract class DocumentData {
@@ -180,11 +180,10 @@ abstract class DocumentData {
 /// Firestore database.
 abstract class DocumentSnapshot {
   /// Gets the reference to the document.
-  DocumentReference? get ref;
+  DocumentReference get ref;
 
-  /// Returns the fields of the document as a Map or null if the document
-  /// doesn't exist.
-  Map<String, Object?>? get data;
+  /// Returns the fields of the document as a Map.
+  Map<String, Object?> get data;
 
   /// true if the document existed in this snapshot.
   bool get exists;
@@ -375,23 +374,23 @@ abstract class Query {
 
   Stream<QuerySnapshot> onSnapshot();
 
-  Query? limit(int limit);
+  Query limit(int limit);
 
-  Query? orderBy(String key, {bool? descending});
+  Query orderBy(String key, {bool? descending});
 
-  Query? select(List<String> keyPaths);
+  Query select(List<String> keyPaths);
 
   // Query offset(int offset);
 
-  Query? startAt({DocumentSnapshot? snapshot, List<Object?>? values});
+  Query startAt({DocumentSnapshot? snapshot, List<Object?>? values});
 
-  Query? startAfter({DocumentSnapshot? snapshot, List<Object?>? values});
+  Query startAfter({DocumentSnapshot? snapshot, List<Object?>? values});
 
-  Query? endAt({DocumentSnapshot? snapshot, List<Object?>? values});
+  Query endAt({DocumentSnapshot? snapshot, List<Object?>? values});
 
-  Query? endBefore({DocumentSnapshot? snapshot, List<Object?>? values});
+  Query endBefore({DocumentSnapshot? snapshot, List<Object?>? values});
 
-  Query? where(
+  Query where(
     String fieldPath, {
     dynamic isEqualTo,
     dynamic isLessThan,
@@ -399,8 +398,8 @@ abstract class Query {
     dynamic isGreaterThan,
     dynamic isGreaterThanOrEqualTo,
     dynamic arrayContains,
-    List<Object?>? arrayContainsAny,
-    List<Object?>? whereIn,
+    List<Object>? arrayContainsAny,
+    List<Object>? whereIn,
     bool? isNull,
   });
 }

@@ -44,7 +44,7 @@ class CollectionReferenceMock
     init(firestoreMock, path);
   }
   @override
-  Future<DocumentReference>? add(Map<String, Object?> data) {
+  Future<DocumentReference> add(Map<String, Object?> data) {
     throw UnimplementedError();
   }
 

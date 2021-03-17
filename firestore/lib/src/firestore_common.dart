@@ -243,7 +243,7 @@ class OrderByInfo {
 class LimitInfo {
   String? documentId;
   List? values;
-  bool? inclusive; // true = At
+  late bool inclusive; // true = At
 
   LimitInfo clone() {
     return LimitInfo()
@@ -343,25 +343,25 @@ class QueryInfo {
 
   void startAt({DocumentSnapshot? snapshot, List? values}) =>
       startLimit = (LimitInfo()
-        ..documentId = snapshot?.ref?.id
+        ..documentId = snapshot?.ref.id
         ..values = values
         ..inclusive = true);
 
   void startAfter({DocumentSnapshot? snapshot, List? values}) =>
       startLimit = (LimitInfo()
-        ..documentId = snapshot?.ref?.id
+        ..documentId = snapshot?.ref.id
         ..values = values
         ..inclusive = false);
 
   void endAt({DocumentSnapshot? snapshot, List? values}) =>
       endLimit = (LimitInfo()
-        ..documentId = snapshot?.ref?.id
+        ..documentId = snapshot?.ref.id
         ..values = values
         ..inclusive = true);
 
   void endBefore({DocumentSnapshot? snapshot, List? values}) =>
       endLimit = (LimitInfo()
-        ..documentId = snapshot?.ref?.id
+        ..documentId = snapshot?.ref.id
         ..values = values
         ..inclusive = false);
 
@@ -662,6 +662,7 @@ abstract class WriteResultBase {
 class DocumentChangeBase implements DocumentChange {
   DocumentChangeBase(this.type, this.document, this.newIndex, this.oldIndex);
 
+  // Change later once building the array
   @override
   DocumentChangeType type;
 
@@ -675,12 +676,15 @@ class DocumentChangeBase implements DocumentChange {
   final int oldIndex;
 
   DocumentSnapshotBase get documentBase => document as DocumentSnapshotBase;
+
+  @override
+  String toString() => '${document.ref.path} $type $oldIndex $newIndex';
 }
 
 abstract class DocumentSnapshotBase implements DocumentSnapshot {
   final RecordMetaData? meta;
   @override
-  final DocumentReference? ref;
+  final DocumentReference ref;
 
   int? get rev => meta?.rev;
 
@@ -701,7 +705,7 @@ abstract class DocumentSnapshotBase implements DocumentSnapshot {
   }
 
   @override
-  Map<String, Object?>? get data => documentData?.asMap();
+  Map<String, Object?> get data => documentData!.asMap();
 
   @override
   String toString() {
@@ -720,12 +724,16 @@ class QuerySnapshotBase implements QuerySnapshot {
 
   bool contains(DocumentSnapshotBase document) {
     for (var doc in docs) {
-      if (doc.ref!.path == document.ref!.path) {
+      if (doc.ref.path == document.ref.path) {
         return true;
       }
     }
     return false;
   }
+
+  @override
+  String toString() =>
+      'docs: ${docs.length} changes: ${documentChanges.length}';
 }
 
 // TODO handle sub field name

@@ -58,15 +58,16 @@ mixin FirestoreMixin implements Firestore {
 
 mixin FirestoreDocumentsMixin on Firestore {
   DocumentSnapshot newSnapshot(
-      DocumentReference? ref, RecordMetaData? meta, DocumentData? data);
+      DocumentReference ref, RecordMetaData? meta, DocumentData? data);
 
   QuerySnapshot newQuerySnapshot(
       List<DocumentSnapshot> docs, List<DocumentChange> changes);
 
   // Remove meta keys
   DocumentSnapshot documentFromRecordMap(
-      DocumentReference ref, Map<String, Object?> recordMap) {
-    var meta = RecordMetaData.fromRecordMap(recordMap);
+      DocumentReference ref, Map<String, Object?>? recordMap) {
+    var meta =
+        recordMap == null ? null : RecordMetaData.fromRecordMap(recordMap);
     return newSnapshot(
       ref,
       meta,
@@ -134,20 +135,23 @@ mixin FirestoreSubscriptionMixin on Firestore {
 
   // DocumentSnapshot snapshotFromReferenceRevAndData(DocumentReference documentReference, int rev, DocumentData documentData, {Timestamp updateTime, Timestamp createTime});
 
-  DocumentSnapshot cloneSnapshot(DocumentSnapshot? documentSnapshot);
+  DocumentSnapshot cloneSnapshot(DocumentSnapshot documentSnapshot);
 
   DocumentSnapshot deletedSnapshot(DocumentReference documentReference);
 
   DocumentChangeBase documentChange(DocumentChangeType type,
-      DocumentSnapshot document, int? newIndex, int? oldIndex);
+      DocumentSnapshot document, int newIndex, int oldIndex);
 
   void notify(WriteResultBase result) {
     var path = result.path;
     var documentSubscription = findSubscription(path);
+    var newSnapshot = result.newSnapshot;
+    var previousSnapshot = result.previousSnapshot;
+    var added = result.added;
+    var removed = result.removed;
     if (documentSubscription != null) {
-      if (result.newSnapshot != null) {
-        documentSubscription.streamController
-            .add(cloneSnapshot(result.newSnapshot));
+      if (newSnapshot?.exists == true) {
+        documentSubscription.streamController.add(cloneSnapshot(newSnapshot!));
       } else {
         // this is a delete
         documentSubscription.streamController.add(deletedSnapshot(doc(path)));
@@ -156,17 +160,18 @@ mixin FirestoreSubscriptionMixin on Firestore {
     // notify collection listeners
     var collectionSubscription = findSubscription(url.dirname(path));
     if (collectionSubscription != null) {
-      collectionSubscription.streamController.add(documentChange(
-          result.added
+      var change = documentChange(
+          added
               ? DocumentChangeType.added
-              : (result.removed
+              : (removed
                   ? DocumentChangeType.removed
                   : DocumentChangeType.modified),
-          result.removed
-              ? cloneSnapshot(result.previousSnapshot)
-              : cloneSnapshot(result.newSnapshot),
-          null,
-          null));
+          removed
+              ? cloneSnapshot(previousSnapshot!)
+              : cloneSnapshot(newSnapshot!),
+          -1,
+          -1);
+      collectionSubscription.streamController.add(change);
     }
   }
 
@@ -388,7 +393,7 @@ bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
 
       //return null;
     } else {
-      return snapshot.ref!.id;
+      return snapshot.ref.id;
     }
   }
   //var data = documentData.map;
@@ -572,10 +577,11 @@ mixin FirestoreQueryMixin implements Query {
 
   @override
   Future<QuerySnapshot> get() async {
+    var queryInfo = this.queryInfo!;
     // Get and filter
     var docs = <DocumentSnapshot>[];
     for (var doc in await getCollectionDocuments()!) {
-      if (snapshotMapQueryInfo(doc as DocumentSnapshotBase, queryInfo!)) {
+      if (snapshotMapQueryInfo(doc as DocumentSnapshotBase, queryInfo)) {
         docs.add(doc);
       }
     }
@@ -583,7 +589,7 @@ mixin FirestoreQueryMixin implements Query {
     // if firestoreNameFieldPath (__name__) is not specified, add it
     var fieldPathFound = false;
 
-    var orderBys = List.from(queryInfo!.orderBys);
+    var orderBys = List.from(queryInfo.orderBys);
     for (var orderBy in orderBys) {
       if (orderBy.fieldPath == firestoreNameFieldPath) {
         fieldPathFound = true;
@@ -632,7 +638,7 @@ mixin FirestoreQueryMixin implements Query {
         }
 
         if (keyPath == firestoreNameFieldPath) {
-          cmp = _compare(snapshot1.ref!.path, snapshot2.ref!.path);
+          cmp = _compare(snapshot1.ref.path, snapshot2.ref.path);
         } else {
           cmp = _compare(
               _getComparable(
@@ -649,26 +655,26 @@ mixin FirestoreQueryMixin implements Query {
 
     // Handle snapshot filtering (after ordering)
     final filteredDocs = <DocumentSnapshot>[];
-    if (queryInfo!.startLimit?.documentId != null ||
-        queryInfo!.endLimit?.documentId != null) {
+    if (queryInfo.startLimit?.documentId != null ||
+        queryInfo.endLimit?.documentId != null) {
       var add = true;
-      if (queryInfo!.startLimit?.documentId != null) {
+      if (queryInfo.startLimit?.documentId != null) {
         add = false;
       }
       for (var snapshot in docs) {
-        if (!add && queryInfo!.startLimit?.documentId != null) {
-          if (snapshot.ref!.id == queryInfo!.startLimit!.documentId) {
+        if (!add && queryInfo.startLimit?.documentId != null) {
+          if (snapshot.ref.id == queryInfo.startLimit!.documentId) {
             add = true;
-            if (!queryInfo!.startLimit!.inclusive!) {
+            if (!queryInfo.startLimit!.inclusive) {
               // skip this one
               continue;
             }
           }
         }
         // stop now?
-        if (add && queryInfo!.endLimit?.documentId != null) {
-          if (snapshot.ref!.id == queryInfo!.endLimit!.documentId) {
-            if (queryInfo!.endLimit!.inclusive!) {
+        if (add && queryInfo.endLimit?.documentId != null) {
+          if (snapshot.ref.id == queryInfo.endLimit!.documentId) {
+            if (queryInfo.endLimit!.inclusive) {
               filteredDocs.add(snapshot);
             }
             break;
@@ -684,18 +690,18 @@ mixin FirestoreQueryMixin implements Query {
     }
 
     // offset && limit
-    if (queryInfo!.limit != null || queryInfo!.offset != null) {
+    if (queryInfo.limit != null || queryInfo.offset != null) {
       final limitedDocs = <DocumentSnapshot>[];
       var index = 0;
       for (var snapshot in docs) {
-        if (queryInfo!.offset != null) {
-          if (index < queryInfo!.offset!) {
+        if (queryInfo.offset != null) {
+          if (index < queryInfo.offset!) {
             index++;
             continue;
           }
         }
-        if (queryInfo!.limit != null) {
-          if (limitedDocs.length >= queryInfo!.limit!) {
+        if (queryInfo.limit != null) {
+          if (limitedDocs.length >= queryInfo.limit!) {
             break;
           }
         }
@@ -706,7 +712,7 @@ mixin FirestoreQueryMixin implements Query {
     }
 
     // Apply select
-    if (queryInfo?.selectKeyPaths != null) {
+    if (queryInfo.selectKeyPaths != null) {
       final selectedDocs = <DocumentSnapshot>[];
       for (var snapshot in docs) {
         var meta = (snapshot as DocumentSnapshotBase).meta;
@@ -715,7 +721,7 @@ mixin FirestoreQueryMixin implements Query {
             snapshot.ref,
             meta,
             DocumentData(
-                toSelectedMap(data.asMap(), queryInfo!.selectKeyPaths!))));
+                toSelectedMap(data.asMap(), queryInfo.selectKeyPaths!))));
       }
       docs = selectedDocs;
     }
@@ -723,22 +729,22 @@ mixin FirestoreQueryMixin implements Query {
   }
 
   @override
-  Query? select(List<String> list) {
+  Query select(List<String> list) {
     return clone()..queryInfo!.selectKeyPaths = list;
   }
 
   @override
-  Query? limit(int limit) => clone()..queryInfo!.limit = limit;
+  Query limit(int limit) => clone()..queryInfo!.limit = limit;
 
   @override
-  Query? orderBy(String key, {bool? descending}) => clone()
+  Query orderBy(String key, {bool? descending}) => clone()
     ..addOrderBy(
         key, descending == true ? orderByDescending : orderByAscending);
 
   FirestoreQueryMixin clone();
 
   @override
-  Query? where(
+  Query where(
     String fieldPath, {
     dynamic isEqualTo,
     dynamic isLessThan,
@@ -769,19 +775,19 @@ mixin FirestoreQueryMixin implements Query {
   }
 
   @override
-  Query? startAt({DocumentSnapshot? snapshot, List? values}) =>
+  Query startAt({DocumentSnapshot? snapshot, List? values}) =>
       clone()..queryInfo!.startAt(snapshot: snapshot, values: values);
 
   @override
-  Query? startAfter({DocumentSnapshot? snapshot, List? values}) =>
+  Query startAfter({DocumentSnapshot? snapshot, List? values}) =>
       clone()..queryInfo!.startAfter(snapshot: snapshot, values: values);
 
   @override
-  Query? endAt({DocumentSnapshot? snapshot, List? values}) =>
+  Query endAt({DocumentSnapshot? snapshot, List? values}) =>
       clone()..queryInfo!.endAt(snapshot: snapshot, values: values);
 
   @override
-  Query? endBefore({DocumentSnapshot? snapshot, List? values}) =>
+  Query endBefore({DocumentSnapshot? snapshot, List? values}) =>
       clone()..queryInfo!.endBefore(snapshot: snapshot, values: values);
 
   @override
@@ -800,12 +806,6 @@ mixin FirestoreQueryMixin implements Query {
       var querySnapshot = await get() as QuerySnapshotBase;
       if (snapshotMapQueryInfo(
           documentChange.document as DocumentSnapshotBase, queryInfo!)) {
-        if (querySnapshot.contains(documentChange.documentBase)) {
-          documentChange.type = DocumentChangeType.modified;
-        } else {
-          documentChange.type = DocumentChangeType.added;
-        }
-
         querySnapshot.documentChanges.add(documentChange);
       } else if (documentChange.type == DocumentChangeType.removed) {
         if (querySnapshot.contains(documentChange.documentBase)) {

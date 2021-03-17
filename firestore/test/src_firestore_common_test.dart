@@ -18,7 +18,7 @@ class FirestoreMock extends Object with FirestoreMixin implements Firestore {
   }
 
   @override
-  CollectionReference? collection(String path) => throw UnimplementedError();
+  CollectionReference collection(String path) => throw UnimplementedError();
 
   @override
   DocumentReference doc(String path) => DocumentReferenceMock(path);
@@ -46,23 +46,23 @@ class DocumentSnapshotMock implements DocumentSnapshot {
   DocumentSnapshotMock(this.ref);
 
   @override
-  Map<String, Object?>? get data => null;
+  Map<String, Object?> get data => throw UnimplementedError();
 
   @override
   bool get exists => throw UnimplementedError();
 
   @override
-  Timestamp? get updateTime => null;
+  Timestamp? get updateTime => throw UnimplementedError();
 
   @override
-  Timestamp? get createTime => null;
+  Timestamp? get createTime => throw UnimplementedError();
 }
 
 class DocumentReferenceMock implements DocumentReference {
   DocumentReferenceMock(this.path);
 
   @override
-  CollectionReference? collection(String path) => throw UnimplementedError();
+  CollectionReference collection(String path) => throw UnimplementedError();
 
   @override
   Future<void> delete() => throw UnimplementedError();
@@ -74,7 +74,7 @@ class DocumentReferenceMock implements DocumentReference {
   String get id => getPathId(path);
 
   @override
-  CollectionReference? get parent => throw UnimplementedError();
+  CollectionReference get parent => throw UnimplementedError();
 
   @override
   final String path;
@@ -87,7 +87,7 @@ class DocumentReferenceMock implements DocumentReference {
   Future<void> update(Map<String, Object?> data) => throw UnimplementedError();
 
   @override
-  Stream<DocumentSnapshot>? onSnapshot() => throw UnimplementedError();
+  Stream<DocumentSnapshot> onSnapshot() => throw UnimplementedError();
 
   @override
   String toString() => path;

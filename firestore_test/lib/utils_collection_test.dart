@@ -12,7 +12,7 @@ void runApp(
 
     test('deleteCollection', () async {
       var ref = firestore
-          .collection(url.join(testsRefPath, 'utils_collection', 'delete'))!;
+          .collection(url.join(testsRefPath, 'utils_collection', 'delete'));
       var itemDoc = ref.doc('item');
       // create an item
       await itemDoc.set({});
@@ -20,7 +20,7 @@ void runApp(
       Future<bool> findInCollection() async {
         var querySnapshot = await ref.get();
         for (var doc in querySnapshot.docs) {
-          if (doc.ref!.path == itemDoc.path) {
+          if (doc.ref.path == itemDoc.path) {
             return true;
           }
         }

@@ -29,9 +29,7 @@ void utilsTest(
       await completer.future;
       expect(snapshots.docs.length, 2);
       expect(snapshots.docs[0]!.exists, false);
-      expect(snapshots.docs[0]!.data, isNull);
       expect(snapshots.docs[1]!.exists, false);
-      expect(snapshots.docs[1]!.data, isNull);
 
       completer = Completer();
       unawaited(ref1.set({'test': 1}));

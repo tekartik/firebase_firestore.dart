@@ -55,7 +55,7 @@ Stream<DocumentSnapshots> onDocumentSnapshots(
       final index = i;
       final reference = references[index];
       // ignore: cancel_subscriptions
-      var subscription = reference.onSnapshot()!.listen((snapshot) {
+      var subscription = reference.onSnapshot().listen((snapshot) {
         docs[index] = snapshot;
         remainings.remove(reference);
         _notify();
