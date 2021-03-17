@@ -560,7 +560,7 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
 
   @override
   Future runTransaction(
-      Function(Transaction transaction) updateFunction) async {
+      dynamic Function(Transaction transaction) updateFunction) async {
     var simClient = await this.simClient;
     var result = resultAsMap(
         await simClient.sendRequest(methodFirestoreTransaction, {}));
@@ -568,8 +568,9 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
     var responseData = FirestoreTransactionResponseData()..fromMap(result);
     final transactionSim = TransactionSim(this, responseData.transactionId);
     try {
-      await updateFunction(transactionSim);
+      var result = await updateFunction(transactionSim);
       await transactionSim.commit();
+      return result;
     } catch (_) {
       // Make sure to clean up on cancel
       await transactionSim.cancel();

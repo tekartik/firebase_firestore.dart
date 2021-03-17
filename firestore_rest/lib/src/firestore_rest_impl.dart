@@ -317,8 +317,8 @@ class FirestoreRestImpl
   }
 
   @override
-  Future runTransaction(
-      Function(Transaction transaction) updateFunction) async {
+  Future<T> runTransaction<T>(
+      FutureOr<T> Function(Transaction transaction) updateFunction) async {
     var transaction = TransactionRestImpl(this);
     var transactionId = transaction.transactionId = await beginTransaction();
     try {
