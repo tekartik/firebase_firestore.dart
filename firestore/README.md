@@ -6,7 +6,7 @@ dependencies:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
-      ref: dart2
+      ref: null_safety
     version: '>=0.8.0'
 ```
 

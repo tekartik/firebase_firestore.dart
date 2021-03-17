@@ -8,6 +8,6 @@ dependencies:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore_rest
-      ref: dart2
+      ref: null_safety
     version: '>=0.8.0'
 ```
