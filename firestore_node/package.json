@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@google-cloud/firestore": "^4.2.0",
-    "firebase-admin": "^9.1.1"
-  }
-}
