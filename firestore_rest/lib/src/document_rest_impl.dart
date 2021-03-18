@@ -29,8 +29,8 @@ mixin DocumentContext {
       restValue = Value()..doubleValue = value;
     } else if (value is GeoPoint) {
       var geoPointValue = LatLng()
-        ..latitude = value.latitude?.toDouble()
-        ..longitude = value.longitude?.toDouble();
+        ..latitude = value.latitude.toDouble()
+        ..longitude = value.longitude.toDouble();
       restValue = Value()..geoPointValue = geoPointValue;
     } else if (value is Timestamp) {
       restValue = Value()..timestampValue = value.toString();
@@ -42,7 +42,7 @@ mixin DocumentContext {
     } else if (value is Iterable) {
       restValue = _listToRestValue(value);
     } else if (value is Blob) {
-      restValue = Value()..bytesValueAsBytes = value.data!;
+      restValue = Value()..bytesValueAsBytes = value.data;
     } else if (value is DocumentReference) {
       restValue = Value()
         ..referenceValue = firestore.getDocumentName(value.path);

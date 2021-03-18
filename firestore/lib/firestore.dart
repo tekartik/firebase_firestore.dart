@@ -182,7 +182,7 @@ abstract class DocumentSnapshot {
   /// Gets the reference to the document.
   DocumentReference get ref;
 
-  /// Returns the fields of the document as a Map.
+  /// Returns the fields of the document as a Map, throw if it does not exist.
   Map<String, Object?> get data;
 
   /// true if the document existed in this snapshot.
@@ -237,16 +237,16 @@ class FieldValue {
 
 /// Use UInt8Array as much as possible
 class Blob {
-  final Uint8List? _data;
+  final Uint8List _data;
 
   Blob.fromList(List<int> data) : _data = Uint8List.fromList(data);
 
-  Uint8List? get data => _data;
+  Uint8List get data => _data;
 
   Blob(this._data);
 
   @override
-  int get hashCode => (_data?.isNotEmpty == true) ? _data!.first.hashCode : 0;
+  int get hashCode => (_data.isNotEmpty == true) ? _data.first.hashCode : 0;
 
   @override
   bool operator ==(other) {
@@ -258,13 +258,13 @@ class Blob {
 
   @override
   String toString() {
-    return base64.encode(data!);
+    return base64.encode(data);
   }
 }
 
 class GeoPoint {
-  final num? latitude;
-  final num? longitude;
+  final num latitude;
+  final num longitude;
 
   GeoPoint(this.latitude, this.longitude);
 

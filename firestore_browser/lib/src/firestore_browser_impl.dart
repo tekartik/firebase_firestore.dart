@@ -268,9 +268,9 @@ Object? toNativeValue(Object? value) {
   } else if (value is DocumentReferenceBrowser) {
     return value.nativeInstance;
   } else if (value is Blob) {
-    return native.Blob.fromUint8Array(value.data!);
+    return native.Blob.fromUint8Array(value.data);
   } else if (value is GeoPoint) {
-    return native.GeoPoint(value.latitude!, value.longitude!);
+    return native.GeoPoint(value.latitude, value.longitude);
   } else if (value is DateTime) {
     // Currently rounded to date time
     return value;

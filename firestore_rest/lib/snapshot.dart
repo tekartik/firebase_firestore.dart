@@ -68,7 +68,7 @@ dynamic documentDataValueToJson(App app, dynamic value) {
       'referenceValue': url.join(_basePath(app), value.path)
     };
   } else if (value is Blob) {
-    return <String, Object?>{'bytesValue': base64.encode(value.data!)};
+    return <String, Object?>{'bytesValue': base64.encode(value.data)};
   } else if (value is GeoPoint) {
     return <String, Object?>{
       'geoPointValue': {

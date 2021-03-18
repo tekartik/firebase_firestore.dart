@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:tekartik_common_utils/date_time_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
@@ -33,8 +34,8 @@ Map<String, Object?> documentReferenceToJsonValue(
         DocumentReference documentReference) =>
     typeValueToJson(typeDocumentReference, documentReference.path);
 
-Map<String, Object?> blobToJsonValue(Blob blob) => typeValueToJson(
-    typeBlob, blob.data != null ? base64.encode(blob.data!) : null);
+Map<String, Object?> blobToJsonValue(Blob blob) =>
+    typeValueToJson(typeBlob, base64.encode(blob.data));
 
 Map<String, Object?> fieldValueToJsonValue(FieldValue fieldValue) {
   if (fieldValue == FieldValue.delete) {
@@ -76,7 +77,7 @@ Blob jsonValueToBlob(Map map) {
   assert(map[jsonTypeField] == typeBlob);
   var base64value = map[jsonValueField] as String?;
   if (base64value == null) {
-    return Blob(null);
+    return Blob(Uint8List(0));
   } else {
     return Blob(base64.decode(base64value));
   }
@@ -90,7 +91,7 @@ Map<String, Object?> geoPointToJsonValue(GeoPoint geoPoint) {
 GeoPoint jsonValueToGeoPoint(Map map) {
   assert(map[jsonTypeField] == typeGeoPoint);
   var valueMap = map[jsonValueField] as Map;
-  return GeoPoint(valueMap['latitude'] as num?, valueMap['longitude'] as num?);
+  return GeoPoint(valueMap['latitude'] as num, valueMap['longitude'] as num);
 }
 
 // utilities

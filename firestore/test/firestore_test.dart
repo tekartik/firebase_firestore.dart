@@ -51,9 +51,9 @@ void main() {
 
     test('blob', () {
       var data = DocumentData();
-      data.setBlob('blob', Blob(null));
+      data.setBlob('blob', Blob(Uint8List(0)));
       expect(documentDataToJsonMap(data), {
-        'blob': {r'$t': 'Blob', r'$v': null}
+        'blob': {r'$t': 'Blob', r'$v': ''}
       });
 
       data.setNull('blob');
