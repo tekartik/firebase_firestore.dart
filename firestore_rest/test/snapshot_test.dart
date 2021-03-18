@@ -8,19 +8,19 @@ import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';
 
 class DocumentSnapshotMock implements DocumentSnapshot {
   @override
-  Timestamp createTime;
+  Timestamp? createTime;
 
   @override
-  Map<String, dynamic> data;
+  Map<String, Object?> get data => throw UnimplementedError();
 
   @override
-  bool get exists => data != null;
+  bool get exists => false;
 
   @override
-  DocumentReference ref;
+  late DocumentReference ref;
 
   @override
-  Timestamp updateTime;
+  Timestamp? updateTime;
 }
 
 void main() {

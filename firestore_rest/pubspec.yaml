@@ -4,7 +4,7 @@ version: 0.8.4+1
 publish_to: none
 
 environment:
-  sdk: '>=2.10.0-0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   sembast: '>=1.19.0-dev.3'
@@ -39,6 +39,7 @@ dev_dependencies:
       ref: null_safety
     version: '>=0.6.3'
   test: any
+  dev_test:
   build_runner: ">=0.9.1"
   build_test: ">=0.10.3"
   tekartik_firebase_firestore_test:

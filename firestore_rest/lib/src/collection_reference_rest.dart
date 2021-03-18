@@ -1,5 +1,6 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 import 'package:tekartik_firebase_firestore_rest/src/query.dart';
 
@@ -13,9 +14,10 @@ class CollectionReferenceRestImpl extends QueryRestImpl
   CollectionReferenceRestImpl(FirestoreRestImpl firestoreRest, String path)
       : super(firestoreRest, path) {
     checkCollectionReferencePath(path);
+    queryInfo = QueryInfo();
   }
 
   @override
-  Future<DocumentReference> add(Map<String, dynamic> data) =>
+  Future<DocumentReference> add(Map<String, Object?> data) =>
       firestoreRestImpl.createDocument(path, data);
 }

@@ -1,10 +1,9 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_rest/src/collection_reference_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/document_reference_rest.dart';
-import 'package:tekartik_firebase_firestore_rest/src/firestore/v1beta1.dart'
+import 'package:tekartik_firebase_firestore_rest/src/firestore/v1_fixed.dart'
     show RunQueryFixedResponse;
 import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 
@@ -26,7 +25,7 @@ class QueryRestImpl
   @override
   QueryMixin clone() {
     return QueryRestImpl(firestoreRestImpl, path)
-      ..queryInfo = (queryInfo?.clone() ?? QueryInfo());
+      ..queryInfo = queryInfo.clone();
   }
 
   @override
@@ -39,22 +38,23 @@ class QuerySnapshotRestImpl implements QuerySnapshot {
 
   QuerySnapshotRestImpl(this.firestoreRest, this.response);
 
-  List<DocumentSnapshot> _docs;
+  List<DocumentSnapshot>? _docs;
 
   @override
   List<DocumentSnapshot> get docs => _docs ??= () {
-        return response?.documents
-            ?.map((document) =>
+        return response.documents!
+            .map((document) =>
                 DocumentSnapshotRestImpl(firestoreRest, document.document))
-            ?.where((snapshot) => isDocumentSnapshot(snapshot))
-            ?.toList(growable: false);
+            .where((snapshot) => isDocumentSnapshot(snapshot))
+            .toList(growable: false);
       }();
 
   @override
-  List<DocumentChange> get documentChanges => null;
+  List<DocumentChange> get documentChanges =>
+      throw UnsupportedError('no document changes on rest');
 }
 
 /// For empty result we get this: [{readTime: 2019-11-02T15:24:14.458076Z}]
 bool isDocumentSnapshot(DocumentSnapshotRestImpl snapshot) {
-  return snapshot.exists ?? false;
+  return snapshot.exists;
 }
