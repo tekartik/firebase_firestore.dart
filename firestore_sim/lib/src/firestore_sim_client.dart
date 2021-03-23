@@ -307,7 +307,7 @@ abstract class QueryMixinSim implements Query {
           DocumentSnapshotSim snapshot;
           if (changeData.data != null) {
             snapshot = firestoreSim.documentSnapshotFromDataMap(
-                join(simCollectionReference.path, changeData.id),
+                url.join(simCollectionReference.path, changeData.id),
                 changeData.data);
           } else {
             // find in doc
