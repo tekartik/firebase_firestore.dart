@@ -177,7 +177,7 @@ mixin FirestoreSubscriptionMixin on Firestore {
 
   Stream<DocumentSnapshot> onSnapshot(DocumentReference documentRef) {
     var subscription = addDocumentSubscription(documentRef.path);
-    late var querySubscription;
+    late StreamSubscription querySubscription;
     var controller = StreamController<DocumentSnapshot>(onCancel: () {
       querySubscription.cancel();
     });
@@ -794,7 +794,7 @@ mixin FirestoreQueryMixin implements Query {
   Stream<QuerySnapshot> onSnapshot() {
     var collectionSubscription =
         subscriptionMixin.addCollectionSubscription(path);
-    late var querySubscription;
+    late StreamSubscription querySubscription;
     var controller = StreamController<QuerySnapshot>(onCancel: () {
       querySubscription.cancel();
     });

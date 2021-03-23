@@ -76,10 +76,10 @@ class DocumentDataMap implements DocumentData {
 
   void setValue(String key, dynamic value) => map[key] = value;
 
-  dynamic valueAtFieldPath(String fieldPath) {
+  Object? valueAtFieldPath(String fieldPath) {
     final parts = fieldPath.split('\.');
     Map parent = map;
-    var value;
+    Object? value;
     for (var i = 0; i < parts.length; i++) {
       var part = parts[i];
       value = parent[part];

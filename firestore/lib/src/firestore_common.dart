@@ -373,7 +373,7 @@ class QueryInfo {
 
 WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   bool? isNull;
-  var isEqualTo;
+  Object? isEqualTo;
   var value = jsonToDocumentDataValue(firestore, map['value']);
   var operator = map['operator'];
   if (operator == operatorEqual) {
