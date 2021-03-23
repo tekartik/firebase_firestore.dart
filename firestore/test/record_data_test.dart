@@ -24,15 +24,6 @@ void main() {
           });
     });
     test('fieldArrayValueMergeValue', () {
-      // Currently crashing, keep it this way
-      var failed = false;
-      try {
-        expect(fieldArrayValueMergeValue(null, null), isNull);
-      } catch (e) {
-        failed = true;
-      }
-      expect(failed, isTrue);
-
       expect(
           fieldArrayValueMergeValue(
               FieldValueArray(FieldValueType.arrayUnion, ['a']), null),

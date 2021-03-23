@@ -4,7 +4,7 @@ version: 0.8.4+1
 publish_to: none
 
 environment:
-  sdk: '>=2.10.0-0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   sembast: '>=1.19.0-dev.3'
@@ -13,13 +13,13 @@ dependencies:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
-      ref: dart2
+      ref: null_safety
     version: '>=0.8.2'
   tekartik_firebase_rest:
     git:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_rest
-      ref: dart2
+      ref: null_safety
     version: '>=0.7.4'
   googleapis:
   googleapis_beta:
@@ -28,7 +28,7 @@ dependencies:
     git:
       url: git://github.com/tekartik/http.dart
       path: http
-      ref: dart2
+      ref: null_safety
     version: '>=0.2.0+2'
 
 dev_dependencies:
@@ -36,9 +36,10 @@ dev_dependencies:
     git:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_local
-      ref: dart2
+      ref: null_safety
     version: '>=0.6.3'
   test: any
+  dev_test:
   build_runner: ">=0.9.1"
   build_test: ">=0.10.3"
   tekartik_firebase_firestore_test:
@@ -48,12 +49,12 @@ dev_dependencies:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore_sembast
-      ref: dart2
+      ref: null_safety
     version: '>=0.8.0'
   tekartik_app_http:
     git:
       url: git://github.com/tekartik/app_common_utils.dart
-      ref: dart2
+      ref: null_safety
       path: app_http
     version: '>=0.1.0'
 dependency_overrides:

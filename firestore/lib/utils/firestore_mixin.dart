@@ -44,7 +44,7 @@ bool firestoreTimestampsInSnapshots(Firestore firestore) {
 }
 
 mixin FirestoreMixin implements Firestore {
-  FirestoreSettings firestoreSettings;
+  FirestoreSettings? firestoreSettings;
 
   @override
   void settings(FirestoreSettings settings) {
@@ -58,15 +58,16 @@ mixin FirestoreMixin implements Firestore {
 
 mixin FirestoreDocumentsMixin on Firestore {
   DocumentSnapshot newSnapshot(
-      DocumentReference ref, RecordMetaData meta, DocumentData data);
+      DocumentReference ref, RecordMetaData? meta, DocumentData? data);
 
   QuerySnapshot newQuerySnapshot(
       List<DocumentSnapshot> docs, List<DocumentChange> changes);
 
   // Remove meta keys
   DocumentSnapshot documentFromRecordMap(
-      DocumentReference ref, Map<String, dynamic> recordMap) {
-    var meta = RecordMetaData.fromRecordMap(recordMap);
+      DocumentReference ref, Map<String, Object?>? recordMap) {
+    var meta =
+        recordMap == null ? null : RecordMetaData.fromRecordMap(recordMap);
     return newSnapshot(
       ref,
       meta,
@@ -80,7 +81,7 @@ class CollectionSubscription extends FirestoreSubscription<DocumentChange> {}
 class DocumentSubscription extends FirestoreSubscription<DocumentSnapshot> {}
 
 abstract class FirestoreSubscription<T> {
-  String path;
+  String? path;
   int count = 0;
   var streamController = StreamController<T>.broadcast();
 }
@@ -93,10 +94,10 @@ mixin FirestoreSubscriptionMixin on Firestore {
   }
 
   // key is path
-  final subscriptions = <String, FirestoreSubscription>{};
+  final subscriptions = <String?, FirestoreSubscription>{};
 
-  FirestoreSubscription<T> findSubscription<T>(String path) {
-    return subscriptions[path] as FirestoreSubscription<T>;
+  FirestoreSubscription<T?>? findSubscription<T>(String? path) {
+    return subscriptions[path] as FirestoreSubscription<T?>?;
   }
 
   CollectionSubscription addCollectionSubscription(String path) {
@@ -104,20 +105,20 @@ mixin FirestoreSubscriptionMixin on Firestore {
         as CollectionSubscription;
   }
 
-  DocumentSubscription addDocumentSubscription(String path) {
+  DocumentSubscription addDocumentSubscription(String? path) {
     return _addSubscription(path, () => DocumentSubscription())
         as DocumentSubscription;
   }
 
   FirestoreSubscription<T> _addSubscription<T>(
-      String path, FirestoreSubscription<T> Function() create) {
+      String? path, FirestoreSubscription<T> Function() create) {
     var subscription = findSubscription<T>(path);
     if (subscription == null) {
       subscription = create()..path = path;
       subscriptions[path] = subscription;
     }
     subscription.count++;
-    return subscription;
+    return subscription as FirestoreSubscription<T>;
   }
 
   // ref counting
@@ -144,10 +145,13 @@ mixin FirestoreSubscriptionMixin on Firestore {
   void notify(WriteResultBase result) {
     var path = result.path;
     var documentSubscription = findSubscription(path);
+    var newSnapshot = result.newSnapshot;
+    var previousSnapshot = result.previousSnapshot;
+    var added = result.added;
+    var removed = result.removed;
     if (documentSubscription != null) {
-      if (result.newSnapshot != null) {
-        documentSubscription.streamController
-            .add(cloneSnapshot(result.newSnapshot));
+      if (newSnapshot?.exists == true) {
+        documentSubscription.streamController.add(cloneSnapshot(newSnapshot!));
       } else {
         // this is a delete
         documentSubscription.streamController.add(deletedSnapshot(doc(path)));
@@ -156,23 +160,24 @@ mixin FirestoreSubscriptionMixin on Firestore {
     // notify collection listeners
     var collectionSubscription = findSubscription(url.dirname(path));
     if (collectionSubscription != null) {
-      collectionSubscription.streamController.add(documentChange(
-          result.added
+      var change = documentChange(
+          added
               ? DocumentChangeType.added
-              : (result.removed
+              : (removed
                   ? DocumentChangeType.removed
                   : DocumentChangeType.modified),
-          result.removed
-              ? cloneSnapshot(result.previousSnapshot)
-              : cloneSnapshot(result.newSnapshot),
-          null,
-          null));
+          removed
+              ? cloneSnapshot(previousSnapshot!)
+              : cloneSnapshot(newSnapshot!),
+          -1,
+          -1);
+      collectionSubscription.streamController.add(change);
     }
   }
 
   Stream<DocumentSnapshot> onSnapshot(DocumentReference documentRef) {
     var subscription = addDocumentSubscription(documentRef.path);
-    var querySubscription;
+    late StreamSubscription querySubscription;
     var controller = StreamController<DocumentSnapshot>(onCancel: () {
       querySubscription.cancel();
     });
@@ -192,14 +197,14 @@ mixin FirestoreSubscriptionMixin on Firestore {
   }
 }
 
-bool mapWhere(DocumentData documentData, WhereInfo where) {
+bool mapWhere(DocumentData? documentData, WhereInfo where) {
   // We always use Timestamp even for DateTime
-  Comparable _fixValue(dynamic value) {
+  Comparable? _fixValue(dynamic value) {
     return _getComparable(value);
   }
 
   var fieldValue = _fixValue(
-      documentDataMap(documentData).valueAtFieldPath(where.fieldPath));
+      documentDataMap(documentData)!.valueAtFieldPath(where.fieldPath!));
 
   if (where.isNull == true) {
     return fieldValue == null;
@@ -228,28 +233,28 @@ bool mapWhere(DocumentData documentData, WhereInfo where) {
     }
   } else if (where.arrayContainsAny != null) {
     if (fieldValue != null && fieldValue is Iterable) {
-      for (var any in where.arrayContainsAny) {
+      for (var any in where.arrayContainsAny!) {
         if ((fieldValue as Iterable).contains(_fixValue(any))) {
           return true;
         }
       }
     }
   } else if (where.whereIn != null) {
-    return where.whereIn.contains(fieldValue);
+    return where.whereIn!.contains(fieldValue);
   } else {
     // devWarning(throw UnsupportedError('where: $where on $documentData'));
   }
   return false;
 }
 
-T safeGetItem<T>(List<T> list, int index) {
+T? safeGetItem<T>(List<T>? list, int index) {
   if (list != null && list.length > index) {
     return list[index];
   }
   return null;
 }
 
-Comparable _getComparable<T>(dynamic value) {
+Comparable? _getComparable<T>(dynamic value) {
   if (value is DateTime) {
     return Timestamp.fromDateTime(value);
   }
@@ -280,7 +285,7 @@ class NonComparable<T> implements Comparable<T> {
   }
 }
 
-class ComparableList<E> with ListMixin<E> implements Comparable<List<E>> {
+class ComparableList<E> with ListMixin<E> implements Comparable<List<E>?> {
   final List<E> _list;
 
   ComparableList(this._list);
@@ -297,9 +302,9 @@ class ComparableList<E> with ListMixin<E> implements Comparable<List<E>> {
   }
 
   @override
-  int compareTo(List other) {
-    for (var i = 0; i < min(other.length, length); i++) {
-      var item1 = _getComparable(this[i]);
+  int compareTo(List? other) {
+    for (var i = 0; i < min(other!.length, length); i++) {
+      var item1 = _getComparable(this[i])!;
       var item2 = _getComparable(other[i]);
       final result = item1.compareTo(item2);
       if (result != 0) {
@@ -316,13 +321,15 @@ class ComparableList<E> with ListMixin<E> implements Comparable<List<E>> {
   }
 }
 
-class ComparableMap<K, V> with MapMixin<K, V> implements Comparable<Map<K, V>> {
+class ComparableMap<K, V>
+    with MapMixin<K, V>
+    implements Comparable<Map<K, V>?> {
   final Map<K, V> _map;
 
   ComparableMap(this._map);
 
   @override
-  V operator [](Object key) => _map[key];
+  V? operator [](Object? key) => _map[key as K];
 
   @override
   void operator []=(key, value) {
@@ -338,24 +345,24 @@ class ComparableMap<K, V> with MapMixin<K, V> implements Comparable<Map<K, V>> {
   Iterable<K> get keys => _map.keys;
 
   @override
-  V remove(Object key) {
+  V remove(Object? key) {
     throw StateError('read-only');
   }
 
   @override
-  int compareTo(Map<K, V> other) {
+  int compareTo(Map<K, V>? other) {
     var keys1 = keys.toList(growable: false)..sort();
-    var keys2 = other.keys.toList(growable: false)..sort();
+    var keys2 = other!.keys.toList(growable: false)..sort();
     for (var i = 0; i < min(length, other.length); i++) {
       final key1 = keys1[i];
       final key2 = keys2[i];
-      var result = _getComparable(key1).compareTo(_getComparable(key2));
+      var result = _getComparable(key1)!.compareTo(_getComparable(key2));
       if (result != 0) {
         return result;
       }
       final value1 = this[key1];
       final value2 = other[key2];
-      result = _getComparable(value1).compareTo(_getComparable(value2));
+      result = _getComparable(value1)!.compareTo(_getComparable(value2));
       if (result != 0) {
         return result;
       }
@@ -374,12 +381,12 @@ int _compare(Comparable value1, Comparable value2, bool ascending) {
 }
 
 bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
-  var data = snapshot.documentData as DocumentDataMap;
+  var data = snapshot.documentData as DocumentDataMap?;
 
-  Comparable getComparableValue(String fieldPath) {
+  Comparable? getComparableValue(String? fieldPath) {
     dynamic value;
     if (fieldPath != firestoreNameFieldPath) {
-      value = data.valueAtFieldPath(fieldPath);
+      value = data!.valueAtFieldPath(fieldPath!);
 
       // Convert DateTime to Timestamp
       return _getComparable(value);
@@ -426,9 +433,9 @@ bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
       // Start
       dynamic rawLimitValue = safeGetItem(queryInfo.startLimit?.values, i);
       if (rawLimitValue != null) {
-        final limitValue = _getComparable(rawLimitValue);
+        final limitValue = _getComparable(rawLimitValue)!;
 
-        startCompare = _compare(value, limitValue, orderBy.ascending);
+        startCompare = _compare(value!, limitValue, orderBy.ascending);
 
         if (startCompare > 0) {
           return true;
@@ -440,9 +447,9 @@ bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
       // End
       rawLimitValue = safeGetItem(queryInfo.endLimit?.values, i);
       if (rawLimitValue != null) {
-        final limitValue = _getComparable(rawLimitValue);
+        final limitValue = _getComparable(rawLimitValue)!;
 
-        endCompare = _compare(value, limitValue, orderBy.ascending);
+        endCompare = _compare(value!, limitValue, orderBy.ascending);
 
         if (endCompare < 0) {
           return true;
@@ -453,10 +460,10 @@ bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
     }
     // So we know we are equals
     if (queryInfo.startLimit != null &&
-        queryInfo.startLimit.inclusive != true) {
+        queryInfo.startLimit!.inclusive != true) {
       return false;
     }
-    if (queryInfo.endLimit != null && queryInfo.endLimit.inclusive != true) {
+    if (queryInfo.endLimit != null && queryInfo.endLimit!.inclusive != true) {
       return false;
     }
   }
@@ -475,7 +482,7 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
     for (var i = 0; i < queryInfo.orderBys.length; i++) {
       var fieldPath = queryInfo.orderBys[i].fieldPath;
       if (fieldPath != firestoreNameFieldPath) {
-        dynamic value = documentData.valueAtFieldPath(fieldPath);
+        dynamic value = documentData.valueAtFieldPath(fieldPath!);
         if (value == null) {
           return false;
         }
@@ -498,11 +505,11 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
     for (var i = 0; i < queryInfo.orderBys.length; i++) {
       var orderBy = queryInfo.orderBys[i];
       final value =
-          documentData.valueAtFieldPath(orderBy.fieldPath) as Comparable;
+          documentData.valueAtFieldPath(orderBy.fieldPath!) as Comparable?;
 
       if (queryInfo.startLimit?.inclusive == true) {
         final startAt =
-            safeGetItem(queryInfo.startLimit?.values, i) as Comparable;
+            safeGetItem(queryInfo.startLimit?.values, i) as Comparable?;
         if (startAt != null) {
           // ignore: non_bool_operand
           if (value == null ||
@@ -512,7 +519,7 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
         }
       } else {
         final startAfter =
-            safeGetItem(queryInfo.startLimit?.values, i) as Comparable;
+            safeGetItem(queryInfo.startLimit?.values, i) as Comparable?;
         if (startAfter != null) {
           // ignore: non_bool_operand
           if (value == null ||
@@ -523,7 +530,7 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
       }
 
       if (queryInfo.endLimit?.inclusive == true) {
-        final endAt = safeGetItem(queryInfo.endLimit?.values, i) as Comparable;
+        final endAt = safeGetItem(queryInfo.endLimit?.values, i) as Comparable?;
         if (endAt != null) {
           // ignore: non_bool_operand
           if (value == null || _compare(value, endAt, orderBy.ascending) > 0) {
@@ -532,7 +539,7 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
         }
       } else {
         final endBefore =
-            safeGetItem(queryInfo.endLimit?.values, i) as Comparable;
+            safeGetItem(queryInfo.endLimit?.values, i) as Comparable?;
         if (endBefore != null) {
           // ignore: non_bool_operand
           if (value == null ||
@@ -564,15 +571,16 @@ mixin FirestoreQueryMixin implements Query {
   FirestoreSubscriptionMixin get subscriptionMixin =>
       firestore as FirestoreSubscriptionMixin;
 
-  QueryInfo get queryInfo;
+  QueryInfo? get queryInfo;
 
-  Future<List<DocumentSnapshot>> getCollectionDocuments();
+  Future<List<DocumentSnapshot>>? getCollectionDocuments();
 
   @override
   Future<QuerySnapshot> get() async {
+    var queryInfo = this.queryInfo!;
     // Get and filter
     var docs = <DocumentSnapshot>[];
-    for (var doc in await getCollectionDocuments()) {
+    for (var doc in await getCollectionDocuments()!) {
       if (snapshotMapQueryInfo(doc as DocumentSnapshotBase, queryInfo)) {
         docs.add(doc);
       }
@@ -598,10 +606,10 @@ mixin FirestoreQueryMixin implements Query {
       }
 
       for (var orderBy in orderBys) {
-        final keyPath = orderBy.fieldPath as String;
-        final ascending = orderBy.ascending as bool;
+        final keyPath = orderBy.fieldPath as String?;
+        final ascending = orderBy.ascending as bool?;
 
-        int _rawCompare(Comparable object1, Comparable object2) {
+        int _rawCompare(Comparable? object1, Comparable? object2) {
           if (object2 == null) {
             if (object1 == null) {
               return 0;
@@ -615,18 +623,18 @@ mixin FirestoreQueryMixin implements Query {
           return object1.compareTo(object2);
         }
 
-        int _compare(Comparable object1, Comparable object2) {
+        int _compare(Comparable? object1, Comparable? object2) {
           final rawCompare = _rawCompare(object1, object2);
-          if (ascending) {
+          if (ascending!) {
             return rawCompare;
           } else {
             return -rawCompare;
           }
         }
 
-        DocumentDataMap snapshotDataMap(DocumentSnapshot snapshot) {
+        DocumentDataMap? snapshotDataMap(DocumentSnapshot snapshot) {
           return ((snapshot as DocumentSnapshotBase).documentData
-              as DocumentDataMap);
+              as DocumentDataMap?);
         }
 
         if (keyPath == firestoreNameFieldPath) {
@@ -634,9 +642,9 @@ mixin FirestoreQueryMixin implements Query {
         } else {
           cmp = _compare(
               _getComparable(
-                  snapshotDataMap(snapshot1).valueAtFieldPath(keyPath)),
+                  snapshotDataMap(snapshot1)!.valueAtFieldPath(keyPath!)),
               _getComparable(
-                  snapshotDataMap(snapshot2).valueAtFieldPath(keyPath)));
+                  snapshotDataMap(snapshot2)!.valueAtFieldPath(keyPath)));
         }
         if (cmp != 0) {
           break;
@@ -655,9 +663,9 @@ mixin FirestoreQueryMixin implements Query {
       }
       for (var snapshot in docs) {
         if (!add && queryInfo.startLimit?.documentId != null) {
-          if (snapshot.ref.id == queryInfo.startLimit.documentId) {
+          if (snapshot.ref.id == queryInfo.startLimit!.documentId) {
             add = true;
-            if (!queryInfo.startLimit.inclusive) {
+            if (!queryInfo.startLimit!.inclusive) {
               // skip this one
               continue;
             }
@@ -665,8 +673,8 @@ mixin FirestoreQueryMixin implements Query {
         }
         // stop now?
         if (add && queryInfo.endLimit?.documentId != null) {
-          if (snapshot.ref.id == queryInfo.endLimit.documentId) {
-            if (queryInfo.endLimit.inclusive) {
+          if (snapshot.ref.id == queryInfo.endLimit!.documentId) {
+            if (queryInfo.endLimit!.inclusive) {
               filteredDocs.add(snapshot);
             }
             break;
@@ -687,13 +695,13 @@ mixin FirestoreQueryMixin implements Query {
       var index = 0;
       for (var snapshot in docs) {
         if (queryInfo.offset != null) {
-          if (index < queryInfo.offset) {
+          if (index < queryInfo.offset!) {
             index++;
             continue;
           }
         }
         if (queryInfo.limit != null) {
-          if (limitedDocs.length >= queryInfo.limit) {
+          if (limitedDocs.length >= queryInfo.limit!) {
             break;
           }
         }
@@ -704,17 +712,16 @@ mixin FirestoreQueryMixin implements Query {
     }
 
     // Apply select
-    if (queryInfo?.selectKeyPaths != null) {
+    if (queryInfo.selectKeyPaths != null) {
       final selectedDocs = <DocumentSnapshot>[];
       for (var snapshot in docs) {
         var meta = (snapshot as DocumentSnapshotBase).meta;
-        var data =
-            (snapshot as DocumentSnapshotBase).documentData as DocumentDataMap;
+        var data = snapshot.documentData as DocumentDataMap;
         selectedDocs.add(documentsMixin.newSnapshot(
             snapshot.ref,
             meta,
             DocumentData(
-                toSelectedMap(data.asMap(), queryInfo.selectKeyPaths))));
+                toSelectedMap(data.asMap(), queryInfo.selectKeyPaths!))));
       }
       docs = selectedDocs;
     }
@@ -723,14 +730,14 @@ mixin FirestoreQueryMixin implements Query {
 
   @override
   Query select(List<String> list) {
-    return clone()..queryInfo.selectKeyPaths = list;
+    return clone()..queryInfo!.selectKeyPaths = list;
   }
 
   @override
-  Query limit(int limit) => clone()..queryInfo.limit = limit;
+  Query limit(int limit) => clone()..queryInfo!.limit = limit;
 
   @override
-  Query orderBy(String key, {bool descending}) => clone()
+  Query orderBy(String key, {bool? descending}) => clone()
     ..addOrderBy(
         key, descending == true ? orderByDescending : orderByAscending);
 
@@ -745,12 +752,12 @@ mixin FirestoreQueryMixin implements Query {
     dynamic isGreaterThan,
     dynamic isGreaterThanOrEqualTo,
     dynamic arrayContains,
-    List<dynamic> arrayContainsAny,
-    List<dynamic> whereIn,
-    bool isNull,
+    List<Object?>? arrayContainsAny,
+    List<Object?>? whereIn,
+    bool? isNull,
   }) =>
       clone()
-        ..queryInfo.addWhere(WhereInfo(fieldPath,
+        ..queryInfo!.addWhere(WhereInfo(fieldPath,
             isEqualTo: isEqualTo,
             isLessThan: isLessThan,
             isLessThanOrEqualTo: isLessThanOrEqualTo,
@@ -764,30 +771,30 @@ mixin FirestoreQueryMixin implements Query {
   void addOrderBy(String key, String directionStr) {
     var orderBy = OrderByInfo(
         fieldPath: key, ascending: directionStr != orderByDescending);
-    queryInfo.orderBys.add(orderBy);
+    queryInfo!.orderBys.add(orderBy);
   }
 
   @override
-  Query startAt({DocumentSnapshot snapshot, List values}) =>
-      clone()..queryInfo.startAt(snapshot: snapshot, values: values);
+  Query startAt({DocumentSnapshot? snapshot, List? values}) =>
+      clone()..queryInfo!.startAt(snapshot: snapshot, values: values);
 
   @override
-  Query startAfter({DocumentSnapshot snapshot, List values}) =>
-      clone()..queryInfo.startAfter(snapshot: snapshot, values: values);
+  Query startAfter({DocumentSnapshot? snapshot, List? values}) =>
+      clone()..queryInfo!.startAfter(snapshot: snapshot, values: values);
 
   @override
-  Query endAt({DocumentSnapshot snapshot, List values}) =>
-      clone()..queryInfo.endAt(snapshot: snapshot, values: values);
+  Query endAt({DocumentSnapshot? snapshot, List? values}) =>
+      clone()..queryInfo!.endAt(snapshot: snapshot, values: values);
 
   @override
-  Query endBefore({DocumentSnapshot snapshot, List values}) =>
-      clone()..queryInfo.endBefore(snapshot: snapshot, values: values);
+  Query endBefore({DocumentSnapshot? snapshot, List? values}) =>
+      clone()..queryInfo!.endBefore(snapshot: snapshot, values: values);
 
   @override
   Stream<QuerySnapshot> onSnapshot() {
     var collectionSubscription =
         subscriptionMixin.addCollectionSubscription(path);
-    var querySubscription;
+    late StreamSubscription querySubscription;
     var controller = StreamController<QuerySnapshot>(onCancel: () {
       querySubscription.cancel();
     });
@@ -798,14 +805,7 @@ mixin FirestoreQueryMixin implements Query {
       // get the base data
       var querySnapshot = await get() as QuerySnapshotBase;
       if (snapshotMapQueryInfo(
-          documentChange.document as DocumentSnapshotBase, queryInfo)) {
-        if (documentChange.type == null) {
-          if (querySnapshot.contains(documentChange.documentBase)) {
-            documentChange.type = DocumentChangeType.modified;
-          } else {
-            documentChange.type = DocumentChangeType.added;
-          }
-        }
+          documentChange.document as DocumentSnapshotBase, queryInfo!)) {
         querySnapshot.documentChanges.add(documentChange);
       } else if (documentChange.type == DocumentChangeType.removed) {
         if (querySnapshot.contains(documentChange.documentBase)) {
@@ -833,7 +833,7 @@ mixin FirestoreQueryMixin implements Query {
 }
 
 abstract class ReferenceAttributes {
-  String get parentPath;
+  String? get parentPath;
 
   String get id;
 
@@ -846,9 +846,9 @@ abstract class AttributesMixin implements ReferenceAttributes {
   String get path;
 
   @override
-  String get parentPath {
+  String? get parentPath {
     final dirPath = url.dirname(path);
-    if (dirPath?.isEmpty == true) {
+    if (dirPath.isEmpty == true) {
       return null;
     } else if (dirPath == '.') {
       // Mimic firestore behavior where the top document has a '' path

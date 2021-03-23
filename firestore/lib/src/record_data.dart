@@ -7,26 +7,25 @@ import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 
 const revKey = r'$rev';
 
-int recordMapRev(Map<String, dynamic> recordMap) =>
-    recordMap != null ? recordMap[revKey] as int : null;
+int? recordMapRev(Map<String, Object?> recordMap) => recordMap[revKey] as int?;
 
-Timestamp recordMapUpdateTime(Map<String, dynamic> recordMap) =>
+Timestamp? recordMapUpdateTime(Map<String, Object?> recordMap) =>
     mapUpdateTime(recordMap);
 
-Timestamp recordMapCreateTime(Map<String, dynamic> recordMap) =>
+Timestamp? recordMapCreateTime(Map<String, Object?> recordMap) =>
     mapCreateTime(recordMap);
 
 /// Generic record update
-Map<String, dynamic> recordMapUpdate(
-    Map<String, dynamic> existing, DocumentData documentData) {
+Map<String, Object?>? recordMapUpdate(
+    Map<String, Object?>? existing, DocumentData? documentData) {
   if (documentData == null) {
     return null;
   }
   final recordMap = (existing != null)
-      ? cloneMap(existing)?.cast<String, dynamic>()
-      : <String, dynamic>{};
+      ? cloneMap(existing).cast<String, Object?>()
+      : <String, Object?>{};
 
-  var map = expandUpdateData(documentDataMap(documentData).map);
+  var map = expandUpdateData(documentDataMap(documentData)!.map)!;
   map.forEach((String key, value) {
     // devPrint('key $key');
     // special delete field
@@ -42,9 +41,9 @@ Map<String, dynamic> recordMapUpdate(
   return recordMap;
 }
 
-DocumentDataMap documentDataFromRecordMap(
-    Firestore firestore, Map<String, dynamic> recordMap,
-    [DocumentData documentData]) {
+DocumentDataMap? documentDataFromRecordMap(
+    Firestore firestore, Map<String, Object?>? recordMap,
+    [DocumentData? documentData]) {
   if (documentData == null && recordMap == null) {
     return null;
   }
@@ -84,7 +83,7 @@ dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
       return recordValue
           .map((key, recordValue) =>
               MapEntry(key, recordValueToValue(firestore, recordValue)))
-          .cast<String, dynamic>();
+          .cast<String, Object?>();
     }
   } else if (recordValue is Iterable) {
     return recordValue
@@ -94,33 +93,34 @@ dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
   throw 'recordValueToValue not supported $recordValue ${recordValue.runtimeType}';
 }
 
-DocumentDataMap documentDataMap(DocumentData documentData) =>
-    documentData as DocumentDataMap;
+DocumentDataMap? documentDataMap(DocumentData? documentData) =>
+    documentData as DocumentDataMap?;
 
 // merge with existing record map if any
-Map<String, dynamic> documentDataToRecordMap(DocumentData documentData,
+Map<String, Object?>? documentDataToRecordMap(DocumentData? documentData,
 
     /// Needed for arrayRemove
-    [Map<String, dynamic> recordMap]) {
+    [Map<String, Object?>? recordMap]) {
   if (documentData == null && recordMap == null) {
     return null;
   }
   var existingRecordMap = recordMap ?? {};
   recordMap = (recordMap != null)
-      ? cloneMap(recordMap)?.cast<String, dynamic>()
-      : <String, dynamic>{};
+      ? cloneMap(recordMap).cast<String, Object?>()
+      : <String, Object?>{};
   if (documentData == null) {
     return recordMap;
   }
-  documentDataMap(documentData).map.forEach((String key, value) {
+  documentDataMap(documentData)!.map.forEach((String key, value) {
     // special delete field
     if (value == FieldValue.delete) {
       // remove
-      recordMap.remove(key);
+      recordMap!.remove(key);
     } else if (value is FieldValueArray) {
-      recordMap[key] = fieldArrayValueMergeValue(value, existingRecordMap[key]);
+      recordMap![key] =
+          fieldArrayValueMergeValue(value, existingRecordMap[key]);
     } else {
-      recordMap[key] = valueToRecordValue(value);
+      recordMap![key] = valueToRecordValue(value);
     }
   });
   return recordMap;
@@ -129,7 +129,7 @@ Map<String, dynamic> documentDataToRecordMap(DocumentData documentData,
 /// To handle arrayUnion and ArrayDelete
 class FieldValueArray extends FieldValue {
   @override
-  final List<dynamic> data;
+  final List<Object?> data;
 
   FieldValueArray(FieldValueType type, this.data) : super(type);
 }
@@ -140,7 +140,7 @@ dynamic fieldArrayValueMergeValue(
   var existingIterable = existing;
   List list;
   if (existingIterable is Iterable) {
-    list = existingIterable.toList()?.cast<dynamic>();
+    list = existingIterable.toList().cast<Object?>();
   } else {
     list = [];
   }
@@ -154,7 +154,7 @@ dynamic fieldArrayValueMergeValue(
 }
 
 dynamic valueToRecordValue(dynamic value,
-    [dynamic Function(dynamic value) chainConverter]) {
+    [dynamic Function(dynamic value)? chainConverter]) {
   chainConverter ??= valueToRecordValue;
   if (value == null || value is num || value is bool || value is String) {
     return value;
@@ -165,12 +165,12 @@ dynamic valueToRecordValue(dynamic value,
   } else if (value is Timestamp) {
     return timestampToRecordValue(value);
   } else if (value is Map) {
-    return value.map((key, value) => MapEntry(key, chainConverter(value)));
+    return value.map((key, value) => MapEntry(key, chainConverter!(value)));
   } else if (value is List) {
-    return value.map((subValue) => chainConverter(subValue)).toList();
+    return value.map((subValue) => chainConverter!(subValue)).toList();
   } else if (value is DocumentDataMap) {
     // this happens when it is a list item
-    return value.map.map((key, value) => MapEntry(key, chainConverter(value)));
+    return value.map.map((key, value) => MapEntry(key, chainConverter!(value)));
   } else if (value is DocumentReference) {
     return documentReferenceToRecordValue(value);
   } else if (value is Blob) {
@@ -184,28 +184,28 @@ dynamic valueToRecordValue(dynamic value,
 }
 
 // Stored as timestamp
-Map<String, dynamic> dateTimeToRecordValue(DateTime dateTime) =>
+Map<String, Object?> dateTimeToRecordValue(DateTime dateTime) =>
     timestampToRecordValue(Timestamp.fromDateTime(dateTime));
 // For now it is still a date
-Map<String, dynamic> timestampToRecordValue(Timestamp timestamp) =>
+Map<String, Object?> timestampToRecordValue(Timestamp timestamp) =>
     timestampToJsonValue(timestamp);
 
-Map<String, dynamic> documentReferenceToRecordValue(
+Map<String, Object?> documentReferenceToRecordValue(
         DocumentReference documentReference) =>
     documentReferenceToJsonValue(documentReference);
 
-DateTime recordValueToDateTime(Map map) => jsonValueToDateTime(map)?.toLocal();
+DateTime? recordValueToDateTime(Map map) => jsonValueToDateTime(map)?.toLocal();
 
 DocumentReference recordValueToDocumentReference(
         Firestore firestore, Map map) =>
     jsonValueToDocumentReference(firestore, map);
 
 class RecordMetaData {
-  int rev;
-  Timestamp createTime;
-  Timestamp updateTime;
+  int? rev;
+  Timestamp? createTime;
+  Timestamp? updateTime;
 
-  RecordMetaData.fromRecordMap(Map<String, dynamic> recordMap) {
+  RecordMetaData.fromRecordMap(Map<String, Object?> recordMap) {
     rev = recordMapRev(recordMap);
     createTime = recordMapCreateTime(recordMap);
     updateTime = recordMapUpdateTime(recordMap);

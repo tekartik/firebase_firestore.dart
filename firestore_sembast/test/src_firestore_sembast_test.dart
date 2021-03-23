@@ -29,7 +29,7 @@ void main() {
         expect(ioFirestore.dbPath, dst);
         var snapshot = await ioFirestore.doc('all_fields/doc').get();
         expect(
-            snapshot.updateTime.toIso8601String(), '2018-10-23T00:00:00.000Z');
+            snapshot.updateTime!.toIso8601String(), '2018-10-23T00:00:00.000Z');
       });
     });
 
@@ -65,11 +65,11 @@ void main() {
       var firestore = service.firestore(app);
       await firestore.doc('doc/path').delete();
       await firestore.doc('doc/path').set({'test': 1});
-      var db = (firestore as FirestoreSembast).db;
-      var map = await sembast.stringMapStoreFactory
+      var db = (firestore as FirestoreSembast).db!;
+      var map = (await sembast.stringMapStoreFactory
           .store('doc')
           .record('doc/path')
-          .get(db);
+          .get(db))!;
       expect(map['test'], 1);
       expect(map[r'$rev'], 1);
       expect(Timestamp.tryParse(map[r'$createTime'] as String), isNotNull);

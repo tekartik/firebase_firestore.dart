@@ -9,17 +9,16 @@ import '../src_firestore_common_test.dart';
 
 class DocumentSnapshotMock extends DocumentSnapshotBase {
   DocumentSnapshotMock(
-      {DocumentReference ref,
-      RecordMetaData meta,
-      DocumentDataMap documentData,
-      bool exists})
+      {required DocumentReference ref,
+      RecordMetaData? meta,
+      DocumentDataMap? documentData,
+      bool? exists})
       : super(ref, meta, documentData, exists: exists);
 }
 
 void main() {
   group('utils', () {
     test('mapCreateTime', () {
-      expect(mapCreateTime(null), isNull);
       expect(mapCreateTime({}).toIso8601String(), '2018-10-23T00:00:00.000Z');
     });
 
@@ -78,7 +77,7 @@ void main() {
         return DocumentSnapshotMock(
             ref: DocumentReferenceMock(id),
             documentData:
-                DocumentDataMap(map: <String, dynamic>{'value': value}));
+                DocumentDataMap(map: <String, Object?>{'value': value}));
       }
 
       var queryInfo = QueryInfo()

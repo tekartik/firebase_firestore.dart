@@ -32,13 +32,19 @@ dev_dependencies:
   build_runner: ">=0.9.1"
   build_test: ">=0.10.3"
   process_run: '>=0.10.2'
+  tekartik_firebase_firestore_test:
+    git:
+      url: git://github.com/tekartik/firebase_firestore.dart
+      path: firestore_test
+      ref: dart2
+    version: '>=0.1.0'
 
 dependency_overrides:
-  tekartik_firebase_firestore_test:
-    path: ../firestore_test
+#  tekartik_firebase_firestore_test:
+#    path: ../firestore_test
   tekartik_firebase_firestore_sim:
     path: ../firestore_sim
-  tekartik_firebase_firestore:
-    path: ../firestore
-  tekartik_firebase_firestore_sembast:
-    path: ../firestore_sembast
+#  tekartik_firebase_firestore:
+#    path: ../firestore
+#  tekartik_firebase_firestore_sembast:
+#    path: ../firestore_sembast

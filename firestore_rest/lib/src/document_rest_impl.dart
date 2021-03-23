@@ -1,5 +1,5 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore_rest/src/firestore/v1beta1.dart';
+import 'package:tekartik_firebase_firestore_rest/src/firestore/v1_fixed.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 
 abstract class FirestoreDocumentContext {
@@ -8,7 +8,7 @@ abstract class FirestoreDocumentContext {
   // Full name
   String getDocumentName(String path);
   // Path below documents
-  String getDocumentPath(String name);
+  String? getDocumentPath(String? name);
 }
 
 mixin DocumentContext {
@@ -29,8 +29,8 @@ mixin DocumentContext {
       restValue = Value()..doubleValue = value;
     } else if (value is GeoPoint) {
       var geoPointValue = LatLng()
-        ..latitude = value.latitude?.toDouble()
-        ..longitude = value.longitude?.toDouble();
+        ..latitude = value.latitude.toDouble()
+        ..longitude = value.longitude.toDouble();
       restValue = Value()..geoPointValue = geoPointValue;
     } else if (value is Timestamp) {
       restValue = Value()..timestampValue = value.toString();
@@ -69,25 +69,19 @@ mixin DocumentContext {
   }
 
   Map<String, Value> _mapToFields(Map map) {
-    if (map == null) {
-      return null;
-    }
     var fields =
-        map.map((key, value) => MapEntry(key?.toString(), toRestValue(value)));
+        map.map((key, value) => MapEntry(key.toString(), toRestValue(value)));
     return fields;
   }
 
   void fromMap(Map map) {
-    if (map == null) {
-      return null;
-    }
     map.map((key, value) => MapEntry(key?.toString(), toRestValue(value)));
   }
 
   Value _listToRestValue(Iterable list) {
     var arrayValue = ArrayValue()
       ..values =
-          list.map((value) => toRestValue(value))?.toList(growable: false);
+          list.map((value) => toRestValue(value)).toList(growable: false);
     return Value()..arrayValue = arrayValue;
   }
 }

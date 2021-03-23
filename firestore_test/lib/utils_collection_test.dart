@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
@@ -6,8 +5,8 @@ import 'package:tekartik_firebase_firestore/utils/collection.dart';
 import 'package:test/test.dart';
 
 void runApp(
-    {@required FirestoreService firestoreService,
-    @required Firestore firestore}) {
+    {required FirestoreService firestoreService,
+    required Firestore firestore}) {
   group('utils_collection', () {
     var testsRefPath = 'tests/tekartik_firebase_firestore/tests';
 

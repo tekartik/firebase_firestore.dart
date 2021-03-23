@@ -32,5 +32,5 @@ dev_dependencies:
   process_run: '>=0.10.2'
 
 dependency_overrides:
-  tekartik_firebase_firestore:
-    path: ../firestore
+#  tekartik_firebase_firestore:
+#    path: ../firestore

@@ -4,7 +4,7 @@ version: 0.8.3
 publish_to: none
 
 environment:
-  sdk: '>=2.10.0-0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   sembast: '>=2.4.7+7'
@@ -14,13 +14,13 @@ dependencies:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore
-      ref: dart2
+      ref: null_safety
     version: '>=0.8.2'
   tekartik_firebase_local:
     git:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_local
-      ref: dart2
+      ref: null_safety
     version: '>=0.3.7'
 
 dev_dependencies:

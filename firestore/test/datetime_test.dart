@@ -19,33 +19,33 @@ void main() {
       // Browser 2018-10-20T05:13:45.985Z
       // Node 2018-10-20T05:13:45.985Z
       expect(
-          dateTime.toIso8601String(),
+          dateTime!.toIso8601String(),
           _runningAsJavascript
               ? '2018-10-20T05:13:45.985Z'
               : '2018-10-20T05:13:45.985343Z');
       // print(dateTime.toIso8601String());
 
       text = '2018-10-20T05:13:45.985Z';
-      dateTime = DateTime.tryParse(text);
+      dateTime = DateTime.tryParse(text)!;
       expect(dateTime, isNotNull);
       expect(dateTime.toIso8601String(), '2018-10-20T05:13:45.985Z');
       // 2018-10-20T05:13:45.985Z
       // print(dateTime.toIso8601String());
 
       text = '2018-10-20T05:13:45Z';
-      dateTime = DateTime.tryParse(text);
+      dateTime = DateTime.tryParse(text)!;
       expect(dateTime, isNotNull);
       // 2018-10-20T05:13:45.000Z
       // print(dateTime.toIso8601String());
 
       text = '2018-10-20T05:13Z';
-      dateTime = DateTime.tryParse(text);
+      dateTime = DateTime.tryParse(text)!;
       expect(dateTime, isNotNull);
       // 2018-10-20T05:13:00.000Z
       // print(dateTime.toIso8601String());
 
       text = '2018-10-20T05Z';
-      dateTime = DateTime.tryParse(text);
+      dateTime = DateTime.tryParse(text)!;
       // expect(dateTime, isNotNull);
       // 2018-10-20T05:00:00.000Z
       // print(dateTime.toIso8601String());
@@ -55,7 +55,7 @@ void main() {
       expect(dateTime, isNull);
 
       text = '2018-10-20';
-      dateTime = DateTime.tryParse(text);
+      dateTime = DateTime.tryParse(text)!;
       expect(dateTime, isNotNull);
       // 2018-10-20T00:00:00.000
       // print(dateTime.toIso8601String());

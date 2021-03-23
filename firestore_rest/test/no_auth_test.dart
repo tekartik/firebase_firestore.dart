@@ -13,7 +13,7 @@ void main() {
     /// For this test specify both env variable and create a new document at rootPath
     test('rootPath', () async {
       var firestore = noAuthFirestoreRest(projectId: projectId);
-      var snapshot = await firestore.doc(rootPath).get();
+      var snapshot = await firestore.doc(rootPath!).get();
       expect(snapshot.data, isNotNull,
           reason: 'Missing test data in $projectId at $rootPath');
 

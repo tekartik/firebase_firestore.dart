@@ -65,9 +65,9 @@ class FirestoreIdb extends Object
   final FirestoreServiceIdb firestoreServiceIdb;
 
   idb.IdbFactory get idbFactory => firestoreServiceIdb.idbFactory;
-  idb.Database _database;
+  idb.Database? _database;
 
-  FutureOr<idb.Database> get databaseReady {
+  FutureOr<idb.Database>? get databaseReady {
     if (_database != null) {
       return _database;
     }
@@ -80,7 +80,7 @@ class FirestoreIdb extends Object
       }
     }).then((idb.Database database) {
       _database = database;
-      return _database;
+      return _database!;
     });
   }
 
@@ -100,13 +100,14 @@ class FirestoreIdb extends Object
   WriteBatch batch() => WriteBatchIdb(this);
 
   @override
-  Future runTransaction(
-      Function(Transaction transaction) updateFunction) async {
+  Future<T> runTransaction<T>(
+      FutureOr<T> Function(Transaction transaction) updateFunction) async {
     var localTransaction = await getReadWriteTransaction();
     var txn = TransactionIdb(this, localTransaction);
-    await updateFunction(txn);
+    var result = await updateFunction(txn);
     await localTransaction.completed;
     localTransaction.notify();
+    return result;
   }
 
   @override
@@ -115,20 +116,20 @@ class FirestoreIdb extends Object
   }
 
   Future<DocumentReferenceIdb> add(
-      String path, Map<String, dynamic> data) async {
+      String path, Map<String, Object?> data) async {
     var documentData = DocumentData(data);
     var localTransaction = await getReadWriteTransaction();
     var txn = localTransaction.transaction;
     var documentRef = getDocumentRef(url.join(path, _generateId()));
     await txn
         .objectStore(storeName)
-        .add(documentDataToJsonMap(documentData), documentRef.path);
+        .add(documentDataToJsonMap(documentData)!, documentRef.path);
     await txn.completed;
     return documentRef;
   }
 
   Future<DocumentReferenceIdb> setDocument(DocumentReferenceIdb documentRef,
-      DocumentData documentData, SetOptions options) async {
+      DocumentData documentData, SetOptions? options) async {
     var localTransaction = await getReadWriteTransaction();
     await txnSet(localTransaction, documentRef, documentData, options);
     await localTransaction.completed;
@@ -146,7 +147,7 @@ class FirestoreIdb extends Object
   String get storeName => 'documents';
 
   Future<LocalTransaction> getReadWriteTransaction() async {
-    final db = await databaseReady;
+    final db = await databaseReady!;
     var txn = db.transaction(storeName, idb.idbModeReadWrite);
     final localTransaction = LocalTransaction(this, txn);
     return localTransaction;
@@ -179,11 +180,11 @@ class FirestoreIdb extends Object
         .getObject(documentReferenceIdb.path)
         .then((value) {
       // we assume it is always a map
-      final recordMap = (value as Map)?.cast<String, dynamic>();
+      final recordMap = (value as Map?)?.cast<String, Object?>();
 
       return DocumentSnapshotIdb(
           documentReferenceIdb,
-          RecordMetaData.fromRecordMap(recordMap),
+          recordMap == null ? null : RecordMetaData.fromRecordMap(recordMap),
           documentDataFromRecordMap(this, recordMap));
     });
   }
@@ -198,18 +199,18 @@ class FirestoreIdb extends Object
       LocalTransaction localTransaction,
       DocumentReferenceIdb documentRef,
       DocumentData documentData,
-      SetOptions options) {
+      SetOptions? options) {
     var result = WriteResultIdb(documentRef.path);
     var txn = localTransaction.transaction;
     return txnGet(localTransaction, documentRef).then((snapshot) {
       result.previousSnapshot = snapshot;
 
-      Map<String, dynamic> recordMap;
+      Map<String, Object?>? recordMap;
 
       // Update rev
-      final rev = (snapshot?.rev ?? 0) + 1;
+      final rev = (snapshot.rev ?? 0) + 1;
       // merging?
-      if (options?.merge == true) {
+      if (options?.merge == true && snapshot.exists) {
         recordMap = documentDataToRecordMap(documentData, snapshot.data);
       } else {
         recordMap = documentDataToRecordMap(documentData);
@@ -232,7 +233,7 @@ class FirestoreIdb extends Object
       // TODO
       return txn
           .objectStore(storeName)
-          .put(recordMap, documentRef.path)
+          .put(recordMap!, documentRef.path)
           .then((_) {
         return result;
       });
@@ -244,16 +245,11 @@ class FirestoreIdb extends Object
     var result = WriteResultIdb(documentRef.path);
     return txnGet(localTransaction, documentRef)
         .then((DocumentSnapshotIdb snapshotIdb) {
-      var map = snapshotIdb.data;
-
-      // not found
-      if (map == null) {
-        throw Exception('No document found at $documentRef');
-      }
+      Map<String, Object?>? map = snapshotIdb.data;
       map = recordMapUpdate(map, documentData);
       return localTransaction.transaction
           .objectStore(storeName)
-          .put(map, documentRef.path)
+          .put(map!, documentRef.path)
           .then((_) {
         return result;
       });
@@ -285,8 +281,8 @@ class FirestoreIdb extends Object
 
   @override
   DocumentSnapshot newSnapshot(
-      DocumentReference ref, RecordMetaData meta, DocumentData data) {
-    return DocumentSnapshotIdb(ref, meta, data as DocumentDataMap);
+      DocumentReference ref, RecordMetaData? meta, DocumentData? data) {
+    return DocumentSnapshotIdb(ref, meta, data as DocumentDataMap?);
   }
 }
 
@@ -314,7 +310,7 @@ class TransactionIdb extends WriteBatchIdb implements Transaction {
       : super(firestoreIdb);
 
   @override
-  void delete(DocumentReference documentRef) {
+  void delete(DocumentReference? documentRef) {
     localTransaction.firestoreIdb
         .txnDelete(localTransaction, documentRef as DocumentReferenceIdb);
   }
@@ -325,14 +321,14 @@ class TransactionIdb extends WriteBatchIdb implements Transaction {
           .txnGet(localTransaction, documentRef as DocumentReferenceIdb);
 
   @override
-  void set(DocumentReference documentRef, Map<String, dynamic> data,
-      [SetOptions options]) {
+  void set(DocumentReference documentRef, Map<String, Object?> data,
+      [SetOptions? options]) {
     localTransaction.firestoreIdb.txnSet(localTransaction,
         documentRef as DocumentReferenceIdb, DocumentData(data), options);
   }
 
   @override
-  void update(DocumentReference documentRef, Map<String, dynamic> data) {
+  void update(DocumentReference documentRef, Map<String, Object?> data) {
     localTransaction.firestoreIdb.txnUpdate(localTransaction,
         documentRef as DocumentReferenceIdb, DocumentData(data));
   }
@@ -347,16 +343,16 @@ dynamic valueToUpdateValue(dynamic value) {
 }
 
 class DocumentSnapshotIdb extends DocumentSnapshotBase {
-  DocumentSnapshotIdb(
-      DocumentReference ref, RecordMetaData meta, DocumentDataMap documentData,
-      {bool exists})
+  DocumentSnapshotIdb(DocumentReference ref, RecordMetaData? meta,
+      DocumentDataMap? documentData,
+      {bool? exists})
       : super(ref, meta, documentData, exists: exists);
 
-  DocumentSnapshotIdb.fromSnapshot(DocumentSnapshotIdb snapshot, {bool exists})
+  DocumentSnapshotIdb.fromSnapshot(DocumentSnapshotIdb snapshot, {bool? exists})
       : this(
           snapshot.ref,
           snapshot.meta,
-          snapshot.documentData as DocumentDataMap,
+          snapshot.documentData as DocumentDataMap?,
           exists: exists ?? snapshot.exists,
         );
 }
@@ -390,11 +386,11 @@ class DocumentReferenceIdb
   CollectionReference get parent => firestoreIdb.collection(url.dirname(path));
 
   @override
-  Future set(Map<String, dynamic> data, [SetOptions options]) async =>
+  Future set(Map<String, Object?> data, [SetOptions? options]) async =>
       firestoreIdb.setDocument(this, DocumentData(data), options);
 
   @override
-  Future update(Map<String, dynamic> data) =>
+  Future update(Map<String, Object?> data) =>
       firestoreIdb.updateDocument(this, DocumentData(data));
 
   @override
@@ -436,7 +432,7 @@ class QueryIdb extends FirestoreReferenceBase
   FirestoreIdb get firestoreIdb => firestore as FirestoreIdb;
 
   @override
-  QueryInfo queryInfo;
+  QueryInfo? queryInfo;
 
   QueryIdb(Firestore firestore, String path) : super(firestore, path) {
     checkCollectionReferencePath(this.path);
@@ -460,7 +456,7 @@ class QueryIdb extends FirestoreReferenceBase
       final docPath = cwv.key as String;
       if (dirname(docPath) == path) {
         docs.add(firestoreIdb.documentFromRecordMap(firestoreIdb.doc(docPath),
-            (cwv.value as Map)?.cast<String, dynamic>()));
+            (cwv.value as Map).cast<String, Object?>()));
       }
       // continue
       cwv.next();
@@ -478,17 +474,17 @@ class CollectionReferenceIdb extends QueryIdb implements CollectionReference {
   }
 
   @override
-  Future<DocumentReference> add(Map<String, dynamic> data) async =>
+  Future<DocumentReference> add(Map<String, Object?> data) async =>
       firestoreIdb.add(path, data);
 
   @override
-  DocumentReference doc([String path]) {
+  DocumentReference doc([String? path]) {
     path ??= _generateId();
     return firestore.doc(url.join(this.path, path));
   }
 
   @override
-  DocumentReference get parent {
+  DocumentReference? get parent {
     final parentPath = this.parentPath;
     if (parentPath == null) {
       return null;

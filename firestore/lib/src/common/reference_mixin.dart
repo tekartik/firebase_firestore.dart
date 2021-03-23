@@ -8,7 +8,7 @@ abstract class PathReference {
   String get path;
 
   /// Parent path.
-  String get parentPath;
+  String? get parentPath;
 
   String get id;
 
@@ -22,8 +22,8 @@ abstract class FirestorePathReference extends PathReference {
 
 /// Only for implementation that needs it
 mixin PathReferenceImplMixin implements FirestorePathReference {
-  Firestore _firestore;
-  String _path;
+  late Firestore _firestore;
+  late String _path;
 
   @override
   Firestore get firestore => _firestore;
@@ -39,10 +39,10 @@ mixin PathReferenceImplMixin implements FirestorePathReference {
 mixin PathReferenceMixin implements PathReference {
   /// Parent path.
   @override
-  String get parentPath => getParentPath(path);
+  String? get parentPath => getParentPath(path);
 
   @override
-  String get id => path == null ? null : url.basename(path);
+  String get id => getPathId(path);
 
   /// Child path
   @override
@@ -56,15 +56,18 @@ String getParentPath(String path) {
   return url.dirname(path);
 }
 
-String getPathId(String path) => path == null ? null : url.basename(path);
+String getPathId(String path) => url.basename(path);
 
 mixin CollectionReferenceMixin
     implements CollectionReference, PathReferenceMixin, PathReferenceImplMixin {
   @override
-  DocumentReference get parent => firestore.doc(parentPath);
+  DocumentReference? get parent {
+    var parentPath = this.parentPath;
+    return parentPath == null ? null : firestore.doc(parentPath);
+  }
 
   @override
-  DocumentReference doc([String path]) => firestore.doc(getChildPath(path));
+  DocumentReference doc(String path) => firestore.doc(getChildPath(path));
 
   @override
   int get hashCode => path.hashCode;
@@ -87,7 +90,10 @@ mixin CollectionReferenceMixin
 mixin DocumentReferenceMixin
     implements DocumentReference, FirestorePathReference {
   @override
-  CollectionReference get parent => firestore.collection(parentPath);
+  CollectionReference? get parent {
+    var parentPath = this.parentPath;
+    return parentPath == null ? null : firestore.collection(parentPath);
+  }
 
   @override
   CollectionReference collection(String path) =>
@@ -113,7 +119,7 @@ mixin DocumentReferenceMixin
 
 /// Remove 'projects/<project>/databases/(default)/documents if any
 List<String> localPathReferenceParts(String path) {
-  var parts = url.split(sanitizeReferencePath(path));
+  var parts = url.split(sanitizeReferencePath(path)!);
   if (parts.length > 6 &&
       parts[0] == 'projects' &&
       parts[2] == 'databases' &&

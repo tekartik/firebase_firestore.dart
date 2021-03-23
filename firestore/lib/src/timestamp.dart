@@ -7,7 +7,7 @@
 /// are 60 seconds long, i.e. leap seconds are 'smeared' so that no leap second
 /// table is needed for interpretation. Possible timestamp values range from
 /// 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z.
-class Timestamp implements Comparable<Timestamp> {
+class Timestamp implements Comparable<Timestamp?> {
   final int seconds;
   final int nanoseconds;
 
@@ -20,8 +20,8 @@ class Timestamp implements Comparable<Timestamp> {
   /// non-negative nanoseconds values that count forward in time.
   /// Must be from 0 to 999,999,999 inclusive.
   Timestamp(int seconds, int nanoseconds)
-      : seconds = seconds ?? 0,
-        nanoseconds = nanoseconds ?? 0 {
+      : seconds = seconds,
+        nanoseconds = nanoseconds {
     if (seconds < -62135596800 || seconds > 253402300799) {
       throw ArgumentError('invalid seconds part ${toDateTime(isUtc: true)}');
     }
@@ -32,58 +32,55 @@ class Timestamp implements Comparable<Timestamp> {
   }
 
   /// [parse] or returns null
-  static Timestamp tryParse(String text) {
-    if (text != null) {
-      // 2018-10-20T05:13:45.985343Z
-      var dateTime = DateTime.tryParse(text);
+  static Timestamp? tryParse(String text) {
+    // 2018-10-20T05:13:45.985343Z
+    var dateTime = DateTime.tryParse(text);
 
-      // remove after the seconds part
-      var subSecondsStart = text.lastIndexOf('.');
-      if (subSecondsStart == -1) {
-        if (dateTime == null) {
-          return null;
-        } else {
-          return Timestamp.fromDateTime(dateTime);
-        }
-      }
-
-      bool isDigit(String chr) => (chr.codeUnitAt(0) ^ 0x30) <= 9;
-
-      // Read the sun seconds part
-      var nanosString = StringBuffer();
-      var i = subSecondsStart + 1;
-      for (; i < text.length; i++) {
-        var char = text[i];
-        if (isDigit(char)) {
-          // Never write more than 9 chars
-          if (nanosString.length < 9) {
-            nanosString.write(char);
-          }
-        } else {
-          break;
-        }
-      }
-      // Never write less than 9 chars
-      while (nanosString.length < 9) {
-        nanosString.write('0');
-      }
-
-      // reparse the date if needed removing the sub seconds part
+    // remove after the seconds part
+    var subSecondsStart = text.lastIndexOf('.');
+    if (subSecondsStart == -1) {
       if (dateTime == null) {
-        var parseableDateTime =
-            '${text.substring(0, subSecondsStart)}${text.substring(i)}';
-        dateTime = DateTime.tryParse(parseableDateTime);
-        if (dateTime == null) {
-          // give up
-          return null;
-        }
+        return null;
+      } else {
+        return Timestamp.fromDateTime(dateTime);
       }
-
-      var seconds = (dateTime.millisecondsSinceEpoch / 1000).floor();
-      var nanoseconds = int.tryParse(nanosString.toString());
-      return Timestamp(seconds, nanoseconds);
     }
-    return null;
+
+    bool isDigit(String chr) => (chr.codeUnitAt(0) ^ 0x30) <= 9;
+
+    // Read the sun seconds part
+    var nanosString = StringBuffer();
+    var i = subSecondsStart + 1;
+    for (; i < text.length; i++) {
+      var char = text[i];
+      if (isDigit(char)) {
+        // Never write more than 9 chars
+        if (nanosString.length < 9) {
+          nanosString.write(char);
+        }
+      } else {
+        break;
+      }
+    }
+    // Never write less than 9 chars
+    while (nanosString.length < 9) {
+      nanosString.write('0');
+    }
+
+    // reparse the date if needed removing the sub seconds part
+    if (dateTime == null) {
+      var parseableDateTime =
+          '${text.substring(0, subSecondsStart)}${text.substring(i)}';
+      dateTime = DateTime.tryParse(parseableDateTime);
+      if (dateTime == null) {
+        // give up
+        return null;
+      }
+    }
+
+    var seconds = (dateTime.millisecondsSinceEpoch / 1000).floor();
+    var nanoseconds = int.tryParse(nanosString.toString())!;
+    return Timestamp(seconds, nanoseconds);
   }
 
   /// Creates a new [Timestamp] instance from the given date
@@ -118,7 +115,7 @@ class Timestamp implements Comparable<Timestamp> {
   }
 
   @override
-  int get hashCode => (seconds ?? 0) + (nanoseconds ?? 0);
+  int get hashCode => seconds + nanoseconds;
 
   /// The number of milliseconds since
   /// the 'Unix epoch' 1970-01-01T00:00:00Z (UTC).
@@ -133,7 +130,7 @@ class Timestamp implements Comparable<Timestamp> {
 
   /// Convert a Timestamp to a [DateTime] object. This conversion
   /// causes a loss of precision and support millisecond precision.
-  DateTime toDateTime({bool isUtc}) {
+  DateTime toDateTime({bool? isUtc}) {
     return DateTime.fromMicrosecondsSinceEpoch(_microsecondsSinceEpoch,
         isUtc: isUtc == true);
   }
@@ -176,8 +173,8 @@ class Timestamp implements Comparable<Timestamp> {
   String toString() => toIso8601String();
 
   @override
-  int compareTo(Timestamp other) {
-    if (seconds != other.seconds) {
+  int compareTo(Timestamp? other) {
+    if (seconds != other!.seconds) {
       return seconds - other.seconds;
     }
     return nanoseconds - other.nanoseconds;
@@ -188,28 +185,26 @@ class Timestamp implements Comparable<Timestamp> {
   ///
   /// Compare to [DateTime.parse], it supports nanoseconds resolution
   static Timestamp parse(String text) {
-    if (text == null) {
-      throw ArgumentError.notNull(text);
-    } else {
-      var timestamp = tryParse(text);
-      if (timestamp == null) {
-        throw FormatException('timestamp $text');
-      }
-      return timestamp;
+    var timestamp = tryParse(text);
+    if (timestamp == null) {
+      throw FormatException('timestamp $text');
     }
+    return timestamp;
   }
 
   /// Try to get a Timestamp from either a DateTime, a Timestamp, a text or
   /// an int (ms since epoch)
-  static Timestamp tryAnyAsTimestamp(dynamic any) {
+  static Timestamp? tryAnyAsTimestamp(dynamic any) {
     if (any is Timestamp) {
       return any;
     } else if (any is DateTime) {
       return Timestamp.fromDateTime(any);
     } else if (any is int) {
       return Timestamp.fromMillisecondsSinceEpoch(any);
+    } else if (any == null) {
+      return null;
     } else {
-      return tryParse(any?.toString());
+      return tryParse(any.toString());
     }
   }
 }

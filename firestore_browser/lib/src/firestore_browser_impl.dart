@@ -56,7 +56,7 @@ class FirestoreServiceBrowser
   bool get supportsTrackChanges => true;
 }
 
-FirestoreServiceBrowser _firebaseFirestoreServiceBrowser;
+FirestoreServiceBrowser? _firebaseFirestoreServiceBrowser;
 
 FirestoreService get firestoreService =>
     _firebaseFirestoreServiceBrowser ??= FirestoreServiceBrowser();
@@ -77,19 +77,21 @@ class FirestoreBrowser implements Firestore {
   @override
   WriteBatch batch() {
     var nativeBatch = nativeInstance.batch();
-    return nativeBatch != null ? WriteBatchBrowser(nativeBatch) : null;
+    return WriteBatchBrowser(nativeBatch);
   }
 
   @override
-  Future runTransaction(Function(Transaction transaction) updateFunction) =>
-      nativeInstance.runTransaction((nativeTransaction) {
-        var transaction = TransactionBrowser(nativeTransaction);
-        return updateFunction(transaction);
-      });
+  Future<T> runTransaction<T>(
+      FutureOr<T> Function(Transaction transaction) updateFunction) async {
+    return await nativeInstance.runTransaction((nativeTransaction) {
+      var transaction = TransactionBrowser(nativeTransaction);
+      return updateFunction(transaction);
+    }) as T;
+  }
 
   @override
   void settings(FirestoreSettings settings) {
-    nativeInstance.settings(_unwrapSettings(settings));
+    nativeInstance.settings(_unwrapSettings(settings)!);
   }
 
   @override
@@ -98,11 +100,8 @@ class FirestoreBrowser implements Firestore {
   }
 }
 
-native.Settings _unwrapSettings(FirestoreSettings settings) {
-  if (settings != null) {
-    return native.Settings();
-  }
-  return null;
+native.Settings? _unwrapSettings(FirestoreSettings settings) {
+  return native.Settings();
 }
 
 class WriteBatchBrowser implements WriteBatch {
@@ -114,19 +113,19 @@ class WriteBatchBrowser implements WriteBatch {
   Future commit() => nativeInstance.commit();
 
   @override
-  void delete(DocumentReference ref) =>
-      nativeInstance.delete(_unwrapDocumentReference(ref));
+  void delete(DocumentReference? ref) =>
+      nativeInstance.delete(_unwrapDocumentReference(ref)!);
 
   @override
-  void set(DocumentReference ref, Map<String, dynamic> data,
-      [SetOptions options]) {
-    nativeInstance.set(_unwrapDocumentReference(ref),
-        documentDataToNativeMap(DocumentData(data)), _unwrapOptions(options));
+  void set(DocumentReference ref, Map<String, Object?> data,
+      [SetOptions? options]) {
+    nativeInstance.set(_unwrapDocumentReference(ref)!,
+        documentDataToNativeMap(DocumentData(data))!, _unwrapOptions(options));
   }
 
   @override
-  void update(DocumentReference ref, Map<String, dynamic> data) {
-    nativeInstance.update(_unwrapDocumentReference(ref),
+  void update(DocumentReference ref, Map<String, Object?> data) {
+    nativeInstance.update(_unwrapDocumentReference(ref)!,
         data: documentDataToNativeMap(DocumentData(data)));
   }
 }
@@ -138,44 +137,40 @@ class TransactionBrowser implements Transaction {
 
   @override
   void delete(DocumentReference documentRef) {
-    nativeInstance.delete(_unwrapDocumentReference(documentRef));
+    nativeInstance.delete(_unwrapDocumentReference(documentRef)!);
   }
 
   @override
   Future<DocumentSnapshot> get(DocumentReference documentRef) async =>
       _wrapDocumentSnapshot(
-          await nativeInstance.get(_unwrapDocumentReference(documentRef)));
+          await nativeInstance.get(_unwrapDocumentReference(documentRef)!));
 
   @override
-  void set(DocumentReference documentRef, Map<String, dynamic> data,
-      [SetOptions options]) {
-    nativeInstance.set(_unwrapDocumentReference(documentRef),
-        documentDataToNativeMap(DocumentData(data)), _unwrapOptions(options));
+  void set(DocumentReference documentRef, Map<String, Object?> data,
+      [SetOptions? options]) {
+    nativeInstance.set(_unwrapDocumentReference(documentRef)!,
+        documentDataToNativeMap(DocumentData(data))!, _unwrapOptions(options));
   }
 
   @override
-  void update(DocumentReference documentRef, Map<String, dynamic> data) {
-    nativeInstance.update(_unwrapDocumentReference(documentRef),
+  void update(DocumentReference documentRef, Map<String, Object?> data) {
+    nativeInstance.update(_unwrapDocumentReference(documentRef)!,
         data: documentDataToNativeMap(DocumentData(data)));
   }
 }
 
 CollectionReferenceBrowser _wrapCollectionReference(
     native.CollectionReference nativeCollectionReference) {
-  return nativeCollectionReference != null
-      ? CollectionReferenceBrowser(nativeCollectionReference)
-      : null;
+  return CollectionReferenceBrowser(nativeCollectionReference);
 }
 
 DocumentReferenceBrowser _wrapDocumentReference(
     native.DocumentReference nativeDocumentReference) {
-  return nativeDocumentReference != null
-      ? DocumentReferenceBrowser(nativeDocumentReference)
-      : null;
+  return DocumentReferenceBrowser(nativeDocumentReference);
 }
 
 // for both native and not
-bool isCommonValue(value) {
+bool isCommonValue(Object? value) {
   return (value == null ||
       value is String ||
       // value is DateTime ||
@@ -183,7 +178,7 @@ bool isCommonValue(value) {
       value is bool);
 }
 
-dynamic fromNativeValue(nativeValue) {
+Object? fromNativeValue(Object? nativeValue) {
   if (isCommonValue(nativeValue)) {
     return nativeValue;
   }
@@ -192,7 +187,7 @@ dynamic fromNativeValue(nativeValue) {
         .map((nativeValue) => fromNativeValue(nativeValue))
         .toList();
   } else if (nativeValue is Map) {
-    return nativeValue.map<String, dynamic>((key, nativeValue) =>
+    return nativeValue.map<String, Object?>((key, nativeValue) =>
         MapEntry(key as String, fromNativeValue(nativeValue)));
   } else if (native.FieldValue.delete() == nativeValue) {
     return FieldValue.delete;
@@ -200,7 +195,7 @@ dynamic fromNativeValue(nativeValue) {
     return FieldValue.serverTimestamp;
   } else if (nativeValue is native.DocumentReference) {
     return DocumentReferenceBrowser(nativeValue);
-  } else if (_isNativeBlob(nativeValue)) {
+  } else if (_isNativeBlob(nativeValue!)) {
     var nativeBlob = nativeValue as native.Blob;
     return Blob(nativeBlob.toUint8Array());
   } else if (_isNativeGeoPoint(nativeValue)) {
@@ -214,10 +209,10 @@ dynamic fromNativeValue(nativeValue) {
   }
 }
 
-bool _isNativeBlob(dynamic native) {
+bool _isNativeBlob(Object native) {
   // value [toBase64, toUint8Array, toString, isEqual, n]
   // devPrint('value ${objectKeys(getProperty(native, '__proto__'))}');
-  var proto = getProperty(native, '__proto__');
+  var proto = getProperty(native, '__proto__') as Object?;
   if (proto != null) {
     return hasProperty(proto, 'toBase64') == true &&
         hasProperty(proto, 'toUint8Array') == true;
@@ -225,10 +220,10 @@ bool _isNativeBlob(dynamic native) {
   return false;
 }
 
-bool _isNativeGeoPoint(dynamic native) {
+bool _isNativeGeoPoint(Object native) {
   //  [latitude, longitude, isEqual, n]
   // devPrint('value ${objectKeys(getProperty(native, '__proto__'))}');
-  var proto = getProperty(native, '__proto__');
+  var proto = getProperty(native, '__proto__') as Object?;
   if (proto != null) {
     return hasProperty(proto, 'latitude') == true &&
         hasProperty(proto, 'longitude') == true;
@@ -236,10 +231,13 @@ bool _isNativeGeoPoint(dynamic native) {
   return false;
 }
 
-List<dynamic> toNativeValues(Iterable<dynamic> values) =>
-    values?.map((value) => toNativeValue(value))?.toList(growable: false);
+List<Object?>? toNativeValuesOrNull(Iterable<Object?>? values) =>
+    values == null ? null : toNativeValues(values);
 
-dynamic toNativeValue(value) {
+List<Object?> toNativeValues(Iterable<Object?> values) =>
+    values.map((value) => toNativeValue(value)).toList(growable: false);
+
+Object? toNativeValue(Object? value) {
   if (isCommonValue(value)) {
     return value;
   } else if (value is Timestamp) {
@@ -248,7 +246,7 @@ dynamic toNativeValue(value) {
   } else if (value is Iterable) {
     return value.map((nativeValue) => toNativeValue(nativeValue)).toList();
   } else if (value is Map) {
-    return value.map<String, dynamic>(
+    return value.map<String, Object?>(
         (key, value) => MapEntry(key as String, toNativeValue(value)));
   } else if (value is FieldValue) {
     if (FieldValue.delete == value) {
@@ -281,20 +279,14 @@ dynamic toNativeValue(value) {
   throw 'not supported $value type ${value.runtimeType}';
 }
 
-Map<String, dynamic> documentDataToNativeMap(DocumentData documentData) {
-  if (documentData != null) {
-    var map = (documentData as DocumentDataMap).map;
-    return toNativeValue(map) as Map<String, dynamic>;
-  }
-  return null;
+Map<String, Object?>? documentDataToNativeMap(DocumentData documentData) {
+  var map = (documentData as DocumentDataMap).map;
+  return toNativeValue(map) as Map<String, Object?>?;
 }
 
-DocumentData documentDataFromNativeMap(Map<String, dynamic> nativeMap) {
-  if (nativeMap != null) {
-    var map = fromNativeValue(nativeMap) as Map<String, dynamic>;
-    return DocumentData(map);
-  }
-  return null;
+DocumentData documentDataFromNativeMap(Map<String, Object?> nativeMap) {
+  var map = fromNativeValue(nativeMap) as Map<String, Object?>;
+  return DocumentData(map);
 }
 
 class DocumentSnapshotBrowser implements DocumentSnapshot {
@@ -303,8 +295,8 @@ class DocumentSnapshotBrowser implements DocumentSnapshot {
   DocumentSnapshotBrowser(this._native);
 
   @override
-  Map<String, dynamic> get data =>
-      documentDataFromNativeMap(_native.data())?.asMap();
+  Map<String, Object?> get data =>
+      documentDataFromNativeMap(_native.data()).asMap();
 
   @override
   bool get exists => _native.exists;
@@ -314,25 +306,25 @@ class DocumentSnapshotBrowser implements DocumentSnapshot {
 
   // Not supported for browser
   @override
-  Timestamp get updateTime => null;
+  Timestamp? get updateTime => null;
 
   // Not supported for browser
   @override
-  Timestamp get createTime => null;
+  Timestamp? get createTime => null;
 
   dynamic get(String fieldPath) => _native.get(fieldPath);
 }
 
-native.SetOptions _unwrapOptions(SetOptions options) {
-  native.SetOptions nativeOptions;
+native.SetOptions? _unwrapOptions(SetOptions? options) {
+  native.SetOptions? nativeOptions;
   if (options != null) {
     nativeOptions = native.SetOptions(merge: options.merge == true);
   }
   return nativeOptions;
 }
 
-native.DocumentReference _unwrapDocumentReference(DocumentReference ref) {
-  return (ref as DocumentReferenceBrowser)?.nativeInstance;
+native.DocumentReference? _unwrapDocumentReference(DocumentReference? ref) {
+  return (ref as DocumentReferenceBrowser?)?.nativeInstance;
 }
 
 class DocumentReferenceBrowser
@@ -364,13 +356,13 @@ class DocumentReferenceBrowser
   String get path => nativeInstance.path;
 
   @override
-  Future set(Map<String, dynamic> data, [SetOptions options]) async {
+  Future set(Map<String, Object?> data, [SetOptions? options]) async {
     await nativeInstance.set(
-        documentDataToNativeMap(DocumentData(data)), _unwrapOptions(options));
+        documentDataToNativeMap(DocumentData(data))!, _unwrapOptions(options));
   }
 
   @override
-  Future update(Map<String, dynamic> data) =>
+  Future update(Map<String, Object?> data) =>
       nativeInstance.update(data: documentDataToNativeMap(DocumentData(data)));
 
   @override
@@ -403,10 +395,10 @@ class DocumentReferenceBrowser
 
 DocumentSnapshotBrowser _wrapDocumentSnapshot(
         native.DocumentSnapshot _native) =>
-    _native != null ? DocumentSnapshotBrowser(_native) : null;
+    DocumentSnapshotBrowser(_native);
 
-native.DocumentSnapshot _unwrapDocumentSnapshot(
-        DocumentSnapshot documentSnapshot) =>
+native.DocumentSnapshot? _unwrapDocumentSnapshot(
+        DocumentSnapshot? documentSnapshot) =>
     documentSnapshot != null
         ? (documentSnapshot as DocumentSnapshotBrowser)._native
         : null;
@@ -427,17 +419,15 @@ class QuerySnapshotBrowser implements QuerySnapshot {
 
   @override
   List<DocumentChange> get documentChanges {
-    var changes = <DocumentChange>[];
-    if (_native.docChanges != null) {
-      for (var nativeChange in _native.docChanges()) {
-        changes.add(DocumentChangeBrowser(nativeChange));
-      }
-    }
+    var changes = <DocumentChange>[
+      for (var nativeChange in _native.docChanges())
+        DocumentChangeBrowser(nativeChange)
+    ];
     return changes;
   }
 }
 
-DocumentChangeType _wrapDocumentChangeType(String type) {
+DocumentChangeType? _wrapDocumentChangeType(String type) {
   // [:added:], [:removed:] or [:modified:]
   if (type == 'added') {
     return DocumentChangeType.added;
@@ -458,20 +448,19 @@ class DocumentChangeBrowser implements DocumentChange {
   DocumentSnapshot get document => _wrapDocumentSnapshot(nativeInstance.doc);
 
   @override
-  int get newIndex => nativeInstance.newIndex?.toInt();
+  int get newIndex => nativeInstance.newIndex.toInt();
 
   @override
-  int get oldIndex => nativeInstance.oldIndex?.toInt();
+  int get oldIndex => nativeInstance.oldIndex.toInt();
 
   @override
-  DocumentChangeType get type => _wrapDocumentChangeType(nativeInstance.type);
+  DocumentChangeType get type => _wrapDocumentChangeType(nativeInstance.type)!;
 }
 
 QuerySnapshotBrowser _wrapQuerySnapshot(native.QuerySnapshot _native) =>
-    _native != null ? QuerySnapshotBrowser(_native) : null;
+    QuerySnapshotBrowser(_native);
 
-QueryBrowser _wrapQuery(native.Query native) =>
-    native != null ? QueryBrowser(native) : null;
+QueryBrowser _wrapQuery(native.Query native) => QueryBrowser(native);
 
 class QueryBrowser implements Query {
   final native.Query _native;
@@ -479,16 +468,16 @@ class QueryBrowser implements Query {
   QueryBrowser(this._native);
 
   @override
-  Query endAt({DocumentSnapshot snapshot, List values}) =>
+  Query endAt({DocumentSnapshot? snapshot, List<Object?>? values}) =>
       _wrapQuery(_native.endAt(
           snapshot: _unwrapDocumentSnapshot(snapshot),
-          fieldValues: toNativeValues(values)));
+          fieldValues: toNativeValuesOrNull(values)));
 
   @override
-  Query endBefore({DocumentSnapshot snapshot, List values}) =>
+  Query endBefore({DocumentSnapshot? snapshot, List<Object?>? values}) =>
       _wrapQuery(_native.endBefore(
           snapshot: _unwrapDocumentSnapshot(snapshot),
-          fieldValues: toNativeValues(values)));
+          fieldValues: toNativeValuesOrNull(values)));
 
   @override
   Future<QuerySnapshot> get() async => _wrapQuerySnapshot(await _native.get());
@@ -497,23 +486,23 @@ class QueryBrowser implements Query {
   Query limit(int limit) => _wrapQuery(_native.limit(limit));
 
   @override
-  Query orderBy(String key, {bool descending}) =>
+  Query orderBy(String key, {bool? descending}) =>
       _wrapQuery(_native.orderBy(key, descending == true ? 'desc' : null));
 
   @override
   Query select(List<String> keyPaths) => this; // not supported
 
   @override
-  Query startAfter({DocumentSnapshot snapshot, List values}) =>
+  Query startAfter({DocumentSnapshot? snapshot, List<Object?>? values}) =>
       _wrapQuery(_native.startAfter(
           snapshot: _unwrapDocumentSnapshot(snapshot),
-          fieldValues: toNativeValues(values)));
+          fieldValues: toNativeValuesOrNull(values)));
 
   @override
-  Query startAt({DocumentSnapshot snapshot, List values}) =>
+  Query startAt({DocumentSnapshot? snapshot, List<Object?>? values}) =>
       _wrapQuery(_native.startAt(
           snapshot: _unwrapDocumentSnapshot(snapshot),
-          fieldValues: toNativeValues(values)));
+          fieldValues: toNativeValuesOrNull(values)));
 
   @override
   Query where(String fieldPath,
@@ -523,10 +512,10 @@ class QueryBrowser implements Query {
       dynamic isGreaterThan,
       dynamic isGreaterThanOrEqualTo,
       dynamic arrayContains,
-      List<dynamic> arrayContainsAny,
-      List<dynamic> whereIn,
-      bool isNull}) {
-    String opStr;
+      List<Object?>? arrayContainsAny,
+      List<Object?>? whereIn,
+      bool? isNull}) {
+    String? opStr;
     dynamic value;
     if (isEqualTo != null) {
       opStr = '==';
@@ -572,7 +561,7 @@ class QueryBrowser implements Query {
       opStr = 'in';
       value = toNativeValues(whereIn);
     }
-    return _wrapQuery(_native.where(fieldPath, opStr, value));
+    return _wrapQuery(_native.where(fieldPath, opStr!, value));
   }
 
   @override
@@ -597,12 +586,12 @@ class CollectionReferenceBrowser extends QueryBrowser
       : super(nativeCollectionReference);
 
   @override
-  Future<DocumentReference> add(Map<String, dynamic> data) async =>
+  Future<DocumentReference> add(Map<String, Object?> data) async =>
       _wrapDocumentReference(await _nativeCollectionReference
-          .add(documentDataToNativeMap(DocumentData(data))));
+          .add(documentDataToNativeMap(DocumentData(data))!));
 
   @override
-  DocumentReference doc([String path]) =>
+  DocumentReference doc([String? path]) =>
       _wrapDocumentReference(_nativeCollectionReference.doc(path));
 
   @override
