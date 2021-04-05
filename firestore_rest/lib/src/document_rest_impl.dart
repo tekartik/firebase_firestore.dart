@@ -1,6 +1,6 @@
-import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore/v1_fixed.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
+
 import 'firestore_rest_impl.dart' as rest;
 
 abstract class FirestoreDocumentContext {
@@ -8,6 +8,7 @@ abstract class FirestoreDocumentContext {
 
   // Full name
   String getDocumentName(String path);
+
   // Path below documents
   String? getDocumentPath(String? name);
 }

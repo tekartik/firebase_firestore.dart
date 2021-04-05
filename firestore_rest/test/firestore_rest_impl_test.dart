@@ -1,4 +1,3 @@
-import 'package:googleapis/firestore/v1.dart';
 import 'package:http/http.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
