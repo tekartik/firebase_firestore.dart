@@ -36,7 +36,7 @@ Future main() async {
       shell = shell.pushd(join('..', dir));
       await shell.run('''
     
-  pub get
+  flutter pub get
   dart tool/travis.dart
   
 ''');

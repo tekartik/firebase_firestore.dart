@@ -56,6 +56,7 @@ dev_dependencies:
       ref: dart2
       path: app_http
     version: '>=0.1.0'
+  dev_test:
 dependency_overrides:
   tekartik_firebase_firestore:
     path: ../firestore

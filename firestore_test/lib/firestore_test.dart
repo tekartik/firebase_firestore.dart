@@ -618,7 +618,7 @@ void runApp(
         await docRef.update(data);
         data = (await docRef.get()).data;
         expect(data, {'other_key': 'other_value'});
-      });
+      }, solo: true);
       test('array', () async {
         if (firestoreService.supportsFieldValueArray) {
           var testsRef = getTestsRef();
