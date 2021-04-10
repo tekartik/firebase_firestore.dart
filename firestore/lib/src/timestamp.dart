@@ -19,9 +19,7 @@ class Timestamp implements Comparable<Timestamp?> {
   /// resolution. Negative second values with fractions must still have
   /// non-negative nanoseconds values that count forward in time.
   /// Must be from 0 to 999,999,999 inclusive.
-  Timestamp(int seconds, int nanoseconds)
-      : seconds = seconds,
-        nanoseconds = nanoseconds {
+  Timestamp(this.seconds, this.nanoseconds) {
     if (seconds < -62135596800 || seconds > 253402300799) {
       throw ArgumentError('invalid seconds part ${toDateTime(isUtc: true)}');
     }

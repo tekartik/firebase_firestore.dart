@@ -555,4 +555,4 @@ class WriteBatchIdb extends WriteBatchBase implements WriteBatch {
   }
 }
 
-String _generateId() => Uuid().v4().toString();
+String _generateId() => const Uuid().v4().toString();

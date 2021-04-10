@@ -475,7 +475,7 @@ class CollectionReferenceSembast extends QuerySembast
     return firestore.doc(url.join(this.path, path));
   }
 
-  String _generateId() => Uuid().v4().toString();
+  String _generateId() => const Uuid().v4().toString();
 
   @override
   Future<DocumentReference> add(Map<String, Object?> data) async {

@@ -236,7 +236,7 @@ void runApp(
           fail('should fail');
           // Document references must have an even number of segments,
         } catch (e) {
-          expect(e, isNot(TypeMatcher<TestFailure>()));
+          expect(e, isNot(const TypeMatcher<TestFailure>()));
         }
       });
 
@@ -882,7 +882,7 @@ void runApp(
           fail('should fail');
           // Document references must have an even number of segments,
         } catch (e) {
-          expect(e, isNot(TypeMatcher<TestFailure>()));
+          expect(e, isNot(const TypeMatcher<TestFailure>()));
         }
       });
 
