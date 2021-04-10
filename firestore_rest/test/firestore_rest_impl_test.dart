@@ -1,11 +1,14 @@
 import 'package:http/http.dart';
 import 'package:tekartik_firebase/firebase.dart';
+import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore_rest/firestore_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore/v1_fixed.dart'
     as api;
+import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 import 'package:tekartik_firebase_firestore_rest/src/import.dart';
 import 'package:test/test.dart';
 
+import 'no_auth_firestore.dart';
 import 'test_setup.dart';
 
 Future main() async {
@@ -16,7 +19,7 @@ Future main() async {
         Client(), context.accessToken!.data,
         projectId: context.options!.projectId!, scopes: firebaseBaseScopes);
   }
-  print(context);
+  //print(context);
   group('rest', () {
     test('basic_googleapis', () async {
       var firestoreApi = api.FirestoreApi(context!.authClient!);
@@ -38,6 +41,19 @@ Future main() async {
     });
   }, skip: context == null);
 
+  test('toRestValue', () {
+    var firestore =
+        noAuthFirestoreRest(projectId: 'dummy') as FirestoreRestImpl;
+    expect(toRestValue(firestore, true).booleanValue, true);
+    expect(toRestValue(firestore, FieldValue.serverTimestamp).timestampValue,
+        isNotNull);
+    try {
+      toRestValue(firestore, FieldValue.delete);
+      fail('should fail');
+    } catch (e) {
+      expect(e, isNot(const TypeMatcher<TestFailure>()));
+    }
+  });
   tearDownAll(() {
     context?.authClient?.close();
   });

@@ -188,11 +188,11 @@ Value toRestValue(FirestoreRestImpl firestore, dynamic value) {
     if (value == FieldValue.serverTimestamp) {
       // TODO for now use local date time
       restValue = Value()..timestampValue = Timestamp.now().toIso8601String();
-    }
-    if (value == FieldValue.delete) {
-      restValue = Value()..timestampValue = Timestamp.now().toIso8601String();
+      //}
+      //if (value == FieldValue.delete) {
+      //  restValue = Value()..timestampValue = Timestamp.now().toIso8601String();
     } else {
-      throw UnsupportedError('type ${value.runtimeType}: $value');
+      throw UnsupportedError('FieldValue ${value.runtimeType}: $value');
     }
   } else {
     throw UnsupportedError('type ${value.runtimeType}: $value');

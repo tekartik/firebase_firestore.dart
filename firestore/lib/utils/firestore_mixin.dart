@@ -589,7 +589,7 @@ mixin FirestoreQueryMixin implements Query {
     // if firestoreNameFieldPath (__name__) is not specified, add it
     var fieldPathFound = false;
 
-    var orderBys = List.from(queryInfo.orderBys);
+    var orderBys = List<OrderByInfo>.from(queryInfo.orderBys);
     for (var orderBy in orderBys) {
       if (orderBy.fieldPath == firestoreNameFieldPath) {
         fieldPathFound = true;
@@ -606,8 +606,8 @@ mixin FirestoreQueryMixin implements Query {
       }
 
       for (var orderBy in orderBys) {
-        final keyPath = orderBy.fieldPath as String?;
-        final ascending = orderBy.ascending as bool?;
+        final keyPath = orderBy.fieldPath;
+        final ascending = orderBy.ascending;
 
         int _rawCompare(Comparable? object1, Comparable? object2) {
           if (object2 == null) {
@@ -625,7 +625,7 @@ mixin FirestoreQueryMixin implements Query {
 
         int _compare(Comparable? object1, Comparable? object2) {
           final rawCompare = _rawCompare(object1, object2);
-          if (ascending!) {
+          if (ascending) {
             return rawCompare;
           } else {
             return -rawCompare;

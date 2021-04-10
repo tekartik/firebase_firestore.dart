@@ -25,6 +25,7 @@ dependencies:
 
 dev_dependencies:
   test: any
+  dev_test:
   build_runner: ">=0.9.1"
   build_test: ">=0.10.3"
   tekartik_firebase_firestore_test:
