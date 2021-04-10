@@ -7,6 +7,8 @@ import 'package:tekartik_firebase_firestore_rest/src/patch_document_rest_impl.da
 import 'package:tekartik_firebase_firestore_rest/src/read_document_rest_impl.dart';
 import 'package:test/test.dart';
 
+import 'no_auth_firestore.dart'; // ignore: implementation_imports
+
 class FirestoreDocumentContextMock implements FirestoreDocumentContext {
   @override
   String getDocumentName(String path) => path;
@@ -14,8 +16,12 @@ class FirestoreDocumentContextMock implements FirestoreDocumentContext {
   @override
   String? getDocumentPath(String? name) => name;
 
+  // Unused
+  late final _firestore =
+      noAuthFirestoreRest(projectId: 'dummy') as FirestoreRestImpl;
+
   @override
-  FirestoreRestImpl get impl => throw UnimplementedError();
+  FirestoreRestImpl get impl => _firestore;
 }
 
 final FirestoreDocumentContextMock firestoreMock =
