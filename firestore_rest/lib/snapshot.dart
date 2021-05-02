@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:path/path.dart';
 import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 
 String _basePath(App app) {
   return 'projects/${app.options?.projectId}/databases/(default)/documents';
