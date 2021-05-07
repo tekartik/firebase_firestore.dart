@@ -1,9 +1,9 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/utils/auto_id_generator.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
-import 'package:tekartik_firebase_firestore/utils/auto_id_generator.dart';
 import 'package:test/test.dart';
 
 import '../src_firestore_common_test.dart';
