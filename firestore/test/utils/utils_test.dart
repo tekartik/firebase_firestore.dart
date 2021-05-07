@@ -1,5 +1,6 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/utils/auto_id_generator.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
@@ -92,6 +93,10 @@ void main() {
       expect(snapshotMapQueryInfo(_snapshot('a', 2), queryInfo), isFalse);
       expect(snapshotMapQueryInfo(_snapshot('c', 2), queryInfo), isTrue);
       expect(snapshotMapQueryInfo(_snapshot('c', 3), queryInfo), isFalse);
+    });
+
+    test('auto_id_generator', () {
+      expect(AutoIdGenerator.autoId(), hasLength(20));
     });
   });
 }
