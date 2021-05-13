@@ -24,4 +24,16 @@ void main() {
     expect((await doc1Ref.get()).data, {'test': 1});
     expect((await doc2Ref.get()).data, {'test': 2});
   });
+
+  test('newFirestoreMemory', () async {
+    var firestore1 = newFirestoreMemory();
+    var firestore2 = newFirestoreMemory();
+    var docPath = 'tests/doc';
+    var doc1Ref = firestore1.doc(docPath);
+    var doc2Ref = firestore2.doc(docPath);
+    await doc1Ref.set({'test': 1});
+    await doc2Ref.set({'test': 2});
+    expect((await doc1Ref.get()).data, {'test': 1});
+    expect((await doc2Ref.get()).data, {'test': 2});
+  });
 }
