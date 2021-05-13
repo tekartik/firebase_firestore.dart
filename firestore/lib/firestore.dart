@@ -309,7 +309,7 @@ const orderByAscending = 'asc';
 const orderByDescending = 'desc';
 
 abstract class WriteBatch {
-  void delete(DocumentReference? ref);
+  void delete(DocumentReference ref);
 
   void set(DocumentReference ref, Map<String, Object?> data,
       [SetOptions? options]);
