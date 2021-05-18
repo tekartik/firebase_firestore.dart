@@ -2,6 +2,9 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast.dart'
     as firestore_sembast;
 import 'package:tekartik_firebase_local/firebase_local.dart';
+import 'package:sembast/sembast.dart';
+export 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast.dart'
+    show FirestoreServiceSembast;
 
 /// In memory service
 FirestoreService get firestoreServiceMemory =>
@@ -14,3 +17,8 @@ FirestoreService newFirestoreServiceMemory() =>
 /// Quick firestore test helper
 Firestore newFirestoreMemory() =>
     newFirestoreServiceMemory().firestore(FirebaseLocal().app());
+
+/// New sembast service
+FirestoreService newFirestoreServiceSembast(
+        {required DatabaseFactory databaseFactory}) =>
+    firestore_sembast.FirestoreServiceSembast(databaseFactory);

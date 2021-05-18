@@ -6,6 +6,7 @@ import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
 void main() {
+  // needed for memory
   skipConcurrentTransactionTests = true;
   var firebase = FirebaseLocal();
   run(firebase: firebase, firestoreService: firestoreServiceMemory);
