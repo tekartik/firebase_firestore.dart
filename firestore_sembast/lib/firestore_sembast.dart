@@ -1,8 +1,9 @@
+import 'package:sembast/sembast.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast.dart'
     as firestore_sembast;
 import 'package:tekartik_firebase_local/firebase_local.dart';
-import 'package:sembast/sembast.dart';
+
 export 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast.dart'
     show FirestoreServiceSembast;
 

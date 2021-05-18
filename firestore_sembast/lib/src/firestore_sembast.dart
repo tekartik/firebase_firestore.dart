@@ -66,6 +66,7 @@ FirestoreServiceSembast get firestoreServiceSembastMemory =>
 FirestoreService newFirestoreServiceSembastMemory() =>
     newFirestoreServiceSembast(
         databaseFactory: sembast.newDatabaseFactoryMemory());
+
 dynamic valueToUpdateValue(dynamic value) {
   if (value == FieldValue.delete) {
     return sembast.FieldValue.delete;
