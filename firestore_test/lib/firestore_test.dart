@@ -533,6 +533,26 @@ void runApp(
         await docRef.delete();
       });
 
+      test('null', () async {
+        var testsRef = getTestsRef()!.doc('lookup').collection('bool');
+        var docRef = testsRef.doc('a');
+        var doc2Ref = testsRef.doc('b');
+        await docRef.set({'value': null});
+        await doc2Ref.set({'value': true});
+        void _check(Map<String, Object?>? data) {
+          expect(data, {
+            'value': true,
+          });
+        }
+
+        _check((await doc2Ref.get()).data);
+        var snapshot =
+            (await testsRef.where('value', isEqualTo: true).get()).docs.first;
+        _check(snapshot.data);
+
+        await docRef.delete();
+      });
+
       // All fields that we do not delete
       test(
         'allFields',
