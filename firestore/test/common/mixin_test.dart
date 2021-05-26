@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 
 class FirestoreMock with FirestoreMixin {
   @override
-  WriteBatch? batch() {
+  WriteBatch batch() {
     throw UnimplementedError();
   }
 

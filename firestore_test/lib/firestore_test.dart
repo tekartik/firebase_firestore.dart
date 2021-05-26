@@ -1555,7 +1555,7 @@ void runApp(
         expect((await deleteRef.get()).exists, isTrue);
         expect((await createRef.get()).exists, isFalse);
 
-        var batch = firestore.batch()!;
+        var batch = firestore.batch();
         batch.delete(deleteRef);
         batch.set(createRef, {});
         await batch.commit();
@@ -1580,7 +1580,7 @@ void runApp(
           await doc2Ref.set({'value': 2});
           await doc4Ref.set({'value': 4});
 
-          var batch = firestore.batch()!;
+          var batch = firestore.batch();
           batch.set(doc1Ref, {'value': 1});
           batch.update(doc2Ref, {'other.value': 2});
           batch.set(doc3Ref, {'value': 3});
