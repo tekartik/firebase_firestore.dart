@@ -2,13 +2,14 @@ import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart';
+import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:test/test.dart';
 
 class FirestoreMock with FirestoreMixin {
   @override
-  WriteBatch? batch() {
+  WriteBatch batch() {
     throw UnimplementedError();
   }
 
@@ -43,6 +44,7 @@ class CollectionReferenceMock
   CollectionReferenceMock(FirestoreMock firestoreMock, String path) {
     init(firestoreMock, path);
   }
+
   @override
   Future<DocumentReference> add(Map<String, Object?> data) {
     throw UnimplementedError();
@@ -336,5 +338,49 @@ void main() {
     expect(sanitizeInputEntry({'a.b': 1}), {
       'a': {'b': 1}
     });
+  });
+
+  test('FirestoreComparable', () {
+    expect(FirestoreComparable(1).compareTo(FirestoreComparable(1)), 0);
+    expect(FirestoreComparable(1).compareTo(FirestoreComparable(4)), -1);
+    expect(FirestoreComparable(1).compareTo(FirestoreComparable(null, true)),
+        -9999);
+    expect(
+        FirestoreComparable(null, true).compareTo(FirestoreComparable(1)), -1);
+    expect(
+        FirestoreComparable(null, true)
+            .compareTo(FirestoreComparable(null, true)),
+        0);
+    expect(
+        FirestoreComparable(null, true)
+            .compareTo(FirestoreComparable(null, false)),
+        -1);
+  });
+  test('mapWhere', () {
+    var documentData = DocumentDataMap(map: {'value': true});
+    expect(mapWhere(documentData, WhereInfo('value', isEqualTo: true)), true);
+    expect(
+        mapWhere(
+            documentData, WhereInfo('value', isGreaterThanOrEqualTo: true)),
+        false);
+    expect(
+        mapWhere(documentData, WhereInfo('value', isLessThanOrEqualTo: true)),
+        false);
+
+    documentData = DocumentDataMap(map: {'value': 1});
+    expect(mapWhere(documentData, WhereInfo('value', isEqualTo: 1)), true);
+    expect(
+        mapWhere(documentData, WhereInfo('value', isGreaterThanOrEqualTo: 1)),
+        true);
+    expect(mapWhere(documentData, WhereInfo('value', isLessThanOrEqualTo: 1)),
+        true);
+    documentData = DocumentDataMap(map: {
+      'value': [true, 1]
+    });
+    expect(
+        mapWhere(documentData, WhereInfo('value', arrayContains: true)), true);
+    expect(mapWhere(documentData, WhereInfo('value', arrayContains: 1)), true);
+    expect(mapWhere(documentData, WhereInfo('value', arrayContains: false)),
+        false);
   });
 }

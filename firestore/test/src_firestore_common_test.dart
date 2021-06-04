@@ -24,7 +24,7 @@ class FirestoreMock extends Object with FirestoreMixin implements Firestore {
   DocumentReference doc(String path) => DocumentReferenceMock(path);
 
   @override
-  WriteBatch? batch() => null;
+  WriteBatch batch() => throw UnimplementedError();
 
   @override
   Future<T> runTransaction<T>(

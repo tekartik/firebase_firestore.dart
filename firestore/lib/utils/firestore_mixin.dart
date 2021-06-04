@@ -199,48 +199,73 @@ mixin FirestoreSubscriptionMixin on Firestore {
 
 bool mapWhere(DocumentData? documentData, WhereInfo where) {
   // We always use Timestamp even for DateTime
-  Comparable? _fixValue(dynamic value) {
+  FirestoreComparable? _makeComparableValue(dynamic value) {
     return _getComparable(value);
   }
 
-  var fieldValue = _fixValue(
-      documentDataMap(documentData)!.valueAtFieldPath(where.fieldPath!));
+  var rawValue =
+      documentDataMap(documentData)!.valueAtFieldPath(where.fieldPath!);
+  var comparableFieldValue = _makeComparableValue(rawValue);
+
+  // bool and null are not comparable
+  bool isFieldValueComparable() {
+    return comparableFieldValue?.isComparable ?? false;
+  }
 
   if (where.isNull == true) {
-    return fieldValue == null;
+    return rawValue == null;
   } else if (where.isNull == false) {
-    return fieldValue != null;
+    return rawValue != null;
   } else if (where.isEqualTo != null) {
-    return (fieldValue == null
-        ? false
-        : (fieldValue.compareTo(_fixValue(where.isEqualTo)) == 0));
+    // Use comparable
+    if (comparableFieldValue == null) {
+      return false;
+    }
+    var equalsToValue = _makeComparableValue(where.isEqualTo);
+    return (comparableFieldValue.compareTo(equalsToValue) == 0);
   } else if (where.isGreaterThan != null) {
-    return (fieldValue != null) &&
-        (fieldValue.compareTo(_fixValue(where.isGreaterThan)) > 0);
+    if (!isFieldValueComparable()) {
+      return false;
+    }
+    return (comparableFieldValue!
+            .compareTo(_makeComparableValue(where.isGreaterThan)) >
+        0);
   } else if (where.isGreaterThanOrEqualTo != null) {
-    return (fieldValue != null) &&
-        (fieldValue.compareTo(_fixValue(where.isGreaterThanOrEqualTo)) >= 0);
+    if (!isFieldValueComparable()) {
+      return false;
+    }
+    return (comparableFieldValue!
+            .compareTo(_makeComparableValue(where.isGreaterThanOrEqualTo)) >=
+        0);
   } else if (where.isLessThan != null) {
-    return fieldValue != null &&
-        (fieldValue.compareTo(_fixValue(where.isLessThan)) < 0);
+    if (!isFieldValueComparable()) {
+      return false;
+    }
+    return (comparableFieldValue!
+            .compareTo(_makeComparableValue(where.isLessThan)) <
+        0);
   } else if (where.isLessThanOrEqualTo != null) {
-    return fieldValue != null &&
-        (fieldValue.compareTo(_fixValue(where.isLessThanOrEqualTo)) <= 0);
+    if (!isFieldValueComparable()) {
+      return false;
+    }
+    return (comparableFieldValue!
+            .compareTo(_makeComparableValue(where.isLessThanOrEqualTo)) <=
+        0);
   } else if (where.arrayContains != null) {
-    if (fieldValue != null && (fieldValue is Iterable)) {
-      return ((fieldValue as Iterable)
-          .contains(_fixValue(where.arrayContains)));
+    // Handle liste
+    if (rawValue is Iterable) {
+      return rawValue.contains(where.arrayContains);
     }
   } else if (where.arrayContainsAny != null) {
-    if (fieldValue != null && fieldValue is Iterable) {
+    if (rawValue is Iterable) {
       for (var any in where.arrayContainsAny!) {
-        if ((fieldValue as Iterable).contains(_fixValue(any))) {
+        if (rawValue.contains(any)) {
           return true;
         }
       }
     }
   } else if (where.whereIn != null) {
-    return where.whereIn!.contains(fieldValue);
+    return where.whereIn!.contains(rawValue);
   } else {
     // devWarning(throw UnsupportedError('where: $where on $documentData'));
   }
@@ -254,35 +279,55 @@ T? safeGetItem<T>(List<T>? list, int index) {
   return null;
 }
 
-Comparable? _getComparable<T>(dynamic value) {
+class FirestoreComparable {
+  final Comparable? comparable;
+  final dynamic nonComparable;
+
+  FirestoreComparable(this.comparable, [this.nonComparable]);
+
+  bool get isComparable => comparable != null;
+
+  int compareTo(FirestoreComparable? other) {
+    try {
+      if (other == null) {
+        return -1;
+      }
+      if (comparable != null) {
+        return comparable!.compareTo(other.comparable);
+      } else if (other.comparable != null) {
+        return -1;
+      } else {
+        return (nonComparable == other.nonComparable) ? 0 : -1;
+      }
+    } catch (_) {
+      // Dummy for easy spotting
+      return -9999;
+    }
+  }
+
+  static int compare(FirestoreComparable? a, FirestoreComparable? b) =>
+      a?.compareTo(b) ?? -1;
+}
+
+/// Null is not comparable
+FirestoreComparable? _getComparable(dynamic value) {
+  if (value is FirestoreComparable) {
+    return value;
+  }
   if (value is DateTime) {
-    return Timestamp.fromDateTime(value);
+    return FirestoreComparable(Timestamp.fromDateTime(value));
   }
   if (value is Comparable) {
-    return value;
+    return FirestoreComparable(value);
   } else if (value is List) {
-    return ComparableList(value);
+    return FirestoreComparable(ComparableList(value));
   } else if (value is Map) {
-    return ComparableMap(value);
+    return FirestoreComparable(ComparableMap(value));
   }
   if (value == null) {
     return null;
   }
-  return NonComparable(value);
-}
-
-class NonComparable<T> implements Comparable<T> {
-  final T _value;
-
-  NonComparable(this._value);
-
-  @override
-  int compareTo(T other) {
-    if (identical(other, _value)) {
-      return 0;
-    }
-    return -1;
-  }
+  return FirestoreComparable(null, value);
 }
 
 class ComparableList<E> with ListMixin<E> implements Comparable<List<E>?> {
@@ -371,8 +416,35 @@ class ComparableMap<K, V>
   }
 }
 
-int _compare(Comparable value1, Comparable value2, bool ascending) {
-  final compareValue = Comparable.compare(value1, value2);
+int _compare(FirestoreComparable value1, FirestoreComparable value2,
+    [bool ascending = true]) {
+  final compareValue = FirestoreComparable.compare(value1, value2);
+  if (ascending != false) {
+    return compareValue;
+  } else {
+    return -compareValue;
+  }
+}
+
+int _rawCompareHandleNull(
+    FirestoreComparable? object1, FirestoreComparable? object2) {
+  if (object2 == null) {
+    if (object1 == null) {
+      return 0;
+    }
+    return -1;
+    // put object2 at the end
+  } else if (object1 == null) {
+    // put object1 at the end
+    return 1;
+  }
+  return object1.compareTo(object2);
+}
+
+int _compareHandleNull(
+    FirestoreComparable? object1, FirestoreComparable? object2,
+    [bool ascending = true]) {
+  final compareValue = _rawCompareHandleNull(object1, object2);
   if (ascending != false) {
     return compareValue;
   } else {
@@ -383,7 +455,7 @@ int _compare(Comparable value1, Comparable value2, bool ascending) {
 bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
   var data = snapshot.documentData as DocumentDataMap?;
 
-  Comparable? getComparableValue(String? fieldPath) {
+  FirestoreComparable? getComparableValue(String? fieldPath) {
     dynamic value;
     if (fieldPath != firestoreNameFieldPath) {
       value = data!.valueAtFieldPath(fieldPath!);
@@ -393,7 +465,7 @@ bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
 
       //return null;
     } else {
-      return snapshot.ref.id;
+      return _getComparable(snapshot.ref.id);
     }
   }
   //var data = documentData.map;
@@ -504,12 +576,12 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
       queryInfo.wheres.isNotEmpty) {
     for (var i = 0; i < queryInfo.orderBys.length; i++) {
       var orderBy = queryInfo.orderBys[i];
-      final value =
-          documentData.valueAtFieldPath(orderBy.fieldPath!) as Comparable?;
+      final value = _getComparable(
+          documentData.valueAtFieldPath(orderBy.fieldPath!) as Comparable?);
 
       if (queryInfo.startLimit?.inclusive == true) {
-        final startAt =
-            safeGetItem(queryInfo.startLimit?.values, i) as Comparable?;
+        final startAt = _getComparable(
+            safeGetItem(queryInfo.startLimit?.values, i) as Comparable?);
         if (startAt != null) {
           // ignore: non_bool_operand
           if (value == null ||
@@ -518,8 +590,8 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
           }
         }
       } else {
-        final startAfter =
-            safeGetItem(queryInfo.startLimit?.values, i) as Comparable?;
+        final startAfter = _getComparable(
+            safeGetItem(queryInfo.startLimit?.values, i) as Comparable?);
         if (startAfter != null) {
           // ignore: non_bool_operand
           if (value == null ||
@@ -530,7 +602,8 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
       }
 
       if (queryInfo.endLimit?.inclusive == true) {
-        final endAt = safeGetItem(queryInfo.endLimit?.values, i) as Comparable?;
+        final endAt = _getComparable(
+            safeGetItem(queryInfo.endLimit?.values, i) as Comparable?);
         if (endAt != null) {
           // ignore: non_bool_operand
           if (value == null || _compare(value, endAt, orderBy.ascending) > 0) {
@@ -538,8 +611,8 @@ bool mapQueryInfo(DocumentDataMap documentData, QueryInfo queryInfo) {
           }
         }
       } else {
-        final endBefore =
-            safeGetItem(queryInfo.endLimit?.values, i) as Comparable?;
+        final endBefore = _getComparable(
+            safeGetItem(queryInfo.endLimit?.values, i) as Comparable?);
         if (endBefore != null) {
           // ignore: non_bool_operand
           if (value == null ||
@@ -573,14 +646,15 @@ mixin FirestoreQueryMixin implements Query {
 
   QueryInfo? get queryInfo;
 
-  Future<List<DocumentSnapshot>>? getCollectionDocuments();
+  Future<List<DocumentSnapshot>> getCollectionDocuments();
 
   @override
   Future<QuerySnapshot> get() async {
     var queryInfo = this.queryInfo!;
     // Get and filter
     var docs = <DocumentSnapshot>[];
-    for (var doc in await getCollectionDocuments()!) {
+    var allDocs = await getCollectionDocuments();
+    for (var doc in allDocs) {
       if (snapshotMapQueryInfo(doc as DocumentSnapshotBase, queryInfo)) {
         docs.add(doc);
       }
@@ -609,27 +683,9 @@ mixin FirestoreQueryMixin implements Query {
         final keyPath = orderBy.fieldPath;
         final ascending = orderBy.ascending;
 
-        int _rawCompare(Comparable? object1, Comparable? object2) {
-          if (object2 == null) {
-            if (object1 == null) {
-              return 0;
-            }
-            return -1;
-            // put object2 at the end
-          } else if (object1 == null) {
-            // put object1 at the end
-            return 1;
-          }
-          return object1.compareTo(object2);
-        }
-
-        int _compare(Comparable? object1, Comparable? object2) {
-          final rawCompare = _rawCompare(object1, object2);
-          if (ascending) {
-            return rawCompare;
-          } else {
-            return -rawCompare;
-          }
+        int _compare(
+            FirestoreComparable? object1, FirestoreComparable? object2) {
+          return _compareHandleNull(object1, object2, ascending);
         }
 
         DocumentDataMap? snapshotDataMap(DocumentSnapshot snapshot) {
@@ -638,13 +694,15 @@ mixin FirestoreQueryMixin implements Query {
         }
 
         if (keyPath == firestoreNameFieldPath) {
-          cmp = _compare(snapshot1.ref.path, snapshot2.ref.path);
+          cmp = _compare(_getComparable(snapshot1.ref.path)!,
+              _getComparable(snapshot2.ref.path)!);
         } else {
           cmp = _compare(
-              _getComparable(
-                  snapshotDataMap(snapshot1)!.valueAtFieldPath(keyPath!)),
-              _getComparable(
-                  snapshotDataMap(snapshot2)!.valueAtFieldPath(keyPath)));
+            _getComparable(
+                snapshotDataMap(snapshot1)!.valueAtFieldPath(keyPath!))!,
+            _getComparable(
+                snapshotDataMap(snapshot2)!.valueAtFieldPath(keyPath))!,
+          );
         }
         if (cmp != 0) {
           break;

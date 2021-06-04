@@ -533,6 +533,26 @@ void runApp(
         await docRef.delete();
       });
 
+      test('null', () async {
+        var testsRef = getTestsRef()!.doc('lookup').collection('bool');
+        var docRef = testsRef.doc('a');
+        var doc2Ref = testsRef.doc('b');
+        await docRef.set({'value': null});
+        await doc2Ref.set({'value': true});
+        void _check(Map<String, Object?>? data) {
+          expect(data, {
+            'value': true,
+          });
+        }
+
+        _check((await doc2Ref.get()).data);
+        var snapshot =
+            (await testsRef.where('value', isEqualTo: true).get()).docs.first;
+        _check(snapshot.data);
+
+        await docRef.delete();
+      });
+
       // All fields that we do not delete
       test(
         'allFields',
@@ -1555,7 +1575,7 @@ void runApp(
         expect((await deleteRef.get()).exists, isTrue);
         expect((await createRef.get()).exists, isFalse);
 
-        var batch = firestore.batch()!;
+        var batch = firestore.batch();
         batch.delete(deleteRef);
         batch.set(createRef, {});
         await batch.commit();
@@ -1575,22 +1595,35 @@ void runApp(
           var doc3Ref = collRef.doc('item3');
           // this one will be deleted
           var doc4Ref = collRef.doc('item4');
+          // this one will be set with merge options
+          var doc5Ref = collRef.doc('item5');
+          // this one will be set with merge options but deleted before
+          var doc6Ref = collRef.doc('item6');
 
           await doc1Ref.delete();
           await doc2Ref.set({'value': 2});
           await doc4Ref.set({'value': 4});
+          await doc5Ref.set({'value': 5});
+          await doc6Ref.delete();
 
-          var batch = firestore.batch()!;
+          var batch = firestore.batch();
           batch.set(doc1Ref, {'value': 1});
           batch.update(doc2Ref, {'other.value': 2});
           batch.set(doc3Ref, {'value': 3});
           batch.delete(doc4Ref);
+          batch.set(doc5Ref, {'other': 5}, SetOptions(merge: true));
+          batch.set(doc6Ref, {'other': 6}, SetOptions(merge: true));
           await batch.commit();
 
           expect((await doc1Ref.get()).data, {'value': 1});
-          //expect((await doc2Ref.get()).data().toMap(), {'value': 2, 'other.value': 2});
+          expect((await doc2Ref.get()).data, {
+            'value': 2,
+            'other': {'value': 2}
+          });
           expect((await doc3Ref.get()).data, {'value': 3});
           expect((await doc4Ref.get()).exists, isFalse);
+          expect((await doc5Ref.get()).data, {'value': 5, 'other': 5});
+          expect((await doc6Ref.get()).data, {'other': 6});
         });
       });
 

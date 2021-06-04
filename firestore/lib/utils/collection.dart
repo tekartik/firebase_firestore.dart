@@ -20,7 +20,7 @@ Future deleteCollection(Firestore firestore, CollectionReference collectionRef,
     }
 
     // Delete documents in a batch
-    var batch = firestore.batch()!;
+    var batch = firestore.batch();
     for (var doc in snapshot.docs) {
       batch.delete(doc.ref);
     }

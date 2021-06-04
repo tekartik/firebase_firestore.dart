@@ -44,7 +44,7 @@ abstract class Firestore {
 
   /// Creates a write batch, used for performing multiple writes as a single
   /// atomic operation.
-  WriteBatch? batch();
+  WriteBatch batch();
 
   /// Executes the given [updateFunction] and commits the changes applied within
   /// the transaction.
@@ -309,7 +309,7 @@ const orderByAscending = 'asc';
 const orderByDescending = 'desc';
 
 abstract class WriteBatch {
-  void delete(DocumentReference? ref);
+  void delete(DocumentReference ref);
 
   void set(DocumentReference ref, Map<String, Object?> data,
       [SetOptions? options]);
