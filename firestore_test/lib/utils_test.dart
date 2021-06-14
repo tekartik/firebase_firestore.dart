@@ -28,14 +28,14 @@ void utilsTest(
       });
       await completer.future;
       expect(snapshots.docs.length, 2);
-      expect(snapshots.docs[0]!.exists, false);
-      expect(snapshots.docs[1]!.exists, false);
+      expect(snapshots.docs[0].exists, false);
+      expect(snapshots.docs[1].exists, false);
 
       completer = Completer();
       unawaited(ref1.set({'test': 1}));
       await completer.future;
       expect(snapshots.docs.length, 2);
-      expect(snapshots.docs[0]!.data, {'test': 1});
+      expect(snapshots.docs[0].data, {'test': 1});
       expect(snapshots.getDocument(ref1)!.data, {'test': 1});
 
       await subscription.cancel();
