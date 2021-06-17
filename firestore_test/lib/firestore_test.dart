@@ -93,6 +93,7 @@ void runNoTimestampsInSnapshots(
           'some_date': localDateTime,
           'some_utc_date': utcDateTime.toLocal()
         });
+        expect(snapshot.dataOrNull, snapshot.data);
         await docRef.delete();
       });
     });
@@ -151,6 +152,7 @@ void runApp(
         var docRef = testsRef.doc('dummy_id_that_should_never_exists');
         var snapshot = await docRef.get();
         expect(snapshot.exists, isFalse);
+        expect(snapshot.dataOrNull, isNull);
         try {
           snapshot.data;
           fail('should fail');

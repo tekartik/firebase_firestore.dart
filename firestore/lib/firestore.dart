@@ -197,6 +197,12 @@ abstract class DocumentSnapshot {
   Timestamp? get createTime;
 }
 
+/// Helper on document snapshot
+extension DocumentSnapshotExt on DocumentSnapshot {
+  /// Null if the document does not exists
+  Map<String, Object?>? get dataOrNull => exists ? data : null;
+}
+
 /// Sentinel values for update/set
 class FieldValue {
   dynamic get data => null;
