@@ -11,13 +11,13 @@ dependencies:
     git:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_sim_browser
-      ref: dart2
+      ref: null_safety
     version: '>=0.3.7'
   tekartik_firebase_firestore_sim:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore_sim
-      ref: dart2
+      ref: null_safety
     version: '>=0.8.0'
 
 dev_dependencies:
@@ -30,7 +30,7 @@ dev_dependencies:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore_test
-      ref: dart2
+      ref: null_safety
     version: '>=0.1.0'
 
 dependency_overrides:

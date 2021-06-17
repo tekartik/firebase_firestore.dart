@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
@@ -53,7 +52,7 @@ class FirestoreServiceSim
   bool get supportsTrackChanges => true;
 }
 
-FirestoreServiceSim _firestoreServiceSim;
+FirestoreServiceSim? _firestoreServiceSim;
 
 FirestoreServiceSim get firestoreServiceSim =>
     _firestoreServiceSim ?? FirestoreServiceSim();
@@ -67,19 +66,19 @@ class DocumentSnapshotSim implements DocumentSnapshot {
   @override
   final bool exists;
 
-  final DocumentData documentData;
+  final DocumentData? documentData;
 
   DocumentSnapshotSim(this.ref, this.exists, this.documentData,
-      {@required this.createTime, @required this.updateTime});
+      {required this.createTime, required this.updateTime});
 
   @override
-  Map<String, dynamic> get data => documentData?.asMap();
+  Map<String, dynamic> get data => documentData!.asMap();
 
   @override
-  final Timestamp updateTime;
+  final Timestamp? updateTime;
 
   @override
-  final Timestamp createTime;
+  final Timestamp? createTime;
 }
 
 class DocumentReferenceSim
@@ -111,7 +110,7 @@ class DocumentReferenceSim
   }
 
   @override
-  Future set(Map<String, dynamic> data, [SetOptions options]) async {
+  Future set(Map<String, dynamic> data, [SetOptions? options]) async {
     var jsonMap = documentDataToJsonMap(DocumentData(data));
     var simClient = await firestoreSim.simClient;
     var firestoreSetData = FirestoreSetData()
@@ -137,12 +136,12 @@ class DocumentReferenceSim
       firestoreSim.documentSnapshotFromDataMap(path, map);
 
   // do until cancelled
-  Future _getStream(FirebaseSimClient simClient, String path,
+  Future _getStream(FirebaseSimClient? simClient, String path,
       ServerSubscriptionSim subscription) async {
     var subscriptionId = subscription.id;
     while (true) {
       if (firestoreSim._subscriptions.containsKey(subscriptionId)) {
-        var result = resultAsMap(await simClient.sendRequest(
+        var result = resultAsMap(await simClient!.sendRequest(
             methodFirestoreGetStream, {paramSubscriptionId: subscriptionId}));
         // devPrint(result);
         // null means cancelled
@@ -150,7 +149,7 @@ class DocumentReferenceSim
           break;
         }
         subscription.add(firestoreSim.documentSnapshotFromMessageMap(
-            path, (result[paramSnapshot] as Map)?.cast<String, dynamic>()));
+            path, (result[paramSnapshot] as Map).cast<String, dynamic>()));
       } else {
         break;
       }
@@ -160,21 +159,21 @@ class DocumentReferenceSim
 
   @override
   Stream<DocumentSnapshot> onSnapshot() {
-    ServerSubscriptionSim<DocumentSnapshotSim> subscription;
-    FirebaseSimClient simClient;
+    late ServerSubscriptionSim<DocumentSnapshotSim> subscription;
+    FirebaseSimClient? simClient;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {
       await firestoreSim.removeSubscription(subscription);
-      await simClient.sendRequest(
+      await simClient!.sendRequest(
           methodFirestoreGetCancel, {paramSubscriptionId: subscription.id});
       await subscription.done;
     }));
 
     () async {
       simClient = await firestoreSim.simClient;
-      var result = resultAsMap(await simClient
+      var result = resultAsMap(await simClient!
           .sendRequest(methodFirestoreGetListen, {paramPath: path}));
 
-      subscription.id = result[paramSubscriptionId] as int;
+      subscription.id = result[paramSubscriptionId] as int?;
       firestoreSim.addSubscription(subscription);
 
       // Loop until cancelled
@@ -187,7 +186,7 @@ class DocumentReferenceSim
 abstract class QueryMixinSim implements Query {
   AppSim get appSim => firestoreSim.appSim;
 
-  QueryInfo get queryInfo;
+  QueryInfo? get queryInfo;
 
   CollectionReferenceSim get simCollectionReference;
 
@@ -206,12 +205,12 @@ abstract class QueryMixinSim implements Query {
     dynamic isGreaterThan,
     dynamic isGreaterThanOrEqualTo,
     dynamic arrayContains,
-    List<dynamic> arrayContainsAny,
-    List<dynamic> whereIn,
-    bool isNull,
+    List<dynamic>? arrayContainsAny,
+    List<dynamic>? whereIn,
+    bool? isNull,
   }) =>
       clone()
-        ..queryInfo.addWhere(WhereInfo(fieldPath,
+        ..queryInfo!.addWhere(WhereInfo(fieldPath,
             isEqualTo: isEqualTo,
             isLessThan: isLessThan,
             isLessThanOrEqualTo: isLessThanOrEqualTo,
@@ -225,35 +224,35 @@ abstract class QueryMixinSim implements Query {
   void addOrderBy(String key, String directionStr) {
     var orderBy = OrderByInfo(
         fieldPath: key, ascending: directionStr != orderByDescending);
-    queryInfo.orderBys.add(orderBy);
+    queryInfo!.orderBys.add(orderBy);
   }
 
   @override
-  Query startAt({DocumentSnapshot snapshot, List values}) =>
-      clone()..queryInfo.startAt(snapshot: snapshot, values: values);
+  Query startAt({DocumentSnapshot? snapshot, List? values}) =>
+      clone()..queryInfo!.startAt(snapshot: snapshot, values: values);
 
   @override
-  Query startAfter({DocumentSnapshot snapshot, List values}) =>
-      clone()..queryInfo.startAfter(snapshot: snapshot, values: values);
+  Query startAfter({DocumentSnapshot? snapshot, List? values}) =>
+      clone()..queryInfo!.startAfter(snapshot: snapshot, values: values);
 
   @override
-  Query endAt({DocumentSnapshot snapshot, List values}) =>
-      clone()..queryInfo.endAt(snapshot: snapshot, values: values);
+  Query endAt({DocumentSnapshot? snapshot, List? values}) =>
+      clone()..queryInfo!.endAt(snapshot: snapshot, values: values);
 
   @override
-  Query endBefore({DocumentSnapshot snapshot, List values}) =>
-      clone()..queryInfo.endBefore(snapshot: snapshot, values: values);
+  Query endBefore({DocumentSnapshot? snapshot, List? values}) =>
+      clone()..queryInfo!.endBefore(snapshot: snapshot, values: values);
 
   @override
   Query select(List<String> list) {
-    return clone()..queryInfo.selectKeyPaths = list;
+    return clone()..queryInfo!.selectKeyPaths = list;
   }
 
   @override
-  Query limit(int limit) => clone()..queryInfo.limit = limit;
+  Query limit(int limit) => clone()..queryInfo!.limit = limit;
 
   @override
-  Query orderBy(String key, {bool descending}) => clone()
+  Query orderBy(String key, {bool? descending}) => clone()
     ..addOrderBy(
         key, descending == true ? orderByDescending : orderByAscending);
 
@@ -282,11 +281,11 @@ abstract class QueryMixinSim implements Query {
 
   // do until cancelled
   Future _getStream(
-      FirebaseSimClient simClient, ServerSubscriptionSim subscription) async {
+      FirebaseSimClient? simClient, ServerSubscriptionSim subscription) async {
     var subscriptionId = subscription.id;
     while (true) {
       if (firestoreSim._subscriptions.containsKey(subscriptionId)) {
-        var result = resultAsMap(await simClient.sendRequest(
+        var result = resultAsMap(await simClient!.sendRequest(
             methodFirestoreQueryStream, {paramSubscriptionId: subscriptionId}));
         // null means cancelled
         if (result[paramDone] == true) {
@@ -294,7 +293,7 @@ abstract class QueryMixinSim implements Query {
         }
 
         var querySnapshotData = FirestoreQuerySnapshotData()
-          ..fromMap((result[paramSnapshot] as Map)?.cast<String, dynamic>());
+          ..fromMap((result[paramSnapshot] as Map).cast<String, dynamic>());
 
         var docs = querySnapshotData.list
             .map((DocumentSnapshotData documentSnapshotData) =>
@@ -302,9 +301,9 @@ abstract class QueryMixinSim implements Query {
             .toList();
 
         var changes = <DocumentChangeSim>[];
-        for (var changeData in querySnapshotData.changes) {
+        for (var changeData in querySnapshotData.changes!) {
           // snapshot present?
-          DocumentSnapshotSim snapshot;
+          DocumentSnapshotSim? snapshot;
           if (changeData.data != null) {
             snapshot = firestoreSim.documentSnapshotFromDataMap(
                 url.join(simCollectionReference.path, changeData.id),
@@ -314,10 +313,11 @@ abstract class QueryMixinSim implements Query {
             snapshot = snapshotsFindById(docs, changeData.id);
           }
           final change = DocumentChangeSim(
-              documentChangeTypeFromString(changeData.type),
-              snapshot,
-              changeData.newIndex,
-              changeData.oldIndex);
+            documentChangeTypeFromString(changeData.type!)!,
+            snapshot!,
+            changeData.newIndex ?? -1, // -1 for removed event
+            changeData.oldIndex ?? -1, // -1 for added event
+          );
           changes.add(change);
         }
         var snapshot = QuerySnapshotSim(docs, changes);
@@ -331,11 +331,11 @@ abstract class QueryMixinSim implements Query {
 
   @override
   Stream<QuerySnapshot> onSnapshot() {
-    FirebaseSimClient simClient;
-    ServerSubscriptionSim<QuerySnapshot> subscription;
+    FirebaseSimClient? simClient;
+    late ServerSubscriptionSim<QuerySnapshot> subscription;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {
       await firestoreSim.removeSubscription(subscription);
-      await simClient.sendRequest(
+      await simClient!.sendRequest(
           methodFirestoreQueryCancel, {paramSubscriptionId: subscription.id});
       await subscription.done;
     }));
@@ -347,10 +347,10 @@ abstract class QueryMixinSim implements Query {
         ..path = simCollectionReference.path
         ..queryInfo = queryInfo;
 
-      var result = resultAsMap(await simClient.sendRequest(
-          methodFirestoreQueryListen, data.toMap()));
+      var result = resultAsMap(await simClient!
+          .sendRequest(methodFirestoreQueryListen, data.toMap()));
 
-      subscription.id = result[paramSubscriptionId] as int;
+      subscription.id = result[paramSubscriptionId] as int?;
       firestoreSim.addSubscription(subscription);
 
       // Loop until cancelled
@@ -362,11 +362,11 @@ abstract class QueryMixinSim implements Query {
 
 class ServerSubscriptionSim<T> {
   // the streamId;
-  int id;
+  int? id;
   final StreamController<T> _controller;
 
   // register for notification during the query
-  StreamSubscription<Notification> notificationSubscription;
+  StreamSubscription<Notification>? notificationSubscription;
 
   ServerSubscriptionSim(this._controller);
 
@@ -382,6 +382,7 @@ class ServerSubscriptionSim<T> {
   }
 
   Completer doneCompleter = Completer();
+
   Future get done => doneCompleter.future;
 }
 
@@ -422,7 +423,7 @@ class QuerySim extends Object with QueryMixinSim implements Query {
   @override
   FirestoreSim get firestoreSim => simCollectionReference.firestoreSim;
   @override
-  QueryInfo queryInfo;
+  QueryInfo? queryInfo;
 
   QuerySim(this.simCollectionReference);
 }
@@ -460,7 +461,7 @@ class CollectionReferenceSim extends Object
   }
 
   @override
-  DocumentReference doc([String path]) =>
+  DocumentReference doc([String? path]) =>
       DocumentReferenceSim(firestoreSim, url.join(this.path, path));
 
   @override
@@ -493,9 +494,10 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
 
   //final transactionLock = Lock();
 
-  FirestoreSettings firestoreSettingsSim;
+  FirestoreSettings? firestoreSettingsSim;
+
   // The key is the streamId from the server
-  final Map<int, ServerSubscriptionSim> _subscriptions = {};
+  final Map<int?, ServerSubscriptionSim> _subscriptions = {};
 
   Future<FirebaseSimClient> get simClient => appSim.simClient;
 
@@ -539,7 +541,7 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
 
   // warning no createTime and update time here
   DocumentSnapshotSim documentSnapshotFromDataMap(
-      String path, Map<String, dynamic> map) {
+      String path, Map<String, dynamic>? map) {
     return DocumentSnapshotSim(DocumentReferenceSim(this, path), map != null,
         documentDataFromJsonMap(this, map),
         createTime: null, updateTime: null);
@@ -559,8 +561,8 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
   WriteBatch batch() => WriteBatchSim(this);
 
   @override
-  Future runTransaction(
-      dynamic Function(Transaction transaction) updateFunction) async {
+  Future<T> runTransaction<T>(
+      FutureOr<T> Function(Transaction transaction) updateFunction) async {
     var simClient = await this.simClient;
     var result = resultAsMap(
         await simClient.sendRequest(methodFirestoreTransaction, {}));
@@ -603,7 +605,7 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
 }
 
 class TransactionSim extends WriteBatchSim implements Transaction {
-  final int transactionId;
+  final int? transactionId;
 
   TransactionSim(FirestoreSim firestore, this.transactionId) : super(firestore);
 
@@ -646,17 +648,17 @@ class WriteBatchSim extends WriteBatchBase {
       if (operation is WriteBatchOperationDelete) {
         batchData.operations.add(BatchOperationDeleteData()
           ..method = methodFirestoreDelete
-          ..path = operation.docRef.path);
+          ..path = operation.docRef!.path);
       } else if (operation is WriteBatchOperationSet) {
         batchData.operations.add(BatchOperationSetData()
           ..method = methodFirestoreSet
-          ..path = operation.docRef.path
+          ..path = operation.docRef!.path
           ..data = documentDataToJsonMap(operation.documentData)
           ..merge = operation.options?.merge);
       } else if (operation is WriteBatchOperationUpdate) {
         batchData.operations.add(BatchOperationUpdateData()
           ..method = methodFirestoreUpdate
-          ..path = operation.docRef.path
+          ..path = operation.docRef!.path
           ..data = documentDataToJsonMap(operation.documentData));
       } else {
         throw 'not supported $operation';

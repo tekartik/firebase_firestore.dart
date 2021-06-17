@@ -460,9 +460,9 @@ Map<String, Object?> limitInfoToJsonMap(LimitInfo limitInfo) {
 
 LimitInfo limitInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   var limitInfo = LimitInfo();
-  if (map.containsKey('inclusive')) {
-    limitInfo.inclusive = map['inclusive'] == true;
-  }
+
+  limitInfo.inclusive = map['inclusive'] == true;
+
   if (map.containsKey('values')) {
     limitInfo.values = (map['values'] as List)
         .map((value) => jsonToDocumentDataValue(firestore, value))
