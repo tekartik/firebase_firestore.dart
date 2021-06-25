@@ -8,6 +8,7 @@ import 'package:tekartik_common_utils/stream/stream_poller.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart'; // ignore: implementation_imports
@@ -308,76 +309,9 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
 
   Future<Query> getQuery(FirestoreQueryData queryData) async {
     var collectionPath = queryData.path;
-
-    Query query = firestore.collection(collectionPath);
-
     // Handle param
     var queryInfo = queryData.queryInfo;
-    if (queryInfo != null) {
-      // Select
-      if (queryInfo.selectKeyPaths != null) {
-        query = query.select(queryInfo.selectKeyPaths!);
-      }
-
-      // limit
-      if (queryInfo.limit != null) {
-        query = query.limit(queryInfo.limit!);
-      }
-
-      // order
-      for (var orderBy in queryInfo.orderBys) {
-        query = query.orderBy(orderBy.fieldPath!,
-            descending: orderBy.ascending == false);
-      }
-
-      // where
-      for (var where in queryInfo.wheres) {
-        query = query.where(where.fieldPath!,
-            isEqualTo: where.isEqualTo,
-            isLessThan: where.isLessThan,
-            isLessThanOrEqualTo: where.isLessThanOrEqualTo,
-            isGreaterThan: where.isGreaterThan,
-            isGreaterThanOrEqualTo: where.isGreaterThanOrEqualTo,
-            arrayContains: where.arrayContains,
-            isNull: where.isNull);
-      }
-
-      if (queryInfo.startLimit != null) {
-        // get it
-        DocumentSnapshot? snapshot;
-        if (queryInfo.startLimit!.documentId != null) {
-          snapshot = await firestore
-              .collection(collectionPath)
-              .doc(queryInfo.startLimit!.documentId!)
-              .get();
-        }
-        if (queryInfo.startLimit!.inclusive == true) {
-          query = query.startAt(
-              snapshot: snapshot, values: queryInfo.startLimit!.values);
-        } else {
-          query = query.startAfter(
-              snapshot: snapshot, values: queryInfo.startLimit!.values);
-        }
-      }
-      if (queryInfo.endLimit != null) {
-        // get it
-        DocumentSnapshot? snapshot;
-        if (queryInfo.endLimit!.documentId != null) {
-          snapshot = await firestore
-              .collection(collectionPath)
-              .doc(queryInfo.endLimit!.documentId!)
-              .get();
-        }
-        if (queryInfo.endLimit!.inclusive == true) {
-          query = query.endAt(
-              snapshot: snapshot, values: queryInfo.endLimit!.values);
-        } else {
-          query = query.endBefore(
-              snapshot: snapshot, values: queryInfo.endLimit!.values);
-        }
-      }
-    }
-    return query;
+    return await applyQueryInfo(firestore, collectionPath, queryInfo);
   }
 
   // Batch

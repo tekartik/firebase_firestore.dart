@@ -204,7 +204,7 @@ bool mapWhere(DocumentData? documentData, WhereInfo where) {
   }
 
   var rawValue =
-      documentDataMap(documentData)!.valueAtFieldPath(where.fieldPath!);
+      documentDataMap(documentData)!.valueAtFieldPath(where.fieldPath);
   var comparableFieldValue = _makeComparableValue(rawValue);
 
   // bool and null are not comparable
@@ -810,8 +810,8 @@ mixin FirestoreQueryMixin implements Query {
     dynamic isGreaterThan,
     dynamic isGreaterThanOrEqualTo,
     dynamic arrayContains,
-    List<Object?>? arrayContainsAny,
-    List<Object?>? whereIn,
+    List<Object>? arrayContainsAny,
+    List<Object>? whereIn,
     bool? isNull,
   }) =>
       clone()

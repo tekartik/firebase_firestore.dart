@@ -205,8 +205,8 @@ abstract class QueryMixinSim implements Query {
     dynamic isGreaterThan,
     dynamic isGreaterThanOrEqualTo,
     dynamic arrayContains,
-    List<dynamic>? arrayContainsAny,
-    List<dynamic>? whereIn,
+    List<Object>? arrayContainsAny,
+    List<Object>? whereIn,
     bool? isNull,
   }) =>
       clone()
