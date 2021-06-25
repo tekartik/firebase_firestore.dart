@@ -7,6 +7,7 @@ abstract class DocumentSnapshots {
 
   /// The snapshots reference in the same order
   List<DocumentSnapshot> get docs;
+
   DocumentSnapshot? getDocument(DocumentReference reference);
 }
 
@@ -14,6 +15,7 @@ class _DocumentSnapshots implements DocumentSnapshots {
   Map<DocumentReference, DocumentSnapshot?>? _map;
 
   _DocumentSnapshots(this.refs, this.docs);
+
   @override
   DocumentSnapshot? getDocument(DocumentReference reference) {
     _map ??= () {

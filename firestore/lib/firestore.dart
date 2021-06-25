@@ -18,6 +18,7 @@ abstract class FirestoreService {
 
   // Temporary flag
   bool get supportsFieldValueArray;
+
   // True if startAt/startAfter/endAt/endAfter can be used with snapshot
   bool get supportsQuerySnapshotCursor;
 
@@ -25,6 +26,7 @@ abstract class FirestoreService {
 
   /// Where it supports timestamp precision on date and time values in document data
   bool get supportsTimestamps;
+
   bool get supportsTimestampsInSnapshots;
 
   /// Return true if it supports tracking changes
@@ -234,7 +236,9 @@ class FieldValue {
   factory FieldValue.arrayRemove(List<Object?> data) {
     return FieldValueArray(FieldValueType.arrayRemove, data);
   }
+
   FieldValue(this.type);
+
   @override
   String toString() {
     return '$type${data != null ? '($data)' : ''}';
