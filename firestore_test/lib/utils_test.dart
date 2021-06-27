@@ -32,7 +32,7 @@ void utilsTest(
       expect(snapshots.docs[1].exists, false);
 
       completer = Completer();
-      unawaited(ref1.set({'test': 1}));
+      ref1.set({'test': 1}).unawait();
       await completer.future;
       expect(snapshots.docs.length, 2);
       expect(snapshots.docs[0].data, {'test': 1});
