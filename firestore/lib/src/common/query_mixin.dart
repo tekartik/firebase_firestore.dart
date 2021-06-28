@@ -15,8 +15,8 @@ mixin QueryMixin implements Query {
     dynamic isGreaterThan,
     dynamic isGreaterThanOrEqualTo,
     dynamic arrayContains,
-    List<Object?>? arrayContainsAny,
-    List<Object?>? whereIn,
+    List<Object>? arrayContainsAny,
+    List<Object>? whereIn,
     bool? isNull,
   }) =>
       clone()
@@ -65,4 +65,74 @@ mixin QueryMixin implements Query {
   Query orderBy(String key, {bool? descending}) => clone()
     ..addOrderBy(
         key, descending == true ? orderByDescending : orderByAscending);
+}
+
+/// Apply query info to query/collection
+Future<Query> applyQueryInfo(
+    Firestore firestore, String path, QueryInfo? queryInfo) async {
+  Query query = firestore.collection(path);
+  if (queryInfo != null) {
+    if (queryInfo.selectKeyPaths != null) {
+      query = query.select(queryInfo.selectKeyPaths!);
+    }
+    // limit
+    if (queryInfo.limit != null) {
+      query = query.limit(queryInfo.limit!);
+    }
+
+    // order
+    for (var orderBy in queryInfo.orderBys) {
+      query = query.orderBy(orderBy.fieldPath!,
+          descending: orderBy.ascending == false);
+    }
+
+    for (var where in queryInfo.wheres) {
+      query = query.where(where.fieldPath,
+          isEqualTo: where.isEqualTo,
+          isGreaterThan: where.isGreaterThan,
+          whereIn: where.whereIn,
+          arrayContains: where.arrayContains,
+          arrayContainsAny: where.arrayContainsAny,
+          isGreaterThanOrEqualTo: where.isGreaterThanOrEqualTo,
+          isLessThan: where.isLessThan,
+          isNull: where.isNull,
+          isLessThanOrEqualTo: where.isLessThanOrEqualTo);
+    }
+
+    if (queryInfo.startLimit != null) {
+      // get it
+      DocumentSnapshot? snapshot;
+      if (queryInfo.startLimit!.documentId != null) {
+        snapshot = await firestore
+            .collection(path)
+            .doc(queryInfo.startLimit!.documentId!)
+            .get();
+      }
+      if (queryInfo.startLimit!.inclusive == true) {
+        query = query.startAt(
+            snapshot: snapshot, values: queryInfo.startLimit!.values);
+      } else {
+        query = query.startAfter(
+            snapshot: snapshot, values: queryInfo.startLimit!.values);
+      }
+    }
+    if (queryInfo.endLimit != null) {
+      // get it
+      DocumentSnapshot? snapshot;
+      if (queryInfo.endLimit!.documentId != null) {
+        snapshot = await firestore
+            .collection(path)
+            .doc(queryInfo.endLimit!.documentId!)
+            .get();
+      }
+      if (queryInfo.endLimit!.inclusive == true) {
+        query =
+            query.endAt(snapshot: snapshot, values: queryInfo.endLimit!.values);
+      } else {
+        query = query.endBefore(
+            snapshot: snapshot, values: queryInfo.endLimit!.values);
+      }
+    }
+  }
+  return query;
 }

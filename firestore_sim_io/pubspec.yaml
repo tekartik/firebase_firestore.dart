@@ -4,26 +4,26 @@ version: 0.8.0
 publish_to: none
 
 environment:
-  sdk: '>=2.10.0-0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   tekartik_firebase_sim_io:
     git:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_sim_io
-      ref: dart2
+      ref: null_safety
     version: '>=0.3.7'
   tekartik_firebase_firestore_sim:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore_sim
-      ref: dart2
+      ref: null_safety
     version: '>=0.8.0'
   tekartik_firebase_firestore_sembast:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore_sembast
-      ref: dart2
+      ref: null_safety
     version: '>=0.8.0'
 
 dev_dependencies:
@@ -36,15 +36,15 @@ dev_dependencies:
     git:
       url: git://github.com/tekartik/firebase_firestore.dart
       path: firestore_test
-      ref: dart2
+      ref: null_safety
     version: '>=0.1.0'
 
 dependency_overrides:
-#  tekartik_firebase_firestore_test:
-#    path: ../firestore_test
+  tekartik_firebase_firestore_test:
+    path: ../firestore_test
   tekartik_firebase_firestore_sim:
     path: ../firestore_sim
-#  tekartik_firebase_firestore:
-#    path: ../firestore
-#  tekartik_firebase_firestore_sembast:
-#    path: ../firestore_sembast
+  tekartik_firebase_firestore:
+    path: ../firestore
+  tekartik_firebase_firestore_sembast:
+    path: ../firestore_sembast

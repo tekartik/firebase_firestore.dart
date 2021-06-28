@@ -4,7 +4,9 @@ import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart'; 
 class WriteBatchRestImpl extends WriteBatchBase {
   String? transactionId;
   final FirestoreRestImpl firestoreRestImpl;
+
   WriteBatchRestImpl(this.firestoreRestImpl) : super();
+
   @override
   Future commit() async {
     await firestoreRestImpl.commitBatch(this);

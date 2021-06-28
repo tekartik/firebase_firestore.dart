@@ -687,15 +687,16 @@ class FirestoreRestImpl
         // commit is callback. Still puzzled about operation that could fail
         // later...
         if (operation is WriteBatchOperationDelete) {
-          unawaited(deleteDocument(operation.docRef!.path));
+          deleteDocument(operation.docRef!.path).unawait();
         } else if (operation is WriteBatchOperationSet) {
           final setOperation = operation;
-          unawaited(writeDocument(
-              setOperation.docRef!.path, setOperation.documentData.asMap(),
-              merge: setOperation.options?.merge));
+          writeDocument(
+                  setOperation.docRef!.path, setOperation.documentData.asMap(),
+                  merge: setOperation.options?.merge)
+              .unawait();
         } else if (operation is WriteBatchOperationUpdate) {
-          unawaited(updateDocument(
-              operation.docRef!.path, operation.documentData.asMap()));
+          updateDocument(operation.docRef!.path, operation.documentData.asMap())
+              .unawait();
         } else {
           throw UnsupportedError('operation $operation not supported');
         }

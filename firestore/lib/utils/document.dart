@@ -6,7 +6,8 @@ abstract class DocumentSnapshots {
   List<DocumentReference> get refs;
 
   /// The snapshots reference in the same order
-  List<DocumentSnapshot?> get docs;
+  List<DocumentSnapshot> get docs;
+
   DocumentSnapshot? getDocument(DocumentReference reference);
 }
 
@@ -14,6 +15,7 @@ class _DocumentSnapshots implements DocumentSnapshots {
   Map<DocumentReference, DocumentSnapshot?>? _map;
 
   _DocumentSnapshots(this.refs, this.docs);
+
   @override
   DocumentSnapshot? getDocument(DocumentReference reference) {
     _map ??= () {
@@ -30,7 +32,7 @@ class _DocumentSnapshots implements DocumentSnapshots {
   final List<DocumentReference> refs;
 
   @override
-  final List<DocumentSnapshot?> docs;
+  final List<DocumentSnapshot> docs;
 }
 
 /// Retrieve a list of documents by references
@@ -47,7 +49,9 @@ Stream<DocumentSnapshots> onDocumentSnapshots(
 
     void _notify() {
       if (remainings.isEmpty && !controller.isClosed && !controller.isPaused) {
-        controller.add(_DocumentSnapshots(references, docs));
+        /// We know the array has no nullable snapshot at this point
+        controller
+            .add(_DocumentSnapshots(references, docs.cast<DocumentSnapshot>()));
       }
     }
 

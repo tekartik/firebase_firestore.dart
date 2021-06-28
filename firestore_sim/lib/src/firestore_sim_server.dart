@@ -7,6 +7,7 @@ import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_common_utils/stream/stream_poller.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
@@ -14,9 +15,9 @@ import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart'; // ignore: 
 import 'package:tekartik_firebase_sim/src/firebase_sim_server.dart'; // ignore: implementation_imports
 
 class SimSubscription<T> {
-  StreamPoller<T> _poller;
+  late StreamPoller<T> _poller;
 
-  Future<StreamPollerEvent<T>> getNext() => _poller.getNext();
+  Future<StreamPollerEvent<T?>> getNext() => _poller.getNext();
 
   SimSubscription(Stream<T> stream) {
     _poller = StreamPoller<T>(stream);
@@ -31,7 +32,8 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
   final Firestore firestore;
   int lastTransactionId = 0;
   int lastSubscriptionId = 0;
-  Lock get transactionLock => firestoreSimServer.transactionLock(firestore);
+
+  Lock? get transactionLock => firestoreSimServer.transactionLock(firestore);
   final rpc.Server rpcServer;
   final Map<int, SimSubscription> subscriptions = <int, SimSubscription>{};
 
@@ -47,20 +49,20 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
       this.firestoreSimServer, this.firestore, this.rpcServer) {
     rpcServer.registerMethod(methodFirestoreAdd,
         (rpc.Parameters parameters) async {
-      return await handleFirestoreAddRequest(rpcParams(parameters));
+      return await handleFirestoreAddRequest(rpcParams(parameters)!);
     });
     rpcServer.registerMethod(methodFirestoreSet,
         (rpc.Parameters parameters) async {
-      return await handleFirestoreSetRequest(rpcParams(parameters));
+      return await handleFirestoreSetRequest(rpcParams(parameters)!);
     });
     rpcServer.registerMethod(methodFirestoreDelete,
         (rpc.Parameters parameters) async {
-      return await handleFirestoreDeleteRequest(rpcParams(parameters));
+      return await handleFirestoreDeleteRequest(rpcParams(parameters)!);
     });
 
     rpcServer.registerMethod(methodFirestoreGet,
         (rpc.Parameters parameters) async {
-      return await handleFirestoreGetRequest(rpcParams(parameters));
+      return await handleFirestoreGetRequest(rpcParams(parameters)!);
     });
     rpcServer.registerMethod(methodFirestoreGetListen,
         (rpc.Parameters parameters) async {
@@ -109,11 +111,11 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
 
     rpcServer.registerMethod(methodFirestoreTransactionCancel,
         (rpc.Parameters parameters) async {
-      return await handleFirestoreTransactionCancel(rpcParams(parameters));
+      return await handleFirestoreTransactionCancel(rpcParams(parameters)!);
     });
     rpcServer.registerMethod(methodFirestoreTransactionCommit,
         (rpc.Parameters parameters) async {
-      return await handleFirestoreTransactionCommit(rpcParams(parameters));
+      return await handleFirestoreTransactionCommit(rpcParams(parameters)!);
     });
   }
 
@@ -122,10 +124,10 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     var documentData =
         documentDataFromJsonMap(firestore, firestoreSetData.data);
 
-    return await transactionLock.synchronized(() async {
+    return await transactionLock!.synchronized(() async {
       var docRef = await firestore
           .collection(firestoreSetData.path)
-          .add(documentData.asMap());
+          .add(documentData!.asMap());
 
       return (FirestorePathData()..path = docRef.path).toMap();
     });
@@ -137,12 +139,12 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     var transactionId = firestoreGetRequesthData.transactionId;
 
     // Current transaction, read as is
-    DocumentSnapshot documentSnapshot;
+    late DocumentSnapshot documentSnapshot;
     if (transactionId == lastTransactionId) {
       documentSnapshot = await ref.get();
     } else {
       // otherwise lock
-      await transactionLock.synchronized(() async {
+      await transactionLock!.synchronized(() async {
         documentSnapshot = await ref.get();
       });
     }
@@ -154,41 +156,41 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     var firestoreSetData = FirestoreSetData()..fromMap(params);
     var documentData =
         documentDataFromJsonMap(firestore, firestoreSetData.data);
-    SetOptions options;
+    SetOptions? options;
     if (firestoreSetData.merge != null) {
       options = SetOptions(merge: firestoreSetData.merge);
     }
 
-    await transactionLock.synchronized(() async {
+    await transactionLock!.synchronized(() async {
       await firestore
           .doc(firestoreSetData.path)
-          .set(documentData.asMap(), options);
+          .set(documentData!.asMap(), options);
     });
   }
 
   Future handleFirestoreUpdateRequest(rpc.Parameters parameters) async {
-    var firestoreSetData = FirestoreSetData()..fromMap(rpcParams(parameters));
+    var firestoreSetData = FirestoreSetData()..fromMap(rpcParams(parameters)!);
     var documentData =
         documentDataFromJsonMap(firestore, firestoreSetData.data);
 
-    await transactionLock.synchronized(() async {
-      await firestore.doc(firestoreSetData.path).update(documentData.asMap());
+    await transactionLock!.synchronized(() async {
+      await firestore.doc(firestoreSetData.path).update(documentData!.asMap());
     });
   }
 
   Future handleFirestoreDeleteRequest(Map<String, dynamic> params) async {
     var firestoreDeleteData = FirestorePathData()..fromMap(params);
 
-    await transactionLock.synchronized(() async {
+    await transactionLock!.synchronized(() async {
       await firestore.doc(firestoreDeleteData.path).delete();
     });
   }
 
   Future handleFirestoreGetListen(rpc.Parameters parameters) async {
     var subscriptionId = newSubscriptionId;
-    final path = parameters[paramPath]?.value as String;
-    return await transactionLock.synchronized(() async {
-      var ref = firestore.doc(path);
+    final path = parameters[paramPath].value as String?;
+    return await transactionLock!.synchronized(() async {
+      var ref = firestore.doc(path!);
 
       subscriptions[subscriptionId] =
           SimSubscription<DocumentSnapshot>(ref.onSnapshot());
@@ -197,34 +199,34 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
   }
 
   Future handleFirestoreGetCancel(rpc.Parameters parameters) async {
-    var subscriptionId = parameters[paramSubscriptionId]?.value as int;
-    var subscription = subscriptions[subscriptionId];
+    var subscriptionId = parameters[paramSubscriptionId].value as int?;
+    var subscription = subscriptions[subscriptionId!]!;
     subscriptions.remove(subscriptionId);
     await subscription.cancel();
   }
 
   Future handleFirestoreGetStream(rpc.Parameters parameters) async {
     // New stream?
-    var subscriptionId = parameters[paramSubscriptionId].value as int;
+    var subscriptionId = parameters[paramSubscriptionId].value as int?;
     final subscription =
-        subscriptions[subscriptionId] as SimSubscription<DocumentSnapshot>;
-    var event = await subscription?.getNext();
+        subscriptions[subscriptionId!] as SimSubscription<DocumentSnapshot>?;
+    var event = (await subscription?.getNext());
     var map = {};
     if (event == null || event.done) {
-      map[paramDone] = event.done;
+      map[paramDone] = true;
     } else {
       map[paramSnapshot] =
-          DocumentSnapshotData.fromSnapshot(event.data).toMap();
+          DocumentSnapshotData.fromSnapshot(event.data!).toMap();
     }
     return map;
   }
 
   Future handleFirestoreQuery(rpc.Parameters parameters) async {
     var queryData = FirestoreQueryData()
-      ..firestoreFromMap(firestore, rpcParams(parameters));
+      ..firestoreFromMap(firestore, rpcParams(parameters)!);
     final query = await getQuery(queryData);
 
-    return await transactionLock.synchronized(() async {
+    return await transactionLock!.synchronized(() async {
       var querySnapshot = await query.get();
 
       var data = FirestoreQuerySnapshotData();
@@ -239,8 +241,8 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
   Future handleFirestoreQueryListen(rpc.Parameters parameters) async {
     var subscriptionId = newSubscriptionId;
     var queryData = FirestoreQueryData()
-      ..firestoreFromMap(firestore, rpcParams(parameters));
-    return await transactionLock.synchronized(() async {
+      ..firestoreFromMap(firestore, rpcParams(parameters)!);
+    return await transactionLock!.synchronized(() async {
       final query = await getQuery(queryData);
 
       subscriptions[subscriptionId] =
@@ -251,25 +253,25 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
   }
 
   Future handleFirestoreQueryCancel(rpc.Parameters parameters) async {
-    var subscriptionId = parameters[paramSubscriptionId]?.value as int;
-    var subscription = subscriptions[subscriptionId];
+    var subscriptionId = parameters[paramSubscriptionId].value as int?;
+    var subscription = subscriptions[subscriptionId!]!;
     subscriptions.remove(subscriptionId);
     await subscription.cancel();
   }
 
   Future handleFirestoreQueryStream(rpc.Parameters parameters) async {
     // New stream?
-    var subscriptionId = parameters[paramSubscriptionId].value as int;
+    var subscriptionId = parameters[paramSubscriptionId].value as int?;
     final subscription =
-        subscriptions[subscriptionId] as SimSubscription<QuerySnapshot>;
+        subscriptions[subscriptionId!] as SimSubscription<QuerySnapshot>?;
     try {
-      var event = await subscription?.getNext();
+      var event = (await subscription?.getNext());
       var map = {};
       if (event == null || event.done) {
-        map[paramDone] = event.done;
+        map[paramDone] = true; // event.done;
         return map;
       }
-      final querySnapshot = event.data;
+      final querySnapshot = event.data!;
       var data = FirestoreQuerySnapshotData();
       data.list = <DocumentSnapshotData>[];
       for (final doc in querySnapshot.docs) {
@@ -299,7 +301,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
           documentChangeData.data =
               documentDataToJsonMap(documentDataFromSnapshot(change.document));
         }
-        data.changes.add(documentChangeData);
+        data.changes!.add(documentChangeData);
       }
       map[paramSnapshot] = data.toMap();
       return map;
@@ -308,84 +310,17 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
 
   Future<Query> getQuery(FirestoreQueryData queryData) async {
     var collectionPath = queryData.path;
-
-    Query query = firestore.collection(collectionPath);
-
     // Handle param
     var queryInfo = queryData.queryInfo;
-    if (queryInfo != null) {
-      // Select
-      if (queryInfo.selectKeyPaths != null) {
-        query = query.select(queryInfo.selectKeyPaths);
-      }
-
-      // limit
-      if (queryInfo.limit != null) {
-        query = query.limit(queryInfo.limit);
-      }
-
-      // order
-      for (var orderBy in queryInfo.orderBys) {
-        query = query.orderBy(orderBy.fieldPath,
-            descending: orderBy.ascending == false);
-      }
-
-      // where
-      for (var where in queryInfo.wheres) {
-        query = query.where(where.fieldPath,
-            isEqualTo: where.isEqualTo,
-            isLessThan: where.isLessThan,
-            isLessThanOrEqualTo: where.isLessThanOrEqualTo,
-            isGreaterThan: where.isGreaterThan,
-            isGreaterThanOrEqualTo: where.isGreaterThanOrEqualTo,
-            arrayContains: where.arrayContains,
-            isNull: where.isNull);
-      }
-
-      if (queryInfo.startLimit != null) {
-        // get it
-        DocumentSnapshot snapshot;
-        if (queryInfo.startLimit.documentId != null) {
-          snapshot = await firestore
-              .collection(collectionPath)
-              .doc(queryInfo.startLimit.documentId)
-              .get();
-        }
-        if (queryInfo.startLimit.inclusive == true) {
-          query = query.startAt(
-              snapshot: snapshot, values: queryInfo.startLimit.values);
-        } else {
-          query = query.startAfter(
-              snapshot: snapshot, values: queryInfo.startLimit.values);
-        }
-      }
-      if (queryInfo.endLimit != null) {
-        // get it
-        DocumentSnapshot snapshot;
-        if (queryInfo.endLimit.documentId != null) {
-          snapshot = await firestore
-              .collection(collectionPath)
-              .doc(queryInfo.endLimit.documentId)
-              .get();
-        }
-        if (queryInfo.endLimit.inclusive == true) {
-          query = query.endAt(
-              snapshot: snapshot, values: queryInfo.endLimit.values);
-        } else {
-          query = query.endBefore(
-              snapshot: snapshot, values: queryInfo.endLimit.values);
-        }
-      }
-    }
-    return query;
+    return await applyQueryInfo(firestore, collectionPath, queryInfo);
   }
 
   // Batch
   Future handleFirestoreBatch(rpc.Parameters parameters) async {
     var batchData = FirestoreBatchData()
-      ..firestoreFromMap(firestore, rpcParams(parameters));
+      ..firestoreFromMap(firestore, rpcParams(parameters)!);
 
-    await transactionLock.synchronized(() async {
+    await transactionLock!.synchronized(() async {
       await _handleFirestoreBatch(batchData);
     });
   }
@@ -394,15 +329,15 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     var batch = firestore.batch();
     for (var item in batchData.operations) {
       if (item is BatchOperationDeleteData) {
-        batch.delete(firestore.doc(item.path));
+        batch.delete(firestore.doc(item.path!));
       } else if (item is BatchOperationSetData) {
         batch.set(
-            firestore.doc(item.path),
-            documentDataFromJsonMap(firestore, item.data)?.asMap(),
+            firestore.doc(item.path!),
+            documentDataFromJsonMap(firestore, item.data)!.asMap(),
             item.merge != null ? SetOptions(merge: item.merge) : null);
       } else if (item is BatchOperationUpdateData) {
-        batch.update(firestore.doc(item.path),
-            documentDataFromJsonMap(firestore, item.data)?.asMap());
+        batch.update(firestore.doc(item.path!),
+            documentDataFromJsonMap(firestore, item.data)!.asMap());
       } else {
         throw 'not supported $item';
       }
@@ -410,17 +345,17 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     await batch.commit();
   }
 
-  Completer transactionCompleter;
+  Completer? transactionCompleter;
 
   // Transaction
-  Future handleFirestoreTransaction(Map<String, dynamic> params) async {
+  Future handleFirestoreTransaction(Map<String, dynamic>? params) async {
     var responseData = FirestoreTransactionResponseData()
       ..transactionId = ++lastTransactionId;
 
     // start locking but don't wait
-    unawaited(transactionLock.synchronized(() async {
+    unawaited(transactionLock!.synchronized(() async {
       transactionCompleter = Completer();
-      await transactionCompleter.future;
+      await transactionCompleter!.future;
       transactionCompleter = null;
     }));
     return responseData.toMap();
@@ -434,10 +369,10 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
         await _handleFirestoreBatch(batchData);
       } finally {
         // terminate transaction
-        transactionCompleter.complete();
+        transactionCompleter!.complete();
       }
     } else {
-      await transactionLock.synchronized(() async {
+      await transactionLock!.synchronized(() async {
         await _handleFirestoreBatch(batchData);
       });
     }
@@ -448,7 +383,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
 
     if (requestData.transactionId == lastTransactionId) {
       // terminate transaction
-      transactionCompleter.complete();
+      transactionCompleter!.complete();
     }
   }
 
@@ -464,9 +399,10 @@ class FirestoreSimServer implements FirebaseSimPlugin {
   final Firebase firebase;
   final Map<Firestore, Lock> _locks = <Firestore, Lock>{};
 
-  Lock transactionLock(Firestore firestore) => _locks[firestore];
+  Lock? transactionLock(Firestore firestore) => _locks[firestore];
+
   // App app;
-  Firestore firestore;
+  Firestore? firestore;
 
   FirestoreSimServer(
       this.firestoreService, this.firebaseSimServer, this.firebase) {
@@ -474,8 +410,8 @@ class FirestoreSimServer implements FirebaseSimPlugin {
   }
 
   @override
-  FirebaseSimPluginClient register(App app, rpc.Server rpcServer) {
-    var firestore = firestoreService.firestore(app);
+  FirebaseSimPluginClient register(App? app, rpc.Server rpcServer) {
+    var firestore = firestoreService.firestore(app!);
     // One transaction lock per server
     _locks[firestore] ??= Lock();
     var client = FirestireSimPluginClient(this, firestore, rpcServer);

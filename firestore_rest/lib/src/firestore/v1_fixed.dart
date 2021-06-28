@@ -259,6 +259,7 @@ class RunQueryFixedResponseDocument {
   /// RunQueryRequest.new_transaction was set in the request. If set, no other
   /// fields will be set in this response.
   core.String? transaction;
+
   core.List<core.int> get transactionAsBytes =>
       convert.base64.decode(transaction!);
 
@@ -395,6 +396,7 @@ class ValueFixed implements Value {
   /// considered by queries.
   @override
   core.String? bytesValue;
+
   @override
   core.List<core.int> get bytesValueAsBytes =>
       convert.base64.decode(bytesValue!);

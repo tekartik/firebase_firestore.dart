@@ -255,7 +255,7 @@ class LimitInfo {
 }
 
 class WhereInfo {
-  String? fieldPath;
+  String fieldPath;
 
   WhereInfo(
     this.fieldPath, {
@@ -290,8 +290,8 @@ class WhereInfo {
   dynamic isGreaterThan;
   dynamic isGreaterThanOrEqualTo;
   dynamic arrayContains;
-  List<Object?>? arrayContainsAny;
-  List<Object?>? whereIn;
+  List<Object>? arrayContainsAny;
+  List<Object>? whereIn;
   bool? isNull;
 
   @override
@@ -383,7 +383,7 @@ WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
       isEqualTo = value;
     }
   } else if (operator == operatorLessThan) {}
-  var whereInfo = WhereInfo(map['fieldPath'] as String?,
+  var whereInfo = WhereInfo(map['fieldPath'] as String,
       isEqualTo: isEqualTo,
       isNull: isNull,
       isLessThan: (operator == operatorLessThan) ? value : null,
@@ -460,9 +460,9 @@ Map<String, Object?> limitInfoToJsonMap(LimitInfo limitInfo) {
 
 LimitInfo limitInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   var limitInfo = LimitInfo();
-  if (map.containsKey('inclusive')) {
-    limitInfo.inclusive = map['inclusive'] == true;
-  }
+
+  limitInfo.inclusive = map['inclusive'] == true;
+
   if (map.containsKey('values')) {
     limitInfo.values = (map['values'] as List)
         .map((value) => jsonToDocumentDataValue(firestore, value))

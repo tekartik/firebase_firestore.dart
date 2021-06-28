@@ -55,7 +55,7 @@ class BaseData {
 }
 
 class FirestorePathData extends BaseData {
-  String path;
+  late String path;
 
   @override
   void fromMap(Map<String, dynamic> map) {
@@ -77,26 +77,26 @@ class FirestoreGetData extends FirestorePathData {}
 class FirestoreDocumentSnapshotDataImpl extends FirestoreSetData
     implements FirestoreDocumentSnapshotData {
   @override
-  Timestamp createTime;
+  Timestamp? createTime;
   @override
-  Timestamp updateTime;
+  Timestamp? updateTime;
 
   @override
   void fromMap(Map<String, dynamic> map) {
     super.fromMap(map);
-    createTime = Timestamp.tryParse(map['createTime'] as String);
-    updateTime = Timestamp.tryParse(map['updateTime'] as String);
+    createTime = Timestamp.tryAnyAsTimestamp(map['createTime']);
+    updateTime = Timestamp.tryAnyAsTimestamp(map['updateTime']);
   }
 }
 
 abstract class FirestoreDocumentSnapshotData {
   String get path;
 
-  Map<String, dynamic> get data;
+  Map<String, dynamic>? get data;
 
-  Timestamp get createTime;
+  Timestamp? get createTime;
 
-  Timestamp get updateTime;
+  Timestamp? get updateTime;
 }
 
 class DocumentGetSnapshotData extends DocumentSnapshotData {
@@ -104,12 +104,12 @@ class DocumentGetSnapshotData extends DocumentSnapshotData {
       : super.fromSnapshot(snapshot);
 
   // optional for stream only
-  int streamId;
+  int? streamId;
 
   @override
   void fromMap(Map<String, dynamic> map) {
     super.fromMap(map);
-    streamId = map['streamId'] as int;
+    streamId = map['streamId'] as int?;
   }
 
   @override
@@ -126,12 +126,12 @@ class DocumentGetSnapshotData extends DocumentSnapshotData {
 class DocumentSnapshotData extends FirestorePathData
     implements FirestoreDocumentSnapshotData {
   @override
-  Map<String, dynamic> data;
+  Map<String, dynamic>? data;
 
   @override
-  Timestamp createTime;
+  Timestamp? createTime;
   @override
-  Timestamp updateTime;
+  Timestamp? updateTime;
 
   DocumentSnapshotData.fromSnapshot(DocumentSnapshot snapshot) {
     path = snapshot.ref.path;
@@ -147,9 +147,9 @@ class DocumentSnapshotData extends FirestorePathData
   @override
   void fromMap(Map<String, dynamic> map) {
     super.fromMap(map);
-    data = (map['data'] as Map)?.cast<String, dynamic>();
-    createTime = Timestamp.tryParse(map['createTime'] as String);
-    updateTime = Timestamp.tryParse(map['updateTime'] as String);
+    data = (map['data'] as Map?)?.cast<String, dynamic>();
+    createTime = Timestamp.tryAnyAsTimestamp(map['createTime']);
+    updateTime = Timestamp.tryAnyAsTimestamp(map['updateTime']);
   }
 
   @override
@@ -163,19 +163,19 @@ class DocumentSnapshotData extends FirestorePathData
 }
 
 class DocumentChangeData extends BaseData {
-  String id;
-  String type; // added/modified/removed
-  int newIndex;
-  int oldIndex;
-  Map<String, dynamic> data; // only present for deleted
+  String? id;
+  String? type; // added/modified/removed
+  int? newIndex;
+  int? oldIndex;
+  Map<String, dynamic>? data; // only present for deleted
 
   @override
-  void fromMap(Map<String, dynamic> map) {
-    id = map['id'] as String;
-    type = map['type'] as String;
-    newIndex = map['newIndex'] as int;
-    newIndex = map['oldIndex'] as int;
-    data = (map['data'] as Map)?.cast<String, dynamic>();
+  void fromMap(Map<String, dynamic>? map) {
+    id = map!['id'] as String?;
+    type = map['type'] as String?;
+    newIndex = map['newIndex'] as int?;
+    newIndex = map['oldIndex'] as int?;
+    data = (map['data'] as Map?)?.cast<String, dynamic>();
   }
 
   @override
@@ -194,11 +194,11 @@ class DocumentChangeData extends BaseData {
 }
 
 class FirestoreQuerySnapshotData extends BaseData {
-  List<DocumentSnapshotData> list;
-  List<DocumentChangeData> changes;
+  late List<DocumentSnapshotData> list;
+  List<DocumentChangeData>? changes;
 
   // optional for stream only
-  int streamId;
+  int? streamId;
 
   @override
   void fromMap(Map<String, dynamic> map) {
@@ -210,10 +210,10 @@ class FirestoreQuerySnapshotData extends BaseData {
     }
     changes = [];
     for (var item in map['changes'] as List) {
-      changes.add(
+      changes!.add(
           DocumentChangeData()..fromMap((item as Map).cast<String, dynamic>()));
     }
-    streamId = map['streamId'] as int;
+    streamId = map['streamId'] as int?;
   }
 
   @override
@@ -227,7 +227,7 @@ class FirestoreQuerySnapshotData extends BaseData {
 
     var rawChanges = <Map<String, dynamic>>[];
     if (changes?.isNotEmpty == true) {
-      for (var change in changes) {
+      for (var change in changes!) {
         rawChanges.add(change.toMap());
       }
     }
@@ -241,14 +241,14 @@ class FirestoreQuerySnapshotData extends BaseData {
 }
 
 class FirestoreSetData extends FirestorePathData {
-  Map<String, dynamic> data;
-  bool merge;
+  Map<String, dynamic>? data;
+  bool? merge;
 
   @override
   void fromMap(Map<String, dynamic> map) {
     super.fromMap(map);
-    data = (map['data'] as Map)?.cast<String, dynamic>();
-    merge = map['merge'] as bool;
+    data = (map['data'] as Map?)?.cast<String, dynamic>();
+    merge = map['merge'] as bool?;
   }
 
   @override
@@ -263,12 +263,12 @@ class FirestoreSetData extends FirestorePathData {
 }
 
 class FirestoreGetRequestData extends FirestorePathData {
-  int transactionId;
+  int? transactionId;
 
   @override
   void fromMap(Map<String, dynamic> map) {
     super.fromMap(map);
-    transactionId = map['transactionId'] as int;
+    transactionId = map['transactionId'] as int?;
   }
 
   @override
@@ -282,13 +282,13 @@ class FirestoreGetRequestData extends FirestorePathData {
 }
 
 class AdminInitializeAppData extends BaseData {
-  String projectId;
-  String name;
+  String? projectId;
+  String? name;
 
   @override
-  void fromMap(Map<String, dynamic> map) {
-    projectId = map['projectId'] as String;
-    name = map['name'] as String;
+  void fromMap(Map<String, dynamic>? map) {
+    projectId = map!['projectId'] as String?;
+    name = map['name'] as String?;
   }
 
   @override
@@ -299,11 +299,11 @@ class AdminInitializeAppData extends BaseData {
 }
 
 class FirebaseInitializeAppResponseData extends BaseData {
-  int appId;
+  int? appId;
 
   @override
-  void fromMap(Map<String, dynamic> map) {
-    appId = map['appId'] as int;
+  void fromMap(Map<String, dynamic>? map) {
+    appId = map!['appId'] as int?;
   }
 
   @override
@@ -316,11 +316,11 @@ class FirebaseInitializeAppResponseData extends BaseData {
 }
 
 class FirestoreTransactionResponseData extends BaseData {
-  int transactionId;
+  int? transactionId;
 
   @override
-  void fromMap(Map<String, dynamic> map) {
-    transactionId = map['transactionId'] as int;
+  void fromMap(Map<String, dynamic>? map) {
+    transactionId = map!['transactionId'] as int?;
   }
 
   @override
@@ -333,7 +333,7 @@ class FirestoreTransactionResponseData extends BaseData {
 }
 
 class FirestoreQueryData extends FirestorePathData {
-  QueryInfo queryInfo;
+  QueryInfo? queryInfo;
 
   void firestoreFromMap(Firestore firestore, Map<String, dynamic> map) {
     super.fromMap(map);
@@ -343,7 +343,7 @@ class FirestoreQueryData extends FirestorePathData {
 
   @override
   @deprecated
-  void fromMap(Map<String, dynamic> map) {
+  void fromMap(Map<String, dynamic>? map) {
     throw 'need firestore';
     /*
     super.fromMap(map);
@@ -354,7 +354,7 @@ class FirestoreQueryData extends FirestorePathData {
   @override
   Map<String, dynamic> toMap() {
     var map = super.toMap();
-    map['query'] = queryInfoToJsonMap(queryInfo);
+    map['query'] = queryInfoToJsonMap(queryInfo!);
     return map;
   }
 }
@@ -373,12 +373,12 @@ class BatchOperationDeleteData extends BatchOperationData {
 }
 
 class BatchOperationUpdateData extends BatchOperationData {
-  Map<String, dynamic> data;
+  Map<String, dynamic>? data;
 
   @override
   void fromMap(Map<String, dynamic> map) {
     super.fromMap(map);
-    data = (map['data'] as Map)?.cast<String, dynamic>();
+    data = (map['data'] as Map?)?.cast<String, dynamic>();
   }
 
   @override
@@ -390,14 +390,14 @@ class BatchOperationUpdateData extends BatchOperationData {
 }
 
 class BatchOperationSetData extends BatchOperationData {
-  Map<String, dynamic> data;
-  bool merge;
+  Map<String, dynamic>? data;
+  bool? merge;
 
   @override
   void fromMap(Map<String, dynamic> map) {
     super.fromMap(map);
-    data = (map['data'] as Map)?.cast<String, dynamic>();
-    merge = map['merge'] as bool;
+    data = (map['data'] as Map?)?.cast<String, dynamic>();
+    merge = map['merge'] as bool?;
   }
 
   @override
@@ -412,14 +412,14 @@ class BatchOperationSetData extends BatchOperationData {
 }
 
 abstract class BatchOperationData extends RawData {
-  String method;
-  String path;
+  String? method;
+  String? path;
 
   @override
   void fromMap(Map<String, dynamic> map) {
     super.fromMap(map);
-    method = map['method'] as String;
-    path = map['path'] as String;
+    method = map['method'] as String?;
+    path = map['path'] as String?;
   }
 
   @override
@@ -433,17 +433,17 @@ abstract class BatchOperationData extends RawData {
 
 // for batch and transaction commit
 class FirestoreBatchData extends BaseData {
-  int transactionId;
+  int? transactionId;
   List<BatchOperationData> operations = [];
 
   void firestoreFromMap(Firestore firestore, Map<String, dynamic> map) {
     super.fromMap(map);
     var list = map['list'] as List;
-    transactionId = map['transactionId'] as int;
+    transactionId = map['transactionId'] as int?;
 
     for (var item in list) {
       var itemMap = (item as Map).cast<String, dynamic>();
-      var method = itemMap['method'] as String;
+      var method = itemMap['method'] as String?;
       switch (method) {
         case methodFirestoreDelete:
           operations.add(BatchOperationDeleteData()..fromMap(itemMap));
@@ -462,7 +462,7 @@ class FirestoreBatchData extends BaseData {
 
   @override
   @deprecated
-  void fromMap(Map<String, dynamic> map) {
+  void fromMap(Map<String, dynamic>? map) {
     throw 'need firestore';
     /*
     super.fromMap(map);
@@ -487,11 +487,11 @@ class FirestoreBatchData extends BaseData {
 
 // for batch and transaction commit
 class FirestoreTransactionCancelRequestData extends BaseData {
-  int transactionId;
+  int? transactionId;
 
   void firestoreFromMap(Map<String, dynamic> map) {
     super.fromMap(map);
-    transactionId = map['transactionId'] as int;
+    transactionId = map['transactionId'] as int?;
   }
 
   @override
@@ -505,11 +505,11 @@ class FirestoreTransactionCancelRequestData extends BaseData {
 }
 
 abstract class FirestoreQueryStreamIdBase extends BaseData {
-  int streamId;
+  int? streamId;
 
   @override
-  void fromMap(Map<String, dynamic> map) {
-    streamId = map['streamId'] as int;
+  void fromMap(Map<String, dynamic>? map) {
+    streamId = map!['streamId'] as int?;
   }
 
   @override
@@ -523,7 +523,7 @@ abstract class FirestoreQueryStreamIdBase extends BaseData {
 
 class FirestoreQueryStreamCancelData extends FirestoreQueryStreamIdBase {
   @override
-  void fromMap(Map<String, dynamic> map) {
+  void fromMap(Map<String, dynamic>? map) {
     super.fromMap(map);
   }
 
@@ -536,7 +536,7 @@ class FirestoreQueryStreamCancelData extends FirestoreQueryStreamIdBase {
 
 class FirestoreQueryStreamResponse extends FirestoreQueryStreamIdBase {
   @override
-  void fromMap(Map<String, dynamic> map) {
+  void fromMap(Map<String, dynamic>? map) {
     super.fromMap(map);
   }
 
