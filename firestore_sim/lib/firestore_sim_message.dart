@@ -359,9 +359,7 @@ class FirestoreQueryData extends FirestorePathData {
   }
 }
 
-class BatchOperationDeleteData extends BatchOperationData {
-
-}
+class BatchOperationDeleteData extends BatchOperationData {}
 
 class BatchOperationUpdateData extends BatchOperationData {
   Map<String, dynamic>? data;
@@ -512,12 +510,8 @@ abstract class FirestoreQueryStreamIdBase extends BaseData {
   }
 }
 
-class FirestoreQueryStreamCancelData extends FirestoreQueryStreamIdBase {
+class FirestoreQueryStreamCancelData extends FirestoreQueryStreamIdBase {}
 
-}
-
-class FirestoreQueryStreamResponse extends FirestoreQueryStreamIdBase {
-
-}
+class FirestoreQueryStreamResponse extends FirestoreQueryStreamIdBase {}
 
 class FirestoreGetStreamResponse extends FirestoreQueryStreamResponse {}
