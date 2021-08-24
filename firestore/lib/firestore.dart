@@ -159,7 +159,7 @@ abstract class DocumentData {
   Map<String, Object?> asMap();
 
   // use hasProperty
-  @deprecated
+  @Deprecated('Use hasProperty')
   bool containsKey(String key);
 
   // Document reference
@@ -312,7 +312,7 @@ const String operatorGreaterThanOrEqual = '>=';
 const String operatorArrayContains = 'array-contains';
 
 // compat 2019-10-24, fix mistake
-@deprecated
+@Deprecated('Typo use operatorArrayContains')
 const String opeatorArrayContains = operatorArrayContains;
 
 const orderByAscending = 'asc';

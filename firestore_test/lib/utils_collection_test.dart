@@ -13,6 +13,7 @@ void runApp(
     test('deleteCollection', () async {
       var ref = firestore
           .collection(url.join(testsRefPath, 'utils_collection', 'delete'));
+      await deleteCollection(firestore, ref);
       var itemDoc = ref.doc('item');
       // create an item
       await itemDoc.set({});
@@ -28,7 +29,8 @@ void runApp(
       }
 
       expect(await findInCollection(), isTrue);
-      await deleteCollection(firestore, ref);
+      var count = await deleteCollection(firestore, ref);
+      expect(count, 1);
       expect(await findInCollection(), isFalse);
     });
   });

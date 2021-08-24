@@ -342,7 +342,7 @@ class FirestoreQueryData extends FirestorePathData {
   }
 
   @override
-  @deprecated
+  @Deprecated('Use firestoreFromMap')
   void fromMap(Map<String, dynamic>? map) {
     throw 'need firestore';
     /*
@@ -359,18 +359,7 @@ class FirestoreQueryData extends FirestorePathData {
   }
 }
 
-class BatchOperationDeleteData extends BatchOperationData {
-  @override
-  void fromMap(Map<String, dynamic> map) {
-    super.fromMap(map);
-  }
-
-  @override
-  Map<String, dynamic> toMap() {
-    var map = super.toMap();
-    return map;
-  }
-}
+class BatchOperationDeleteData extends BatchOperationData {}
 
 class BatchOperationUpdateData extends BatchOperationData {
   Map<String, dynamic>? data;
@@ -461,7 +450,7 @@ class FirestoreBatchData extends BaseData {
   }
 
   @override
-  @deprecated
+  @Deprecated('Use firestoreFromMap')
   void fromMap(Map<String, dynamic>? map) {
     throw 'need firestore';
     /*
@@ -521,30 +510,8 @@ abstract class FirestoreQueryStreamIdBase extends BaseData {
   }
 }
 
-class FirestoreQueryStreamCancelData extends FirestoreQueryStreamIdBase {
-  @override
-  void fromMap(Map<String, dynamic>? map) {
-    super.fromMap(map);
-  }
+class FirestoreQueryStreamCancelData extends FirestoreQueryStreamIdBase {}
 
-  @override
-  Map<String, dynamic> toMap() {
-    var map = super.toMap();
-    return map;
-  }
-}
-
-class FirestoreQueryStreamResponse extends FirestoreQueryStreamIdBase {
-  @override
-  void fromMap(Map<String, dynamic>? map) {
-    super.fromMap(map);
-  }
-
-  @override
-  Map<String, dynamic> toMap() {
-    var map = super.toMap();
-    return map;
-  }
-}
+class FirestoreQueryStreamResponse extends FirestoreQueryStreamIdBase {}
 
 class FirestoreGetStreamResponse extends FirestoreQueryStreamResponse {}

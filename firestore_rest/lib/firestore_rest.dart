@@ -11,8 +11,12 @@ FirestoreServiceRest firestoreServiceRest = FirestoreServiceRestImpl();
 const String firestoreGoogleApisAuthDatastoreScope =
     FirestoreApi.datastoreScope;
 
-@deprecated
+@Deprecated('Use firestoreGoogleApisAuthDatastoreScope')
 const String googleApisAuthDatastoreScopre =
     firestoreGoogleApisAuthDatastoreScope;
-@deprecated
-const String googleApisAuthCloudPlatformScope = FirestoreApi.cloudPlatformScope;
+@Deprecated('Use firestoreGoogleApisAuthCloudPlatformScope')
+const String googleApisAuthCloudPlatformScope =
+    firestoreGoogleApisAuthCloudPlatformScope;
+
+const String firestoreGoogleApisAuthCloudPlatformScope =
+    FirestoreApi.cloudPlatformScope;

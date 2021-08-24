@@ -77,7 +77,7 @@ class ProjectsDatabasesDocumentsResourceApi {
       _queryParams['fields'] = [$fields];
     }
 
-    final _url = 'v1/' + core.Uri.encodeFull('$parent') + ':runQuery';
+    final _url = 'v1/' + core.Uri.encodeFull(parent) + ':runQuery';
 
     var _response = await _requester.request(
       _url,
@@ -144,7 +144,7 @@ class ProjectsDatabasesDocumentsResourceApi {
       if ($fields != null) 'fields': [$fields],
     };
 
-    final _url = 'v1/' + core.Uri.encodeFull('$name');
+    final _url = 'v1/' + core.Uri.encodeFull(name);
 
     final _response = await _requester.request(
       _url,
@@ -198,7 +198,7 @@ class ProjectsDatabasesDocumentsResourceApi {
       if ($fields != null) 'fields': [$fields],
     };
 
-    final _url = 'v1/' + core.Uri.encodeFull('$name');
+    final _url = 'v1/' + core.Uri.encodeFull(name);
 
     final _response = await _requester.request(
       _url,

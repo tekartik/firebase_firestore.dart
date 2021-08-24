@@ -310,7 +310,7 @@ class TransactionIdb extends WriteBatchIdb implements Transaction {
       : super(firestoreIdb);
 
   @override
-  void delete(DocumentReference? documentRef) {
+  void delete(DocumentReference documentRef) {
     localTransaction.firestoreIdb
         .txnDelete(localTransaction, documentRef as DocumentReferenceIdb);
   }
