@@ -588,18 +588,19 @@ abstract class WriteBatchBase implements WriteBatch {
   final List<WriteBatchOperation> operations = [];
 
   @override
-  void delete(DocumentReference? ref) =>
-      operations.add(WriteBatchOperationDelete(ref));
+  void delete(DocumentReference documentRef) =>
+      operations.add(WriteBatchOperationDelete(documentRef));
 
   @override
-  void set(DocumentReference ref, Map<String, Object?> data,
+  void set(DocumentReference documentRef, Map<String, Object?> data,
       [SetOptions? options]) {
-    operations.add(WriteBatchOperationSet(ref, DocumentData(data), options));
+    operations
+        .add(WriteBatchOperationSet(documentRef, DocumentData(data), options));
   }
 
   @override
-  void update(DocumentReference ref, Map<String, Object?> data) {
-    operations.add(WriteBatchOperationUpdate(ref, DocumentData(data)));
+  void update(DocumentReference documentRef, Map<String, Object?> data) {
+    operations.add(WriteBatchOperationUpdate(documentRef, DocumentData(data)));
   }
 }
 

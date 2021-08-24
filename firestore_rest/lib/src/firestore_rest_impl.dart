@@ -234,7 +234,7 @@ class FirestoreRestImpl
   }
 
   String getDocumentRootName() {
-    return url.join('${getDatabaseName()}', 'documents');
+    return url.join(getDatabaseName(), 'documents');
   }
 
   /// Remove

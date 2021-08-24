@@ -16,7 +16,7 @@ JavascriptScriptLoader firestoreJsLoader = JavascriptScriptLoader(
     'https://www.gstatic.com/firebasejs/$firebaseJsVersion/firebase-firestore.js');
 
 // Put js in HTML instead
-@deprecated
+@Deprecated('Put js in HTML instead')
 Future loadFirebaseFirestoreJs() async {
   await firestoreJsLoader.load();
 }

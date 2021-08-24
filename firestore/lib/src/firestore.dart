@@ -77,7 +77,7 @@ class DocumentDataMap implements DocumentData {
   void setValue(String key, dynamic value) => map[key] = value;
 
   Object? valueAtFieldPath(String fieldPath) {
-    final parts = fieldPath.split('\.');
+    final parts = fieldPath.split('.');
     Map parent = map;
     Object? value;
     for (var i = 0; i < parts.length; i++) {
@@ -213,11 +213,12 @@ const String firestoreNameFieldPath = '__name__';
 class FirestoreSettings {
   /// Enables the use of `Timestamp`s for timestamp fields in
   /// `DocumentSnapshot`s.
-  @deprecated
+  @Deprecated('No longer needed')
   final bool? timestampsInSnapshots;
 
   // ignore: deprecated_member_use_from_same_package
-  FirestoreSettings({@deprecated this.timestampsInSnapshots});
+  FirestoreSettings(
+      {@Deprecated('No longer needed') this.timestampsInSnapshots});
 
   @override
   String toString() {

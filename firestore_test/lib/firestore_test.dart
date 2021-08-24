@@ -41,7 +41,7 @@ void run(
   utilsTest(firestoreService: firestoreService, firestore: firestore);
 }
 
-@deprecated
+@Deprecated('Default')
 void runNoTimestampsInSnapshots(
     {required FirestoreService firestoreService,
     required FirebaseAsync firebase,

@@ -42,7 +42,7 @@ class UpdateDocument extends WriteDocument {
   @override
   void _fromMap(Map? map) {
     if (map == null) {
-      return null;
+      return;
     }
     _currentParent = null;
     _fields = _firstMapToFields(map);
