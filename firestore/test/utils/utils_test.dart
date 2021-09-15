@@ -6,7 +6,7 @@ import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:test/test.dart';
 
-import '../src_firestore_common_test.dart';
+import '../common/mixin_test.dart';
 
 class DocumentSnapshotMock extends DocumentSnapshotBase {
   DocumentSnapshotMock(
@@ -74,9 +74,10 @@ void main() {
     });
 
     test('mapQueryInfo', () {
+      var firestoreMock = FirestoreMock();
       DocumentSnapshotBase _snapshot(String id, int value) {
         return DocumentSnapshotMock(
-            ref: DocumentReferenceMock(id),
+            ref: DocumentReferenceMock(firestoreMock, id),
             documentData:
                 DocumentDataMap(map: <String, Object?>{'value': value}));
       }
