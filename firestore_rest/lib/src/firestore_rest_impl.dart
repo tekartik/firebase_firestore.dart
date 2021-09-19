@@ -213,7 +213,7 @@ class FirestoreRestImpl
   api.FirestoreFixedApi get firestoreFixedApi =>
       _firestoreFixedApi ??= FirestoreFixedApi(appImpl.client!);
 
-  String? get projectId => appImpl.options!.projectId;
+  String? get projectId => appImpl.options.projectId;
 
   FirestoreRestImpl(this.appImpl) {
     assert(projectId != null);

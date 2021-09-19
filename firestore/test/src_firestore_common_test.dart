@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
@@ -8,90 +5,11 @@ import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:test/test.dart';
 
+import 'common/mixin_test.dart';
+
 // Use this test to properly test on all platform
 // pub run test -p chrome,node,vm,firefox .\test\timestamp_test.dart
 bool get runningAsJavascript => identical(1, 1.0);
-
-class FirestoreMock extends Object with FirestoreMixin implements Firestore {
-  FirestoreMock({FirestoreSettings? settings}) {
-    firestoreSettings = settings;
-  }
-
-  @override
-  CollectionReference collection(String path) => throw UnimplementedError();
-
-  @override
-  DocumentReference doc(String path) => DocumentReferenceMock(path);
-
-  @override
-  WriteBatch batch() => throw UnimplementedError();
-
-  @override
-  Future<T> runTransaction<T>(
-          FutureOr<T> Function(Transaction transaction) updateFunction) =>
-      throw UnimplementedError();
-
-  @override
-  void settings(FirestoreSettings settings) => throw UnimplementedError();
-
-  @override
-  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) =>
-      throw UnimplementedError();
-}
-
-class DocumentSnapshotMock implements DocumentSnapshot {
-  @override
-  final DocumentReferenceMock ref;
-
-  DocumentSnapshotMock(this.ref);
-
-  @override
-  Map<String, Object?> get data => throw UnimplementedError();
-
-  @override
-  bool get exists => throw UnimplementedError();
-
-  @override
-  Timestamp? get updateTime => throw UnimplementedError();
-
-  @override
-  Timestamp? get createTime => throw UnimplementedError();
-}
-
-class DocumentReferenceMock implements DocumentReference {
-  DocumentReferenceMock(this.path);
-
-  @override
-  CollectionReference collection(String path) => throw UnimplementedError();
-
-  @override
-  Future<void> delete() => throw UnimplementedError();
-
-  @override
-  Future<DocumentSnapshot> get() => throw UnimplementedError();
-
-  @override
-  String get id => getPathId(path);
-
-  @override
-  CollectionReference get parent => throw UnimplementedError();
-
-  @override
-  final String path;
-
-  @override
-  Future<void> set(Map<String, Object?> data, [SetOptions? options]) =>
-      throw UnimplementedError();
-
-  @override
-  Future<void> update(Map<String, Object?> data) => throw UnimplementedError();
-
-  @override
-  Stream<DocumentSnapshot> onSnapshot() => throw UnimplementedError();
-
-  @override
-  String toString() => path;
-}
 
 void main() {
   group('path', () {
@@ -143,8 +61,8 @@ void main() {
       queryInfo.startAt(
           values: [DateTime.fromMillisecondsSinceEpoch(1234567890123)]);
       queryInfo.endAt(
-          snapshot:
-              DocumentSnapshotMock(DocumentReferenceMock('path/to/dock')));
+          snapshot: DocumentSnapshotMock(
+              DocumentReferenceMock(firestore, 'path/to/dock')));
       queryInfo.addWhere(WhereInfo('whereField',
           isLessThanOrEqualTo:
               DateTime.fromMillisecondsSinceEpoch(12345678901234)));
@@ -200,7 +118,7 @@ void main() {
   });
 
   group('DocumentData', () {
-    final firestore = FirestoreMock(settings: FirestoreSettings());
+    final firestore = FirestoreMock();
     test('dateTime', () {
       var utcDate = DateTime.fromMillisecondsSinceEpoch(12345657890123).toUtc();
       var localDate = DateTime.fromMillisecondsSinceEpoch(123456578901234);

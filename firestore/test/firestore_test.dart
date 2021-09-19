@@ -5,7 +5,7 @@ import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:test/test.dart';
 
-import 'src_firestore_common_test.dart';
+import 'common/mixin_test.dart';
 
 void main() {
   var firestore = FirestoreMock();
@@ -163,6 +163,22 @@ void main() {
           'delete': {r'$t': 'FieldValue', r'$v': '~delete'}
         }
       });
+    });
+
+    test('all types to/from json', () {
+      var map = {
+        'int': 1,
+        'bool': true,
+        'list': [1],
+        'map': {'test': 1},
+        'blob': Blob.fromList([1, 2, 3]),
+        'ref': firestore.doc('test/1'),
+        'geoPoint': GeoPoint(1, 2),
+        'timestamp': Timestamp(1, 2)
+      };
+      expect(
+          documentDataMapFromJsonMap(firestore, documentDataMapToJsonMap(map)),
+          map);
     });
 
     test('fromJsonMap', () {

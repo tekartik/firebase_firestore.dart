@@ -35,6 +35,25 @@ class FirestoreMock with FirestoreMixin {
   }
 }
 
+class DocumentSnapshotMock implements DocumentSnapshot {
+  @override
+  final DocumentReferenceMock ref;
+
+  DocumentSnapshotMock(this.ref);
+
+  @override
+  Map<String, Object?> get data => throw UnimplementedError();
+
+  @override
+  bool get exists => throw UnimplementedError();
+
+  @override
+  Timestamp? get updateTime => throw UnimplementedError();
+
+  @override
+  Timestamp? get createTime => throw UnimplementedError();
+}
+
 class CollectionReferenceMock
     with
         CollectionReferenceMixin,

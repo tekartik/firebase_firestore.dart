@@ -129,7 +129,7 @@ class FirestoreSembast extends Object
   String get appLocalPath => ((app is AppLocal)
       ? (app as AppLocal).localPath
       : join('.dart_tool', 'tekartik_firebase_firestore_local',
-          AppLocal.appPathPart(app.name!)));
+          AppLocal.appPathPart(app.name)));
 
   Future close() async {
     await closeSubscriptions();

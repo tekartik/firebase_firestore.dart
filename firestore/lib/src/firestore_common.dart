@@ -200,10 +200,15 @@ DocumentData? documentDataFromJsonMap(
       map: jsonToDocumentDataValue(firestore, map) as Map<String, Object?>?);
 }
 
-/// Read as data ready to set in firestore.set
-Map<String, Object?>? documentDataMapFromJsonMap(
+/// Json map to firestore document data map.
+Map<String, Object?> documentDataMapFromJsonMap(
     Firestore firestore, Map<String, Object?> map) {
-  return documentDataFromJsonMap(firestore, map)?.asMap();
+  return documentDataFromJsonMap(firestore, map)!.asMap();
+}
+
+/// Firestore document data to json map.
+Map<String, Object?> documentDataMapToJsonMap(Map<String, Object?> map) {
+  return documentDataToJsonMap(documentDataFromMap(map))!;
 }
 
 /// will return null if map is null

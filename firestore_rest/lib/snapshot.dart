@@ -6,7 +6,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 
 String _basePath(App app) {
-  return 'projects/${app.options?.projectId}/databases/(default)/documents';
+  return 'projects/${app.options.projectId}/databases/(default)/documents';
 }
 
 Map<String, Object?> documentDataToJson(App app, DocumentData data,
