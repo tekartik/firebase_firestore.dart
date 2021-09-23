@@ -271,7 +271,7 @@ class FirestoreLoggerBatch implements WriteBatch {
   void delete(DocumentReference ref) {
     Object? exception;
     try {
-      writeBatch.delete(ref);
+      writeBatch.delete((ref as DocumentReferenceLogger).ref);
     } catch (e) {
       exception = e;
       rethrow;
@@ -288,7 +288,7 @@ class FirestoreLoggerBatch implements WriteBatch {
       [SetOptions? options]) {
     Object? exception;
     try {
-      writeBatch.set(ref, data, options);
+      writeBatch.set((ref as DocumentReferenceLogger).ref, data, options);
     } catch (e) {
       exception = e;
       rethrow;
@@ -305,7 +305,7 @@ class FirestoreLoggerBatch implements WriteBatch {
   void update(DocumentReference ref, Map<String, Object?> data) {
     Object? exception;
     try {
-      writeBatch.update(ref, data);
+      writeBatch.update((ref as DocumentReferenceLogger).ref, data);
     } catch (e) {
       exception = e;
       rethrow;
@@ -633,7 +633,7 @@ class TransactionLogger with TransactionMixin implements Transaction {
   void delete(DocumentReference ref) {
     Object? exception;
     try {
-      transaction.delete(ref);
+      transaction.delete((ref as DocumentReferenceLogger).ref);
     } catch (e) {
       exception = e;
       rethrow;
@@ -650,7 +650,9 @@ class TransactionLogger with TransactionMixin implements Transaction {
     Object? exception;
     DocumentSnapshotLogger? snapshot;
     try {
-      snapshot = await (documentRef as DocumentReferenceLogger).get();
+      snapshot = DocumentSnapshotLogger(
+          await transaction.get((documentRef as DocumentReferenceLogger).ref),
+          firestoreLogger);
       return snapshot;
     } catch (e) {
       exception = e;
@@ -671,7 +673,8 @@ class TransactionLogger with TransactionMixin implements Transaction {
       [SetOptions? options]) {
     Object? exception;
     try {
-      transaction.set(documentRef, data, options);
+      transaction.set(
+          (documentRef as DocumentReferenceLogger).ref, data, options);
     } catch (e) {
       exception = e;
       rethrow;
@@ -688,7 +691,7 @@ class TransactionLogger with TransactionMixin implements Transaction {
   void update(DocumentReference documentRef, Map<String, Object?> data) {
     Object? exception;
     try {
-      transaction.update(documentRef, data);
+      transaction.update((documentRef as DocumentReferenceLogger).ref, data);
     } catch (e) {
       exception = e;
       rethrow;

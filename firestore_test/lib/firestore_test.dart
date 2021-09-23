@@ -1658,10 +1658,7 @@ void runApp(
           var modifiedCount = 0;
           await firestore.runTransaction((txn) async {
             var snapshot = (await txn.get(ref));
-            if (testsRef is FirestorePathReference) {
-              expect((snapshot.ref as FirestorePathReference).firestore,
-                  (testsRef as FirestorePathReference).firestore);
-            }
+
             var data = snapshot.data;
             // devPrint('get ${data}');
             if (modifiedCount++ == 0) {
@@ -1686,7 +1683,13 @@ void runApp(
           await ref.set({'value': 1});
 
           await firestore.runTransaction((txn) async {
-            var data = (await txn.get(ref)).data;
+            var snapshot = (await txn.get(ref));
+
+            var data = snapshot.data;
+            if (testsRef is FirestorePathReference) {
+              expect((snapshot.ref as FirestorePathReference).firestore,
+                  (testsRef as FirestorePathReference).firestore);
+            }
 
             var map = <String, Object?>{};
             map['value'] = (data['value'] as int) + 1;
@@ -1706,6 +1709,7 @@ void runApp(
             var data = (await txn.get(ref)).data;
 
             data['value'] = (data['value'] as int) + 1;
+
             txn.set(ref, data);
           });
 
