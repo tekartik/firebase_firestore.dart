@@ -11,8 +11,6 @@ import 'dart:core' show override;
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:googleapis/firestore/v1.dart';
 import 'package:http/http.dart' as http;
-import 'package:tekartik_firebase_firestore_rest/src/firestore/v1.dart'
-    show RunQueryRequest;
 
 export 'package:_discoveryapis_commons/_discoveryapis_commons.dart'
     show ApiRequestError, DetailedApiRequestError;
