@@ -283,10 +283,6 @@ class FirestoreSembast extends Object
   }
 
   @override
-  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async =>
-      await Future.wait(refs.map((ref) => ref.get()));
-
-  @override
   DocumentChangeBase documentChange(DocumentChangeType type,
       DocumentSnapshot document, int newIndex, int oldIndex) {
     return DocumentChangeSembast(type, document, newIndex, oldIndex);

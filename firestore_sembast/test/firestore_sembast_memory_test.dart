@@ -9,7 +9,7 @@ void main() {
   // needed for memory
   skipConcurrentTransactionTests = true;
   var firebase = FirebaseLocal();
-  run(firebase: firebase, firestoreService: firestoreServiceMemory);
+  run(firebase: firebase, firestoreService: newFirestoreServiceMemory());
 
   test('newInMemory', () async {
     var firestoreService1 = newFirestoreServiceMemory();

@@ -110,11 +110,6 @@ class FirestoreIdb extends Object
     return result;
   }
 
-  @override
-  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async {
-    return await Future.wait(refs.map((ref) => ref.get()));
-  }
-
   Future<DocumentReferenceIdb> add(
       String path, Map<String, Object?> data) async {
     var documentData = DocumentData(data);

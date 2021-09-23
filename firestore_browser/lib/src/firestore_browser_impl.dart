@@ -61,7 +61,7 @@ FirestoreServiceBrowser? _firebaseFirestoreServiceBrowser;
 FirestoreService get firestoreService =>
     _firebaseFirestoreServiceBrowser ??= FirestoreServiceBrowser();
 
-class FirestoreBrowser implements Firestore {
+class FirestoreBrowser with FirestoreMixin implements Firestore {
   final native.Firestore nativeInstance;
 
   FirestoreBrowser(this.nativeInstance);
@@ -92,11 +92,6 @@ class FirestoreBrowser implements Firestore {
   @override
   void settings(FirestoreSettings settings) {
     nativeInstance.settings(_unwrapSettings(settings)!);
-  }
-
-  @override
-  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async {
-    return await Future.wait(refs.map((ref) => ref.get()));
   }
 }
 

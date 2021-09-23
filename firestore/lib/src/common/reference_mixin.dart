@@ -59,7 +59,7 @@ String getParentPath(String path) {
 String getPathId(String path) => url.basename(path);
 
 mixin CollectionReferenceMixin
-    implements CollectionReference, PathReferenceMixin, PathReferenceImplMixin {
+    implements CollectionReference, PathReferenceMixin, FirestorePathReference {
   @override
   DocumentReference? get parent {
     var parentPath = this.parentPath;

@@ -595,11 +595,6 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
         updateTime: documentSnapshotData.updateTime);
   }
 
-  // This could be optimized
-  @override
-  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async =>
-      await Future.wait(refs.map((ref) => ref.get()));
-
   @override
   String toString() => 'FirestoreSim[${identityHashCode(this)}]';
 }

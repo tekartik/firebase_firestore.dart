@@ -54,6 +54,12 @@ mixin FirestoreMixin implements Firestore {
     }
     firestoreSettings = settings;
   }
+
+  /// Could be optimized on some implementation
+  @override
+  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async {
+    return await Future.wait(refs.map((ref) => ref.get()));
+  }
 }
 
 mixin FirestoreDocumentsMixin on Firestore {
