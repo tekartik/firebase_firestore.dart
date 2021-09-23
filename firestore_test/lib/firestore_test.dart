@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
 import 'package:tekartik_firebase_firestore_test/timestamp_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_collection_test.dart'
@@ -133,6 +134,11 @@ void runApp(
         var testsRef = getTestsRef()!;
 
         var docRef = await testsRef.add({});
+        // Check firestore
+        if (testsRef is FirestorePathReference) {
+          expect((docRef as FirestorePathReference).firestore,
+              (testsRef as FirestorePathReference).firestore);
+        }
         await docRef.delete();
       });
 
@@ -151,6 +157,11 @@ void runApp(
         var testsRef = getTestsRef()!;
         var docRef = testsRef.doc('dummy_id_that_should_never_exists');
         var snapshot = await docRef.get();
+        // Check firestore
+        if (testsRef is FirestorePathReference) {
+          expect((docRef as FirestorePathReference).firestore,
+              (snapshot.ref as FirestorePathReference).firestore);
+        }
         expect(snapshot.exists, isFalse);
         expect(snapshot.dataOrNull, isNull);
         try {
@@ -171,6 +182,12 @@ void runApp(
         expect(snapshots[0].exists, isTrue);
         expect(snapshots[0].data, {'value': 1});
         expect(snapshots[1].exists, isFalse);
+
+        // Check firestore
+        if (testsRef is FirestorePathReference) {
+          expect((testsRef as FirestorePathReference).firestore,
+              (snapshots[0].ref as FirestorePathReference).firestore);
+        }
         // expect(snapshots[1].data, isNull); currently node returns {}
       });
 
@@ -1570,6 +1587,7 @@ void runApp(
 
         var deleteRef = collRef.doc('delete');
         var createRef = collRef.doc('create');
+
         // create it
         await deleteRef.set({});
         await createRef.delete();
@@ -1639,7 +1657,12 @@ void runApp(
 
           var modifiedCount = 0;
           await firestore.runTransaction((txn) async {
-            var data = (await txn.get(ref)).data;
+            var snapshot = (await txn.get(ref));
+            if (testsRef is FirestorePathReference) {
+              expect((snapshot.ref as FirestorePathReference).firestore,
+                  (testsRef as FirestorePathReference).firestore);
+            }
+            var data = snapshot.data;
             // devPrint('get ${data}');
             if (modifiedCount++ == 0) {
               await ref.set({'value': 10});

@@ -13,5 +13,5 @@ void main() {
       firebase: firebase,
       firestoreService: FirestoreServiceLogger(
           firestoreService: newFirestoreServiceMemory(),
-          options: FirestoreLoggerOptions.all()));
+          options: FirestoreLoggerOptions.all(log: (_) {})));
 }
