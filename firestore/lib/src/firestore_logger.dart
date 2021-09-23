@@ -360,8 +360,8 @@ abstract class QueryLoggerBase implements Query {
   Query limit(int limit) => QueryLogger(query.limit(limit), refLogger);
 
   @override
-  Stream<QuerySnapshotLogger> onSnapshot() {
-    return StreamTransformer<QuerySnapshot, QuerySnapshotLogger>.fromHandlers(
+  Stream<QuerySnapshot> onSnapshot() {
+    return StreamTransformer<QuerySnapshot, QuerySnapshot>.fromHandlers(
         handleData: (snapshot, sink) {
       var snapshotLogger = QuerySnapshotLogger(snapshot, firestoreLogger);
       if (options.list) {
@@ -572,11 +572,11 @@ class DocumentReferenceLogger
   Stream<DocumentSnapshot> onSnapshot() {
     return StreamTransformer<DocumentSnapshot, DocumentSnapshot>.fromHandlers(
         handleData: (snapshot, sink) {
+      var snapshotLogger = DocumentSnapshotLogger(snapshot, firestoreLogger);
       if (options.read) {
-        options.log(FirestoreLoggerOnSnapshotEvent(
-            DocumentSnapshotLogger(snapshot, firestoreLogger)));
+        options.log(FirestoreLoggerOnSnapshotEvent(snapshotLogger));
       }
-      sink.add(snapshot);
+      sink.add(snapshotLogger);
     }).bind(ref.onSnapshot());
   }
 
