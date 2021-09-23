@@ -417,7 +417,10 @@ class DocumentSnapshotLogger implements DocumentSnapshot {
   final DocumentSnapshot snapshot;
   final FirestoreLogger firestoreLogger;
 
-  DocumentSnapshotLogger(this.snapshot, this.firestoreLogger);
+  DocumentSnapshotLogger(this.snapshot, this.firestoreLogger) {
+    assert(
+        snapshot is! DocumentSnapshotLogger, 'You cannot reference a logger');
+  }
 
   @override
   Timestamp? get createTime => snapshot.createTime;
@@ -457,7 +460,10 @@ class DocumentChangeLogger implements DocumentChange {
   final DocumentChange documentChange;
   final FirestoreLogger firestoreLogger;
 
-  DocumentChangeLogger(this.documentChange, this.firestoreLogger);
+  DocumentChangeLogger(this.documentChange, this.firestoreLogger) {
+    assert(documentChange is! DocumentChangeLogger,
+        'You cannot reference a logger');
+  }
   @override
   DocumentSnapshot get document =>
       DocumentSnapshotLogger(documentChange.document, firestoreLogger);
@@ -545,7 +551,7 @@ class DocumentReferenceLogger
   Firestore get firestore => firestoreLogger;
 
   @override
-  Future<DocumentSnapshot> get() async {
+  Future<DocumentSnapshotLogger> get() async {
     Object? exception;
     DocumentSnapshotLogger? snapshot;
     try {
@@ -644,8 +650,7 @@ class TransactionLogger with TransactionMixin implements Transaction {
     Object? exception;
     DocumentSnapshotLogger? snapshot;
     try {
-      snapshot =
-          DocumentSnapshotLogger(await documentRef.get(), firestoreLogger);
+      snapshot = await (documentRef as DocumentReferenceLogger).get();
       return snapshot;
     } catch (e) {
       exception = e;
