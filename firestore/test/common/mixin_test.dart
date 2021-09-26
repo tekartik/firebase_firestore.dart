@@ -24,11 +24,6 @@ class FirestoreMock with FirestoreMixin {
   }
 
   @override
-  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) {
-    throw UnimplementedError();
-  }
-
-  @override
   Future<T> runTransaction<T>(
       FutureOr<T> Function(Transaction transaction) updateFunction) {
     throw UnimplementedError();

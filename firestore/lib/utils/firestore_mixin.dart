@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:path/path.dart';
@@ -53,6 +52,12 @@ mixin FirestoreMixin implements Firestore {
           'firestore settings already set to $firestoreSettings cannot set to $settings');
     }
     firestoreSettings = settings;
+  }
+
+  /// Could be optimized on some implementation
+  @override
+  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async {
+    return await Future.wait(refs.map((ref) => ref.get()));
   }
 }
 

@@ -72,29 +72,42 @@ abstract class Firestore {
   Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs);
 }
 
+/// Collection reference.
 abstract class CollectionReference extends Query {
+  /// Collection path.
   String get path;
 
+  /// Collection id.
   String get id;
 
+  /// Parent document.
   DocumentReference? get parent;
 
+  /// Get child document.
   DocumentReference doc(String path);
 
+  /// Add a document.
   Future<DocumentReference> add(Map<String, Object?> data);
 }
 
+/// Document reference.
 abstract class DocumentReference {
+  /// Document id.
   String get id;
 
+  /// Document path
   String get path;
 
+  /// Parent collection.
   CollectionReference? get parent;
 
+  /// Get a child collection.
   CollectionReference collection(String path);
 
+  /// Delete a document.
   Future<void> delete();
 
+  /// Get a document.
   Future<DocumentSnapshot> get();
 
   Future<void> set(Map<String, Object?> data, [SetOptions? options]);

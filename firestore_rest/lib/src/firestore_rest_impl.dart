@@ -296,26 +296,6 @@ class FirestoreRestImpl
   }
 
   @override
-  Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs) async {
-    /// Temp do in a loop
-    var list = <DocumentSnapshot>[];
-    for (var ref in refs) {
-      list.add(await getDocument(ref.path));
-    }
-    return list;
-    /*
-    var request = BatchGetDocumentsRequest()
-      ..documents =
-          refs.map((ref) => getDocumentName(ref.path)).toList(growable: false);
-    var response = await firestoreApi.projects.databases.documents
-        .batchGet(request, getDatabaseName());
-    devPrint('resp: ${response.toJson()}');
-    return [];
-
-     */
-  }
-
-  @override
   Future<T> runTransaction<T>(
       FutureOr<T> Function(Transaction transaction) updateFunction) async {
     var transaction = TransactionRestImpl(this);
