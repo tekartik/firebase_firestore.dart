@@ -1,7 +1,6 @@
 import 'dart:core' hide Error;
 
 import 'package:json_rpc_2/json_rpc_2.dart' as rpc;
-import 'package:pedantic/pedantic.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_common_utils/stream/stream_poller.dart';
 import 'package:tekartik_firebase/firebase.dart';
