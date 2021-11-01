@@ -1,4 +1,6 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
+import 'package:tekartik_firebase_firestore/src/record_data.dart';
 
 /// Base implementation for compatible evolution
 mixin DocumentSnapshotMixin implements DocumentSnapshot {
@@ -22,4 +24,8 @@ mixin DocumentSnapshotMixin implements DocumentSnapshot {
 
 /// Test of mixin
 // ignore: unused_element
-class _DocumentSnapshotMixinTest with DocumentSnapshotMixin {}
+class _DocumentSnapshotMixinTest extends DocumentSnapshotBase {
+  _DocumentSnapshotMixinTest(
+      DocumentReference ref, RecordMetaData? meta, DocumentData? documentData)
+      : super(ref, meta, documentData);
+}
