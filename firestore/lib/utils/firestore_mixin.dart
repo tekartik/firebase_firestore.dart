@@ -8,6 +8,8 @@ import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 
+export 'package:tekartik_firebase_firestore/src/common/document_snapshot_mixin.dart'
+    show DocumentSnapshotMixin;
 export 'package:tekartik_firebase_firestore/src/firestore_common.dart'
     show
         WriteBatchBase,

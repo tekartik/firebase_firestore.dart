@@ -30,7 +30,9 @@ class FirestoreMock with FirestoreMixin {
   }
 }
 
-class DocumentSnapshotMock implements DocumentSnapshot {
+class DocumentSnapshotMock
+    with DocumentSnapshotMixin
+    implements DocumentSnapshot {
   @override
   final DocumentReferenceMock ref;
 

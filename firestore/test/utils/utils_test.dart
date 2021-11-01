@@ -8,7 +8,8 @@ import 'package:test/test.dart';
 
 import '../common/mixin_test.dart';
 
-class DocumentSnapshotMock extends DocumentSnapshotBase {
+class DocumentSnapshotMock extends DocumentSnapshotBase
+    with DocumentSnapshotMixin {
   DocumentSnapshotMock(
       {required DocumentReference ref,
       RecordMetaData? meta,

@@ -1,8 +1,8 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore_rest/src/collection_reference_rest.dart';
-import 'package:tekartik_firebase_firestore_rest/src/firestore/v1_fixed.dart'
-    as api;
+import 'package:tekartik_firebase_firestore_rest/src/firestore/v1.dart' as api;
 import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 
 class DocumentReferenceRestImpl
@@ -36,7 +36,9 @@ class DocumentReferenceRestImpl
       firestoreRestImpl.updateDocument(path, data);
 }
 
-class DocumentSnapshotRestImpl implements DocumentSnapshot {
+class DocumentSnapshotRestImpl
+    with DocumentSnapshotMixin
+    implements DocumentSnapshot {
   final FirestoreRestImpl firestoreRestImpl;
   final api.Document? impl;
 
@@ -53,7 +55,7 @@ class DocumentSnapshotRestImpl implements DocumentSnapshot {
 
   /// Sometimes in get we have a Document will all fields null.
   @override
-  bool get exists => impl?.name != null;
+  bool get exists => impl?.createTime != null;
 
   @override
   DocumentReference get ref => DocumentReferenceRestImpl(

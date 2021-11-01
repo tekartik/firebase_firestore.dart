@@ -1,12 +1,15 @@
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore_rest/snapshot.dart';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
-class DocumentSnapshotMock implements DocumentSnapshot {
+class DocumentSnapshotMock
+    with DocumentSnapshotMixin
+    implements DocumentSnapshot {
   @override
   Timestamp? createTime;
 

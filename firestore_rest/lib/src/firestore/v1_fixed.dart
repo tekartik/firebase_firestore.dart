@@ -1,6 +1,13 @@
 // This is a modified version of a generated file (see the discoveryapis_generator project).
 library tekartik_firebase_firestore.firestore_googleapis.firestore.v1beta1;
 
+import 'v1.dart';
+
+export 'v1.dart';
+
+typedef FirestoreFixedApi = FirestoreApi;
+typedef RunQueryFixedResponse = RunQueryResponse;
+/*
 // ignore_for_file: non_constant_identifier_names
 
 import 'dart:async' as async;
@@ -537,3 +544,4 @@ class MapValueFixed implements MapValue {
               fields!.map((key, item) => core.MapEntry(key, item.toJson())),
       };
 }
+*/
