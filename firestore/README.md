@@ -4,9 +4,9 @@
 dependencies:
   tekartik_firebase_firestore:
     git:
-      url: git://github.com/tekartik/firebase_firestore.dart
+      url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.8.0'
 ```
 

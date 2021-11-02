@@ -6,8 +6,8 @@ In `pubspec.yaml`:
 dependencies:
   tekartik_firebase_firestore_rest:
     git:
-      url: git://github.com/tekartik/firebase_firestore.dart
+      url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore_rest
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.8.0'
 ```

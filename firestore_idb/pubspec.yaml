@@ -9,22 +9,22 @@ environment:
 dependencies:
   tekartik_firebase_firestore:
     git:
-      url: git://github.com/tekartik/firebase_firestore.dart
+      url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.8.2'
   tekartik_firebase_local:
     git:
-      url: git://github.com/tekartik/firebase.dart
+      url: https://github.com/tekartik/firebase.dart
       path: firebase_local
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.3.7'
   idb_shim: '>=1.8.0+2'
   uuid:
   tekartik_browser_utils:
     git:
-      url: git://github.com/tekartik/browser_utils.dart
-      ref: null_safety
+      url: https://github.com/tekartik/browser_utils.dart
+      ref: dart2_3
 
 dev_dependencies:
   test: ">=0.12.37"

@@ -9,15 +9,15 @@ environment:
 dependencies:
   tekartik_firebase_sim:
     git:
-      url: git://github.com/tekartik/firebase.dart
+      url: https://github.com/tekartik/firebase.dart
       path: firebase_sim
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.3.7'
   tekartik_firebase_firestore:
     git:
-      url: git://github.com/tekartik/firebase_firestore.dart
+      url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.8.0'
   meta: any
   synchronized: '>=1.5.0-dev.2'
