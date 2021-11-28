@@ -59,7 +59,9 @@ FirestoreServiceSim get firestoreServiceSim =>
 
 class DocumentDataSim extends DocumentDataMap {}
 
-class DocumentSnapshotSim implements DocumentSnapshot {
+class DocumentSnapshotSim
+    with DocumentSnapshotMixin
+    implements DocumentSnapshot {
   @override
   final DocumentReferenceSim ref;
 

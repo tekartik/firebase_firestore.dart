@@ -413,7 +413,9 @@ abstract class QueryLoggerBase implements Query {
           refLogger);
 }
 
-class DocumentSnapshotLogger implements DocumentSnapshot {
+class DocumentSnapshotLogger
+    with DocumentSnapshotMixin
+    implements DocumentSnapshot {
   final DocumentSnapshot snapshot;
   final FirestoreLogger firestoreLogger;
 

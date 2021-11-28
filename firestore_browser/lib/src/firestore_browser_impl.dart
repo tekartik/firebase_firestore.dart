@@ -282,7 +282,9 @@ DocumentData documentDataFromNativeMap(Map<String, Object?> nativeMap) {
   return DocumentData(map);
 }
 
-class DocumentSnapshotBrowser implements DocumentSnapshot {
+class DocumentSnapshotBrowser
+    with DocumentSnapshotMixin
+    implements DocumentSnapshot {
   final native.DocumentSnapshot _native;
 
   DocumentSnapshotBrowser(this._native);

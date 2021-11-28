@@ -273,7 +273,7 @@ class FirestoreRestImpl
       if (e is api.DetailedApiRequestError) {
         // devPrint(e.status);
         if (e.status == httpStatusCodeNotFound) {
-          return DocumentSnapshotRestImpl(this, null);
+          return DocumentSnapshotRestImpl(this, Document()..name = name);
         }
       }
       rethrow;

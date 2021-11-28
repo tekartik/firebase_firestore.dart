@@ -688,7 +688,9 @@ class DocumentChangeBase implements DocumentChange {
   String toString() => '${document.ref.path} $type $oldIndex $newIndex';
 }
 
-abstract class DocumentSnapshotBase implements DocumentSnapshot {
+abstract class DocumentSnapshotBase
+    with DocumentSnapshotMixin
+    implements DocumentSnapshot {
   final RecordMetaData? meta;
   @override
   final DocumentReference ref;

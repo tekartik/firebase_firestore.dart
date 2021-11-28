@@ -157,6 +157,7 @@ void runApp(
         var testsRef = getTestsRef()!;
         var docRef = testsRef.doc('dummy_id_that_should_never_exists');
         var snapshot = await docRef.get();
+        expect(snapshot.ref, isNotNull);
         // Check firestore
         if (testsRef is FirestorePathReference) {
           expect((docRef as FirestorePathReference).firestore,
