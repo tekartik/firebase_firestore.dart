@@ -43,7 +43,7 @@ dynamic dateOrTimestampValue(
   return timestamp;
 }
 
-dynamic fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
+Object? fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
   if (restValue.nullValue == 'NULL_VALUE') {
     return null;
   } else if (restValue.stringValue != null) {
@@ -72,10 +72,10 @@ dynamic fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
     // This is null!
     if (isDebug) {
       print(
-          'unsupported type ${restValue.runtimeType}: $restValue ${restValue.toJson()}');
+          '[firestore_rest] unsupported type ${restValue.runtimeType}: $restValue ${restValue.toJson()}');
       if (debugFirestoreRest) {
         throw UnsupportedError(
-            'unsupported type ${restValue.runtimeType}: $restValue ${restValue.toJson()}');
+            '[firestore_rest] unsupported type ${restValue.runtimeType}: $restValue ${restValue.toJson()}');
       }
     }
     return null;
