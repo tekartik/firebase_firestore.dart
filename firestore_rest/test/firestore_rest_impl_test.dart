@@ -54,6 +54,7 @@ Future main() async {
       expect(e, isNot(const TypeMatcher<TestFailure>()));
     }
   });
+
   tearDownAll(() {
     context?.authClient?.close();
   });
