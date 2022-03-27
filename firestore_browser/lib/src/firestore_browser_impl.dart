@@ -389,8 +389,8 @@ class DocumentReferenceBrowser
 }
 
 DocumentSnapshotBrowser _wrapDocumentSnapshot(
-        native.DocumentSnapshot _native) =>
-    DocumentSnapshotBrowser(_native);
+        native.DocumentSnapshot snapshot) =>
+    DocumentSnapshotBrowser(snapshot);
 
 native.DocumentSnapshot? _unwrapDocumentSnapshot(
         DocumentSnapshot? documentSnapshot) =>
@@ -406,8 +406,8 @@ class QuerySnapshotBrowser implements QuerySnapshot {
   @override
   List<DocumentSnapshot> get docs {
     var docs = <DocumentSnapshot>[];
-    for (var _nativeDoc in _native.docs) {
-      docs.add(_wrapDocumentSnapshot(_nativeDoc));
+    for (var nativeDoc in _native.docs) {
+      docs.add(_wrapDocumentSnapshot(nativeDoc));
     }
     return docs;
   }
@@ -452,8 +452,8 @@ class DocumentChangeBrowser implements DocumentChange {
   DocumentChangeType get type => _wrapDocumentChangeType(nativeInstance.type)!;
 }
 
-QuerySnapshotBrowser _wrapQuerySnapshot(native.QuerySnapshot _native) =>
-    QuerySnapshotBrowser(_native);
+QuerySnapshotBrowser _wrapQuerySnapshot(native.QuerySnapshot querySnapshot) =>
+    QuerySnapshotBrowser(querySnapshot);
 
 QueryBrowser _wrapQuery(native.Query native) => QueryBrowser(native);
 

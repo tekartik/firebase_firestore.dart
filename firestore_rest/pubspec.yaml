@@ -30,7 +30,12 @@ dependencies:
       path: http
       ref: dart2_3
     version: '>=0.2.0+2'
-
+  tekartik_common_utils:
+    git:
+      url: https://github.com/tekartik/common_utils.dart
+      ref: dart2_3
+    version: '>=0.10.7'
+  path:
 dev_dependencies:
   tekartik_firebase_local:
     git:

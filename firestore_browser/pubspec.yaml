@@ -26,6 +26,7 @@ dependencies:
       ref: dart2_3
     version: '>=0.6.8+2'
   meta:
+  js:
 dev_dependencies:
   tekartik_firebase_firestore_test:
     path: ../firestore_test
