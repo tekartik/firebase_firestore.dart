@@ -25,7 +25,10 @@ import 'package:tekartik_http/http.dart';
 
 import 'import.dart';
 
-bool debugRest = false; // devWarning(true); // false
+bool get debugRest => debugFirestoreRest; // devWarning(true); // false
+
+/// Exported for strict debugging
+var debugFirestoreRest = false; // devWarning(true);
 
 dynamic dateOrTimestampValue(
     FirestoreDocumentContext firestore, String timestampValue) {
@@ -40,8 +43,8 @@ dynamic dateOrTimestampValue(
   return timestamp;
 }
 
-dynamic fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
-  if (restValue.nullValue == 'NULL VALUE') {
+Object? fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
+  if (restValue.nullValue == 'NULL_VALUE') {
     return null;
   } else if (restValue.stringValue != null) {
     return restValue.stringValue;
@@ -68,7 +71,12 @@ dynamic fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
   } else {
     // This is null!
     if (isDebug) {
-      print('unsupported type ${restValue.runtimeType}: $restValue');
+      print(
+          '[firestore_rest] unsupported type ${restValue.runtimeType}: $restValue ${restValue.toJson()}');
+      if (debugFirestoreRest) {
+        throw UnsupportedError(
+            '[firestore_rest] unsupported type ${restValue.runtimeType}: $restValue ${restValue.toJson()}');
+      }
     }
     return null;
   }

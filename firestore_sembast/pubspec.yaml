@@ -22,7 +22,7 @@ dependencies:
       path: firebase_local
       ref: dart2_3
     version: '>=0.3.7'
-
+  path:
 dev_dependencies:
   test: any
   dev_test:
