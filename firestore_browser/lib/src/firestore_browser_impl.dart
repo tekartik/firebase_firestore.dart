@@ -1,14 +1,8 @@
-import 'package:firebase/firestore.dart' as native;
 import 'package:js/js_util.dart';
 import 'package:tekartik_browser_utils/browser_utils_import.dart' hide Blob;
-import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_browser/src/common/firebase_js_version.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_browser/src/firebase_browser.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart'; // ignore: implementation_imports
+
+import 'import_browser.dart';
+import 'import_native.dart' as native;
 
 JavascriptScriptLoader firestoreJsLoader = JavascriptScriptLoader(
     'https://www.gstatic.com/firebasejs/$firebaseJsVersion/firebase-firestore.js');

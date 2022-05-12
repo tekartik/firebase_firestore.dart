@@ -1,3 +1,6 @@
+@Deprecated('This package will receive no further updates.')
+library tekartik_firebase_firestore_browser_deprecated;
+
 export 'package:tekartik_firebase_firestore_browser/src/firestore_browser.dart'
     show
         firestoreServiceBrowser,
