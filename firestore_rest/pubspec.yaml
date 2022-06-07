@@ -21,7 +21,7 @@ dependencies:
       path: firebase_rest
       ref: dart2_3
     version: '>=0.7.4'
-  googleapis: '>=6.0.0'
+  googleapis: '>=8.1.0 <9.0.0'
   googleapis_beta:
   googleapis_auth:
   tekartik_http:
