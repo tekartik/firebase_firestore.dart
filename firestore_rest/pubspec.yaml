@@ -21,7 +21,7 @@ dependencies:
       path: firebase_rest
       ref: dart2_3
     version: '>=0.7.4'
-  googleapis: '>=8.1.0 <9.0.0'
+  googleapis: '>=9.1.0'
   googleapis_beta:
   googleapis_auth:
   tekartik_http:
@@ -76,3 +76,10 @@ dependency_overrides:
   # tmp
   # tekartik_firebase_rest:
   #   path: ../../firebase.dart/firebase_rest
+  # tmp
+_dependency_overrides:
+  googleapis:
+    git:
+      url: https://github.com/google/googleapis.dart
+      path: generated/googleapis
+      ref: i303
