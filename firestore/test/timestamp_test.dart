@@ -39,7 +39,7 @@ void main() {
       expect(Timestamp(1, 2).compareTo(Timestamp(0, 2)), greaterThan(0));
     });
 
-    void _checkToIso8601(
+    void checkToIso8601(
         Timestamp timestamp,
         String expectedTimestampToIso8601String,
         String expectedDateTimeToIso8601String) {
@@ -52,25 +52,25 @@ void main() {
     }
 
     test('toIso8601', () {
-      _checkToIso8601(Timestamp(0, 0), '1970-01-01T00:00:00.000Z',
+      checkToIso8601(Timestamp(0, 0), '1970-01-01T00:00:00.000Z',
           '1970-01-01T00:00:00.000Z');
-      _checkToIso8601(Timestamp(0, 100000000), '1970-01-01T00:00:00.100Z',
+      checkToIso8601(Timestamp(0, 100000000), '1970-01-01T00:00:00.100Z',
           '1970-01-01T00:00:00.100Z');
-      _checkToIso8601(
+      checkToIso8601(
         Timestamp(0, 100000),
         '1970-01-01T00:00:00.000100Z',
         runningAsJavascript
             ? '1970-01-01T00:00:00.000Z'
             : '1970-01-01T00:00:00.000100Z',
       );
-      _checkToIso8601(
+      checkToIso8601(
         Timestamp(0, 100),
         '1970-01-01T00:00:00.000000100Z',
         runningAsJavascript
             ? '1970-01-01T00:00:00.000Z'
             : '1970-01-01T00:00:00.000Z',
       );
-      _checkToIso8601(
+      checkToIso8601(
         Timestamp(0, 999999999),
         '1970-01-01T00:00:00.999999999Z',
         runningAsJavascript
@@ -89,55 +89,55 @@ void main() {
       expect(() => Timestamp(0, 1000000000), throwsArgumentError);
     });
     test('parse', () {
-      void _checkParse(
+      void checkParse(
         String text,
         String expectedTimestampToIso8601String,
         String expectedDateTimeToIso8601String,
       ) {
         var timestamp = Timestamp.parse(text);
-        return _checkToIso8601(timestamp, expectedTimestampToIso8601String,
+        return checkToIso8601(timestamp, expectedTimestampToIso8601String,
             expectedDateTimeToIso8601String);
       }
 
-      void _checkParseSecondsNanos(
+      void checkParseSecondsNanos(
           String text, int expectedSeconds, int expectedNanos) {
         var timestamp = Timestamp.parse(text);
         expect(timestamp.seconds, expectedSeconds, reason: text);
         expect(timestamp.nanoseconds, expectedNanos, reason: text);
       }
 
-      _checkParse(
+      checkParse(
           '2018-10-20T05:13:45.985343123Z',
           '2018-10-20T05:13:45.985343123Z',
           runningAsJavascript
               ? '2018-10-20T05:13:45.985Z'
               : '2018-10-20T05:13:45.985343Z');
-      _checkParse(
+      checkParse(
           '2018-10-20T05:13:45.98534312Z',
           '2018-10-20T05:13:45.985343120Z',
           runningAsJavascript
               ? '2018-10-20T05:13:45.985Z'
               : '2018-10-20T05:13:45.985343Z');
-      _checkParse(
+      checkParse(
           '2018-10-20T05:13:45.985343Z',
           '2018-10-20T05:13:45.985343Z',
           runningAsJavascript
               ? '2018-10-20T05:13:45.985Z'
               : '2018-10-20T05:13:45.985343Z');
-      _checkParse('2018-10-20T05:13:45.985Z', '2018-10-20T05:13:45.985Z',
+      checkParse('2018-10-20T05:13:45.985Z', '2018-10-20T05:13:45.985Z',
           '2018-10-20T05:13:45.985Z');
-      _checkParse('1234-01-23T01:23:45.123Z', '1234-01-23T01:23:45.123Z',
+      checkParse('1234-01-23T01:23:45.123Z', '1234-01-23T01:23:45.123Z',
           '1234-01-23T01:23:45.123Z');
 
-      _checkParse('2018-10-20T05:13:45Z', '2018-10-20T05:13:45.000Z',
+      checkParse('2018-10-20T05:13:45Z', '2018-10-20T05:13:45.000Z',
           '2018-10-20T05:13:45.000Z');
-      _checkParse('2018-10-20T05:13Z', '2018-10-20T05:13:00.000Z',
+      checkParse('2018-10-20T05:13Z', '2018-10-20T05:13:00.000Z',
           '2018-10-20T05:13:00.000Z');
-      _checkParse('2018-10-20T05Z', '2018-10-20T05:00:00.000Z',
+      checkParse('2018-10-20T05Z', '2018-10-20T05:00:00.000Z',
           '2018-10-20T05:00:00.000Z');
 
       // 10 digits ignored!
-      _checkParse(
+      checkParse(
           '2018-10-20T05:13:45.9853431239Z',
           '2018-10-20T05:13:45.985343123Z',
           runningAsJavascript
@@ -145,10 +145,10 @@ void main() {
               : '2018-10-20T05:13:45.985343Z');
 
       // Limit
-      _checkParse('0001-01-01T00:00:00Z', '0001-01-01T00:00:00.000Z',
+      checkParse('0001-01-01T00:00:00Z', '0001-01-01T00:00:00.000Z',
           '0001-01-01T00:00:00.000Z');
       if (!runningAsJavascript) {
-        _checkParse('9999-12-31T23:59:59.999999999Z',
+        checkParse('9999-12-31T23:59:59.999999999Z',
             '9999-12-31T23:59:59.999999999Z', '9999-12-31T23:59:59.999999Z');
       } else {
         // Before 2.7.1
@@ -168,9 +168,9 @@ void main() {
           endsWith('.985123100Z'));
 
       // Limit
-      _checkParseSecondsNanos('0001-01-01T00:00:00Z', -62135596800, 0);
+      checkParseSecondsNanos('0001-01-01T00:00:00Z', -62135596800, 0);
       if (!runningAsJavascript) {
-        _checkParseSecondsNanos(
+        checkParseSecondsNanos(
             '9999-12-31T23:59:59.999999999Z', 253402300799, 999999999);
       } else {
         // After 2.7.1

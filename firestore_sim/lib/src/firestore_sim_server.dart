@@ -285,7 +285,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
         // need data?
         var path = change.document.ref.path;
 
-        bool _find() {
+        bool findDocByPath() {
           for (var doc in querySnapshot.docs) {
             if (doc.ref.path == path) {
               return true;
@@ -294,7 +294,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
           return false;
         }
 
-        if (!_find()) {
+        if (!findDocByPath()) {
           documentChangeData.data =
               documentDataToJsonMap(documentDataFromSnapshot(change.document));
         }

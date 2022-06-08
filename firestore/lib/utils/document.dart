@@ -47,7 +47,7 @@ Stream<DocumentSnapshots> onDocumentSnapshots(
     // remainings before the first full get
     var remainings = Set<DocumentReference>.from(references);
 
-    void _notify() {
+    void notify() {
       if (remainings.isEmpty && !controller.isClosed && !controller.isPaused) {
         /// We know the array has no nullable snapshot at this point
         controller
@@ -62,7 +62,7 @@ Stream<DocumentSnapshots> onDocumentSnapshots(
       var subscription = reference.onSnapshot().listen((snapshot) {
         docs[index] = snapshot;
         remainings.remove(reference);
-        _notify();
+        notify();
       });
       subscriptions![index] = subscription;
     }

@@ -140,7 +140,7 @@ Map<String, Object?>? mergeSanitizedMap(Map? existingValue, Map? newValue) {
   void merge(dynamic key, dynamic value) {
     final stringKey = key.toString();
 
-    void _keep() {
+    void keep() {
       currentMap![stringKey] = value;
     }
 
@@ -150,10 +150,10 @@ Map<String, Object?>? mergeSanitizedMap(Map? existingValue, Map? newValue) {
         var newValue = mergeSanitizedMap(existing, value);
         currentMap![stringKey] = newValue;
       } else {
-        _keep();
+        keep();
       }
     } else {
-      _keep();
+      keep();
     }
   }
 
