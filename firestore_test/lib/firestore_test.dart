@@ -282,7 +282,7 @@ void runApp(
         await docRef.set({'test': 2});
         snapshot = await docRef.get();
 
-        void _check() {
+        void check() {
           expect(snapshot.data, {'test': 2});
           if (firestoreService.supportsDocumentSnapshotTime) {
             expect(snapshot.updateTime!.compareTo(snapshot.createTime),
@@ -295,7 +295,7 @@ void runApp(
           }
         }
 
-        _check();
+        check();
         // On node we have nanos!
         // createTime 2018-10-23T06:31:53.351558000Z
         // updateTime 2018-10-23T06:31:53.755402000Z
@@ -305,7 +305,7 @@ void runApp(
         if (firestoreService.supportsTrackChanges) {
           // Try using stream
           snapshot = await docRef.onSnapshot().first;
-          _check();
+          check();
 
           // Try using col stream
           snapshot = (await testsRef.onSnapshot().first)
@@ -313,7 +313,7 @@ void runApp(
               .where((DocumentSnapshot snapshot) =>
                   snapshot.ref.path == docRef.path)
               .first;
-          _check();
+          check();
         }
       });
     });
@@ -443,7 +443,7 @@ void runApp(
         await docRef
             .set({'some_date': localDateTime, 'some_utc_date': utcDateTime});
 
-        void _check(Map? data) {
+        void check(Map? data) {
           if (firestoreService.supportsTimestampsInSnapshots) {
             //devPrint(data['some_date'].runtimeType);
             expect(data, {
@@ -458,7 +458,7 @@ void runApp(
           }
         }
 
-        _check((await docRef.get()).data);
+        check((await docRef.get()).data);
 
         var snapshot = (await testsRef
                 .where('some_date', isEqualTo: localDateTime)
@@ -467,7 +467,7 @@ void runApp(
             .docs
             .first;
 
-        _check(snapshot.data);
+        check(snapshot.data);
         await docRef.delete();
       });
 
@@ -500,7 +500,7 @@ void runApp(
         var docRef = testsRef.doc('timestamp');
         var timestamp = Timestamp(1234567890, 123000);
         await docRef.set({'some_timestamp': timestamp});
-        void _check(Map<String, Object?>? data) {
+        void check(Map<String, Object?>? data) {
           if (firestoreService.supportsTimestampsInSnapshots) {
             expect(
                 data,
@@ -516,12 +516,12 @@ void runApp(
           }
         }
 
-        _check((await docRef.get()).data);
+        check((await docRef.get()).data);
         var snapshot =
             (await testsRef.where('some_timestamp', isEqualTo: timestamp).get())
                 .docs
                 .first;
-        _check(snapshot.data);
+        check(snapshot.data);
 
         // Try compare
         snapshot = (await testsRef
@@ -529,7 +529,7 @@ void runApp(
                 .get())
             .docs
             .first;
-        _check(snapshot.data);
+        check(snapshot.data);
 
         await docRef.delete();
       }, skip: !firestoreService.supportsTimestamps);
@@ -540,16 +540,16 @@ void runApp(
         var doc2Ref = testsRef.doc('b');
         await docRef.set({'value': 1});
         await doc2Ref.set({'value': null});
-        void _check(Map<String, Object?>? data) {
+        void check(Map<String, Object?>? data) {
           expect(data, {
             'value': null,
           });
         }
 
-        _check((await doc2Ref.get()).data);
+        check((await doc2Ref.get()).data);
         var snapshot =
             (await testsRef.where('value', isNull: true).get()).docs.first;
-        _check(snapshot.data);
+        check(snapshot.data);
 
         await docRef.delete();
       });
@@ -560,16 +560,16 @@ void runApp(
         var doc2Ref = testsRef.doc('b');
         await docRef.set({'value': null});
         await doc2Ref.set({'value': true});
-        void _check(Map<String, Object?>? data) {
+        void check(Map<String, Object?>? data) {
           expect(data, {
             'value': true,
           });
         }
 
-        _check((await doc2Ref.get()).data);
+        check((await doc2Ref.get()).data);
         var snapshot =
             (await testsRef.where('value', isEqualTo: true).get()).docs.first;
-        _check(snapshot.data);
+        check(snapshot.data);
 
         await docRef.delete();
       });
@@ -1470,18 +1470,18 @@ void runApp(
           'sub': {'other': 'a', 'value': 'c'}
         });
 
-        List<String> _querySnapshotDocIds(QuerySnapshot querySnapshot) {
+        List<String> querySnapshotDocIds(QuerySnapshot querySnapshot) {
           return querySnapshot.docs.map((snapshot) => snapshot.ref.id).toList();
         }
 
         // complex object
         var querySnapshot =
             await collRef.where('sub', isEqualTo: {'value': 'a'}).get();
-        expect(_querySnapshotDocIds(querySnapshot), ['two']);
+        expect(querySnapshotDocIds(querySnapshot), ['two']);
 
         // ordered by sub (complex object)
         querySnapshot = await collRef.orderBy('sub').get();
-        expect(_querySnapshotDocIds(querySnapshot), ['four', 'two', 'one']);
+        expect(querySnapshotDocIds(querySnapshot), ['four', 'two', 'one']);
       });
 
       test('list_object_order', () async {
@@ -1502,17 +1502,17 @@ void runApp(
           'sub': ['a', 'b']
         });
 
-        List<String> _querySnapshotDocIds(QuerySnapshot querySnapshot) {
+        List<String> querySnapshotDocIds(QuerySnapshot querySnapshot) {
           return querySnapshot.docs.map((snapshot) => snapshot.ref.id).toList();
         }
 
         // complex object
         var querySnapshot = await collRef.where('sub', isEqualTo: ['a']).get();
-        expect(_querySnapshotDocIds(querySnapshot), ['two']);
+        expect(querySnapshotDocIds(querySnapshot), ['two']);
 
         // ordered by sub (complex object)
         querySnapshot = await collRef.orderBy('sub').get();
-        expect(_querySnapshotDocIds(querySnapshot), ['two', 'four', 'one']);
+        expect(querySnapshotDocIds(querySnapshot), ['two', 'four', 'one']);
       });
 
       test('onQuerySnapshot', () async {

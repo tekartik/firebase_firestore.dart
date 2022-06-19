@@ -75,7 +75,7 @@ void main() {
 
     test('mapQueryInfo', () {
       var firestoreMock = FirestoreMock();
-      DocumentSnapshotBase _snapshot(String id, int value) {
+      DocumentSnapshotBase newSnapshot(String id, int value) {
         return DocumentSnapshotMock(
             ref: DocumentReferenceMock(firestoreMock, id),
             documentData:
@@ -88,12 +88,12 @@ void main() {
           OrderByInfo(fieldPath: firestoreNameFieldPath, ascending: true)
         ]
         ..startAt(values: [2, 'b']);
-      expect(snapshotMapQueryInfo(_snapshot('a', 1), queryInfo), isTrue);
-      expect(snapshotMapQueryInfo(_snapshot('c', 1), queryInfo), isTrue);
-      expect(snapshotMapQueryInfo(_snapshot('b', 2), queryInfo), isTrue);
-      expect(snapshotMapQueryInfo(_snapshot('a', 2), queryInfo), isFalse);
-      expect(snapshotMapQueryInfo(_snapshot('c', 2), queryInfo), isTrue);
-      expect(snapshotMapQueryInfo(_snapshot('c', 3), queryInfo), isFalse);
+      expect(snapshotMapQueryInfo(newSnapshot('a', 1), queryInfo), isTrue);
+      expect(snapshotMapQueryInfo(newSnapshot('c', 1), queryInfo), isTrue);
+      expect(snapshotMapQueryInfo(newSnapshot('b', 2), queryInfo), isTrue);
+      expect(snapshotMapQueryInfo(newSnapshot('a', 2), queryInfo), isFalse);
+      expect(snapshotMapQueryInfo(newSnapshot('c', 2), queryInfo), isTrue);
+      expect(snapshotMapQueryInfo(newSnapshot('c', 3), queryInfo), isFalse);
     });
 
     test('auto_id_generator', () {
