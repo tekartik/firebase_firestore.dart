@@ -1502,10 +1502,6 @@ void runApp(
           'sub': ['a', 'b']
         });
 
-        List<String> querySnapshotDocIds(QuerySnapshot querySnapshot) {
-          return querySnapshot.docs.map((snapshot) => snapshot.ref.id).toList();
-        }
-
         // complex object
         var querySnapshot = await collRef.where('sub', isEqualTo: ['a']).get();
         expect(querySnapshotDocIds(querySnapshot), ['two']);
@@ -1513,6 +1509,19 @@ void runApp(
         // ordered by sub (complex object)
         querySnapshot = await collRef.orderBy('sub').get();
         expect(querySnapshotDocIds(querySnapshot), ['two', 'four', 'one']);
+      });
+
+      test('whereIn', () async {
+        var testsRef = getTestsRef()!;
+        var collRef = testsRef.doc('where_in_test').collection('simple');
+        var docRefOne = collRef.doc('one');
+        await docRefOne.set({'value': 1});
+        var docRefTwo = collRef.doc('two');
+        await docRefTwo.set({'value': 2});
+        var querySnapshot = await collRef.where('value', whereIn: [1]).get();
+        expect(querySnapshotDocIds(querySnapshot), ['one']);
+        querySnapshot = await collRef.where('value', whereIn: [1, 2, 3]).get();
+        expect(querySnapshotDocIds(querySnapshot), ['one', 'two']);
       });
 
       test('onQuerySnapshot', () async {
@@ -1764,4 +1773,8 @@ Timestamp timestampAdaptPrecision(
     return Timestamp(
         timestamp.seconds, (timestamp.nanoseconds ~/ 1000000) * 1000000);
   }
+}
+
+List<String> querySnapshotDocIds(QuerySnapshot querySnapshot) {
+  return querySnapshot.docs.map((snapshot) => snapshot.ref.id).toList();
 }

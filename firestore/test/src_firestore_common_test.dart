@@ -58,14 +58,20 @@ void main() {
       queryInfo.limit = 1;
       queryInfo.offset = 2;
       queryInfo.orderBys = [OrderByInfo(fieldPath: 'field', ascending: true)];
-      queryInfo.startAt(
-          values: [DateTime.fromMillisecondsSinceEpoch(1234567890123)]);
+      queryInfo.startAt(values: [
+        Timestamp.fromDateTime(
+            DateTime.fromMillisecondsSinceEpoch(1234567890123))
+      ]);
       queryInfo.endAt(
           snapshot: DocumentSnapshotMock(
               DocumentReferenceMock(firestore, 'path/to/dock')));
       queryInfo.addWhere(WhereInfo('whereField',
-          isLessThanOrEqualTo:
-              DateTime.fromMillisecondsSinceEpoch(12345678901234)));
+          isLessThanOrEqualTo: Timestamp.fromDateTime(
+              DateTime.fromMillisecondsSinceEpoch(12345678901234))));
+      queryInfo.addWhere(WhereInfo('whereIn', whereIn: [1]));
+      queryInfo.addWhere(WhereInfo('notIn', notIn: [2]));
+      queryInfo.addWhere(WhereInfo('arrayContains', arrayContains: 3));
+      queryInfo.addWhere(WhereInfo('arrayContainsAny', arrayContainsAny: [4]));
 
       var expected = {
         'limit': 1,
@@ -74,30 +80,27 @@ void main() {
           {
             'fieldPath': 'whereField',
             'operator': '<=',
-            'value': {r'$t': 'DateTime', r'$v': '2361-03-21T19:15:01.234Z'}
-          }
-        ],
-        'orderBys': [
-          {'fieldPath': 'field', 'direction': 'asc'}
-        ],
-        'startLimit': {
-          'inclusive': true,
-          'values': [
-            {r'$t': 'DateTime', r'$v': '2009-02-13T23:31:30.123Z'}
-          ]
-        },
-        'endLimit': {'inclusive': true, 'documentId': 'dock'}
-      };
-      expect(queryInfoToJsonMap(queryInfo), expected);
-
-      var expected2 = {
-        'limit': 1,
-        'offset': 2,
-        'wheres': [
-          {
-            'fieldPath': 'whereField',
-            'operator': '<=',
             'value': {r'$t': 'Timestamp', r'$v': '2361-03-21T19:15:01.234Z'}
+          },
+          {
+            'fieldPath': 'whereIn',
+            'operator': 'in',
+            'value': [1]
+          },
+          {
+            'fieldPath': 'notIn',
+            'operator': 'not-in',
+            'value': [2]
+          },
+          {
+            'fieldPath': 'arrayContains',
+            'operator': 'array-contains',
+            'value': 3
+          },
+          {
+            'fieldPath': 'arrayContainsAny',
+            'operator': 'array-contains-any',
+            'value': [4]
           }
         ],
         'orderBys': [
@@ -111,9 +114,11 @@ void main() {
         },
         'endLimit': {'inclusive': true, 'documentId': 'dock'}
       };
+      expect(queryInfoToJsonMap(queryInfo), expected);
+
       // round trip
       expect(queryInfoToJsonMap(queryInfoFromJsonMap(firestore, expected)),
-          expected2);
+          expected);
     });
   });
 

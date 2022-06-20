@@ -272,6 +272,7 @@ class WhereInfo {
     this.arrayContains,
     this.arrayContainsAny,
     this.whereIn,
+    this.notIn,
     this.isNull,
   }) {
     assert(
@@ -283,10 +284,15 @@ class WhereInfo {
             arrayContains != null ||
             arrayContainsAny != null ||
             whereIn != null ||
+            notIn != null ||
             isNull != null,
         'Empty where');
     assert(arrayContainsAny == null || arrayContainsAny!.isNotEmpty,
         'Invalid Query. A non-empty array is required for \'array-contains-any\' filters.');
+    assert(whereIn == null || whereIn!.isNotEmpty,
+        'Invalid Query. A non-empty array is required for \'in\' filters.');
+    assert(notIn == null || notIn!.isNotEmpty,
+        'Invalid Query. A non-empty array is required for \'in\' filters.');
   }
 
   dynamic isEqualTo;
@@ -297,6 +303,7 @@ class WhereInfo {
   dynamic arrayContains;
   List<Object>? arrayContainsAny;
   List<Object>? whereIn;
+  List<Object>? notIn;
   bool? isNull;
 
   @override
@@ -319,6 +326,8 @@ class WhereInfo {
       return '$fieldPath array-contains-any $arrayContainsAny';
     } else if (whereIn != null) {
       return '$fieldPath in $whereIn';
+    } else if (notIn != null) {
+      return '$fieldPath not-in $notIn';
     }
     return super.toString();
   }
@@ -388,15 +397,22 @@ WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
       isEqualTo = value;
     }
   } else if (operator == operatorLessThan) {}
-  var whereInfo = WhereInfo(map['fieldPath'] as String,
-      isEqualTo: isEqualTo,
-      isNull: isNull,
-      isLessThan: (operator == operatorLessThan) ? value : null,
-      isLessThanOrEqualTo: (operator == operatorLessThanOrEqual) ? value : null,
-      isGreaterThan: (operator == operatorGreaterThan) ? value : null,
-      isGreaterThanOrEqualTo:
-          (operator == operatorGreaterThanOrEqual) ? value : null,
-      arrayContains: (operator == operatorArrayContains) ? value : null);
+  var whereInfo = WhereInfo(
+    map['fieldPath'] as String,
+    isEqualTo: isEqualTo,
+    isNull: isNull,
+    isLessThan: (operator == operatorLessThan) ? value : null,
+    isLessThanOrEqualTo: (operator == operatorLessThanOrEqual) ? value : null,
+    isGreaterThan: (operator == operatorGreaterThan) ? value : null,
+    isGreaterThanOrEqualTo:
+        (operator == operatorGreaterThanOrEqual) ? value : null,
+    arrayContains: (operator == operatorArrayContains) ? value : null,
+    arrayContainsAny: (operator == operatorArrayContainsAny)
+        ? (value as List).cast<Object>()
+        : null,
+    whereIn: (operator == operatorIn) ? (value as List).cast<Object>() : null,
+    notIn: (operator == operatorNotIn) ? (value as List).cast<Object>() : null,
+  );
 
   return whereInfo;
 }
@@ -434,6 +450,15 @@ Map<String, Object?> whereInfoToJsonMap(WhereInfo whereInfo) {
   } else if (whereInfo.isNull != null) {
     map[_operatorKey] = operatorEqual;
     map[_valueKey] = null;
+  } else if (whereInfo.arrayContainsAny != null) {
+    map[_operatorKey] = operatorArrayContainsAny;
+    map[_valueKey] = documentDataValueToJson(whereInfo.arrayContainsAny);
+  } else if (whereInfo.whereIn != null) {
+    map[_operatorKey] = operatorIn;
+    map[_valueKey] = documentDataValueToJson(whereInfo.whereIn);
+  } else if (whereInfo.notIn != null) {
+    map[_operatorKey] = operatorNotIn;
+    map[_valueKey] = documentDataValueToJson(whereInfo.notIn);
   }
   return map;
 }

@@ -323,6 +323,9 @@ const String operatorGreaterThan = '>';
 const String operatorLessThanOrEqual = '<=';
 const String operatorGreaterThanOrEqual = '>=';
 const String operatorArrayContains = 'array-contains';
+const String operatorArrayContainsAny = 'array-contains-any';
+const String operatorIn = 'in';
+const String operatorNotIn = 'not-in';
 
 // compat 2019-10-24, fix mistake
 @Deprecated('Typo use operatorArrayContains')
