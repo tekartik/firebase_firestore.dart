@@ -4,16 +4,13 @@ import 'package:idb_shim/idb.dart' as idb;
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/document_data.dart';
-import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:uuid/uuid.dart';
+
+import 'import_firestore.dart';
 
 const String parentIndexName = 'parentIndex';
 
@@ -422,7 +419,7 @@ class DocumentChangeIdb extends DocumentChangeBase {
 }
 
 class QueryIdb extends FirestoreReferenceBase
-    with FirestoreQueryMixin, AttributesMixin
+    with FirestoreQueryMixin, AttributesMixin, FirestoreQueryExecutorMixin
     implements Query {
   FirestoreIdb get firestoreIdb => firestore as FirestoreIdb;
 

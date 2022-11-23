@@ -3,18 +3,15 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/firestore.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_common.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_client.dart';
 import 'package:tekartik_firebase_sim/rpc_message.dart';
 import 'package:tekartik_firebase_sim/src/firebase_sim_client.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart'; // ignore: implementation_imports
+
+import 'import_firestore.dart'; // ignore: implementation_imports
 
 class FirestoreServiceSim
     with FirestoreServiceMixin
@@ -418,7 +415,9 @@ class QuerySnapshotSim implements QuerySnapshot {
   List<DocumentChange> get documentChanges => simDocChanges;
 }
 
-class QuerySim extends Object with QueryMixinSim implements Query {
+class QuerySim extends Object
+    with QueryMixinSim, FirestoreQueryExecutorMixin
+    implements Query {
   @override
   final CollectionReferenceSim simCollectionReference;
 
@@ -431,7 +430,7 @@ class QuerySim extends Object with QueryMixinSim implements Query {
 }
 
 class CollectionReferenceSim extends Object
-    with QueryMixinSim
+    with QueryMixinSim, FirestoreQueryExecutorMixin
     implements CollectionReference {
   @override
   QueryInfo queryInfo = QueryInfo();

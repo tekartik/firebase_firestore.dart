@@ -1,6 +1,6 @@
 name: tekartik_firebase_firestore_sembast
 description: Firebase firestore sembast
-version: 0.8.5
+version: 0.9.0
 publish_to: none
 
 environment:

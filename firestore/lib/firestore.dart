@@ -398,6 +398,11 @@ abstract class DocumentChange {
 abstract class Query {
   Future<QuerySnapshot> get();
 
+  /// Count the number of element matching the query.
+  ///
+  /// Check [FirestoreService.supportsQueryCount] before use
+  Future<int> count();
+
   Stream<QuerySnapshot> onSnapshot();
 
   Query limit(int limit);

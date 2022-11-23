@@ -572,6 +572,13 @@ mixin FirestoreQueryMixin implements Query {
 
   Future<List<DocumentSnapshot>> getCollectionDocuments();
 
+  /*
+  // Super slow implementation
+  @override
+  Future<int> count() async {
+    return (await get()).docs.length;
+  }*/
+
   @override
   Future<QuerySnapshot> get() async {
     var queryInfo = this.queryInfo!;

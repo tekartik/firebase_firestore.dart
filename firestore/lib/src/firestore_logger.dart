@@ -319,7 +319,9 @@ class FirestoreLoggerBatch implements WriteBatch {
   }
 }
 
-abstract class QueryLoggerBase implements Query {
+abstract class QueryLoggerBase
+    with FirestoreQueryExecutorMixin
+    implements Query {
   final Query query;
   FirestoreLogger get firestoreLogger => refLogger.firestoreLogger;
   late final CollectionReferenceLogger refLogger;
@@ -569,6 +571,8 @@ class DocumentReferenceLogger
       }
     }
   }
+
+  //Future<int> count() =>
 
   @override
   Stream<DocumentSnapshot> onSnapshot() {

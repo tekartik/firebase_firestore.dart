@@ -12,7 +12,8 @@ class QueryRestImpl
         QueryMixin,
         PathReferenceMixin,
         PathReferenceImplMixin,
-        PathReferenceRestMixin
+        PathReferenceRestMixin,
+        FirestoreQueryExecutorMixin
     implements Query {
   QueryRestImpl(FirestoreRestImpl firestoreRest, String path) {
     init(firestoreRest, path);

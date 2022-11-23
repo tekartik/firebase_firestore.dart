@@ -949,6 +949,7 @@ void runApp(
         final querySnapshot = await collRef.get();
         var list = querySnapshot.docs;
         expect(list, isEmpty);
+        expect(await collRef.count(), 0);
       });
 
       test('single', () async {
@@ -960,6 +961,7 @@ void runApp(
         var list = querySnapshot.docs;
         expect(list.length, 1);
         expect(list.first.ref.id, 'one');
+        expect(await collRef.count(), 1);
       });
 
       test('select', () async {
@@ -967,6 +969,7 @@ void runApp(
         var collRef = testsRef.doc('collection_test').collection('select');
         var docRef = collRef.doc('one');
         await docRef.set({'field1': 1, 'field2': 2});
+        expect(await collRef.count(), 1);
         var querySnapshot = await collRef.select(['field1']).get();
         var data = querySnapshot.docs.first.data;
         if (firestoreService.supportsQuerySelect) {
@@ -1000,6 +1003,8 @@ void runApp(
         expect(querySnapshot.docs[0].ref.path, oneRef.path);
         expect(querySnapshot.docs[1].ref.path, twoRef.path);
 
+        expect(await collRef.count(), 2);
+
         querySnapshot = await collRef.orderBy(firestoreNameFieldPath).get();
         // Order by name by default
         expect(querySnapshot.docs[0].ref.path, oneRef.path);
@@ -1021,12 +1026,14 @@ void runApp(
           transaction.set(threeRef, {'name': 3, 'target': 2});
         });
 
-        var querySnapshot = await collRef
+        var query = collRef
             .where('target', isEqualTo: 1)
-            .orderBy('name', descending: true)
-            .get();
+            .orderBy('name', descending: true);
+        var querySnapshot = await collRef.get();
         // Order by name by default
         expect(docsKeys(querySnapshot.docs), [twoRef, oneRef]);
+
+        expect(await query.count(), 2);
       }, skip: true);
 
       bool isNodePlatform() {

@@ -1,6 +1,15 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
+// Every implementation should use this default mixin for missing implementation
+mixin FirestoreQueryExecutorMixin implements Query {
+  @override
+  Future<int> count() async {
+    return (await get()).docs.length;
+  }
+}
+
+// Common mixin, no executor for non firestore native implementation
 mixin QueryMixin implements Query {
   late QueryInfo queryInfo;
 
