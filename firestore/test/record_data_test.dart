@@ -8,7 +8,7 @@ void main() {
     test('recordMapUpdate', () {
       expect(recordMapUpdate(null, null), isNull);
       expect(recordMapUpdate({}, null), isNull);
-      expect(recordMapUpdate(null, DocumentData()), {});
+      expect(recordMapUpdate(null, DocumentData()), isEmpty);
       expect(
           recordMapUpdate(
               {'a': 1, 'b': 2},

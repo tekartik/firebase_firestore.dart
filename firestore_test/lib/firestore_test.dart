@@ -1,3 +1,5 @@
+// ignore_for_file: inference_failure_on_collection_literal
+
 import 'dart:typed_data';
 
 import 'package:path/path.dart';
@@ -427,8 +429,8 @@ void runApp(
             {'sub_key': 'some_value'}
           ]
         });
-        var list = documentData.getList('some_key')!;
-        final sub = DocumentData(list[0] as Map<String, Object?>);
+        var list = documentData.getList<Map<String, Object?>>('some_key')!;
+        final sub = DocumentData(list[0]);
         expect(sub.getString('sub_key'), 'some_value');
         await docRef.delete();
       });
@@ -1539,10 +1541,10 @@ void runApp(
         // delete it
         await docRef.delete();
         if (firestoreService.supportsTrackChanges) {
-          var completer1 = Completer();
-          var completer2 = Completer();
-          var completer3 = Completer();
-          var completer4 = Completer();
+          var completer1 = Completer<void>();
+          var completer2 = Completer<void>();
+          var completer3 = Completer<void>();
+          var completer4 = Completer<void>();
           var count = 0;
           var subscription =
               collRef.onSnapshot().listen((QuerySnapshot querySnapshot) {

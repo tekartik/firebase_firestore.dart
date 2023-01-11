@@ -53,7 +53,7 @@ void main() {
     test('queryInfoToJsonMap', () {
       var firestore = FirestoreMock();
       var queryInfo = QueryInfo();
-      expect(queryInfoToJsonMap(queryInfo), {});
+      expect(queryInfoToJsonMap(queryInfo), isEmpty);
 
       queryInfo.limit = 1;
       queryInfo.offset = 2;
@@ -229,16 +229,16 @@ void main() {
       documentData = documentDataFromRecordMap(firestore, {
         'test': [1, 2]
       })!;
-      expect(documentData.getList('test'), [1, 2]);
+      expect(documentData.getList<int>('test'), [1, 2]);
     });
 
     test('documentMapFromRecordMap', () {
       var documentData = DocumentDataMap();
-      expect(documentData.map, {});
+      expect(documentData.map, isEmpty);
       documentDataFromRecordMap(firestore, {}, documentData);
-      expect(documentData.map, {});
+      expect(documentData.map, isEmpty);
       documentDataFromRecordMap(firestore, null, documentData);
-      expect(documentData.map, {});
+      expect(documentData.map, isEmpty);
 
       // basic types
       documentDataFromRecordMap(

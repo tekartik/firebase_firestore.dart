@@ -151,7 +151,7 @@ mixin FirestoreSubscriptionMixin on Firestore {
 
   void notify(WriteResultBase result) {
     var path = result.path;
-    var documentSubscription = findSubscription(path);
+    var documentSubscription = findSubscription<Object?>(path);
     var newSnapshot = result.newSnapshot;
     var previousSnapshot = result.previousSnapshot;
     var added = result.added;
@@ -165,7 +165,7 @@ mixin FirestoreSubscriptionMixin on Firestore {
       }
     }
     // notify collection listeners
-    var collectionSubscription = findSubscription(url.dirname(path));
+    var collectionSubscription = findSubscription<Object?>(url.dirname(path));
     if (collectionSubscription != null) {
       var change = documentChange(
           added

@@ -454,7 +454,7 @@ class QueryIdb extends FirestoreReferenceBase
       cwv.next();
 
       // else otherwise just stop
-    }).asFuture();
+    }).asFuture<void>();
     return docs;
   }
 }

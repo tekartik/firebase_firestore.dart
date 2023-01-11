@@ -31,7 +31,7 @@ Future main() async {
   group('document', () {
     test('patch', () {
       var patchDocument = UpdateDocument(firestoreMock, {});
-      expect(patchDocument.fields, {});
+      expect(patchDocument.fields, isEmpty);
       var data = {'test': 1};
       patchDocument = UpdateDocument(firestoreMock, data);
       var readDocument = ReadDocument(firestoreMock, patchDocument.document);
@@ -79,7 +79,7 @@ Future main() async {
 
     test('set', () {
       var patchDocument = SetDocument(firestoreMock, {});
-      expect(patchDocument.fields, {});
+      expect(patchDocument.fields, isEmpty);
       var data = {'test': 1};
       patchDocument = SetDocument(firestoreMock, data);
       var readDocument = ReadDocument(firestoreMock, patchDocument.document);
@@ -96,7 +96,7 @@ Future main() async {
     test('patchDelete', () {
       var patchDocument =
           UpdateDocument(firestoreMock, {'test': FieldValue.delete});
-      expect(patchDocument.fields, {});
+      expect(patchDocument.fields, isEmpty);
       expect(patchDocument.fieldPaths, ['test']);
 
       patchDocument = UpdateDocument(firestoreMock, {'test2': 1});
