@@ -352,7 +352,6 @@ class WriteBatchSembast extends WriteBatchBase implements WriteBatch {
 
 // It is basically a batch with gets before in a transaction
 class TransactionSembast extends WriteBatchSembast implements Transaction {
-  var completer = Completer<void>();
   late sembast.Transaction nativeTransaction;
 
   TransactionSembast(FirestoreSembast firestore) : super(firestore);
