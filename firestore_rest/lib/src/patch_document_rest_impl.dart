@@ -83,7 +83,6 @@ class UpdateDocument extends WriteDocument {
 
       if (value == FieldValue.delete) {
         // Don't set it  in the fields but added in field paths
-
       } else {
         fields[stringKey] = patchToRestValue(stringKey, value);
       }

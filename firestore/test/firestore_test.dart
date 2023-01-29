@@ -43,9 +43,9 @@ void main() {
   group('jsonMap', () {
     test('list', () {
       var data = DocumentData();
-      expect(data.getList('list'), isNull);
+      expect(data.getList<void>('list'), isNull);
       data.setList('list', <Object?>[1, 3]);
-      final list = data.getList('list');
+      final list = data.getList<int>('list');
       expect(list, [1, 3]);
     });
 
@@ -140,7 +140,7 @@ void main() {
 
     test('toJsonMap', () {
       var documentData = DocumentDataMap();
-      expect(documentDataToJsonMap(documentData), {});
+      expect(documentDataToJsonMap(documentData), isEmpty);
       documentData.setInt('int', 1);
       var nested = DocumentData();
       nested.setFieldValue('delete', FieldValue.delete);

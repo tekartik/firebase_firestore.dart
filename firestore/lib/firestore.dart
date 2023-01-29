@@ -274,7 +274,7 @@ class Blob {
   @override
   bool operator ==(other) {
     if (other is Blob) {
-      return const ListEquality().equals(other.data, _data);
+      return const ListEquality<int>().equals(other.data, _data);
     }
     return false;
   }
@@ -397,6 +397,11 @@ abstract class DocumentChange {
 
 abstract class Query {
   Future<QuerySnapshot> get();
+
+  /// Count the number of element matching the query.
+  ///
+  /// Check [FirestoreService.supportsQueryCount] before use
+  Future<int> count();
 
   Stream<QuerySnapshot> onSnapshot();
 

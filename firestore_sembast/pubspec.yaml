@@ -1,14 +1,14 @@
 name: tekartik_firebase_firestore_sembast
 description: Firebase firestore sembast
-version: 0.8.5
+version: 0.9.0
 publish_to: none
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.18.0 <3.0.0'
 
 dependencies:
   sembast: '>=2.4.7+7'
-  sembast_web: '>=1.0.0'
+  sembast_web: '>=2.0.0-3'
   uuid: '>=1.0.0'
   tekartik_firebase_firestore:
     git:

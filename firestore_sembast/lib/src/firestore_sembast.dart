@@ -4,16 +4,14 @@ import 'package:sembast/sembast.dart' as sembast;
 import 'package:sembast/sembast_memory.dart' as sembast;
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart'
     show newFirestoreServiceSembast;
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:uuid/uuid.dart';
+
+import 'import_firestore.dart';
 
 class FirestoreServiceSembast
     with FirestoreServiceMixin
@@ -354,7 +352,6 @@ class WriteBatchSembast extends WriteBatchBase implements WriteBatch {
 
 // It is basically a batch with gets before in a transaction
 class TransactionSembast extends WriteBatchSembast implements Transaction {
-  var completer = Completer();
   late sembast.Transaction nativeTransaction;
 
   TransactionSembast(FirestoreSembast firestore) : super(firestore);
@@ -523,7 +520,7 @@ class CollectionReferenceSembast extends QuerySembast
 }
 
 class QuerySembast extends FirestoreReferenceBase
-    with FirestoreQueryMixin, AttributesMixin
+    with FirestoreQueryMixin, AttributesMixin, FirestoreQueryExecutorMixin
     implements Query {
   FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
 

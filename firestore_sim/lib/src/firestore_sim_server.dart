@@ -36,7 +36,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
 
   int get newSubscriptionId => ++lastSubscriptionId;
 
-  DocumentReference requestDocumentReference(Map<String, dynamic> params) {
+  DocumentReference requestDocumentReference(Map<String, Object?> params) {
     var firestorePathData = FirestorePathData()..fromMap(params);
     var ref = firestore.doc(firestorePathData.path);
     return ref;
@@ -116,7 +116,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     });
   }
 
-  Future handleFirestoreAddRequest(Map<String, dynamic> params) async {
+  Future handleFirestoreAddRequest(Map<String, Object?> params) async {
     var firestoreSetData = FirestoreSetData()..fromMap(params);
     var documentData =
         documentDataFromJsonMap(firestore, firestoreSetData.data);
@@ -130,7 +130,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     });
   }
 
-  Future handleFirestoreGetRequest(Map<String, dynamic> params) async {
+  Future handleFirestoreGetRequest(Map<String, Object?> params) async {
     var firestoreGetRequesthData = FirestoreGetRequestData()..fromMap(params);
     var ref = requestDocumentReference(params);
     var transactionId = firestoreGetRequesthData.transactionId;
@@ -149,7 +149,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     return snapshotData.toMap();
   }
 
-  Future handleFirestoreSetRequest(Map<String, dynamic> params) async {
+  Future handleFirestoreSetRequest(Map<String, Object?> params) async {
     var firestoreSetData = FirestoreSetData()..fromMap(params);
     var documentData =
         documentDataFromJsonMap(firestore, firestoreSetData.data);
@@ -175,7 +175,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     });
   }
 
-  Future handleFirestoreDeleteRequest(Map<String, dynamic> params) async {
+  Future handleFirestoreDeleteRequest(Map<String, Object?> params) async {
     var firestoreDeleteData = FirestorePathData()..fromMap(params);
 
     await transactionLock!.synchronized(() async {
@@ -208,7 +208,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     final subscription =
         subscriptions[subscriptionId!] as SimSubscription<DocumentSnapshot>?;
     var event = (await subscription?.getNext());
-    var map = {};
+    var map = <String, Object?>{};
     if (event == null || event.done) {
       map[paramDone] = true;
     } else {
@@ -263,7 +263,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
         subscriptions[subscriptionId!] as SimSubscription<QuerySnapshot>?;
     try {
       var event = (await subscription?.getNext());
-      var map = {};
+      var map = <String, Object?>{};
       if (event == null || event.done) {
         map[paramDone] = true; // event.done;
         return map;
@@ -345,7 +345,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
   Completer? transactionCompleter;
 
   // Transaction
-  Future handleFirestoreTransaction(Map<String, dynamic>? params) async {
+  Future handleFirestoreTransaction(Map<String, Object?>? params) async {
     var responseData = FirestoreTransactionResponseData()
       ..transactionId = ++lastTransactionId;
 
@@ -358,7 +358,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     return responseData.toMap();
   }
 
-  Future handleFirestoreTransactionCommit(Map<String, dynamic> params) async {
+  Future handleFirestoreTransactionCommit(Map<String, Object?> params) async {
     var batchData = FirestoreBatchData()..firestoreFromMap(firestore, params);
 
     if (batchData.transactionId == lastTransactionId) {
@@ -375,7 +375,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
     }
   }
 
-  Future handleFirestoreTransactionCancel(Map<String, dynamic> params) async {
+  Future handleFirestoreTransactionCancel(Map<String, Object?> params) async {
     var requestData = FirestoreTransactionCancelRequestData()..fromMap(params);
 
     if (requestData.transactionId == lastTransactionId) {
