@@ -170,7 +170,11 @@ Future main() async {
           'readTime': '2019-11-02T15:30:32.293753Z'
         }
       ];
-      RunQueryFixedResponse.fromJson(json);
+
+      // ignore: omit_local_variable_types
+      RunQueryFixedResponse response =
+          json.map((e) => RunQueryResponseElement.fromJson(e)).toList();
+      expect(response.length, 2);
     });
   });
 }
