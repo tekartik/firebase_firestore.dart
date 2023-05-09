@@ -158,7 +158,7 @@ class DocumentReferenceSim
   }
 
   @override
-  Stream<DocumentSnapshot> onSnapshot() {
+  Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     late ServerSubscriptionSim<DocumentSnapshotSim> subscription;
     FirebaseSimClient? simClient;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {

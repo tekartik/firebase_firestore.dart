@@ -355,7 +355,7 @@ class DocumentReferenceBrowser
       nativeInstance.update(data: documentDataToNativeMap(DocumentData(data)));
 
   @override
-  Stream<DocumentSnapshot> onSnapshot() {
+  Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     var transformer = StreamTransformer.fromHandlers(handleData:
         (native.DocumentSnapshot nativeDocumentSnapshot,
             EventSink<DocumentSnapshot> sink) {

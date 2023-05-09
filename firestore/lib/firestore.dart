@@ -119,7 +119,11 @@ abstract class DocumentReference {
 
   Future<void> update(Map<String, Object?> data);
 
-  Stream<DocumentSnapshot> onSnapshot();
+  /// Notifies of document updates at this location.
+  ///
+  /// An initial event is immediately sent, and further events will be
+  /// sent whenever the document is modified.
+  Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false});
 }
 
 abstract class DocumentData {

@@ -954,6 +954,15 @@ void runApp(
         expect(await collRef.count(), 0);
       });
 
+      test('snapshotMetadata', () async {
+        var testsRef = getTestsRef()!;
+        var collRef = testsRef.doc('collection_test').collection('metadata');
+        final querySnapshot = await collRef.get();
+        var list = querySnapshot.docs;
+        expect(list, isEmpty);
+        expect(await collRef.count(), 0);
+      });
+
       test('single', () async {
         var testsRef = getTestsRef()!;
         var collRef = testsRef.doc('collection_test').collection('single');

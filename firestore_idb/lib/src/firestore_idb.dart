@@ -386,7 +386,8 @@ class DocumentReferenceIdb
       firestoreIdb.updateDocument(this, DocumentData(data));
 
   @override
-  Stream<DocumentSnapshot> onSnapshot() => firestoreIdb.onSnapshot(this);
+  Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) =>
+      firestoreIdb.onSnapshot(this);
 
   @override
   Firestore get firestore => firestoreIdb;
