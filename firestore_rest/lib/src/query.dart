@@ -20,7 +20,7 @@ class QueryRestImpl
   }
 
   @override
-  Stream<QuerySnapshot> onSnapshot() =>
+  Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) =>
       throw UnsupportedError('onSnapshot not supported');
 
   @override

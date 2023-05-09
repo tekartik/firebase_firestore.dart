@@ -554,7 +554,7 @@ class QueryBrowser with FirestoreQueryExecutorMixin implements Query {
   }
 
   @override
-  Stream<QuerySnapshot> onSnapshot() {
+  Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     var transformer = StreamTransformer.fromHandlers(handleData:
         (native.QuerySnapshot nativeQuerySnapshot,
             EventSink<QuerySnapshot> sink) {

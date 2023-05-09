@@ -362,7 +362,7 @@ abstract class QueryLoggerBase
   Query limit(int limit) => QueryLogger(query.limit(limit), refLogger);
 
   @override
-  Stream<QuerySnapshot> onSnapshot() {
+  Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     return StreamTransformer<QuerySnapshot, QuerySnapshot>.fromHandlers(
         handleData: (snapshot, sink) {
       var snapshotLogger = QuerySnapshotLogger(snapshot, firestoreLogger);

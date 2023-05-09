@@ -330,7 +330,7 @@ abstract class QueryMixinSim implements Query {
   }
 
   @override
-  Stream<QuerySnapshot> onSnapshot() {
+  Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     FirebaseSimClient? simClient;
     late ServerSubscriptionSim<QuerySnapshot> subscription;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {

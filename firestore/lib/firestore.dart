@@ -8,9 +8,14 @@ import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/timestamp.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 
+import 'src/document_snapshot.dart' show DocumentSnapshot;
+
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
     show FirestoreSettings, firestoreNameFieldPath;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
+
+export 'src/document_snapshot.dart' show DocumentSnapshot;
+export 'src/snapshot_meta_data.dart' show SnapshotMetadata;
 
 abstract class FirestoreService {
   // True if query supporting selecting a set of fields
@@ -189,27 +194,6 @@ abstract class DocumentData {
   void setGeoPoint(String key, GeoPoint geoPoint);
 
   GeoPoint? getGeoPoint(String key);
-}
-
-/// A DocumentSnapshot contains data read from a document in your Cloud
-/// Firestore database.
-abstract class DocumentSnapshot {
-  /// Gets the reference to the document.
-  DocumentReference get ref;
-
-  /// Returns the fields of the document as a Map, throw if it does not exist.
-  Map<String, Object?> get data;
-
-  /// true if the document existed in this snapshot.
-  bool get exists;
-
-  /// The time the document was last updated (at the time the snapshot was
-  /// generated). Not set for documents that don't exist.
-  Timestamp? get updateTime;
-
-  /// The time the document was created. Not set for documents that don't
-  /// exist.
-  Timestamp? get createTime;
 }
 
 /// Helper on document snapshot
@@ -403,7 +387,7 @@ abstract class Query {
   /// Check [FirestoreService.supportsQueryCount] before use
   Future<int> count();
 
-  Stream<QuerySnapshot> onSnapshot();
+  Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false});
 
   Query limit(int limit);
 
