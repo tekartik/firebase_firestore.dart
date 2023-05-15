@@ -10,7 +10,7 @@ import 'package:test/test.dart';
 import 'firestore_idb_test.dart';
 
 void main() async {
-  var firestoreService = idb.firestoreService;
+  var firestoreService = idb.firestoreServiceIdbBrowser;
   var firebase = FirebaseLocal();
   idbTestInit();
   group('browser', () {

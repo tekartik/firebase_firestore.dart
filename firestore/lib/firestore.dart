@@ -4,7 +4,9 @@ import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:tekartik_firebase/firebase.dart';
+import 'package:tekartik_firebase_firestore/src/document_reference.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/query_snapshot.dart';
 import 'package:tekartik_firebase_firestore/src/timestamp.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 
@@ -14,7 +16,10 @@ export 'package:tekartik_firebase_firestore/src/firestore.dart'
     show FirestoreSettings, firestoreNameFieldPath;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
 
+export 'src/document_reference.dart'
+    show DocumentReference, DocumentReferenceListExtension;
 export 'src/document_snapshot.dart' show DocumentSnapshot;
+export 'src/query_snapshot.dart' show QuerySnapshotExtension, QuerySnapshot;
 export 'src/snapshot_meta_data.dart' show SnapshotMetadata;
 
 abstract class FirestoreService {
@@ -93,37 +98,6 @@ abstract class CollectionReference extends Query {
 
   /// Add a document.
   Future<DocumentReference> add(Map<String, Object?> data);
-}
-
-/// Document reference.
-abstract class DocumentReference {
-  /// Document id.
-  String get id;
-
-  /// Document path
-  String get path;
-
-  /// Parent collection.
-  CollectionReference? get parent;
-
-  /// Get a child collection.
-  CollectionReference collection(String path);
-
-  /// Delete a document.
-  Future<void> delete();
-
-  /// Get a document.
-  Future<DocumentSnapshot> get();
-
-  Future<void> set(Map<String, Object?> data, [SetOptions? options]);
-
-  Future<void> update(Map<String, Object?> data);
-
-  /// Notifies of document updates at this location.
-  ///
-  /// An initial event is immediately sent, and further events will be
-  /// sent whenever the document is modified.
-  Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false});
 }
 
 abstract class DocumentData {
@@ -333,14 +307,6 @@ abstract class WriteBatch {
   Future commit();
 }
 
-abstract class QuerySnapshot {
-  List<DocumentSnapshot> get docs;
-
-  /// An array of the documents that changed since the last snapshot. If this
-  /// is the first snapshot, all documents will be in the list as Added changes.
-  List<DocumentChange> get documentChanges;
-}
-
 /// An enumeration of document change types.
 enum DocumentChangeType {
   /// Indicates a new document was added to the set of documents matching the
@@ -395,7 +361,11 @@ abstract class Query {
 
   Query limit(int limit);
 
+  /// Multiple orders by can be used.
   Query orderBy(String key, {bool? descending});
+
+  /// No other orderBy can be used after orderById.
+  Query orderById({bool? descending});
 
   Query select(List<String> keyPaths);
 

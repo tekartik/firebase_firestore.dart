@@ -1022,6 +1022,26 @@ void runApp(
         expect(querySnapshot.docs[1].ref.path, twoRef.path);
       });
 
+      test('order_by_key', () async {
+        var testsRef = getTestsRef()!;
+        var collRef =
+            testsRef.doc('collection_test').collection('order_by_key');
+        await deleteCollection(firestore, collRef);
+        var oneRef = collRef.doc('one');
+        await oneRef.set({});
+        var twoRef = collRef.doc('two');
+        await twoRef.set({});
+        var threeRef = collRef.doc('three');
+        await threeRef.set({});
+
+        var querySnapshot = await collRef.orderById().get();
+        // Order by name by default
+        expect(querySnapshot.ids, [oneRef, threeRef, twoRef].ids);
+        querySnapshot = await collRef.orderById(descending: true).get();
+        // Order by name by default
+        expect(querySnapshot.ids, [twoRef, threeRef, oneRef].ids);
+      });
+
       /// Requires an index
       test('where_and_order_by_name', () async {
         var testsRef = getTestsRef()!;

@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('firestore_service_sim', () {
     test('supportsDocumentSnapshotTime', () {
-      expect(firestoreService.supportsTimestampsInSnapshots, isTrue);
+      expect(firestoreServiceSim.supportsTimestampsInSnapshots, isTrue);
     });
   });
 }

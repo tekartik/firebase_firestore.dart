@@ -7,6 +7,10 @@ mixin FirestoreQueryExecutorMixin implements Query {
   Future<int> count() async {
     return (await get()).docs.length;
   }
+
+  @override
+  Query orderById({bool? descending}) =>
+      orderBy(firestoreNameFieldPath, descending: descending);
 }
 
 // Common mixin, no executor for non firestore native implementation
