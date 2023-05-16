@@ -1040,7 +1040,7 @@ void runApp(
         querySnapshot = await collRef.orderById(descending: true).get();
         // Order by name by default
         expect(querySnapshot.ids, [twoRef, threeRef, oneRef].ids);
-      });
+      }, skip: 'Not supported on all platforms');
 
       /// Requires an index
       test('where_and_order_by_name', () async {
