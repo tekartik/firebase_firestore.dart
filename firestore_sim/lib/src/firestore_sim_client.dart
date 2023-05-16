@@ -158,7 +158,7 @@ class DocumentReferenceSim
   }
 
   @override
-  Stream<DocumentSnapshot> onSnapshot() {
+  Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     late ServerSubscriptionSim<DocumentSnapshotSim> subscription;
     FirebaseSimClient? simClient;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {
@@ -330,7 +330,7 @@ abstract class QueryMixinSim implements Query {
   }
 
   @override
-  Stream<QuerySnapshot> onSnapshot() {
+  Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     FirebaseSimClient? simClient;
     late ServerSubscriptionSim<QuerySnapshot> subscription;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {

@@ -2,6 +2,8 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/src/record_data.dart';
 
+import 'snapshot_meta_data_mixin.dart';
+
 /// Base implementation for compatible evolution
 mixin DocumentSnapshotMixin implements DocumentSnapshot {
   @override
@@ -19,7 +21,9 @@ mixin DocumentSnapshotMixin implements DocumentSnapshot {
   @override
   Timestamp? get updateTime => throw UnimplementedError();
 
-  // Map<String, Object?> get dataOrNull => throw UnimplementedError();
+  @override
+  SnapshotMetadata get metadata =>
+      exists ? snapshotMetadataDefaultImpl : throw UnimplementedError();
 }
 
 /// Test of mixin

@@ -82,19 +82,6 @@ Map<String, Object?> documentDataToUpdateMap(
   return updateMap;
 }
 
-/*
-DocumentSnapshotSembast documentSnapshotFromRecordMap(
-    FirestoreSembast firestore, String path, Map<String, Object?> recordMap) {
-
-  return DocumentSnapshotSembast(
-      DocumentReferenceSembast(ReferenceContextSembast(firestore, path)),
-      recordMapRev(recordMap),
-      documentDataFromRecordMap(firestore, recordMap),
-      updateTime: recordMapUpdateTime(recordMap),
-      createTime: recordMapCreateTime(recordMap));
-}
-*/
-
 // new format
 int firestoreSembastDatabaseVersion = 1;
 
@@ -449,7 +436,8 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
   }
 
   @override
-  Stream<DocumentSnapshot> onSnapshot() => firestoreSembast.onSnapshot(this);
+  Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) =>
+      firestoreSembast.onSnapshot(this);
 }
 
 class CollectionReferenceSembast extends QuerySembast

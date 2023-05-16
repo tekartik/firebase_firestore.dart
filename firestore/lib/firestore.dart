@@ -4,13 +4,23 @@ import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:tekartik_firebase/firebase.dart';
+import 'package:tekartik_firebase_firestore/src/document_reference.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/query_snapshot.dart';
 import 'package:tekartik_firebase_firestore/src/timestamp.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
+
+import 'src/document_snapshot.dart' show DocumentSnapshot;
 
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
     show FirestoreSettings, firestoreNameFieldPath;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
+
+export 'src/document_reference.dart'
+    show DocumentReference, DocumentReferenceListExtension;
+export 'src/document_snapshot.dart' show DocumentSnapshot;
+export 'src/query_snapshot.dart' show QuerySnapshotExtension, QuerySnapshot;
+export 'src/snapshot_meta_data.dart' show SnapshotMetadata;
 
 abstract class FirestoreService {
   // True if query supporting selecting a set of fields
@@ -90,33 +100,6 @@ abstract class CollectionReference extends Query {
   Future<DocumentReference> add(Map<String, Object?> data);
 }
 
-/// Document reference.
-abstract class DocumentReference {
-  /// Document id.
-  String get id;
-
-  /// Document path
-  String get path;
-
-  /// Parent collection.
-  CollectionReference? get parent;
-
-  /// Get a child collection.
-  CollectionReference collection(String path);
-
-  /// Delete a document.
-  Future<void> delete();
-
-  /// Get a document.
-  Future<DocumentSnapshot> get();
-
-  Future<void> set(Map<String, Object?> data, [SetOptions? options]);
-
-  Future<void> update(Map<String, Object?> data);
-
-  Stream<DocumentSnapshot> onSnapshot();
-}
-
 abstract class DocumentData {
   factory DocumentData([Map<String, Object?>? map]) =>
       DocumentDataMap(map: map);
@@ -189,27 +172,6 @@ abstract class DocumentData {
   void setGeoPoint(String key, GeoPoint geoPoint);
 
   GeoPoint? getGeoPoint(String key);
-}
-
-/// A DocumentSnapshot contains data read from a document in your Cloud
-/// Firestore database.
-abstract class DocumentSnapshot {
-  /// Gets the reference to the document.
-  DocumentReference get ref;
-
-  /// Returns the fields of the document as a Map, throw if it does not exist.
-  Map<String, Object?> get data;
-
-  /// true if the document existed in this snapshot.
-  bool get exists;
-
-  /// The time the document was last updated (at the time the snapshot was
-  /// generated). Not set for documents that don't exist.
-  Timestamp? get updateTime;
-
-  /// The time the document was created. Not set for documents that don't
-  /// exist.
-  Timestamp? get createTime;
 }
 
 /// Helper on document snapshot
@@ -345,14 +307,6 @@ abstract class WriteBatch {
   Future commit();
 }
 
-abstract class QuerySnapshot {
-  List<DocumentSnapshot> get docs;
-
-  /// An array of the documents that changed since the last snapshot. If this
-  /// is the first snapshot, all documents will be in the list as Added changes.
-  List<DocumentChange> get documentChanges;
-}
-
 /// An enumeration of document change types.
 enum DocumentChangeType {
   /// Indicates a new document was added to the set of documents matching the
@@ -403,11 +357,15 @@ abstract class Query {
   /// Check [FirestoreService.supportsQueryCount] before use
   Future<int> count();
 
-  Stream<QuerySnapshot> onSnapshot();
+  Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false});
 
   Query limit(int limit);
 
+  /// Multiple orders by can be used.
   Query orderBy(String key, {bool? descending});
+
+  /// No other orderBy can be used after orderById.
+  Query orderById({bool? descending});
 
   Query select(List<String> keyPaths);
 

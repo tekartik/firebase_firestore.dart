@@ -102,7 +102,7 @@ class DocumentReferenceMock
   }
 
   @override
-  Stream<DocumentSnapshot> onSnapshot() {
+  Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     throw UnimplementedError();
   }
 

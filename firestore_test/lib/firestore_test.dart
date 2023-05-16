@@ -954,6 +954,15 @@ void runApp(
         expect(await collRef.count(), 0);
       });
 
+      test('snapshotMetadata', () async {
+        var testsRef = getTestsRef()!;
+        var collRef = testsRef.doc('collection_test').collection('metadata');
+        final querySnapshot = await collRef.get();
+        var list = querySnapshot.docs;
+        expect(list, isEmpty);
+        expect(await collRef.count(), 0);
+      });
+
       test('single', () async {
         var testsRef = getTestsRef()!;
         var collRef = testsRef.doc('collection_test').collection('single');
@@ -1012,6 +1021,26 @@ void runApp(
         expect(querySnapshot.docs[0].ref.path, oneRef.path);
         expect(querySnapshot.docs[1].ref.path, twoRef.path);
       });
+
+      test('order_by_key', () async {
+        var testsRef = getTestsRef()!;
+        var collRef =
+            testsRef.doc('collection_test').collection('order_by_key');
+        await deleteCollection(firestore, collRef);
+        var oneRef = collRef.doc('one');
+        await oneRef.set({});
+        var twoRef = collRef.doc('two');
+        await twoRef.set({});
+        var threeRef = collRef.doc('three');
+        await threeRef.set({});
+
+        var querySnapshot = await collRef.orderById().get();
+        // Order by name by default
+        expect(querySnapshot.ids, [oneRef, threeRef, twoRef].ids);
+        querySnapshot = await collRef.orderById(descending: true).get();
+        // Order by name by default
+        expect(querySnapshot.ids, [twoRef, threeRef, oneRef].ids);
+      }, skip: 'Not supported on all platforms');
 
       /// Requires an index
       test('where_and_order_by_name', () async {

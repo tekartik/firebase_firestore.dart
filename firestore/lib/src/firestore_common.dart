@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:tekartik_common_utils/date_time_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/snapshot_meta_data_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
@@ -713,9 +714,9 @@ class DocumentChangeBase implements DocumentChange {
   String toString() => '${document.ref.path} $type $oldIndex $newIndex';
 }
 
-abstract class DocumentSnapshotBase
-    with DocumentSnapshotMixin
-    implements DocumentSnapshot {
+abstract class DocumentSnapshotBase //with DocumentSnapshotMixin
+    implements
+        DocumentSnapshot {
   final RecordMetaData? meta;
   @override
   final DocumentReference ref;
@@ -742,10 +743,27 @@ abstract class DocumentSnapshotBase
   Map<String, Object?> get data => documentData!.asMap();
 
   @override
+  SnapshotMetadata get metadata => _snapshotMetadataSembast;
+
+  @override
   String toString() {
     return 'DocumentSnapshot(ref: $ref, exists: $exists, meta $meta)';
   }
 }
+
+/// Meta data always ok.
+class SnapshotMetadataSembast
+    with SnapshotMetadataMixin
+    implements SnapshotMetadata {
+  @override
+  bool get hasPendingWrites => false;
+
+  @override
+  bool get isFromCache => false;
+}
+
+/// Re-use it!
+final _snapshotMetadataSembast = SnapshotMetadataSembast();
 
 class QuerySnapshotBase implements QuerySnapshot {
   QuerySnapshotBase(this.docs, this.documentChanges);

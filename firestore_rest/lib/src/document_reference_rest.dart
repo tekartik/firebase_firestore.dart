@@ -24,7 +24,7 @@ class DocumentReferenceRestImpl
   Future<DocumentSnapshot> get() => firestoreRestImpl.getDocument(path);
 
   @override
-  Stream<DocumentSnapshot> onSnapshot() =>
+  Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) =>
       throw UnsupportedError('onSnapshot not supported');
 
   @override

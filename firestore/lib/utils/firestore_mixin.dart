@@ -780,7 +780,7 @@ mixin FirestoreQueryMixin implements Query {
       clone()..queryInfo!.endBefore(snapshot: snapshot, values: values);
 
   @override
-  Stream<QuerySnapshot> onSnapshot() {
+  Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     var collectionSubscription =
         subscriptionMixin.addCollectionSubscription(path);
     late StreamSubscription querySubscription;
