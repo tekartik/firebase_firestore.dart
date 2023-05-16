@@ -258,6 +258,10 @@ class LimitInfo {
       ..values = values
       ..inclusive = inclusive;
   }
+
+  @override
+  String toString() =>
+      '${documentId ?? values} ${inclusive ? '(inclusive)' : ''}';
 }
 
 class WhereInfo {

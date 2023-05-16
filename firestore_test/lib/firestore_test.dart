@@ -1114,6 +1114,27 @@ void runApp(
         }
       });
 
+      test('between', () async {
+        var testsRef = getTestsRef()!;
+        var collRef = testsRef.doc('collection_test').collection('between');
+        await deleteCollection(firestore, collRef);
+        var oneRef = collRef.doc('2_1');
+        await oneRef.set({'value': 1});
+        var twoRef = collRef.doc('3_2');
+        await twoRef.set({'value': 2});
+        var threeRef = collRef.doc('1_3');
+        await threeRef.set({'value': 3});
+
+        var querySnapshot = await collRef.orderBy('value').get();
+        expect(querySnapshot.ids, [oneRef, twoRef, threeRef].ids);
+        querySnapshot = await collRef
+            .orderBy('value')
+            .startAt(values: [2]).endBefore(values: [3]).get();
+        expect(querySnapshot.ids, [twoRef].ids);
+        querySnapshot = await collRef.orderBy('value', descending: true).get();
+        expect(querySnapshot.ids, [threeRef, twoRef, oneRef].ids);
+      });
+
       test('complex', () async {
         var testsRef = getTestsRef()!;
         var collRef = testsRef.doc('collection_test').collection('many');
