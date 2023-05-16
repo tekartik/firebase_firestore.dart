@@ -34,6 +34,63 @@ export 'package:tekartik_firebase_firestore/src/record_data.dart'
         FieldValueArray,
         fieldArrayValueMergeValue;
 
+int queryCompareSnapshotToLimit(
+    QueryInfo queryInfo, DocumentSnapshot snapshot, LimitInfo limitInfo) {
+  // devPrint(limitInfo);
+  var orderBys = queryInfo.orderBys;
+  var documentId = limitInfo.documentId;
+  if (documentId != null) {
+    return snapshot.ref.id.compareTo(documentId);
+  } else {
+    var values = limitInfo.values!;
+    var cmp = 0;
+
+    for (var i = 0; i < orderBys.length; i++) {
+      var orderBy = orderBys[i];
+
+      final keyPath = orderBy.fieldPath!;
+      final ascending = orderBy.ascending;
+
+      int firestoreCompare(
+          FirestoreComparable? object1, FirestoreComparable? object2) {
+        return _compareHandleNull(object1, object2, ascending);
+      }
+
+      DocumentDataMap? snapshotDataMap(DocumentSnapshot snapshot) {
+        return ((snapshot as DocumentSnapshotBase).documentData
+            as DocumentDataMap?);
+      }
+
+      int compareAtKeyPath(String keyPath) {
+        if (keyPath == firestoreNameFieldPath) {
+          // If not specified, ignore
+          if (values.length <= i) {
+            cmp = 0;
+          } else {
+            var limitValue = limitInfo.values![i];
+            cmp = firestoreCompare(
+                _getComparable(snapshot.ref.id)!, _getComparable(limitValue)!);
+          }
+        } else {
+          var limitValue = limitInfo.values![i];
+          cmp = firestoreCompare(
+            _getComparable(
+                snapshotDataMap(snapshot)!.valueAtFieldPath(keyPath))!,
+            _getComparable(limitValue)!,
+          );
+        }
+        return cmp;
+      }
+
+      cmp = compareAtKeyPath(keyPath);
+      if (cmp != 0) {
+        break;
+      }
+    }
+    return cmp;
+  }
+}
+
 // might evolve to be always true
 bool firestoreTimestampsInSnapshots(Firestore firestore) {
   /*
@@ -314,6 +371,9 @@ class FirestoreComparable {
 
   static int compare(FirestoreComparable? a, FirestoreComparable? b) =>
       a?.compareTo(b) ?? -1;
+
+  @override
+  String toString() => 'FirestoreComparable($comparable, $nonComparable)';
 }
 
 /// Null is not comparable
@@ -423,16 +483,6 @@ class ComparableMap<K, V>
   }
 }
 
-int _compare(FirestoreComparable value1, FirestoreComparable value2,
-    [bool ascending = true]) {
-  final compareValue = FirestoreComparable.compare(value1, value2);
-  if (ascending != false) {
-    return compareValue;
-  } else {
-    return -compareValue;
-  }
-}
-
 int _rawCompareHandleNull(
     FirestoreComparable? object1, FirestoreComparable? object2) {
   if (object2 == null) {
@@ -498,49 +548,26 @@ bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
     }
   }
 
-  if (((queryInfo.startLimit?.values != null ||
-              queryInfo.endLimit?.values != null) &&
-          queryInfo.orderBys.isNotEmpty) ||
-      queryInfo.wheres.isNotEmpty) {
-    var startCompare = 0;
-    var endCompare = 0;
-    for (var i = 0; i < queryInfo.orderBys.length; i++) {
-      var orderBy = queryInfo.orderBys[i];
-      var fieldPath = orderBy.fieldPath;
-      final value = getComparableValue(fieldPath);
-      var startLimit = queryInfo.startLimit;
-      // Start
-      dynamic rawLimitValue = safeGetItem(startLimit?.values, i);
-      if (rawLimitValue != null) {
-        final limitValue = _getComparable(rawLimitValue)!;
-
-        startCompare = _compare(value!, limitValue, orderBy.ascending);
-
-        if (startCompare < 0) {
-          return false;
-        } else if (startCompare == 0 && !startLimit!.inclusive) {
-          return false;
-        }
-      }
-
-      // End
-      var endLimit = queryInfo.endLimit;
-      rawLimitValue = safeGetItem(endLimit?.values, i);
-
-      if (rawLimitValue != null) {
-        final limitValue = _getComparable(rawLimitValue)!;
-
-        endCompare = _compare(value!, limitValue, orderBy.ascending);
-
-        if (endCompare > 0) {
-          return false;
-        } else if (endCompare == 0 && !endLimit!.inclusive) {
-          return false;
-        }
-      }
+  // Map end/start
+  var startLimit = queryInfo.startLimit;
+  if (startLimit != null) {
+    var cmp = queryCompareSnapshotToLimit(queryInfo, snapshot, startLimit);
+    if (cmp < 0) {
+      return false;
+    } else if (cmp == 0 && !startLimit.inclusive) {
+      return false;
     }
   }
 
+  var endLimit = queryInfo.endLimit;
+  if (endLimit != null) {
+    var cmp = queryCompareSnapshotToLimit(queryInfo, snapshot, endLimit);
+    if (cmp > 0) {
+      return false;
+    } else if (cmp == 0 && !endLimit.inclusive) {
+      return false;
+    }
+  }
   return true;
 }
 
@@ -640,143 +667,6 @@ mixin FirestoreQueryMixin implements Query {
       }
       return cmp;
     });
-
-    // Handle snapshot filtering (after ordering)
-    final filteredDocs = <DocumentSnapshot>[];
-    var startLimit = queryInfo.startLimit;
-    var endLimit = queryInfo.endLimit;
-    // ignore: dead_code
-    if (false) {
-      // Not used but kept for reference.
-      if (startLimit != null || endLimit != null) {
-        var add = true;
-        if (startLimit != null) {
-          add = false;
-        }
-
-        int compareSnapshotToLimit(
-            DocumentSnapshot snapshot, LimitInfo limitInfo) {
-          print(limitInfo);
-          var documentId = limitInfo.documentId;
-          if (documentId != null) {
-            return snapshot.ref.id.compareTo(documentId);
-          } else {
-            var cmp = 0;
-
-            for (var i = 0; i < orderBys.length; i++) {
-              var orderBy = orderBys[i];
-
-              final keyPath = orderBy.fieldPath!;
-              final ascending = orderBy.ascending;
-
-              int firestoreCompare(
-                  FirestoreComparable? object1, FirestoreComparable? object2) {
-                return _compareHandleNull(object1, object2, ascending);
-              }
-
-              DocumentDataMap? snapshotDataMap(DocumentSnapshot snapshot) {
-                return ((snapshot as DocumentSnapshotBase).documentData
-                    as DocumentDataMap?);
-              }
-
-              int compareAtKeyPath(String keyPath) {
-                if (keyPath == firestoreNameFieldPath) {
-                  // If not specified, ignore
-                  if (!fieldPathFound) {
-                    cmp = 0;
-                  } else {
-                    var limitValue = limitInfo.values![i];
-                    cmp = firestoreCompare(_getComparable(snapshot.ref.id)!,
-                        _getComparable(limitValue)!);
-                  }
-                } else {
-                  var limitValue = limitInfo.values![i];
-                  cmp = firestoreCompare(
-                    _getComparable(
-                        snapshotDataMap(snapshot)!.valueAtFieldPath(keyPath))!,
-                    _getComparable(limitValue)!,
-                  );
-                }
-                return cmp;
-              }
-
-              cmp = compareAtKeyPath(keyPath);
-              if (cmp != 0) {
-                break;
-              }
-            }
-            return cmp;
-          }
-        }
-
-        for (var snapshot in docs) {
-          if (!add && startLimit != null) {
-            var cmp = compareSnapshotToLimit(snapshot, startLimit);
-            if (cmp >= 0) {
-              add = true;
-              if (!startLimit.inclusive) {
-                // skip this one
-                continue;
-              }
-            }
-          }
-          // stop now?
-          if (add && endLimit != null) {
-            var cmp = compareSnapshotToLimit(snapshot, endLimit);
-            if (cmp == 0) {
-              if (!endLimit.inclusive) {
-                // stop now
-                break;
-              }
-            } else if (cmp > 0) {
-              // stop now
-              break;
-            }
-          }
-
-          if (add) {
-            filteredDocs.add(snapshot);
-          }
-        }
-      } else {
-        filteredDocs.addAll(docs);
-      }
-    } else if (true) {
-      if (queryInfo.startLimit?.documentId != null ||
-          queryInfo.endLimit?.documentId != null) {
-        var add = true;
-        if (queryInfo.startLimit?.documentId != null) {
-          add = false;
-        }
-
-        for (var snapshot in docs) {
-          if (!add && queryInfo.startLimit?.documentId != null) {
-            if (snapshot.ref.id == queryInfo.startLimit!.documentId) {
-              add = true;
-              if (!queryInfo.startLimit!.inclusive) {
-                // skip this one
-                continue;
-              }
-            }
-          }
-          // stop now?
-          if (add && queryInfo.endLimit?.documentId != null) {
-            if (snapshot.ref.id == queryInfo.endLimit!.documentId) {
-              if (queryInfo.endLimit!.inclusive) {
-                filteredDocs.add(snapshot);
-              }
-              break;
-            }
-          }
-
-          if (add) {
-            filteredDocs.add(snapshot);
-          }
-        }
-
-        docs = filteredDocs;
-      }
-    }
 
     // offset && limit
     if (queryInfo.limit != null || queryInfo.offset != null) {
