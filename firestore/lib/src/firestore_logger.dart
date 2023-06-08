@@ -778,3 +778,29 @@ class FirestoreServiceLogger
   @override
   bool get supportsTrackChanges => firestoreService.supportsTrackChanges;
 }
+
+/// Debug extension for Logger.
+extension FirestoreServiceoggerDebugExt on FirestoreService {
+  /// Quick logger wrapper, useful in unit test.
+  ///
+  /// databaseFactory = databaseFactory.debugQuickLoggerWrapper()
+  @Deprecated('Debug/dev mode')
+  FirestoreService debugQuickLoggerWrapper() {
+    var firestoreService = FirestoreServiceLogger(
+        firestoreService: this, options: FirestoreLoggerOptions.all());
+    return firestoreService;
+  }
+}
+
+/// Debug extension for Logger.
+extension FirestoreLoggerDebugExt on Firestore {
+  /// Quick logger wrapper, useful in unit test.
+  ///
+  /// databaseFactory = databaseFactory.debugQuickLoggerWrapper()
+  @Deprecated('Debug/dev mode')
+  Firestore debugQuickLoggerWrapper() {
+    var firestore =
+        FirestoreLogger(firestore: this, options: FirestoreLoggerOptions.all());
+    return firestore;
+  }
+}
