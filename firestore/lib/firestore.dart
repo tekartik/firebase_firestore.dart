@@ -20,7 +20,7 @@ export 'src/document_reference.dart'
     show DocumentReference, DocumentReferenceListExtension;
 export 'src/document_snapshot.dart' show DocumentSnapshot;
 export 'src/firestore_logger.dart'
-    show FirestoreLoggerDebugExt, FirestoreServiceoggerDebugExt;
+    show FirestoreLoggerDebugExt, FirestoreServiceLoggerDebugExt;
 export 'src/query_snapshot.dart' show QuerySnapshotExtension, QuerySnapshot;
 export 'src/snapshot_meta_data.dart' show SnapshotMetadata;
 

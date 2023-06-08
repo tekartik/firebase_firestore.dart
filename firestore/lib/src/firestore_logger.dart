@@ -780,7 +780,7 @@ class FirestoreServiceLogger
 }
 
 /// Debug extension for Logger.
-extension FirestoreServiceoggerDebugExt on FirestoreService {
+extension FirestoreServiceLoggerDebugExt on FirestoreService {
   /// Quick logger wrapper, useful in unit test.
   ///
   /// databaseFactory = databaseFactory.debugQuickLoggerWrapper()
