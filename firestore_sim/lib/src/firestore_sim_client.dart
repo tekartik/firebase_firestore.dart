@@ -183,7 +183,7 @@ class DocumentReferenceSim
   }
 }
 
-abstract class QueryMixinSim implements Query {
+abstract mixin class QueryMixinSim implements Query {
   AppSim get appSim => firestoreSim.appSim;
 
   QueryInfo? get queryInfo;

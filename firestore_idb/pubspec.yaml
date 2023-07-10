@@ -4,27 +4,27 @@ version: 0.8.2
 publish_to: none
 
 environment:
-  sdk: '>=2.18.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   tekartik_firebase_firestore:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.8.2'
   tekartik_firebase_local:
     git:
       url: https://github.com/tekartik/firebase.dart
       path: firebase_local
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.3.7'
   idb_shim: '>=1.8.0+2'
   uuid:
   tekartik_browser_utils:
     git:
       url: https://github.com/tekartik/browser_utils.dart
-      ref: dart2_3
+      ref: dart3a
   path:
 dev_dependencies:
   test: ">=0.12.37"

@@ -4,20 +4,20 @@ version: 0.8.0
 publish_to: none
 
 environment:
-  sdk: '>=2.18.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   tekartik_firebase_sim_browser:
     git:
       url: https://github.com/tekartik/firebase.dart
       path: firebase_sim_browser
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.3.7'
   tekartik_firebase_firestore_sim:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore_sim
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.8.0'
 
 dev_dependencies:
@@ -30,13 +30,13 @@ dev_dependencies:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore_test
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.1.0'
 
 dependency_overrides:
-#  tekartik_firebase_firestore_test:
-#    path: ../firestore_test
+  tekartik_firebase_firestore_test:
+    path: ../firestore_test
   tekartik_firebase_firestore_sim:
     path: ../firestore_sim
-#  tekartik_firebase_firestore:
-#    path: ../firestore
+  tekartik_firebase_firestore:
+    path: ../firestore

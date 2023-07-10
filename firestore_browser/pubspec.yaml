@@ -4,26 +4,26 @@ version: 0.8.0
 publish_to: none
 
 environment:
-  sdk: '>=2.18.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   tekartik_firebase_firestore:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.8.0'
   tekartik_firebase_browser:
     git:
       url: https://github.com/tekartik/firebase.dart
       path: firebase_browser
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.6.0'
   firebase: '>=7.2.0'
   tekartik_browser_utils:
     git:
       url: https://github.com/tekartik/browser_utils.dart
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.6.8+2'
   meta:
   js:

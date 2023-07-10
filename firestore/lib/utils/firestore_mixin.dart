@@ -819,7 +819,7 @@ abstract class ReferenceAttributes {
   String getChildPath(String path);
 }
 
-abstract class AttributesMixin implements ReferenceAttributes {
+abstract mixin class AttributesMixin implements ReferenceAttributes {
   // FirestoreReferenceBase get baseRef;
 
   String get path;

@@ -4,20 +4,20 @@ version: 0.8.0
 publish_to: none
 
 environment:
-  sdk: '>=2.18.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   tekartik_firebase_sim:
     git:
       url: https://github.com/tekartik/firebase.dart
       path: firebase_sim
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.3.7'
   tekartik_firebase_firestore:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.8.0'
   meta: any
   synchronized: '>=1.5.0-dev.2'
