@@ -118,7 +118,7 @@ class Timestamp implements Comparable<Timestamp?> {
   /// The number of milliseconds since
   /// the 'Unix epoch' 1970-01-01T00:00:00Z (UTC).
   int get millisecondsSinceEpoch {
-    return seconds * 1000 + (nanoseconds ~/ 10000000);
+    return seconds * 1000 + (nanoseconds ~/ 1000000);
   }
 
   // Not exported as we loose precision

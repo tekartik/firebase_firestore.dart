@@ -24,6 +24,11 @@ void main() {
       now = Timestamp.fromMillisecondsSinceEpoch(now.millisecondsSinceEpoch);
       expect(
           now.millisecondsSinceEpoch, now.toDateTime().millisecondsSinceEpoch);
+
+      // 2023-07-21T22:57:28.333Z
+      var timestamp = Timestamp.parse('2023-07-21T22:57:28.333Z');
+      var ms = timestamp.millisecondsSinceEpoch;
+      expect(Timestamp.fromMillisecondsSinceEpoch(ms), timestamp);
     });
 
     test('equals', () {
