@@ -9,8 +9,8 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
 import 'package:tekartik_firebase_firestore_test/timestamp_test.dart';
-import 'package:tekartik_firebase_firestore_test/utils_collection_test.dart'
-    as utils_collection;
+import 'package:tekartik_firebase_firestore_test/utils_collection_test.dart';
+import 'package:tekartik_firebase_firestore_test/utils_query_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_test.dart';
 import 'package:test/test.dart';
 
@@ -31,8 +31,9 @@ void run(
 
   var firestore = firestoreService.firestore(app);
   runApp(firestoreService: firestoreService, firestore: firestore);
-  utils_collection.runApp(
+  runUtilsCollectionTests(
       firestoreService: firestoreService, firestore: firestore);
+  runUtilsQueryTest(firestoreService: firestoreService, firestore: firestore);
   /*
   if (firestoreService.supportsTimestampsInSnapshots) {
     runNoTimestampsInSnapshots(

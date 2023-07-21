@@ -1,19 +1,20 @@
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/utils/collection.dart';
+import 'package:tekartik_firebase_firestore/utils/query.dart';
 import 'package:test/test.dart';
 
-void runUtilsCollectionTests(
+void runUtilsQueryTest(
     {required FirestoreService firestoreService,
     required Firestore firestore}) {
-  group('utils_collection', () {
+  group('utils_query', () {
     var testsRefPath = 'tests/tekartik_firebase_firestore/tests';
 
-    test('deleteCollection one', () async {
+    test('deleteQuery one', () async {
       var ref = firestore
           .collection(url.join(testsRefPath, 'utils_collection', 'delete'));
-      await deleteCollection(firestore, ref);
+      var query = ref;
+      await deleteQuery(firestore, query);
       var itemDoc = ref.doc('item');
       // create an item
       await itemDoc.set({});
@@ -29,15 +30,15 @@ void runUtilsCollectionTests(
       }
 
       expect(await findInCollection(), isTrue);
-      var count = await deleteCollection(firestore, ref);
+      var count = await deleteQuery(firestore, ref);
       expect(count, 1);
       expect(await findInCollection(), isFalse);
     });
 
-    test('deleteCollection two', () async {
+    test('deleteQuery two', () async {
       var ref = firestore
           .collection(url.join(testsRefPath, 'utils_collection', 'delete_two'));
-      await deleteCollection(firestore, ref);
+      await deleteQuery(firestore, ref);
       var itemDoc = ref.doc('item1');
       var itemDoc2 = ref.doc('item2');
       // create two items
@@ -66,7 +67,7 @@ void runUtilsCollectionTests(
 
       expect(await findInCollection(), isTrue);
       expect(await find2InCollection(), isTrue);
-      var count = await deleteCollection(firestore, ref, batchSize: 1);
+      var count = await deleteQuery(firestore, ref, batchSize: 1);
       expect(count, 2);
       expect(await findInCollection(), isFalse);
       expect(await find2InCollection(), isFalse);

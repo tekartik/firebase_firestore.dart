@@ -5,14 +5,15 @@ import 'dart:async';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
 /// Delete all item in a query, return the count deleted
+/// Batch size default to 10
 Future<int> deleteQuery(Firestore firestore, Query query,
     {int? batchSize}) async {
-  batchSize ??= 4;
+  batchSize ??= 10;
   var count = 0;
 
   int snapshotSize;
   do {
-    var snapshot = await query.get();
+    var snapshot = await query.limit(batchSize).get();
     snapshotSize = snapshot.docs.length;
 
     // When there are no documents left, we are done
@@ -28,7 +29,7 @@ Future<int> deleteQuery(Firestore firestore, Query query,
 
     await batch.commit();
     count += snapshot.docs.length;
-  } while (snapshotSize > batchSize);
+  } while (snapshotSize >= batchSize);
 
   return count;
 }
