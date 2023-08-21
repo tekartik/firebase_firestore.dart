@@ -624,6 +624,9 @@ class DocumentReferenceLogger
       }
     }
   }
+
+  @override
+  Future<List<CollectionReference>> listCollections() => ref.listCollections();
 }
 
 class TransactionLogger with TransactionMixin implements Transaction {
@@ -745,6 +748,10 @@ class FirestoreLogger
 
   @override
   FirestoreService get service => firestore.service;
+
+  @override
+  Future<List<CollectionReference>> listCollections() =>
+      firestore.listCollections();
 }
 
 class FirestoreServiceLogger

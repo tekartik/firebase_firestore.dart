@@ -14,6 +14,9 @@ import 'package:tekartik_firebase_firestore_test/utils_query_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_test.dart';
 import 'package:test/test.dart';
 
+import 'list_collections_test.dart';
+
+var testsRefPath = 'tests/tekartik_firestore/tests';
 bool skipConcurrentTransactionTests = false;
 
 List<DocumentReference?> docsKeys(List<DocumentSnapshot> snashots) =>
@@ -114,8 +117,6 @@ void runApp(
     }
   });
   group('firestore', () {
-    var testsRefPath = 'tests/tekartik_firestore/tests';
-
     timestampGroup(service: firestoreService, firestore: firestore);
     CollectionReference? getTestsRef() {
       return firestore.collection(testsRefPath);
@@ -1808,6 +1809,7 @@ void runApp(
           .select([]);
       expect((await query.get()).docs, isNotEmpty);
     }, skip: true);
+    runListCollectionsTest(firestore: firestore);
   });
 }
 

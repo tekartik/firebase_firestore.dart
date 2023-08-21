@@ -50,6 +50,9 @@ class FirestoreServiceSembast
 
   @override
   bool get supportsTrackChanges => true;
+
+  @override
+  bool get supportsListCollections => true;
 }
 
 FirestoreServiceSembast? _firestoreServiceSembastMemory;
@@ -300,6 +303,25 @@ class FirestoreSembast extends Object
 
   @override
   FirestoreService get service => firestoreService;
+
+  @override
+  Future<List<CollectionReference>> listCollections() async {
+    var db = await ready;
+
+    var ids = <String>{};
+    for (var record in await docStore.find(db)) {
+      final recordPath = record.key;
+
+      final parentPath = url.dirname(recordPath);
+      print(parentPath);
+      var collParentPath = url.dirname(parentPath);
+      print(collParentPath);
+      if (collParentPath == '.') {
+        ids.add(basename(parentPath));
+      }
+    }
+    return ids.map((e) => collection(e)).toList();
+  }
 }
 
 class WriteBatchSembast extends WriteBatchBase implements WriteBatch {
@@ -449,6 +471,24 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
   @override
   Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) =>
       firestoreSembast.onSnapshot(this);
+
+  @override
+  Future<List<CollectionReference>> listCollections() async {
+    var db = await firestoreSembast.ready;
+
+    print('path: $path');
+    var ids = <String>{};
+    for (var record in await docStore.find(db)) {
+      final recordPath = record.key;
+      // print('recordPath: $recordPath');
+      final parentPath = url.dirname(recordPath);
+      var collParentPath = url.dirname(parentPath);
+      if (collParentPath == path) {
+        ids.add(basename(parentPath));
+      }
+    }
+    return ids.map((e) => collection(e)).toList();
+  }
 }
 
 class CollectionReferenceSembast extends QuerySembast
