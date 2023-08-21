@@ -14,7 +14,7 @@ import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart'; // ignore: 
 import 'import_firestore.dart'; // ignore: implementation_imports
 
 class FirestoreServiceSim
-    with FirestoreServiceMixin
+    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
     implements FirestoreService {
   @override
   Firestore firestore(App app) {
@@ -599,6 +599,9 @@ class FirestoreSim extends Object with FirestoreMixin implements Firestore {
 
   @override
   String toString() => 'FirestoreSim[${identityHashCode(this)}]';
+
+  @override
+  FirestoreService get service => firestoreServiceSim;
 }
 
 class TransactionSim extends WriteBatchSim implements Transaction {

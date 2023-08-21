@@ -1,6 +1,30 @@
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
+mixin FirestoreServiceDefaultMixin implements FirestoreService {
+  @override
+  bool get supportsListCollectionIds => false;
+  @override
+  bool get supportsDocumentSnapshotTime => false;
+
+  @override
+  bool get supportsFieldValueArray => false;
+
+  @override
+  bool get supportsQuerySelect => false;
+
+  @override
+  bool get supportsQuerySnapshotCursor => false;
+
+  @override
+  bool get supportsTimestamps => false;
+
+  @override
+  bool get supportsTimestampsInSnapshots => false;
+
+  @override
+  bool get supportsTrackChanges => false;
+}
 mixin FirestoreServiceMixin implements FirestoreService {
   /// Most implementation need a single instance, keep it in memory!
   final _instances = <App, Firestore?>{};

@@ -14,7 +14,7 @@ import 'package:uuid/uuid.dart';
 import 'import_firestore.dart';
 
 class FirestoreServiceSembast
-    with FirestoreServiceMixin
+    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
     implements FirestoreService {
   @override
   Firestore firestore(App app) {
@@ -293,6 +293,9 @@ class FirestoreSembast extends Object
       DocumentReference ref, RecordMetaData? meta, DocumentData? data) {
     return DocumentSnapshotSembast(ref, meta, data);
   }
+
+  @override
+  FirestoreService get service => firestoreService;
 }
 
 class WriteBatchSembast extends WriteBatchBase implements WriteBatch {

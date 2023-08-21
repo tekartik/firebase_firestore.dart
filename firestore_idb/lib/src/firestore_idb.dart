@@ -15,7 +15,7 @@ import 'import_firestore.dart';
 const String parentIndexName = 'parentIndex';
 
 class FirestoreServiceIdb
-    with FirestoreServiceMixin
+    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
     implements FirestoreService {
   @override
   Firestore firestore(App app) {
@@ -276,6 +276,9 @@ class FirestoreIdb extends Object
       DocumentReference ref, RecordMetaData? meta, DocumentData? data) {
     return DocumentSnapshotIdb(ref, meta, data as DocumentDataMap?);
   }
+
+  @override
+  FirestoreService get service => firestoreServiceIdb;
 }
 
 class LocalTransaction {

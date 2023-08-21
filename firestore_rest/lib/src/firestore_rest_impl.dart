@@ -211,6 +211,8 @@ Value toRestValue(FirestoreRestImpl firestore, dynamic value) {
 class FirestoreRestImpl
     with FirestoreMixin
     implements Firestore, FirestoreDocumentContext {
+  @override
+  final FirestoreServiceRestImpl service;
   final AppRestImpl appImpl;
   api.FirestoreApi? _firestoreApi;
   api.FirestoreFixedApi? _firestoreFixedApi;
@@ -223,7 +225,7 @@ class FirestoreRestImpl
 
   String? get projectId => appImpl.options.projectId;
 
-  FirestoreRestImpl(this.appImpl) {
+  FirestoreRestImpl(this.service, this.appImpl) {
     assert(projectId != null);
   }
 
@@ -722,11 +724,11 @@ class FirestoreRestImpl
 }
 
 class FirestoreServiceRestImpl
-    with FirestoreServiceMixin
+    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
     implements FirestoreServiceRest {
   @override
   Firestore firestore(App app) {
-    return getInstance(app, () => FirestoreRestImpl(app as AppRestImpl));
+    return getInstance(app, () => FirestoreRestImpl(this, app as AppRestImpl));
   }
 
   @override

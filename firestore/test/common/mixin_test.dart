@@ -1,5 +1,7 @@
 import 'package:tekartik_common_utils/common_utils_import.dart';
+import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart';
@@ -7,6 +9,13 @@ import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:test/test.dart';
+
+class FirestoreServiceMock with FirestoreServiceDefaultMixin {
+  @override
+  Firestore firestore(App app) {
+    throw UnimplementedError();
+  }
+}
 
 class FirestoreMock with FirestoreMixin {
   @override
@@ -29,6 +38,9 @@ class FirestoreMock with FirestoreMixin {
       FutureOr<T> Function(Transaction transaction) updateFunction) {
     throw UnimplementedError();
   }
+
+  @override
+  FirestoreService get service => throw UnimplementedError();
 }
 
 class DocumentSnapshotMock

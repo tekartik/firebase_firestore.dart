@@ -14,14 +14,14 @@ Future loadFirebaseFirestoreJs() async {
 }
 
 class FirestoreServiceBrowser
-    with FirestoreServiceMixin
+    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
     implements FirestoreService {
   @override
   Firestore firestore(App app) {
     return getInstance(app, () {
       assert(app is AppBrowser, 'invalid firebase app type');
       final appBrowser = app as AppBrowser;
-      return FirestoreBrowser(appBrowser.nativeApp.firestore());
+      return FirestoreBrowser(this, appBrowser.nativeApp.firestore());
     });
   }
 
@@ -54,9 +54,11 @@ FirestoreService get firestoreService =>
     _firebaseFirestoreServiceBrowser ??= FirestoreServiceBrowser();
 
 class FirestoreBrowser with FirestoreMixin implements Firestore {
+  @override
+  final FirestoreServiceBrowser service;
   final native.Firestore nativeInstance;
 
-  FirestoreBrowser(this.nativeInstance);
+  FirestoreBrowser(this.service, this.nativeInstance);
 
   @override
   CollectionReference collection(String path) =>

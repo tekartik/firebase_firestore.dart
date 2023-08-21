@@ -737,10 +737,13 @@ class FirestoreLogger with FirestoreMixin implements Firestore {
       return action(TransactionLogger(transaction, this));
     });
   }
+
+  @override
+  FirestoreService get service => firestore.service;
 }
 
 class FirestoreServiceLogger
-    with FirestoreServiceMixin
+    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
     implements FirestoreService {
   final FirestoreLoggerOptions options;
   final FirestoreService firestoreService;

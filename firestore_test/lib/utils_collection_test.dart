@@ -71,5 +71,34 @@ void runUtilsCollectionTests(
       expect(await findInCollection(), isFalse);
       expect(await find2InCollection(), isFalse);
     });
+
+    test('copyCollection one', () async {
+      var srcRef = firestore
+          .collection(url.join(testsRefPath, 'utils_collection', 'copy_src'));
+      var dstRef = firestore
+          .collection(url.join(testsRefPath, 'utils_collection', 'copy_dst'));
+
+      await deleteCollection(firestore, srcRef);
+      await deleteCollection(firestore, dstRef);
+      var srcItemDoc = srcRef.doc('item');
+      var dstItemDoc = dstRef.doc('item');
+      // create an item
+      await srcItemDoc.set({});
+
+      Future<bool> findInCollection() async {
+        var querySnapshot = await dstRef.get();
+        for (var doc in querySnapshot.docs) {
+          if (doc.ref.path == dstItemDoc.path) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      expect(await findInCollection(), isFalse);
+      var count = await copyCollection(firestore, srcRef, firestore, dstRef);
+      expect(count, 1);
+      expect(await findInCollection(), isTrue);
+    });
   });
 }
