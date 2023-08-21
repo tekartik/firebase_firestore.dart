@@ -21,7 +21,6 @@ void runUtilsCollectionTests(
       Future<bool> findInCollection() async {
         var querySnapshot = await ref.get();
         for (var doc in querySnapshot.docs) {
-          devPrint('doc ${doc.ref.path}');
           if (doc.ref.path == itemDoc.path) {
             return true;
           }

@@ -721,6 +721,74 @@ class FirestoreRestImpl
       rethrow;
     }
   }
+
+  @override
+  Future<List<CollectionReference>> listCollections() async {
+    var request = api.ListCollectionIdsRequest();
+    var parent = getDocumentRootName();
+    var collections = <CollectionReference>[];
+    try {
+      while (true) {
+        // Debug
+        if (debugRest) {
+          print('listCollections: ${jsonPretty(request.toJson())}');
+        }
+        // devPrint('commitRequest: ${jsonPretty(request.toJson())}');
+
+        // ignore: unused_local_variable
+        var response = await firestoreApi.projects.databases.documents
+            .listCollectionIds(request, parent);
+        print('response: ${jsonPretty(response.toJson())}');
+        var stepCollections = (response.collectionIds ?? <String>[])
+            .map((e) => collection(e))
+            .toList();
+        if (stepCollections.isEmpty) {
+          break;
+        }
+        collections.addAll(stepCollections);
+        if (response.nextPageToken == null) {
+          break;
+        }
+        request.pageToken = response.nextPageToken;
+      }
+    } catch (e) {
+      if (e is api.DetailedApiRequestError) {
+        // devPrint(e.status);
+        if (e.status == httpStatusCodeNotFound) {
+          // return DocumentSnapshotRestImpl(this, null);
+        }
+      }
+      rethrow;
+    }
+    return collections;
+  }
+
+  Future<List<CollectionReference>> listDocumentCollections(String path) async {
+    var request = api.ListCollectionIdsRequest();
+    var parent = getDocumentName(path);
+    try {
+      // Debug
+      if (debugRest) {
+        print('listCollections: ${jsonPretty(request.toJson())}');
+      }
+      // devPrint('commitRequest: ${jsonPretty(request.toJson())}');
+
+      // ignore: unused_local_variable
+      var response = await firestoreApi.projects.databases.documents
+          .listCollectionIds(request, parent);
+      return (response.collectionIds ?? <String>[])
+          .map((e) => collection(e))
+          .toList();
+    } catch (e) {
+      if (e is api.DetailedApiRequestError) {
+        // devPrint(e.status);
+        if (e.status == httpStatusCodeNotFound) {
+          // return DocumentSnapshotRestImpl(this, null);
+        }
+      }
+      rethrow;
+    }
+  }
 }
 
 class FirestoreServiceRestImpl
@@ -752,6 +820,9 @@ class FirestoreServiceRestImpl
 
   @override
   bool get supportsTrackChanges => false;
+
+  @override
+  bool get supportsListCollections => true;
 }
 
 /// Join ignoring null but not both!

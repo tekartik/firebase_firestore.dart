@@ -35,6 +35,11 @@ class DocumentReferenceRestImpl
   @override
   Future update(Map<String, Object?> data) =>
       firestoreRestImpl.updateDocument(path, data);
+
+  @override
+  Future<List<CollectionReference>> listCollections() async {
+    return firestoreRestImpl.listDocumentCollections(path);
+  }
 }
 
 class DocumentSnapshotRestImpl
