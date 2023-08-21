@@ -46,6 +46,7 @@ abstract class FirestoreService {
 
   /// True if it supports listing collections.
   bool get supportsListCollectionIds;
+
   Firestore firestore(App app);
 }
 
@@ -84,6 +85,9 @@ abstract class Firestore {
 
   /// Retrieves multiple documents from Firestore.
   Future<List<DocumentSnapshot>> getAll(List<DocumentReference> refs);
+
+  /// If supported list all root collections
+  Future<List<CollectionReference>> listCollections();
 
   /// Service access
   FirestoreService get service;

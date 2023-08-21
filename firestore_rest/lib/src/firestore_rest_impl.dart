@@ -209,7 +209,7 @@ Value toRestValue(FirestoreRestImpl firestore, dynamic value) {
 }
 
 class FirestoreRestImpl
-    with FirestoreMixin
+    with FirestoreDefaultMixin, FirestoreMixin
     implements Firestore, FirestoreDocumentContext {
   @override
   final FirestoreServiceRestImpl service;

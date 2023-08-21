@@ -488,7 +488,9 @@ class CollectionReferenceSim extends Object
   }
 }
 
-class FirestoreSim extends Object with FirestoreMixin implements Firestore {
+class FirestoreSim extends Object
+    with FirestoreDefaultMixin, FirestoreMixin
+    implements Firestore {
   FirestoreSim(this.firestoreServiceSim, this.appSim);
 
   final FirestoreServiceSim firestoreServiceSim;

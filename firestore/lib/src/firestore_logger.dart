@@ -711,7 +711,9 @@ class TransactionLogger with TransactionMixin implements Transaction {
   }
 }
 
-class FirestoreLogger with FirestoreMixin implements Firestore {
+class FirestoreLogger
+    with FirestoreDefaultMixin, FirestoreMixin
+    implements Firestore {
   final FirestoreLoggerOptions options;
   final Firestore firestore;
 

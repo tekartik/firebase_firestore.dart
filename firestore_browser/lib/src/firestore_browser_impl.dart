@@ -53,7 +53,9 @@ FirestoreServiceBrowser? _firebaseFirestoreServiceBrowser;
 FirestoreService get firestoreService =>
     _firebaseFirestoreServiceBrowser ??= FirestoreServiceBrowser();
 
-class FirestoreBrowser with FirestoreMixin implements Firestore {
+class FirestoreBrowser
+    with FirestoreDefaultMixin, FirestoreMixin
+    implements Firestore {
   @override
   final FirestoreServiceBrowser service;
   final native.Firestore nativeInstance;

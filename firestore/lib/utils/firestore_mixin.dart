@@ -101,6 +101,12 @@ bool firestoreTimestampsInSnapshots(Firestore firestore) {
   return true;
 }
 
+mixin FirestoreDefaultMixin implements Firestore {
+  @override
+  Future<List<CollectionReference>> listCollections() {
+    throw UnimplementedError();
+  }
+}
 mixin FirestoreMixin implements Firestore {
   FirestoreSettings? firestoreSettings;
 

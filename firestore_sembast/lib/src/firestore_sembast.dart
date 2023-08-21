@@ -99,7 +99,11 @@ class WriteResultSembast extends WriteResultBase {
 }
 
 class FirestoreSembast extends Object
-    with FirestoreMixin, FirestoreSubscriptionMixin, FirestoreDocumentsMixin
+    with
+        FirestoreDefaultMixin,
+        FirestoreMixin,
+        FirestoreSubscriptionMixin,
+        FirestoreDocumentsMixin
     implements Firestore {
   var dbLock = Lock();
   Database? db;

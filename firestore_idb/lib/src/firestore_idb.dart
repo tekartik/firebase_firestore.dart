@@ -56,7 +56,11 @@ FirestoreService getFirestoreService(idb.IdbFactory idbFactory) =>
     FirestoreServiceIdb(idbFactory);
 
 class FirestoreIdb extends Object
-    with FirestoreMixin, FirestoreSubscriptionMixin, FirestoreDocumentsMixin
+    with
+        FirestoreDefaultMixin,
+        FirestoreMixin,
+        FirestoreSubscriptionMixin,
+        FirestoreDocumentsMixin
     implements Firestore {
   final AppLocal appLocal;
   final FirestoreServiceIdb firestoreServiceIdb;

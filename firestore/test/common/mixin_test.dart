@@ -17,7 +17,7 @@ class FirestoreServiceMock with FirestoreServiceDefaultMixin {
   }
 }
 
-class FirestoreMock with FirestoreMixin {
+class FirestoreMock with FirestoreDefaultMixin, FirestoreMixin {
   @override
   WriteBatch batch() {
     throw UnimplementedError();
