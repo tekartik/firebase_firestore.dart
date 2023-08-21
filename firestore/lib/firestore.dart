@@ -45,7 +45,7 @@ abstract class FirestoreService {
   bool get supportsTrackChanges;
 
   /// True if it supports listing collections.
-  bool get supportsListCollectionIds;
+  bool get supportsListCollections;
 
   Firestore firestore(App app);
 }

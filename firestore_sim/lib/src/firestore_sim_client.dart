@@ -81,7 +81,11 @@ class DocumentSnapshotSim
 }
 
 class DocumentReferenceSim
-    with DocumentReferenceMixin, PathReferenceImplMixin, PathReferenceMixin
+    with
+        DocumentReferenceDefaultMixin,
+        DocumentReferenceMixin,
+        PathReferenceImplMixin,
+        PathReferenceMixin
     implements DocumentReference {
   FirestoreSim get firestoreSim => firestore as FirestoreSim;
 

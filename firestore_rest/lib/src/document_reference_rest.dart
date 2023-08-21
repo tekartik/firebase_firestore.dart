@@ -7,6 +7,7 @@ import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 
 class DocumentReferenceRestImpl
     with
+        DocumentReferenceDefaultMixin,
         DocumentReferenceMixin,
         PathReferenceImplMixin,
         PathReferenceMixin,

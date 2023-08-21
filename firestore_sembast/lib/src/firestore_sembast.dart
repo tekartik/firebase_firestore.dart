@@ -371,7 +371,11 @@ class DocumentSnapshotSembast extends DocumentSnapshotBase {
 }
 
 class DocumentReferenceSembast extends FirestoreReferenceBase
-    with AttributesMixin, DocumentReferenceMixin, PathReferenceMixin
+    with
+        DocumentReferenceDefaultMixin,
+        AttributesMixin,
+        DocumentReferenceMixin,
+        PathReferenceMixin
     implements DocumentReference {
   DocumentReferenceSembast(Firestore firestore, String path)
       : super(firestore, path) {

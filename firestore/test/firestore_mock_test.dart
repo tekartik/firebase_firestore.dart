@@ -9,7 +9,7 @@ void main() {
   var firestoreService = FirestoreServiceMock();
   group('Mock', () {
     test('service', () {
-      expect(firestoreService.supportsListCollectionIds, isFalse);
+      expect(firestoreService.supportsListCollections, isFalse);
     });
     test('documentReference', () {
       expect(firestore.doc('test'), firestore.doc('test'));

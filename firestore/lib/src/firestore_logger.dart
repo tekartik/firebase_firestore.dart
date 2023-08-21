@@ -527,7 +527,10 @@ class CollectionReferenceLogger extends QueryLoggerBase
 }
 
 class DocumentReferenceLogger
-    with DocumentReferenceMixin, PathReferenceMixin
+    with
+        DocumentReferenceDefaultMixin,
+        DocumentReferenceMixin,
+        PathReferenceMixin
     implements DocumentReference, FirestorePathReference {
   final DocumentReference ref;
   final FirestoreLogger firestoreLogger;

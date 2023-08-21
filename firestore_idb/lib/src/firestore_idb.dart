@@ -357,7 +357,10 @@ class DocumentSnapshotIdb extends DocumentSnapshotBase {
 }
 
 class DocumentReferenceIdb
-    with DocumentReferenceMixin, PathReferenceMixin
+    with
+        DocumentReferenceDefaultMixin,
+        DocumentReferenceMixin,
+        PathReferenceMixin
     implements DocumentReference {
   final FirestoreIdb firestoreIdb;
 

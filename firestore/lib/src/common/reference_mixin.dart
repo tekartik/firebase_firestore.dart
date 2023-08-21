@@ -87,6 +87,12 @@ mixin CollectionReferenceMixin
   }
 }
 
+mixin DocumentReferenceDefaultMixin implements DocumentReference {
+  @override
+  Future<List<CollectionReference>> listCollections() {
+    throw UnimplementedError();
+  }
+}
 mixin DocumentReferenceMixin
     implements DocumentReference, FirestorePathReference {
   @override

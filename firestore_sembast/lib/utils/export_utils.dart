@@ -15,7 +15,7 @@ extension TekartikSembastUtils on Firestore {
   Future<List<Object>> exportLines(
       {List<CollectionReference>? collections}) async {
     if (this is FirestoreSembast) {
-      if (service.supportsListCollectionIds) {
+      if (service.supportsListCollections) {
         throw UnsupportedError('Cannot list collections');
       }
       //firestore.list

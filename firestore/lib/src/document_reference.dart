@@ -29,6 +29,9 @@ abstract class DocumentReference {
   /// An initial event is immediately sent, and further events will be
   /// sent whenever the document is modified.
   Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false});
+
+  /// If supported list sub collections
+  Future<List<CollectionReference>> listCollections();
 }
 
 /// Common helpers.

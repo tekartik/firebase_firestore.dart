@@ -98,7 +98,11 @@ class CollectionReferenceMock
 }
 
 class DocumentReferenceMock
-    with DocumentReferenceMixin, PathReferenceImplMixin, PathReferenceMixin {
+    with
+        DocumentReferenceDefaultMixin,
+        DocumentReferenceMixin,
+        PathReferenceImplMixin,
+        PathReferenceMixin {
   DocumentReferenceMock(FirestoreMock firestoreMock, String path) {
     init(firestoreMock, path);
   }

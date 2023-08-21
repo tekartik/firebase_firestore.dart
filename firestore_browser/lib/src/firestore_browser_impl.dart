@@ -321,7 +321,7 @@ native.DocumentReference? _unwrapDocumentReference(DocumentReference? ref) {
 }
 
 class DocumentReferenceBrowser
-    with PathReferenceMixin
+    with DocumentReferenceDefaultMixin, PathReferenceMixin
     implements DocumentReference, PathReference {
   final native.DocumentReference nativeInstance;
 
