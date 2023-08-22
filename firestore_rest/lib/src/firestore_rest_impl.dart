@@ -722,10 +722,8 @@ class FirestoreRestImpl
     }
   }
 
-  @override
-  Future<List<CollectionReference>> listCollections() async {
+  Future<List<CollectionReference>> _listCollections(String parent) async {
     var request = api.ListCollectionIdsRequest();
-    var parent = getDocumentRootName();
     var collections = <CollectionReference>[];
     try {
       while (true) {
@@ -763,31 +761,15 @@ class FirestoreRestImpl
     return collections;
   }
 
-  Future<List<CollectionReference>> listDocumentCollections(String path) async {
-    var request = api.ListCollectionIdsRequest();
-    var parent = getDocumentName(path);
-    try {
-      // Debug
-      if (debugRest) {
-        print('listCollections: ${jsonPretty(request.toJson())}');
-      }
-      // devPrint('commitRequest: ${jsonPretty(request.toJson())}');
+  @override
+  Future<List<CollectionReference>> listCollections() async {
+    var parent = getDocumentRootName();
+    return await _listCollections(parent);
+  }
 
-      // ignore: unused_local_variable
-      var response = await firestoreApi.projects.databases.documents
-          .listCollectionIds(request, parent);
-      return (response.collectionIds ?? <String>[])
-          .map((e) => collection(e))
-          .toList();
-    } catch (e) {
-      if (e is api.DetailedApiRequestError) {
-        // devPrint(e.status);
-        if (e.status == httpStatusCodeNotFound) {
-          // return DocumentSnapshotRestImpl(this, null);
-        }
-      }
-      rethrow;
-    }
+  Future<List<CollectionReference>> listDocumentCollections(String path) async {
+    var parent = getDocumentName(path);
+    return _listCollections(parent);
   }
 }
 
