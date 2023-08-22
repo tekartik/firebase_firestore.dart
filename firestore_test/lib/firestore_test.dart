@@ -14,6 +14,7 @@ import 'package:tekartik_firebase_firestore_test/utils_query_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_test.dart';
 import 'package:test/test.dart';
 
+import 'copy_utils_test.dart';
 import 'list_collections_test.dart';
 
 var testsRefPath = 'tests/tekartik_firestore/tests';
@@ -46,6 +47,7 @@ void run(
   }
    */
   utilsTest(firestoreService: firestoreService, firestore: firestore);
+  runCopyUtilsTest(firestore: firestore);
 }
 
 @Deprecated('Default')

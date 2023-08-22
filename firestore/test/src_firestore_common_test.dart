@@ -14,13 +14,11 @@ bool get runningAsJavascript => identical(1, 1.0);
 void main() {
   group('path', () {
     test('sanitizeReferencePath', () {
-      expect(sanitizeReferencePath(null), isNull);
       expect(sanitizeReferencePath('/test'), 'test');
       expect(sanitizeReferencePath('test/'), 'test');
       expect(sanitizeReferencePath('/test/'), 'test');
     });
     test('isDocumentReferencePath', () {
-      expect(isDocumentReferencePath(null), isTrue);
       expect(isDocumentReferencePath('/test'), false);
       expect(isDocumentReferencePath('tests/doc'), isTrue);
       expect(isDocumentReferencePath('tests/doc/'), isTrue);

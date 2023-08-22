@@ -125,7 +125,7 @@ mixin DocumentReferenceMixin
 
 /// Remove 'projects/<project>/databases/(default)/documents if any
 List<String> localPathReferenceParts(String path) {
-  var parts = url.split(sanitizeReferencePath(path)!);
+  var parts = url.split(sanitizeReferencePath(path));
   if (parts.length > 6 &&
       parts[0] == 'projects' &&
       parts[2] == 'databases' &&
@@ -139,7 +139,7 @@ List<String> localPathReferenceParts(String path) {
 void checkCollectionReferencePath(String path) {
   if (isDebug) {
     var parts = localPathReferenceParts(path);
-    assert(parts.length % 2 == 1,
+    assert(isCollectionReferencePath(path),
         'Collection references must have an odd number of segments, but $path ($parts) has length ${parts.length}');
   }
 }
@@ -147,7 +147,7 @@ void checkCollectionReferencePath(String path) {
 void checkDocumentReferencePath(String path) {
   if (isDebug) {
     var parts = localPathReferenceParts(path);
-    assert(parts.length % 2 == 0,
+    assert(isDocumentReferencePath(path),
         'Document references must have an even number of segments, but $path ($parts) has length ${parts.length}');
   }
 }

@@ -722,7 +722,7 @@ class FirestoreRestImpl
     }
   }
 
-  Future<List<CollectionReference>> _listCollections(String parent) async {
+  Future<List<CollectionReference>> _listCollections(String? path) async {
     var request = api.ListCollectionIdsRequest();
     var collections = <CollectionReference>[];
     try {
@@ -733,12 +733,14 @@ class FirestoreRestImpl
         }
         // devPrint('commitRequest: ${jsonPretty(request.toJson())}');
 
+        var parent =
+            path != null ? getDocumentName(path) : getDocumentRootName();
         // ignore: unused_local_variable
         var response = await firestoreApi.projects.databases.documents
             .listCollectionIds(request, parent);
         print('response: ${jsonPretty(response.toJson())}');
         var stepCollections = (response.collectionIds ?? <String>[])
-            .map((e) => collection(e))
+            .map((e) => collection(path == null ? e : url.join(path, e)))
             .toList();
         if (stepCollections.isEmpty) {
           break;
@@ -763,13 +765,11 @@ class FirestoreRestImpl
 
   @override
   Future<List<CollectionReference>> listCollections() async {
-    var parent = getDocumentRootName();
-    return await _listCollections(parent);
+    return await _listCollections(null);
   }
 
   Future<List<CollectionReference>> listDocumentCollections(String path) async {
-    var parent = getDocumentName(path);
-    return _listCollections(parent);
+    return _listCollections(path);
   }
 }
 

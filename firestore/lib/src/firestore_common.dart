@@ -599,25 +599,22 @@ String? documentChangeTypeToString(DocumentChangeType type) {
   }
 }
 
-String? sanitizeReferencePath(String? path) {
-  if (path != null) {
-    if (path.startsWith('/')) {
-      path = path.substring(1);
-    }
-    if (path.endsWith('/')) {
-      path = path.substring(0, path.length - 1);
-    }
+String sanitizeReferencePath(String path) {
+  if (path.startsWith('/')) {
+    path = path.substring(1);
+  }
+  if (path.endsWith('/')) {
+    path = path.substring(0, path.length - 1);
   }
   return path;
 }
 
-bool isDocumentReferencePath(String? path) {
-  if (path == null) {
-    return true;
-  }
+bool isDocumentReferencePath(String path) {
   var count = localPathReferenceParts(path).length;
   return (count % 2) == 0;
 }
+
+bool isCollectionReferencePath(String path) => !isDocumentReferencePath(path);
 
 abstract class WriteBatchBase implements WriteBatch {
   final List<WriteBatchOperation> operations = [];

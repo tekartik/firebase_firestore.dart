@@ -2,6 +2,7 @@
 
 import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/utils/copy_utils.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_test/utils_test.dart';
 import 'package:test/test.dart';
@@ -16,6 +17,10 @@ void runListCollectionsTest({
       var doc = firestore.doc('$collectionId/doc');
       var collections = await firestore.listCollections();
       await doc.set({});
+      expect(
+          (await firestore.collection(collectionId).recursiveListDocuments())
+              .map((e) => e.path),
+          [doc.path]);
       collections = await firestore.listCollections();
       var collection =
           collections.firstWhere((element) => element.id == collectionId);
@@ -23,6 +28,11 @@ void runListCollectionsTest({
       await doc.delete();
       collections = await firestore.listCollections();
       expect(collections.map((e) => e.id), isNot(contains(collectionId)));
+
+      expect(
+          (await firestore.collection(collectionId).recursiveListDocuments())
+              .map((e) => e.path),
+          isEmpty);
     }, skip: !firestore.service.supportsListCollections);
 
     test('list doc collections', () async {
@@ -31,11 +41,19 @@ void runListCollectionsTest({
       var doc = firestore.doc('$parent/$collectionId/doc');
       var collections = await firestore.doc(parent).listCollections();
       await doc.set({});
+      expect(
+          (await firestore.collection(collectionId).recursiveListDocuments())
+              .map((e) => e.path),
+          [doc.path]);
       collections = await firestore.doc(parent).listCollections();
       expect(collections.map((e) => e.id), contains(collectionId));
       await doc.delete();
       collections = await firestore.listCollections();
       expect(collections.map((e) => e.id), isNot(contains(collectionId)));
+      expect(
+          (await firestore.collection(collectionId).recursiveListDocuments())
+              .map((e) => e.path),
+          isEmpty);
     }, skip: !firestore.service.supportsListCollections);
   });
 }

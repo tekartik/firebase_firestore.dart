@@ -3,6 +3,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/document.dart';
 import 'package:test/test.dart';
 
+/// collection
 var testsRefPath = 'tests/tekartik_firestore/tests';
 
 void utilsTest(
