@@ -14,7 +14,7 @@ export 'package:sembast/utils/sembast_import_export.dart'
 extension TekartikSembastUtils on Firestore {
   /// Export the database as a list of json encodable lines
   Future<List<Object>> exportLines(
-      {required List<CollectionReference>? collections,
+      {List<CollectionReference>? collections,
       List<DocumentReference>? documents}) async {
     if (this is! FirestoreSembast) {
       if (!service.supportsListCollections) {

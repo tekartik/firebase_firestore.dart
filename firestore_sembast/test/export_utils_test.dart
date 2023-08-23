@@ -10,6 +10,10 @@ void main() {
       expect(export, [
         {'sembast_export': 1, 'version': 1}
       ]);
+      export = await firestore.exportLines();
+      expect(export, [
+        {'sembast_export': 1, 'version': 1}
+      ]);
       await firestore.doc('test/doc').set({'test': 1});
       export = await firestore
           .exportLines(collections: [firestore.collection('test')]);
