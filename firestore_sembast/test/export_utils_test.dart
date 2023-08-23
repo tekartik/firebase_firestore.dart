@@ -13,6 +13,7 @@ void main() {
       await firestore.doc('test/doc').set({'test': 1});
       export = await firestore
           .exportLines(collections: [firestore.collection('test')]);
+      expect(export, hasLength(3));
       expect(export[1], {'store': 'doc'});
       expect((export[2] as List)[0], 'test/doc');
       //             {'sembast_export': 1, 'version': 1},

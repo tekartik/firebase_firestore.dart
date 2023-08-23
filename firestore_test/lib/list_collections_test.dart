@@ -38,21 +38,18 @@ void runListCollectionsTest({
     test('list doc collections', () async {
       var parent = url.join(testsRefPath, 'tekartik_test_collection');
       var collectionId = 'sub';
-      var doc = firestore.doc('$parent/$collectionId/doc');
+      var collection = firestore.collection(url.join(parent, collectionId));
+      var doc = collection.doc('doc');
       var collections = await firestore.doc(parent).listCollections();
       await doc.set({});
-      expect(
-          (await firestore.collection(collectionId).recursiveListDocuments())
-              .map((e) => e.path),
+      expect((await collection.recursiveListDocuments()).map((e) => e.path),
           [doc.path]);
       collections = await firestore.doc(parent).listCollections();
       expect(collections.map((e) => e.id), contains(collectionId));
       await doc.delete();
       collections = await firestore.listCollections();
       expect(collections.map((e) => e.id), isNot(contains(collectionId)));
-      expect(
-          (await firestore.collection(collectionId).recursiveListDocuments())
-              .map((e) => e.path),
+      expect((await collection.recursiveListDocuments()).map((e) => e.path),
           isEmpty);
     }, skip: !firestore.service.supportsListCollections);
   });
