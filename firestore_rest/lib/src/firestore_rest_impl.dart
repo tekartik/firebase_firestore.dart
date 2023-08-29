@@ -25,6 +25,9 @@ import 'package:tekartik_http/http.dart';
 
 import 'import.dart';
 
+const restNullValue = 'NULL_VALUE';
+const restRequestTime = 'REQUEST_TIME';
+
 bool get debugRest => debugFirestoreRest; // devWarning(true); // false
 
 /// Exported for strict debugging
@@ -44,7 +47,7 @@ dynamic dateOrTimestampValue(
 }
 
 Object? fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
-  if (restValue.nullValue == 'NULL_VALUE') {
+  if (restValue.nullValue == restNullValue) {
     return null;
   } else if (restValue.stringValue != null) {
     return restValue.stringValue;
@@ -83,7 +86,7 @@ Object? fromRestValue(FirestoreDocumentContext firestore, Value restValue) {
 }
 
 String? restValueToString(FirestoreDocumentContext firestore, Value restValue) {
-  if (restValue.nullValue == 'NULL VALUE') {
+  if (restValue.nullValue == restNullValue) {
     return restValue.nullValue;
   } else if (restValue.stringValue != null) {
     return restValue.stringValue;

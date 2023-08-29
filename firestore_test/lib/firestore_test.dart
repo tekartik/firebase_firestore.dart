@@ -663,6 +663,33 @@ void runApp(
         data = (await docRef.get()).data;
         expect(data, {'other_key': 'other_value'});
       });
+      test('setDeleteSubMapField', () async {
+        var testsRef = getTestsRef()!;
+        var docRef = testsRef.doc('set_delete_field');
+        var data = <String, Object?>{
+          'some_key': 'some_value',
+          'sub': <String, Object?>{
+            'sub_key': 'sub_value',
+            'other': 'other_value'
+          }
+        };
+        await docRef.set(data);
+        data = (await docRef.get()).data;
+        expect(data, {
+          'some_key': 'some_value',
+          'sub': {'sub_key': 'sub_value', 'other': 'other_value'}
+        });
+
+        data = {
+          'sub': {'sub_key': FieldValue.delete}
+        };
+        await docRef.set(data, SetOptions(merge: true));
+        data = (await docRef.get()).data;
+        expect(data, {
+          'some_key': 'some_value',
+          'sub': {'other': 'other_value'}
+        });
+      }, skip: 'Not supported yet but on flutter...');
       test('array', () async {
         if (firestoreService.supportsFieldValueArray) {
           var testsRef = getTestsRef()!;
