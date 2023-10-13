@@ -31,7 +31,7 @@ Map<String, Object?>? snapshotToJson(App app, DocumentSnapshot snapshot) {
 }
 
 DocumentData? documentDataFromSnapshot(DocumentSnapshot snapshot) =>
-    snapshot.exists == true ? DocumentData(snapshot.data) : null;
+    snapshot.exists ? DocumentData(snapshot.data) : null;
 
 dynamic documentDataValueToJson(App app, dynamic value) {
   if (value is String) {

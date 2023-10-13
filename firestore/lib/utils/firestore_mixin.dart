@@ -508,7 +508,7 @@ int _compareHandleNull(
     FirestoreComparable? object1, FirestoreComparable? object2,
     [bool ascending = true]) {
   final compareValue = _rawCompareHandleNull(object1, object2);
-  if (ascending != false) {
+  if (ascending) {
     return compareValue;
   } else {
     return -compareValue;
@@ -833,7 +833,7 @@ abstract mixin class AttributesMixin implements ReferenceAttributes {
   @override
   String? get parentPath {
     final dirPath = url.dirname(path);
-    if (dirPath.isEmpty == true) {
+    if (dirPath.isEmpty) {
       return null;
     } else if (dirPath == '.') {
       // Mimic firestore behavior where the top document has a '' path

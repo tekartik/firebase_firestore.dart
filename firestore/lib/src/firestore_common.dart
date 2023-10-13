@@ -218,10 +218,10 @@ DocumentData documentDataFromMap(Map<String, Object?> map) {
 }
 
 DocumentData? documentDataFromSnapshot(DocumentSnapshot snapshot) =>
-    snapshot.exists == true ? DocumentData(snapshot.data) : null;
+    snapshot.exists ? DocumentData(snapshot.data) : null;
 
 Map<String, Object?>? snapshotToJsonMap(DocumentSnapshot snapshot) {
-  if (snapshot.exists == true) {
+  if (snapshot.exists) {
     var map = documentDataToJsonMap(documentDataFromSnapshot(snapshot));
     return map;
   } else {
@@ -471,15 +471,14 @@ Map<String, Object?> whereInfoToJsonMap(WhereInfo whereInfo) {
 Map<String, Object?> orderByInfoToJsonMap(OrderByInfo orderByInfo) {
   var map = <String, Object?>{
     'fieldPath': orderByInfo.fieldPath,
-    'direction':
-        orderByInfo.ascending == true ? orderByAscending : orderByDescending
+    'direction': orderByInfo.ascending ? orderByAscending : orderByDescending
   };
   return map;
 }
 
 Map<String, Object?> limitInfoToJsonMap(LimitInfo limitInfo) {
   var map = <String, Object?>{};
-  if (limitInfo.inclusive == true) {
+  if (limitInfo.inclusive) {
     map['inclusive'] = true;
   }
   if (limitInfo.values != null) {

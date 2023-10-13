@@ -525,7 +525,7 @@ class FirestoreRestImpl
     if (queryInfo.endLimit != null) {
       // StartAt/StartAfter
       structuredQuery.endAt = Cursor()
-        ..before = queryInfo.endLimit!.inclusive == false
+        ..before = !queryInfo.endLimit!.inclusive
         ..values = toRestValues(queryInfo.endLimit!.values!);
     }
 

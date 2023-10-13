@@ -242,7 +242,7 @@ class Blob {
   Blob(this._data);
 
   @override
-  int get hashCode => (_data.isNotEmpty == true) ? _data.first.hashCode : 0;
+  int get hashCode => (_data.isNotEmpty) ? _data.first.hashCode : 0;
 
   @override
   bool operator ==(other) {

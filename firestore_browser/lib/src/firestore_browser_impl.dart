@@ -205,8 +205,7 @@ bool _isNativeBlob(Object native) {
   // devPrint('value ${objectKeys(getProperty(native, '__proto__'))}');
   var proto = getProperty(native, '__proto__') as Object?;
   if (proto != null) {
-    return hasProperty(proto, 'toBase64') == true &&
-        hasProperty(proto, 'toUint8Array') == true;
+    return hasProperty(proto, 'toBase64') && hasProperty(proto, 'toUint8Array');
   }
   return false;
 }
@@ -216,8 +215,7 @@ bool _isNativeGeoPoint(Object native) {
   // devPrint('value ${objectKeys(getProperty(native, '__proto__'))}');
   var proto = getProperty(native, '__proto__') as Object?;
   if (proto != null) {
-    return hasProperty(proto, 'latitude') == true &&
-        hasProperty(proto, 'longitude') == true;
+    return hasProperty(proto, 'latitude') && hasProperty(proto, 'longitude');
   }
   return false;
 }

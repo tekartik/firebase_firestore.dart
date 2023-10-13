@@ -100,8 +100,7 @@ Future<Query> applyQueryInfo(
 
     // order
     for (var orderBy in queryInfo.orderBys) {
-      query = query.orderBy(orderBy.fieldPath!,
-          descending: orderBy.ascending == false);
+      query = query.orderBy(orderBy.fieldPath!, descending: !orderBy.ascending);
     }
 
     for (var where in queryInfo.wheres) {
@@ -126,7 +125,7 @@ Future<Query> applyQueryInfo(
             .doc(queryInfo.startLimit!.documentId!)
             .get();
       }
-      if (queryInfo.startLimit!.inclusive == true) {
+      if (queryInfo.startLimit!.inclusive) {
         query = query.startAt(
             snapshot: snapshot, values: queryInfo.startLimit!.values);
       } else {
@@ -143,7 +142,7 @@ Future<Query> applyQueryInfo(
             .doc(queryInfo.endLimit!.documentId!)
             .get();
       }
-      if (queryInfo.endLimit!.inclusive == true) {
+      if (queryInfo.endLimit!.inclusive) {
         query =
             query.endAt(snapshot: snapshot, values: queryInfo.endLimit!.values);
       } else {
