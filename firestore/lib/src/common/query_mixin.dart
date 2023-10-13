@@ -3,10 +3,15 @@ import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
 // Every implementation should use this default mixin for missing implementation
 mixin FirestoreQueryExecutorMixin implements Query {
+  /// Expensive default implementation.
   @override
   Future<int> count() async {
     return (await get()).docs.length;
   }
+
+  /// Expensive default implementation.
+  @override
+  Stream<int> onCount() => onSnapshot().map((snapshot) => snapshot.docs.length);
 
   @override
   Query orderById({bool? descending}) =>

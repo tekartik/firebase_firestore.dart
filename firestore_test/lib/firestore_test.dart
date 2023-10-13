@@ -1627,6 +1627,10 @@ void runApp(
           var completer3 = Completer<void>();
           var completer4 = Completer<void>();
           var count = 0;
+          var onCountResults = <int>[];
+          var countSubscription = collRef.onCount().listen((count) {
+            onCountResults.add(count);
+          });
           var subscription =
               collRef.onSnapshot().listen((QuerySnapshot querySnapshot) {
             if (++count == 1) {
@@ -1677,6 +1681,8 @@ void runApp(
           await completer4.future;
 
           await subscription.cancel();
+          await countSubscription.cancel();
+          expect(onCountResults, [0, 1, 1, 0]);
         }
       });
     });

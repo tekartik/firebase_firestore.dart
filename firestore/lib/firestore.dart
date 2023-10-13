@@ -368,6 +368,11 @@ abstract class Query {
   /// Check [FirestoreService.supportsQueryCount] before use
   Future<int> count();
 
+  /// Count the number of element matching the query.
+  ///
+  /// Check [FirestoreService.supportsQueryCount] before use
+  Stream<int> onCount();
+
   Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false});
 
   Query limit(int limit);
