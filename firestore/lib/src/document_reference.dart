@@ -2,6 +2,9 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 
 /// Document reference.
 abstract class DocumentReference {
+  /// The Firestore instance associated with this document reference.
+  Firestore get firestore;
+
   /// Document id.
   String get id;
 

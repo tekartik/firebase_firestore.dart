@@ -490,6 +490,9 @@ class CollectionReferenceSim extends Object
     }
     return false;
   }
+
+  @override
+  Firestore get firestore => firestoreSim;
 }
 
 class FirestoreSim extends Object

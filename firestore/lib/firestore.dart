@@ -95,6 +95,9 @@ abstract class Firestore {
 
 /// Collection reference.
 abstract class CollectionReference extends Query {
+  /// The [Firestore] instance of this query.
+  Firestore get firestore;
+
   /// Collection path.
   String get path;
 

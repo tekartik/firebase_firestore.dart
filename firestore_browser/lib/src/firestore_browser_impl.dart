@@ -64,11 +64,11 @@ class FirestoreBrowser
 
   @override
   CollectionReference collection(String path) =>
-      _wrapCollectionReference(nativeInstance.collection(path));
+      _wrapCollectionReference(this, nativeInstance.collection(path));
 
   @override
   DocumentReference doc(String path) =>
-      _wrapDocumentReference(nativeInstance.doc(path));
+      _wrapDocumentReference(this, nativeInstance.doc(path));
 
   @override
   WriteBatch batch() {
@@ -80,7 +80,7 @@ class FirestoreBrowser
   Future<T> runTransaction<T>(
       FutureOr<T> Function(Transaction transaction) updateFunction) async {
     return await nativeInstance.runTransaction((nativeTransaction) {
-      var transaction = TransactionBrowser(nativeTransaction);
+      var transaction = TransactionBrowser(this, nativeTransaction);
       return updateFunction(transaction);
     }) as T;
   }
@@ -122,9 +122,10 @@ class WriteBatchBrowser implements WriteBatch {
 }
 
 class TransactionBrowser implements Transaction {
+  final Firestore firestore;
   final native.Transaction nativeInstance;
 
-  TransactionBrowser(this.nativeInstance);
+  TransactionBrowser(this.firestore, this.nativeInstance);
 
   @override
   void delete(DocumentReference documentRef) {
@@ -133,7 +134,7 @@ class TransactionBrowser implements Transaction {
 
   @override
   Future<DocumentSnapshot> get(DocumentReference documentRef) async =>
-      _wrapDocumentSnapshot(
+      _wrapDocumentSnapshot(firestore,
           await nativeInstance.get(_unwrapDocumentReference(documentRef)!));
 
   @override
@@ -151,13 +152,13 @@ class TransactionBrowser implements Transaction {
 }
 
 CollectionReferenceBrowser _wrapCollectionReference(
-    native.CollectionReference nativeCollectionReference) {
-  return CollectionReferenceBrowser(nativeCollectionReference);
+    Firestore firestore, native.CollectionReference nativeCollectionReference) {
+  return CollectionReferenceBrowser(firestore, nativeCollectionReference);
 }
 
 DocumentReferenceBrowser _wrapDocumentReference(
-    native.DocumentReference nativeDocumentReference) {
-  return DocumentReferenceBrowser(nativeDocumentReference);
+    Firestore firestore, native.DocumentReference nativeDocumentReference) {
+  return DocumentReferenceBrowser(firestore, nativeDocumentReference);
 }
 
 // for both native and not
@@ -169,23 +170,23 @@ bool isCommonValue(Object? value) {
       value is bool);
 }
 
-Object? fromNativeValue(Object? nativeValue) {
+Object? fromNativeValue(Firestore firestore, Object? nativeValue) {
   if (isCommonValue(nativeValue)) {
     return nativeValue;
   }
   if (nativeValue is Iterable) {
     return nativeValue
-        .map((nativeValue) => fromNativeValue(nativeValue))
+        .map((nativeValue) => fromNativeValue(firestore, nativeValue))
         .toList();
   } else if (nativeValue is Map) {
     return nativeValue.map<String, Object?>((key, nativeValue) =>
-        MapEntry(key as String, fromNativeValue(nativeValue)));
+        MapEntry(key as String, fromNativeValue(firestore, nativeValue)));
   } else if (native.FieldValue.delete() == nativeValue) {
     return FieldValue.delete;
   } else if (native.FieldValue.serverTimestamp() == nativeValue) {
     return FieldValue.serverTimestamp;
   } else if (nativeValue is native.DocumentReference) {
-    return DocumentReferenceBrowser(nativeValue);
+    return DocumentReferenceBrowser(firestore, nativeValue);
   } else if (_isNativeBlob(nativeValue!)) {
     var nativeBlob = nativeValue as native.Blob;
     return Blob(nativeBlob.toUint8Array());
@@ -273,8 +274,9 @@ Map<String, Object?>? documentDataToNativeMap(DocumentData documentData) {
   return toNativeValue(map) as Map<String, Object?>?;
 }
 
-DocumentData documentDataFromNativeMap(Map<String, Object?> nativeMap) {
-  var map = fromNativeValue(nativeMap) as Map<String, Object?>;
+DocumentData documentDataFromNativeMap(
+    Firestore firestore, Map<String, Object?> nativeMap) {
+  var map = fromNativeValue(firestore, nativeMap) as Map<String, Object?>;
   return DocumentData(map);
 }
 
@@ -283,17 +285,18 @@ class DocumentSnapshotBrowser
     implements DocumentSnapshot {
   final native.DocumentSnapshot _native;
 
-  DocumentSnapshotBrowser(this._native);
+  final Firestore firestore;
+  DocumentSnapshotBrowser(this.firestore, this._native);
 
   @override
   Map<String, Object?> get data =>
-      documentDataFromNativeMap(_native.data()).asMap();
+      documentDataFromNativeMap(firestore, _native.data()).asMap();
 
   @override
   bool get exists => _native.exists;
 
   @override
-  DocumentReference get ref => _wrapDocumentReference(_native.ref);
+  DocumentReference get ref => _wrapDocumentReference(firestore, _native.ref);
 
   // Not supported for browser
   @override
@@ -321,27 +324,29 @@ native.DocumentReference? _unwrapDocumentReference(DocumentReference? ref) {
 class DocumentReferenceBrowser
     with DocumentReferenceDefaultMixin, PathReferenceMixin
     implements DocumentReference, PathReference {
+  @override
+  final Firestore firestore;
   final native.DocumentReference nativeInstance;
 
-  DocumentReferenceBrowser(this.nativeInstance);
+  DocumentReferenceBrowser(this.firestore, this.nativeInstance);
 
   @override
   CollectionReference collection(String path) =>
-      _wrapCollectionReference(nativeInstance.collection(path));
+      _wrapCollectionReference(firestore, nativeInstance.collection(path));
 
   @override
   Future delete() => nativeInstance.delete();
 
   @override
   Future<DocumentSnapshot> get() async =>
-      _wrapDocumentSnapshot(await nativeInstance.get());
+      _wrapDocumentSnapshot(firestore, await nativeInstance.get());
 
   @override
   String get id => nativeInstance.id;
 
   @override
   CollectionReference get parent =>
-      _wrapCollectionReference(nativeInstance.parent);
+      _wrapCollectionReference(firestore, nativeInstance.parent);
 
   @override
   String get path => nativeInstance.path;
@@ -361,7 +366,7 @@ class DocumentReferenceBrowser
     var transformer = StreamTransformer.fromHandlers(handleData:
         (native.DocumentSnapshot nativeDocumentSnapshot,
             EventSink<DocumentSnapshot> sink) {
-      sink.add(_wrapDocumentSnapshot(nativeDocumentSnapshot));
+      sink.add(_wrapDocumentSnapshot(firestore, nativeDocumentSnapshot));
     });
     return nativeInstance.onSnapshot.transform(transformer);
   }
@@ -385,8 +390,8 @@ class DocumentReferenceBrowser
 }
 
 DocumentSnapshotBrowser _wrapDocumentSnapshot(
-        native.DocumentSnapshot snapshot) =>
-    DocumentSnapshotBrowser(snapshot);
+        final Firestore firestore, native.DocumentSnapshot snapshot) =>
+    DocumentSnapshotBrowser(firestore, snapshot);
 
 native.DocumentSnapshot? _unwrapDocumentSnapshot(
         DocumentSnapshot? documentSnapshot) =>
@@ -395,15 +400,16 @@ native.DocumentSnapshot? _unwrapDocumentSnapshot(
         : null;
 
 class QuerySnapshotBrowser implements QuerySnapshot {
+  final Firestore firestore;
   final native.QuerySnapshot _native;
 
-  QuerySnapshotBrowser(this._native);
+  QuerySnapshotBrowser(this.firestore, this._native);
 
   @override
   List<DocumentSnapshot> get docs {
     var docs = <DocumentSnapshot>[];
     for (var nativeDoc in _native.docs) {
-      docs.add(_wrapDocumentSnapshot(nativeDoc));
+      docs.add(_wrapDocumentSnapshot(firestore, nativeDoc));
     }
     return docs;
   }
@@ -412,7 +418,7 @@ class QuerySnapshotBrowser implements QuerySnapshot {
   List<DocumentChange> get documentChanges {
     var changes = <DocumentChange>[
       for (var nativeChange in _native.docChanges())
-        DocumentChangeBrowser(nativeChange)
+        DocumentChangeBrowser(firestore, nativeChange)
     ];
     return changes;
   }
@@ -431,12 +437,14 @@ DocumentChangeType? _wrapDocumentChangeType(String type) {
 }
 
 class DocumentChangeBrowser implements DocumentChange {
+  final Firestore firestore;
   final native.DocumentChange nativeInstance;
 
-  DocumentChangeBrowser(this.nativeInstance);
+  DocumentChangeBrowser(this.firestore, this.nativeInstance);
 
   @override
-  DocumentSnapshot get document => _wrapDocumentSnapshot(nativeInstance.doc);
+  DocumentSnapshot get document =>
+      _wrapDocumentSnapshot(firestore, nativeInstance.doc);
 
   @override
   int get newIndex => nativeInstance.newIndex.toInt();
@@ -448,52 +456,64 @@ class DocumentChangeBrowser implements DocumentChange {
   DocumentChangeType get type => _wrapDocumentChangeType(nativeInstance.type)!;
 }
 
-QuerySnapshotBrowser _wrapQuerySnapshot(native.QuerySnapshot querySnapshot) =>
-    QuerySnapshotBrowser(querySnapshot);
+QuerySnapshotBrowser _wrapQuerySnapshot(
+        Firestore firestore, native.QuerySnapshot querySnapshot) =>
+    QuerySnapshotBrowser(firestore, querySnapshot);
 
-QueryBrowser _wrapQuery(native.Query native) => QueryBrowser(native);
+QueryBrowser _wrapQuery(Firestore firestore, native.Query native) =>
+    QueryBrowser(firestore, native);
 
 class QueryBrowser with FirestoreQueryExecutorMixin implements Query {
+  final Firestore firestore;
   final native.Query _native;
 
-  QueryBrowser(this._native);
+  QueryBrowser(this.firestore, this._native);
 
   @override
   Query endAt({DocumentSnapshot? snapshot, List<Object?>? values}) =>
-      _wrapQuery(_native.endAt(
-          snapshot: _unwrapDocumentSnapshot(snapshot),
-          fieldValues: toNativeValuesOrNull(values)));
+      _wrapQuery(
+          firestore,
+          _native.endAt(
+              snapshot: _unwrapDocumentSnapshot(snapshot),
+              fieldValues: toNativeValuesOrNull(values)));
 
   @override
   Query endBefore({DocumentSnapshot? snapshot, List<Object?>? values}) =>
-      _wrapQuery(_native.endBefore(
-          snapshot: _unwrapDocumentSnapshot(snapshot),
-          fieldValues: toNativeValuesOrNull(values)));
+      _wrapQuery(
+          firestore,
+          _native.endBefore(
+              snapshot: _unwrapDocumentSnapshot(snapshot),
+              fieldValues: toNativeValuesOrNull(values)));
 
   @override
-  Future<QuerySnapshot> get() async => _wrapQuerySnapshot(await _native.get());
+  Future<QuerySnapshot> get() async =>
+      _wrapQuerySnapshot(firestore, await _native.get());
 
   @override
-  Query limit(int limit) => _wrapQuery(_native.limit(limit));
+  Query limit(int limit) => _wrapQuery(firestore, _native.limit(limit));
 
   @override
-  Query orderBy(String key, {bool? descending}) =>
-      _wrapQuery(_native.orderBy(key, descending == true ? 'desc' : null));
+  Query orderBy(String key, {bool? descending}) => _wrapQuery(
+      firestore, _native.orderBy(key, descending == true ? 'desc' : null));
 
   @override
   Query select(List<String> keyPaths) => this; // not supported
 
   @override
   Query startAfter({DocumentSnapshot? snapshot, List<Object?>? values}) =>
-      _wrapQuery(_native.startAfter(
-          snapshot: _unwrapDocumentSnapshot(snapshot),
-          fieldValues: toNativeValuesOrNull(values)));
+      _wrapQuery(
+          firestore,
+          _native.startAfter(
+              snapshot: _unwrapDocumentSnapshot(snapshot),
+              fieldValues: toNativeValuesOrNull(values)));
 
   @override
   Query startAt({DocumentSnapshot? snapshot, List<Object?>? values}) =>
-      _wrapQuery(_native.startAt(
-          snapshot: _unwrapDocumentSnapshot(snapshot),
-          fieldValues: toNativeValuesOrNull(values)));
+      _wrapQuery(
+          firestore,
+          _native.startAt(
+              snapshot: _unwrapDocumentSnapshot(snapshot),
+              fieldValues: toNativeValuesOrNull(values)));
 
   @override
   Query where(String fieldPath,
@@ -552,7 +572,7 @@ class QueryBrowser with FirestoreQueryExecutorMixin implements Query {
       opStr = 'in';
       value = toNativeValues(whereIn);
     }
-    return _wrapQuery(_native.where(fieldPath, opStr!, value));
+    return _wrapQuery(firestore, _native.where(fieldPath, opStr!, value));
   }
 
   @override
@@ -560,7 +580,7 @@ class QueryBrowser with FirestoreQueryExecutorMixin implements Query {
     var transformer = StreamTransformer.fromHandlers(handleData:
         (native.QuerySnapshot nativeQuerySnapshot,
             EventSink<QuerySnapshot> sink) {
-      sink.add(_wrapQuerySnapshot(nativeQuerySnapshot));
+      sink.add(_wrapQuerySnapshot(firestore, nativeQuerySnapshot));
     });
     //new StreamController<QuerySnapshot>();
     return _native.onSnapshot.transform(transformer);
@@ -573,24 +593,26 @@ class CollectionReferenceBrowser extends QueryBrowser
       _native as native.CollectionReference;
 
   CollectionReferenceBrowser(
-      native.CollectionReference nativeCollectionReference)
-      : super(nativeCollectionReference);
+      Firestore firestore, native.CollectionReference nativeCollectionReference)
+      : super(firestore, nativeCollectionReference);
 
   @override
   Future<DocumentReference> add(Map<String, Object?> data) async =>
-      _wrapDocumentReference(await _nativeCollectionReference
-          .add(documentDataToNativeMap(DocumentData(data))!));
+      _wrapDocumentReference(
+          firestore,
+          await _nativeCollectionReference
+              .add(documentDataToNativeMap(DocumentData(data))!));
 
   @override
   DocumentReference doc([String? path]) =>
-      _wrapDocumentReference(_nativeCollectionReference.doc(path));
+      _wrapDocumentReference(firestore, _nativeCollectionReference.doc(path));
 
   @override
   String get id => _nativeCollectionReference.id;
 
   @override
   DocumentReference get parent =>
-      _wrapDocumentReference(_nativeCollectionReference.parent);
+      _wrapDocumentReference(firestore, _nativeCollectionReference.parent);
 
   @override
   String get path => _nativeCollectionReference.path;
