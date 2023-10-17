@@ -585,6 +585,7 @@ abstract class FirestoreReferenceBase
 }
 
 mixin FirestoreQueryMixin implements Query {
+  @override
   Firestore get firestore;
 
   String get path;

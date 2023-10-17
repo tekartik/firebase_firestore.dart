@@ -432,6 +432,9 @@ class QuerySim extends Object
   QueryInfo? queryInfo;
 
   QuerySim(this.simCollectionReference);
+
+  @override
+  Firestore get firestore => firestoreSim;
 }
 
 class CollectionReferenceSim extends Object
