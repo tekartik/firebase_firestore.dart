@@ -92,7 +92,7 @@ final StoreRef<String, Map<String, Object?>> docStore =
     stringMapStoreFactory.store('doc');
 
 class WriteResultSembast extends WriteResultBase {
-  WriteResultSembast(String path) : super(path);
+  WriteResultSembast(super.path);
 
   DocumentSnapshotSembast? get previousSnapshotSembast =>
       previousSnapshot as DocumentSnapshotSembast?;
@@ -370,7 +370,7 @@ class WriteBatchSembast extends WriteBatchBase implements WriteBatch {
 class TransactionSembast extends WriteBatchSembast implements Transaction {
   late sembast.Transaction nativeTransaction;
 
-  TransactionSembast(FirestoreSembast firestore) : super(firestore);
+  TransactionSembast(super.firestore);
 
   @override
   Future<DocumentSnapshot> get(DocumentReference documentRef) async {
@@ -381,10 +381,8 @@ class TransactionSembast extends WriteBatchSembast implements Transaction {
 }
 
 class DocumentSnapshotSembast extends DocumentSnapshotBase {
-  DocumentSnapshotSembast(
-      DocumentReference ref, RecordMetaData? meta, DocumentData? documentData,
-      {bool? exists})
-      : super(ref, meta, documentData, exists: exists);
+  DocumentSnapshotSembast(super.ref, super.meta, super.documentData,
+      {super.exists});
 
   DocumentSnapshotSembast.fromSnapshot(DocumentSnapshotSembast snapshot,
       {bool? exists})
@@ -399,9 +397,8 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
         DocumentReferenceMixin,
         PathReferenceMixin
     implements DocumentReference {
-  DocumentReferenceSembast(Firestore firestore, String path)
-      : super(firestore, path) {
-    checkDocumentReferencePath(this.path);
+  DocumentReferenceSembast(super.firestore, super.path) {
+    checkDocumentReferencePath(path);
   }
 
   FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
@@ -496,10 +493,9 @@ class CollectionReferenceSembast extends QuerySembast
   @override
   FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
 
-  CollectionReferenceSembast(Firestore firestore, String path)
-      : super(firestore, path) {
+  CollectionReferenceSembast(super.firestore, super.path) {
     queryInfo = QueryInfo();
-    checkCollectionReferencePath(this.path);
+    checkCollectionReferencePath(path);
   }
 
   @override
@@ -563,7 +559,7 @@ class QuerySembast extends FirestoreReferenceBase
     implements Query {
   FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
 
-  QuerySembast(Firestore firestore, String path) : super(firestore, path);
+  QuerySembast(super.firestore, super.path);
 
   @override
   QueryInfo? queryInfo;
@@ -589,16 +585,13 @@ class QuerySembast extends FirestoreReferenceBase
 }
 
 class DocumentChangeSembast extends DocumentChangeBase {
-  DocumentChangeSembast(DocumentChangeType type, DocumentSnapshot document,
-      int newIndex, int oldIndex)
-      : super(type, document, newIndex, oldIndex);
+  DocumentChangeSembast(
+      super.type, super.document, super.newIndex, super.oldIndex);
 
   DocumentSnapshotSembast get documentSembast =>
       document as DocumentSnapshotSembast;
 }
 
 class QuerySnapshotSembast extends QuerySnapshotBase {
-  QuerySnapshotSembast(
-      List<DocumentSnapshot> docs, List<DocumentChange> documentChanges)
-      : super(docs, documentChanges);
+  QuerySnapshotSembast(super.docs, super.documentChanges);
 }

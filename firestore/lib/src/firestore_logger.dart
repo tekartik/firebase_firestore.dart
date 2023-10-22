@@ -485,7 +485,7 @@ class DocumentChangeLogger implements DocumentChange {
 class QueryLogger extends QueryLoggerBase implements Query {
   @override
   Firestore get firestore => firestoreLogger;
-  QueryLogger(Query query, CollectionReferenceLogger refLogger) : super(query) {
+  QueryLogger(super.query, CollectionReferenceLogger refLogger) {
     this.refLogger = refLogger;
   }
 }

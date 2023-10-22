@@ -619,7 +619,7 @@ class FirestoreSim extends Object
 class TransactionSim extends WriteBatchSim implements Transaction {
   final int? transactionId;
 
-  TransactionSim(FirestoreSim firestore, this.transactionId) : super(firestore);
+  TransactionSim(super.firestore, this.transactionId);
 
   @override
   Future<DocumentSnapshot> get(DocumentReference documentRef) {

@@ -100,8 +100,7 @@ abstract class FirestoreDocumentSnapshotData {
 }
 
 class DocumentGetSnapshotData extends DocumentSnapshotData {
-  DocumentGetSnapshotData.fromSnapshot(DocumentSnapshot snapshot)
-      : super.fromSnapshot(snapshot);
+  DocumentGetSnapshotData.fromSnapshot(super.snapshot) : super.fromSnapshot();
 
   // optional for stream only
   int? streamId;

@@ -7,13 +7,11 @@ import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 import 'firestore/v1_fixed.dart';
 
 class SetDocument extends WriteDocument {
-  SetDocument(FirestoreDocumentContext firestore, Map data)
-      : super(firestore, data, merge: false);
+  SetDocument(super.firestore, super.data) : super(merge: false);
 }
 
 class SetMergedDocument extends WriteDocument {
-  SetMergedDocument(FirestoreDocumentContext firestore, Map data)
-      : super(firestore, data, merge: false);
+  SetMergedDocument(super.firestore, super.data) : super(merge: false);
 
   @override
   void _fromMap(Map map) {
@@ -36,8 +34,7 @@ class SetMergedDocument extends WriteDocument {
 }
 
 class UpdateDocument extends WriteDocument {
-  UpdateDocument(FirestoreDocumentContext firestore, Map data)
-      : super(firestore, data, merge: true);
+  UpdateDocument(super.firestore, super.data) : super(merge: true);
 
   @override
   void _fromMap(Map? map) {

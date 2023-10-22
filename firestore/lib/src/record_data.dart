@@ -131,7 +131,7 @@ class FieldValueArray extends FieldValue {
   @override
   final List<Object?> data;
 
-  FieldValueArray(FieldValueType type, this.data) : super(type);
+  FieldValueArray(super.type, this.data);
 }
 
 dynamic fieldArrayValueMergeValue(

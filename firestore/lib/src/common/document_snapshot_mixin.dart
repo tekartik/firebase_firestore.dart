@@ -1,6 +1,5 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
-import 'package:tekartik_firebase_firestore/src/record_data.dart';
 
 import 'snapshot_meta_data_mixin.dart';
 
@@ -29,7 +28,5 @@ mixin DocumentSnapshotMixin implements DocumentSnapshot {
 /// Test of mixin
 // ignore: unused_element
 class _DocumentSnapshotMixinTest extends DocumentSnapshotBase {
-  _DocumentSnapshotMixinTest(
-      DocumentReference ref, RecordMetaData? meta, DocumentData? documentData)
-      : super(ref, meta, documentData);
+  _DocumentSnapshotMixinTest(super.ref, super.meta, super.documentData);
 }

@@ -305,8 +305,7 @@ class LocalTransaction {
 class TransactionIdb extends WriteBatchIdb implements Transaction {
   final LocalTransaction localTransaction;
 
-  TransactionIdb(FirestoreIdb firestoreIdb, this.localTransaction)
-      : super(firestoreIdb);
+  TransactionIdb(super.firestoreIdb, this.localTransaction);
 
   @override
   void delete(DocumentReference documentRef) {
@@ -342,10 +341,9 @@ dynamic valueToUpdateValue(dynamic value) {
 }
 
 class DocumentSnapshotIdb extends DocumentSnapshotBase {
-  DocumentSnapshotIdb(DocumentReference ref, RecordMetaData? meta,
-      DocumentDataMap? documentData,
-      {bool? exists})
-      : super(ref, meta, documentData, exists: exists);
+  DocumentSnapshotIdb(
+      super.ref, super.meta, DocumentDataMap? super.documentData,
+      {super.exists});
 
   DocumentSnapshotIdb.fromSnapshot(DocumentSnapshotIdb snapshot, {bool? exists})
       : this(
@@ -418,15 +416,11 @@ class DocumentReferenceIdb
 }
 
 class QuerySnapshotIdb extends QuerySnapshotBase {
-  QuerySnapshotIdb(
-      List<DocumentSnapshot> docs, List<DocumentChange> documentChanges)
-      : super(docs, documentChanges);
+  QuerySnapshotIdb(super.docs, super.documentChanges);
 }
 
 class DocumentChangeIdb extends DocumentChangeBase {
-  DocumentChangeIdb(DocumentChangeType type, DocumentSnapshot document,
-      int newIndex, int oldIndex)
-      : super(type, document, newIndex, oldIndex);
+  DocumentChangeIdb(super.type, super.document, super.newIndex, super.oldIndex);
 }
 
 class QueryIdb extends FirestoreReferenceBase
@@ -437,8 +431,8 @@ class QueryIdb extends FirestoreReferenceBase
   @override
   QueryInfo? queryInfo;
 
-  QueryIdb(Firestore firestore, String path) : super(firestore, path) {
-    checkCollectionReferencePath(this.path);
+  QueryIdb(super.firestore, super.path) {
+    checkCollectionReferencePath(path);
   }
 
   @override
@@ -471,8 +465,7 @@ class QueryIdb extends FirestoreReferenceBase
 }
 
 class CollectionReferenceIdb extends QueryIdb implements CollectionReference {
-  CollectionReferenceIdb(FirestoreIdb firestoreIdb, String path)
-      : super(firestoreIdb, path) {
+  CollectionReferenceIdb(FirestoreIdb super.firestoreIdb, super.path) {
     queryInfo = QueryInfo();
   }
 
@@ -512,7 +505,7 @@ class CollectionReferenceIdb extends QueryIdb implements CollectionReference {
 }
 
 class WriteResultIdb extends WriteResultBase {
-  WriteResultIdb(String path) : super(path);
+  WriteResultIdb(super.path);
 }
 
 class WriteBatchIdb extends WriteBatchBase implements WriteBatch {

@@ -593,9 +593,8 @@ class CollectionReferenceBrowser extends QueryBrowser
   native.CollectionReference get _nativeCollectionReference =>
       _native as native.CollectionReference;
 
-  CollectionReferenceBrowser(
-      Firestore firestore, native.CollectionReference nativeCollectionReference)
-      : super(firestore, nativeCollectionReference);
+  CollectionReferenceBrowser(super.firestore,
+      native.CollectionReference super.nativeCollectionReference);
 
   @override
   Future<DocumentReference> add(Map<String, Object?> data) async =>

@@ -647,7 +647,7 @@ class WriteBatchOperationBase implements WriteBatchOperation {
 }
 
 class WriteBatchOperationDelete extends WriteBatchOperationBase {
-  WriteBatchOperationDelete(DocumentReference? docRef) : super(docRef);
+  WriteBatchOperationDelete(super.docRef);
 }
 
 class WriteBatchOperationSet extends WriteBatchOperationBase {
@@ -655,15 +655,13 @@ class WriteBatchOperationSet extends WriteBatchOperationBase {
   final SetOptions? options;
 
   WriteBatchOperationSet(
-      DocumentReference docRef, this.documentData, this.options)
-      : super(docRef);
+      DocumentReference super.docRef, this.documentData, this.options);
 }
 
 class WriteBatchOperationUpdate extends WriteBatchOperationBase {
   final DocumentData documentData;
 
-  WriteBatchOperationUpdate(DocumentReference docRef, this.documentData)
-      : super(docRef);
+  WriteBatchOperationUpdate(DocumentReference super.docRef, this.documentData);
 }
 
 abstract class WriteResultBase {
