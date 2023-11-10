@@ -70,7 +70,7 @@ void main() {
 
     test('geoPoint', () {
       var data = DocumentData();
-      data.setGeoPoint('geo', GeoPoint(3.5, 4.0));
+      data.setGeoPoint('geo', const GeoPoint(3.5, 4.0));
       expect(documentDataToJsonMap(data), {
         'geo': {
           r'$t': 'GeoPoint',

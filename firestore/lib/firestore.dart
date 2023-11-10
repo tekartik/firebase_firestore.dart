@@ -237,6 +237,8 @@ class Blob {
 
   Blob.fromList(List<int> data) : _data = Uint8List.fromList(data);
 
+  /// Compat with cloud_firestore.
+  Uint8List get bytes => _data;
   Uint8List get data => _data;
 
   Blob(this._data);
@@ -262,7 +264,7 @@ class GeoPoint {
   final num latitude;
   final num longitude;
 
-  GeoPoint(this.latitude, this.longitude);
+  const GeoPoint(this.latitude, this.longitude);
 
   @override
   bool operator ==(other) {
