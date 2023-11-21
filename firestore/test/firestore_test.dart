@@ -250,6 +250,8 @@ void main() {
       expect(firestorePathGetGenericPath('a'), 'a');
       expect(firestorePathGetGenericPath('a/1'), 'a/*');
       expect(firestorePathGetGenericPath('a/1/b/2'), 'a/*/b/*');
+
+      expect(firestorePathGetChild('a', 'b'), 'a/b');
     });
   });
 }

@@ -12,10 +12,13 @@ import 'firestore.dart';
 export 'package:tekartik_firebase_firestore/src/collection_reference.dart'
     show CollectionReference;
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
+    show FirestoreSettings, firestoreNameFieldPath;
+export 'package:tekartik_firebase_firestore/src/firestore_path.dart'
     show
-        FirestoreSettings,
-        firestoreNameFieldPath,
         firestorePathGetParent,
+        firestoreCollPathGetParent,
+        firestoreDocPathGetParent,
+        firestorePathGetChild,
         firestorePathGetGenericPath;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
 
@@ -224,6 +227,7 @@ class Blob {
 
   /// Compat with cloud_firestore.
   Uint8List get bytes => _data;
+
   Uint8List get data => _data;
 
   Blob(this._data);
