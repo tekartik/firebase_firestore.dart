@@ -15,6 +15,15 @@ String? firestoreCollPathGetParent(String path) => getParentPathOrNull(path);
 String firestorePathGetChild(String path, String child) =>
     url.join(path, child);
 
+/// Replace last path segment
+String firestorePathReplaceId(String path, String id) {
+  var parent = firestorePathGetParent(path);
+  if (parent == null) {
+    return id;
+  }
+  return firestorePathGetChild(parent, id);
+}
+
 /// Get a parent as a generic path, replacing id by *
 String firestorePathGetGenericPath(String path) => url.joinAll(url
     .split(path)

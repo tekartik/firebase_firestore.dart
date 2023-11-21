@@ -252,6 +252,9 @@ void main() {
       expect(firestorePathGetGenericPath('a/1/b/2'), 'a/*/b/*');
 
       expect(firestorePathGetChild('a', 'b'), 'a/b');
+      expect(firestorePathReplaceId('a/b', 'c'), 'a/c');
+      expect(firestorePathReplaceId('a/b/c', 'd'), 'a/b/d');
+      expect(firestorePathReplaceId('a', 'b'), 'b');
     });
   });
 }
