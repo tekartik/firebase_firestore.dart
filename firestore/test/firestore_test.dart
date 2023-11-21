@@ -250,11 +250,18 @@ void main() {
       expect(firestorePathGetGenericPath('a'), 'a');
       expect(firestorePathGetGenericPath('a/1'), 'a/*');
       expect(firestorePathGetGenericPath('a/1/b/2'), 'a/*/b/*');
+      expect(firestorePathGetGenericPath(''), '');
 
       expect(firestorePathGetChild('a', 'b'), 'a/b');
       expect(firestorePathReplaceId('a/b', 'c'), 'a/c');
       expect(firestorePathReplaceId('a/b/c', 'd'), 'a/b/d');
       expect(firestorePathReplaceId('a', 'b'), 'b');
+      expect(firestorePathReplaceId('', 'b'), 'b');
+
+      expect(firestorePathGetId('a/b/c'), 'c');
+      expect(firestorePathGetId('a/b'), 'b');
+      expect(firestorePathGetId('a'), 'a');
+      expect(firestorePathGetId(''), '');
     });
   });
 }

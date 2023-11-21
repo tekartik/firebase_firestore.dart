@@ -20,7 +20,8 @@ export 'package:tekartik_firebase_firestore/src/firestore_path.dart'
         firestoreDocPathGetParent,
         firestorePathGetChild,
         firestorePathGetGenericPath,
-        firestorePathReplaceId;
+        firestorePathReplaceId,
+        firestorePathGetId;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
 
 export 'src/document_reference.dart'
