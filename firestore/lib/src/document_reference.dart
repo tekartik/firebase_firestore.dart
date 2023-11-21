@@ -11,8 +11,8 @@ abstract class DocumentReference {
   /// Document path
   String get path;
 
-  /// Parent collection.
-  CollectionReference? get parent;
+  /// Parent collection, never null.
+  CollectionReference get parent;
 
   /// Get a child collection.
   CollectionReference collection(String path);

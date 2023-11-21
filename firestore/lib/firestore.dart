@@ -4,14 +4,13 @@ import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_firestore/src/document_reference.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/query_snapshot.dart';
-import 'package:tekartik_firebase_firestore/src/timestamp.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 
-import 'src/document_snapshot.dart' show DocumentSnapshot;
+import 'firestore.dart';
 
+export 'package:tekartik_firebase_firestore/src/collection_reference.dart'
+    show CollectionReference;
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
     show
         FirestoreSettings,
@@ -95,24 +94,6 @@ abstract class Firestore {
 
   /// Service access
   FirestoreService get service;
-}
-
-/// Collection reference.
-abstract class CollectionReference extends Query {
-  /// Collection path.
-  String get path;
-
-  /// Collection id.
-  String get id;
-
-  /// Parent document.
-  DocumentReference? get parent;
-
-  /// Get child document.
-  DocumentReference doc(String path);
-
-  /// Add a document.
-  Future<DocumentReference> add(Map<String, Object?> data);
 }
 
 abstract class DocumentData {

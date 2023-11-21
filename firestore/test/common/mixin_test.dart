@@ -94,9 +94,6 @@ class CollectionReferenceMock
   }
 
   @override
-  DocumentReference? get parent => null;
-
-  @override
   QueryInfo? get queryInfo => null;
 }
 
@@ -142,7 +139,12 @@ void main() {
     test('path', () {
       var doc = mock.doc('my/path');
       expect('my/path', doc.path);
-      expect('my', doc.parent!.path);
+      expect('my', doc.parent.path);
+      doc = mock.doc('my/path/sub/high');
+      expect('my/path/sub', doc.parent.path);
+      expect(doc.parent.parent?.path, 'my/path');
+      expect('my', doc.parent.parent?.parent.path);
+      expect(doc.parent.parent?.parent.parent?.path, isNull);
     });
   });
   group('value_key_mixin', () {

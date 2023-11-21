@@ -101,12 +101,13 @@ mixin DocumentReferenceDefaultMixin implements DocumentReference {
     throw UnimplementedError();
   }
 }
+
 mixin DocumentReferenceMixin
     implements DocumentReference, FirestorePathReference {
   @override
-  CollectionReference? get parent {
-    var parentPath = this.parentPath;
-    return parentPath == null ? null : firestore.collection(parentPath);
+  CollectionReference get parent {
+    var parentPath = this.parentPath!;
+    return firestore.collection(parentPath);
   }
 
   @override
