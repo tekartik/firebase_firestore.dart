@@ -833,17 +833,7 @@ abstract mixin class AttributesMixin implements ReferenceAttributes {
 
   @override
   String? get parentPath {
-    final dirPath = url.dirname(path);
-    if (dirPath.isEmpty) {
-      return null;
-    } else if (dirPath == '.') {
-      // Mimic firestore behavior where the top document has a '' path
-      return '';
-    } else if (dirPath == '/') {
-      // Mimic firestore behavior where the top document has a '' path
-      return '';
-    }
-    return dirPath;
+    return getParentPathOrNull(path);
   }
 
   @override

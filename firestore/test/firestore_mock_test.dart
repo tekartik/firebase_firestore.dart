@@ -12,7 +12,12 @@ void main() {
       expect(firestoreService.supportsListCollections, isFalse);
     });
     test('documentReference', () {
-      expect(firestore.doc('test'), firestore.doc('test'));
+      expect(firestore.doc('test/doc'), firestore.doc('test/doc'));
+      expect(firestore.collection('test').parent, isNull);
+    });
+    test('parent', () {
+      expect(firestore.doc('test/doc').parent,
+          CollectionReferenceMock(firestore, 'test'));
     });
   });
 }

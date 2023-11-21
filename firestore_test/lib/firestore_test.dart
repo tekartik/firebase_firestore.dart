@@ -790,6 +790,10 @@ void runApp(
         expect(docRef.parent!.id, 'tests');
       });
 
+      test('root', () {
+        var rootColl = firestore.collection('some_root_collection');
+        expect(rootColl.parent, isNull);
+      });
       test('set subfield', () async {
         var testsRef = getTestsRef()!;
         var docRef = testsRef.doc('document_set_sub_field');

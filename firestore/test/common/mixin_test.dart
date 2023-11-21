@@ -1,3 +1,4 @@
+import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
@@ -25,11 +26,13 @@ class FirestoreMock with FirestoreDefaultMixin, FirestoreMixin {
 
   @override
   CollectionReference collection(String path) {
+    checkCollectionReferencePath(path);
     return CollectionReferenceMock(this, path);
   }
 
   @override
   DocumentReference doc(String path) {
+    checkDocumentReferencePath(path);
     return DocumentReferenceMock(this, path);
   }
 
@@ -416,5 +419,12 @@ void main() {
     expect(mapWhere(documentData, WhereInfo('value', arrayContains: 1)), true);
     expect(mapWhere(documentData, WhereInfo('value', arrayContains: false)),
         false);
+  });
+  test('parentPath', () {
+    expect(url.dirname('some root dir name'), '.');
+    expect(getParentPathOrNull('some root dir name'), isNull);
+    expect(getParentPathOrNull(''), isNull);
+    expect(getParentPathOrNull('/'), isNull);
+    expect(getParentPathOrNull('.'), isNull);
   });
 }
