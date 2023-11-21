@@ -1,4 +1,5 @@
-import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:path/path.dart';
+import 'package:tekartik_firebase_firestore/src/common/import_firestore_mixin.dart';
 
 // don't export it yet
 enum FieldValueType {
@@ -208,7 +209,17 @@ enum FieldValueMapValue {
   serverTimestamp,
 }
 
+/// Special name field representing the document id (for sort order)
 const String firestoreNameFieldPath = '__name__';
+
+/// Get a parent path or null.
+String? firestorePathGetParent(String path) => getParentPathOrNull(path);
+
+/// Get a parent as a generic path, replacing id by *
+String firestorePathGetGenericPath(String path) => url.joinAll(url
+    .split(path)
+    .indexed
+    .map<String>((item) => ((item.$1 % 2 == 0) ? item.$2 : '*')));
 
 class FirestoreSettings {
   /// Enables the use of `Timestamp`s for timestamp fields in
@@ -216,13 +227,13 @@ class FirestoreSettings {
   @Deprecated('No longer needed')
   final bool? timestampsInSnapshots;
 
-  // ignore: deprecated_member_use_from_same_package
+// ignore: deprecated_member_use_from_same_package
   FirestoreSettings(
       {@Deprecated('No longer needed') this.timestampsInSnapshots});
 
   @override
   String toString() {
-    // ignore: deprecated_member_use_from_same_package
+// ignore: deprecated_member_use_from_same_package
     var map = {'timestampsInSnapshots': timestampsInSnapshots};
     return map.toString();
   }

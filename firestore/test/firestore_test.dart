@@ -1,8 +1,19 @@
 import 'dart:typed_data';
 
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
+import 'package:tekartik_firebase_firestore/src/firestore.dart'
+    show DocumentDataMap;
+import 'package:tekartik_firebase_firestore/src/firestore_common.dart'
+    show
+        dateTimeToJsonValue,
+        documentDataFromJsonMap,
+        documentDataMapFromJsonMap,
+        documentDataMapToJsonMap,
+        documentDataToJsonMap,
+        fieldValueToJsonValue,
+        jsonValueToDateTime,
+        jsonValueToTimestamp,
+        timestampToJsonValue;
 import 'package:test/test.dart';
 
 import 'common/mixin_test.dart';
@@ -227,6 +238,18 @@ void main() {
         subSubData = subData.getData('inner')!;
         expect(subSubData.getString('test'), 'test_value');
       });
+    });
+    test('path', () {
+      expect(firestorePathGetParent(''), isNull);
+      expect(firestorePathGetParent('/'), isNull);
+      expect(firestorePathGetParent('.'), isNull);
+      expect(firestorePathGetParent('a'), isNull);
+      expect(firestorePathGetParent('a/b'), 'a');
+      expect(firestorePathGetParent('a/b/c'), 'a/b');
+
+      expect(firestorePathGetGenericPath('a'), 'a');
+      expect(firestorePathGetGenericPath('a/1'), 'a/*');
+      expect(firestorePathGetGenericPath('a/1/b/2'), 'a/*/b/*');
     });
   });
 }

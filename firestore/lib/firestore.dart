@@ -13,7 +13,11 @@ import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'src/document_snapshot.dart' show DocumentSnapshot;
 
 export 'package:tekartik_firebase_firestore/src/firestore.dart'
-    show FirestoreSettings, firestoreNameFieldPath;
+    show
+        FirestoreSettings,
+        firestoreNameFieldPath,
+        firestorePathGetParent,
+        firestorePathGetGenericPath;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
 
 export 'src/document_reference.dart'
