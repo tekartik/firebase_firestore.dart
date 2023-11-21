@@ -438,7 +438,11 @@ class QuerySim extends Object
 }
 
 class CollectionReferenceSim extends Object
-    with QueryMixinSim, FirestoreQueryExecutorMixin
+    with
+        QueryMixinSim,
+        FirestoreQueryExecutorMixin,
+        CollectionReferenceMixin,
+        PathReferenceMixin
     implements CollectionReference {
   @override
   QueryInfo queryInfo = QueryInfo();
@@ -475,10 +479,6 @@ class CollectionReferenceSim extends Object
 
   @override
   String get id => url.basename(path);
-
-  @override
-  DocumentReference get parent =>
-      DocumentReferenceSim(firestoreSim, url.dirname(path));
 
   @override
   int get hashCode => path.hashCode;

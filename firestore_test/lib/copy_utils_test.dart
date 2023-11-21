@@ -25,7 +25,7 @@ void runCopyUtilsTest({
       await doc1.set({});
       var doc2 = doc1.collection('c1').doc('d2');
       await doc2.set({});
-      var collection = doc1.parent!;
+      var collection = doc1.parent;
       expect((await collection.recursiveListDocuments()).map((e) => e.path),
           [doc1.path, doc2.path]);
 
@@ -52,7 +52,7 @@ void runCopyUtilsTest({
       await doc1.set({});
       var doc2 = doc1.collection('c1').doc('d2').collection('c3').doc('d3');
       await doc2.set({});
-      var collection = doc1.parent!;
+      var collection = doc1.parent;
       expect((await collection.recursiveListDocuments()).map((e) => e.path), [
         doc1.path,
         // Missing? bug or feature?

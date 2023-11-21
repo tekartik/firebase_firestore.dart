@@ -787,7 +787,7 @@ void runApp(
         expect(docRef.id, 'document_test_attributes');
         expect(docRef.path, '${testsRef.path}/document_test_attributes');
         expect(docRef.parent, const TypeMatcher<CollectionReference>());
-        expect(docRef.parent!.id, 'tests');
+        expect(docRef.parent.id, 'tests');
       });
 
       test('root', () {
