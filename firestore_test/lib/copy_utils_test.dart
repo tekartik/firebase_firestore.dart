@@ -4,13 +4,14 @@ import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/copy_utils.dart';
 
-// ignore: implementation_imports
-import 'package:tekartik_firebase_firestore_test/utils_test.dart';
 import 'package:test/test.dart';
 
-void runCopyUtilsTest({
-  required Firestore firestore,
-}) {
+import 'firestore_test.dart';
+
+void runCopyUtilsTest(
+    {required Firestore firestore,
+    required FirestoreTestContext? testContext}) {
+  var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
   group('copy utils collections', () {
     // firestore = firestore.debugQuickLoggerWrapper();
 

@@ -4,11 +4,14 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
 import 'package:test/test.dart';
 
+import 'firestore_test.dart';
+
 void runUtilsCollectionTests(
     {required FirestoreService firestoreService,
-    required Firestore firestore}) {
+    required Firestore firestore,
+    required FirestoreTestContext? testContext}) {
   group('utils_collection', () {
-    var testsRefPath = 'tests/tekartik_firebase_firestore/tests';
+    var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
 
     test('deleteCollection one', () async {
       var ref = firestore

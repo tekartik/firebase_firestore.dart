@@ -1,14 +1,14 @@
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/document.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 import 'package:test/test.dart';
-
-/// collection
-var testsRefPath = 'tests/tekartik_firestore/tests';
 
 void utilsTest(
     {required FirestoreService firestoreService,
-    required Firestore firestore}) {
+    required Firestore firestore,
+    required FirestoreTestContext? testContext}) {
+  var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
   CollectionReference? getTestsRef() {
     return firestore.collection(testsRefPath);
   }

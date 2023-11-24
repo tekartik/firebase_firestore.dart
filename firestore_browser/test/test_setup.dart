@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:http/browser_client.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_browser/firebase_browser.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 import 'package:yaml/yaml.dart';
 
 Future<AppOptions?> setup() async {
@@ -23,7 +22,7 @@ Future<AppOptions?> setup() async {
         print('Missing "projectId" in local.config.yaml');
         return null;
       }
-      testRootPath = map['firestoreTestRootPath']?.toString();
+      // testRootPath = map['firestoreTestRootPath']?.toString();
 
       return options;
     } catch (e) {

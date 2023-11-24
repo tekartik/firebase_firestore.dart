@@ -4,12 +4,14 @@ import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/copy_utils.dart';
 // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore_test/utils_test.dart';
 import 'package:test/test.dart';
 
-void runListCollectionsTest({
-  required Firestore firestore,
-}) {
+import 'firestore_test.dart';
+
+void runListCollectionsTest(
+    {required Firestore firestore,
+    required FirestoreTestContext? testContext}) {
+  var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
   group('list collections', () {
     // firestore = firestore.debugQuickLoggerWrapper();
     test('list root collections', () async {
