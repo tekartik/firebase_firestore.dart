@@ -745,6 +745,30 @@ void runFirestoreCommonTests(
           'sub': {'other': 'other_value'}
         });
       }, skip: 'Not supported yet but on flutter...');
+      test('merge', () async {
+        var testsRef = getTestsRef();
+        var docRef = testsRef.doc('set_merge');
+        await docRef.set({
+          'field1': 'value1',
+          'field2': {
+            'sub2': {'sub3': 'value3'}
+          }
+        });
+        await docRef.set({
+          'field2': {
+            'sub2': {'sub4': 'value4'}
+          }
+        }, SetOptions(merge: true));
+
+        var snapshot = await docRef.get();
+        expect(snapshot.data, {
+          'field1': 'value1',
+          'field2': {
+            'sub2': {'sub3': 'value3', 'sub4': 'value4'}
+          }
+        });
+        print(snapshot.data);
+      }, skip: 'Not supported yet but on flutter...');
       test('array', () async {
         if (firestoreService.supportsFieldValueArray) {
           var testsRef = getTestsRef();
