@@ -101,6 +101,7 @@ abstract class Firestore {
   FirestoreService get service;
 }
 
+/// Representa firestore document data.
 abstract class DocumentData {
   factory DocumentData([Map<String, Object?>? map]) =>
       DocumentDataMap(map: map);

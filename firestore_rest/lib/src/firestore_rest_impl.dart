@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:path/path.dart';
-import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
@@ -32,6 +31,10 @@ bool get debugRest => debugFirestoreRest; // devWarning(true); // false
 
 /// Exported for strict debugging
 var debugFirestoreRest = false; // devWarning(true);
+
+String restEscapeKey(String key) {
+  return escapeKey(key);
+}
 
 dynamic dateOrTimestampValue(
     FirestoreDocumentContext firestore, String timestampValue) {

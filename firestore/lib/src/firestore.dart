@@ -55,6 +55,7 @@ dynamic valueToDocumentValue(dynamic value) {
   }
 }
 
+/// IMplementation of [DocumentData] using a map
 class DocumentDataMap implements DocumentData {
   Map<String, Object?> get map => _map;
   late Map<String, Object?> _map;

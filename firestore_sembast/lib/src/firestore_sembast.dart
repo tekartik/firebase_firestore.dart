@@ -2,9 +2,11 @@ import 'package:path/path.dart';
 import 'package:sembast/sembast.dart' hide Transaction, FieldValue;
 import 'package:sembast/sembast.dart' as sembast;
 import 'package:sembast/sembast_memory.dart' as sembast;
+import 'package:sembast/utils/value_utils.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/utils/document_data.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart'
     show newFirestoreServiceSembast;
@@ -69,7 +71,7 @@ dynamic valueToUpdateValue(dynamic value) {
   if (value == FieldValue.delete) {
     return sembast.FieldValue.delete;
   }
-  return valueToRecordValue(value, valueToUpdateValue);
+  return valueToJsonRecordValue(value, valueToUpdateValue);
 }
 
 Map<String, Object?> documentDataToUpdateMap(
@@ -197,27 +199,30 @@ class FirestoreSembast extends Object
 
     // Update rev
     final rev = (result.previousSnapshotSembast?.rev ?? 0) + 1;
-    // merging?
+
+    DocumentData newDocumentData;
     if (options?.merge == true) {
-      recordMap = documentDataToRecordMap(documentData, existingRecordMap);
+      if (existingRecordMap != null) {
+        newDocumentData =
+            DocumentData(cloneMap(existingRecordMap).cast<String, Object?>());
+      } else {
+        newDocumentData = DocumentData();
+      }
+      newDocumentData.merge(documentData);
+      recordMap = newDocumentData.toJsonRecordValueMap();
     } else {
-      // Map needed to handle arrayRemove and arrayUnion
-      recordMap = documentDataToRecordMap(documentData);
+      recordMap = documentData.toJsonRecordValueMap();
     }
 
-    if (recordMap != null) {
-      recordMap[revKey] = rev;
-    }
+    recordMap[revKey] = rev;
 
     // set update Time
-    if (recordMap != null) {
-      var now = Timestamp.now();
-      recordMap[createTimeKey] =
-          (result.previousSnapshot?.createTime ?? now).toIso8601String();
-      recordMap[updateTimeKey] = now.toIso8601String();
-    }
+    var now = Timestamp.now();
+    recordMap[createTimeKey] =
+        (result.previousSnapshot?.createTime ?? now).toIso8601String();
+    recordMap[updateTimeKey] = now.toIso8601String();
 
-    result.newSnapshot = documentFromRecordMap(ref, recordMap!);
+    result.newSnapshot = documentFromRecordMap(ref, recordMap);
     await docStore.record(ref.path).put(txn, recordMap);
     return result;
   }

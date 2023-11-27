@@ -1,3 +1,5 @@
+import 'package:cv/cv.dart';
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_common_utils/map_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart';
@@ -15,11 +17,22 @@ Timestamp? recordMapUpdateTime(Map<String, Object?> recordMap) =>
 Timestamp? recordMapCreateTime(Map<String, Object?> recordMap) =>
     mapCreateTime(recordMap);
 
-/// Generic record update
+/// Merge documentData onto existing recordMap
+Map<String, Object?>? recordMapMerge(
+    Map<String, Object?>? existing, DocumentData? documentData) {
+  if (documentData == null) {
+    return existing;
+  }
+  var newDocumentData = DocumentData(existing);
+  newDocumentData.merge(documentData);
+  return newDocumentData.asMap();
+}
+
+/// Generic record update using documentData
 Map<String, Object?>? recordMapUpdate(
     Map<String, Object?>? existing, DocumentData? documentData) {
   if (documentData == null) {
-    return null;
+    return existing;
   }
   final recordMap = (existing != null)
       ? cloneMap(existing).cast<String, Object?>()
@@ -35,7 +48,7 @@ Map<String, Object?>? recordMapUpdate(
     } else if (value is FieldValueArray) {
       recordMap[key] = fieldArrayValueMergeValue(value, recordMap[key]);
     } else {
-      recordMap[key] = valueToRecordValue(value);
+      recordMap[key] = valueToJsonRecordValue(value);
     }
   });
   return recordMap;
@@ -89,6 +102,12 @@ dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
     return recordValue
         .map((recordValue) => recordValueToValue(firestore, recordValue))
         .toList();
+  } else if (recordValue is FieldValueArray) {
+    if (recordValue.type == FieldValueType.arrayRemove) {
+      return null;
+    } else {
+      return recordValue.data;
+    }
   }
   throw 'recordValueToValue not supported $recordValue ${recordValue.runtimeType}';
 }
@@ -96,33 +115,91 @@ dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
 DocumentDataMap? documentDataMap(DocumentData? documentData) =>
     documentData as DocumentDataMap?;
 
+extension DocumentDataExt on DocumentData {
+  Map _mergeMap(Map map, Map override) {
+    override.forEach((key, value) {
+      // special delete field
+      if (value == FieldValue.delete) {
+        // remove
+        map.remove(key);
+      } else if (value is FieldValueArray) {
+        map[key.toString()] = fieldArrayValueMergeValue(value, map[key]);
+      } else {
+        if (value is Map) {
+          var overrideMap = value;
+          var existingMap = map[key];
+          Map subMap;
+          if (existingMap is Map) {
+            subMap = existingMap;
+          } else {
+            subMap = newModel();
+          }
+          value = _mergeMap(subMap, overrideMap);
+        }
+        map[key] = value;
+      }
+    });
+    return map;
+  }
+
+  /// Modify in place!
+  void merge(DocumentData other) {
+    var map = this.asMap();
+    _mergeMap(map, other.asMap());
+  }
+
+  /// Root document
+  Map<String, Object?> toJsonRecordMap() {
+    return documentDataMapToJsonMap(this.asMap());
+  }
+
+  /// Filled data (server timestamp to timestamp)
+  Map<String, Object?> toJsonRecordValueMap() {
+    return valueToJsonRecordValue(this.asMap()) as Model;
+  }
+}
+
 // merge with existing record map if any
+@Deprecated('Use DocumentData, merge if needed and toJsonRecordValueMap')
 Map<String, Object?>? documentDataToRecordMap(DocumentData? documentData,
 
-    /// Needed for arrayRemove
+    /// Needed for arrayRemove and merge, this is the existing record map!
     [Map<String, Object?>? recordMap]) {
   if (documentData == null && recordMap == null) {
     return null;
   }
-  var existingRecordMap = recordMap ?? {};
   recordMap = (recordMap != null)
       ? cloneMap(recordMap).cast<String, Object?>()
       : <String, Object?>{};
   if (documentData == null) {
     return recordMap;
   }
-  documentDataMap(documentData)!.map.forEach((String key, value) {
-    // special delete field
-    if (value == FieldValue.delete) {
-      // remove
-      recordMap!.remove(key);
-    } else if (value is FieldValueArray) {
-      recordMap![key] =
-          fieldArrayValueMergeValue(value, existingRecordMap[key]);
-    } else {
-      recordMap![key] = valueToRecordValue(value);
-    }
-  });
+
+  void fixMap(Map map, Map override) {
+    override.forEach((key, value) {
+      devPrint('map $map override $override (key $key value $value)');
+      // special delete field
+      if (value == FieldValue.delete) {
+        // remove
+        map.remove(key);
+      } else if (value is FieldValueArray) {
+        map[key] = fieldArrayValueMergeValue(value, map[key]);
+      } else {
+        /// recursive
+        if (value is Map && map[key] is Map) {
+          fixMap(map[key]! as Map, value);
+        } else {
+          map[key] = valueToRecordValue(value);
+        }
+      }
+    });
+  }
+
+  fixMap(
+    recordMap,
+    documentDataMap(documentData)!.map,
+  );
+
   return recordMap;
 }
 
@@ -132,10 +209,13 @@ class FieldValueArray extends FieldValue {
   final List<Object?> data;
 
   FieldValueArray(super.type, this.data);
+
+  @override
+  String toString() => 'FieldValueArray($type, $data)';
 }
 
-dynamic fieldArrayValueMergeValue(
-    FieldValueArray fieldValueArray, dynamic existing) {
+List fieldArrayValueMergeValue(
+    FieldValueArray fieldValueArray, Object? existing) {
   // get the list
   var existingIterable = existing;
   List list;
@@ -153,9 +233,41 @@ dynamic fieldArrayValueMergeValue(
   return list;
 }
 
+/// Handle merge when no existing.
+List<Object?> fieldArrayValueToRecordMapNoMerge(
+    FieldValueArray fieldValueArray) {
+  if (fieldValueArray.type == FieldValueType.arrayRemove) {
+    return [];
+  } else {
+    return List.from(fieldValueArray.data);
+  }
+}
+
+@Deprecated('Use valueToJsonRecordValue')
 dynamic valueToRecordValue(dynamic value,
     [dynamic Function(dynamic value)? chainConverter]) {
-  chainConverter ??= valueToRecordValue;
+  return valueToJsonRecordValue(value, chainConverter);
+}
+
+/// Convert to real value for saving
+Model mapValueToJsonRecordMapValue(Map map,
+    [dynamic Function(dynamic value)? chainConverter]) {
+  return map.map<String, Object?>(
+      (key, value) => MapEntry(key.toString(), chainConverter!(value)));
+}
+
+/// Convert to real value for saving
+List listValueToJsonRecordListValue(List list,
+    [dynamic Function(dynamic value)? chainConverter]) {
+  return list.map((subValue) => chainConverter!(subValue)).toList();
+}
+
+//@Deprecated('Use documentDataValueToJson')
+/// Convert to real value for saving
+/// Cannot be FieldValue
+dynamic valueToJsonRecordValue(dynamic value,
+    [dynamic Function(dynamic value)? chainConverter]) {
+  chainConverter ??= valueToJsonRecordValue;
   if (value == null || value is num || value is bool || value is String) {
     return value;
   } else if (value == FieldValue.serverTimestamp) {
@@ -165,9 +277,9 @@ dynamic valueToRecordValue(dynamic value,
   } else if (value is Timestamp) {
     return timestampToRecordValue(value);
   } else if (value is Map) {
-    return value.map((key, value) => MapEntry(key, chainConverter!(value)));
+    return mapValueToJsonRecordMapValue(value, chainConverter);
   } else if (value is List) {
-    return value.map((subValue) => chainConverter!(subValue)).toList();
+    return listValueToJsonRecordListValue(value, chainConverter);
   } else if (value is DocumentDataMap) {
     // this happens when it is a list item
     return value.map.map((key, value) => MapEntry(key, chainConverter!(value)));
@@ -178,7 +290,11 @@ dynamic valueToRecordValue(dynamic value,
   } else if (value is GeoPoint) {
     return geoPointToJsonValue(value);
   } else if (value is FieldValueArray) {
-    return value;
+    if (value.type == FieldValueType.arrayUnion) {
+      return listValueToJsonRecordListValue(value.data, chainConverter);
+    } else if (value.type == FieldValueType.arrayRemove) {
+      return <Object>[];
+    }
   }
   throw 'not supported $value ${value.runtimeType}';
 }

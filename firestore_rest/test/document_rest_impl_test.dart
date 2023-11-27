@@ -77,6 +77,34 @@ Future main() async {
       expect(readDocument.data, data);
     });
 
+    test('SetMergedDocument', () {
+      var writeDoc = SetMergedDocument(firestoreMock, {
+        'f1': 1,
+      });
+      expect(writeDoc.fieldPaths, ['f1']);
+      writeDoc = SetMergedDocument(firestoreMock, {
+        'f1': {'f2': 2},
+      });
+      expect(writeDoc.fieldPaths, ['f1.f2']);
+      var map = {
+        'f1': 1,
+        'f2': {'f3': 2},
+        'f4': {
+          'f5': {'f6': 6}
+        },
+      };
+      writeDoc = SetMergedDocument(firestoreMock, map);
+      expect(writeDoc.fieldPaths, ['f1', 'f2.f3', 'f4.f5.f6']);
+      var readDocument = ReadDocument(firestoreMock, writeDoc.document);
+      expect(readDocument.data, map);
+
+      map = {'sub.field': 1};
+      writeDoc = SetMergedDocument(firestoreMock, {'sub.field': 1});
+      expect(writeDoc.fieldPaths, ['`sub.field`']);
+      readDocument = ReadDocument(firestoreMock, writeDoc.document);
+      expect(readDocument.data, map);
+    });
+
     test('set', () {
       var patchDocument = SetDocument(firestoreMock, {});
       expect(patchDocument.fields, isEmpty);

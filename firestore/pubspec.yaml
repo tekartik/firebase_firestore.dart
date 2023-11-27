@@ -21,6 +21,7 @@ dependencies:
     version: '>=0.10.7'
   path:
   collection:
+  cv:
 dev_dependencies:
   dev_test:
   test: "^1.0.0"

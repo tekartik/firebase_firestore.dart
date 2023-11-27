@@ -19,14 +19,39 @@ class SetMergedDocument extends WriteDocument {
     _fields = _firstMapToFields(map);
   }
 
+  /// Need escape?
+  String _toKeyPath(List<String> keys) {
+    return keys.map((key) => restEscapeKey(key)).join('.');
+  }
+
   Map<String, Value> _firstMapToFields(Map map) {
     var fields = <String, Value>{};
-    map.forEach((key, value) {
-      final stringKey = key.toString();
-      fields[stringKey] = patchToRestValue(stringKey, value);
 
-      fieldPaths ??= [];
-      fieldPaths!.add(escapeKey(stringKey));
+    map.forEach((key, value) {
+      var topStringKey = key.toString();
+
+      /// keys will be added
+      void handleMapGetKeys(List<String> keys, Map subMap) {
+        fieldPaths ??= [];
+        subMap.forEach((key, value) {
+          var stringKey = key.toString();
+
+          var newKeys = [...keys, stringKey];
+          if (value is Map) {
+            handleMapGetKeys(newKeys, value);
+          } else {
+            fieldPaths!.add(_toKeyPath(newKeys));
+          }
+        });
+      }
+
+      if (value is Map) {
+        handleMapGetKeys([topStringKey], value);
+      } else {
+        fieldPaths ??= [];
+        fieldPaths!.add(_toKeyPath([topStringKey]));
+      }
+      fields[topStringKey] = patchToRestValue(topStringKey, value);
     });
 
     return fields;
@@ -93,6 +118,8 @@ class WriteDocument with DocumentContext {
   final FirestoreDocumentContext firestore;
   bool merge;
   final document = Document();
+
+  /// Computed initially in merged.
   List<String>? fieldPaths;
   Map<String, Value>? _fields;
 
