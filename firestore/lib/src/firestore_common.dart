@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:cv/cv.dart';
 import 'package:tekartik_common_utils/date_time_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/snapshot_meta_data_mixin.dart';
@@ -9,6 +10,7 @@ import 'package:tekartik_firebase_firestore/src/record_data.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 
+import 'common/firestore_mock.dart';
 import 'common/reference_mixin.dart';
 
 const String jsonTypeField = r'$t';
@@ -142,7 +144,15 @@ Object? documentDataValueToJson(Object? value) {
   }
 }
 
-dynamic jsonToDocumentDataValue(Firestore firestore, dynamic value) {
+final _firebaseMock = FirestoreMock();
+
+/// Does not support record reference.
+Model? jsonToDocumentDataValueNoFirestore(Map value) {
+  return jsonToDocumentDataValue(_firebaseMock, value) as Model?;
+}
+
+/// Convert a json encoded value as a document data value
+Object? jsonToDocumentDataValue(Firestore firestore, Object? value) {
   if (_isCommonValue(value)) {
     return value;
   } else if (value is List) {
@@ -207,6 +217,14 @@ DocumentData? documentDataFromJsonMap(
   }
   return DocumentDataMap(
       map: jsonToDocumentDataValue(firestore, map) as Map<String, Object?>?);
+}
+
+/// Read a document data from a json map without firestore (used only for references=
+DocumentData? documentDataFromJsonMapNoFirestore(Map<String, Object?>? map) {
+  if (map == null) {
+    return null;
+  }
+  return DocumentDataMap(map: jsonToDocumentDataValueNoFirestore(map));
 }
 
 /// Json map to firestore document data map.

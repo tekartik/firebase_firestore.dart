@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/firestore_mock.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart'
     show DocumentDataMap;
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'
@@ -14,9 +15,8 @@ import 'package:tekartik_firebase_firestore/src/firestore_common.dart'
         jsonValueToDateTime,
         jsonValueToTimestamp,
         timestampToJsonValue;
+import 'package:tekartik_firebase_firestore/utils/document_data.dart';
 import 'package:test/test.dart';
-
-import 'common/mixin_test.dart';
 
 void main() {
   var firestore = FirestoreMock();
@@ -176,7 +176,7 @@ void main() {
       });
     });
 
-    test('all types to/from json', () {
+    test('all types to/from json with firestore', () {
       var map = {
         'int': 1,
         'bool': true,
@@ -189,6 +189,23 @@ void main() {
       };
       expect(
           documentDataMapFromJsonMap(firestore, documentDataMapToJsonMap(map)),
+          map);
+    });
+
+    test('all types to/from json no firestore', () {
+      var map = {
+        'int': 1,
+        'bool': true,
+        'list': [1],
+        'map': {'test': 1},
+        'blob': Blob.fromList([1, 2, 3]),
+        //  'ref': firestore.doc('test/1'), ref not supported
+        'geoPoint': GeoPoint(1, 2),
+        'timestamp': Timestamp(1, 2)
+      };
+      expect(
+          documentDataFromJsonMapNoFirestore(documentDataMapToJsonMap(map))!
+              .asMap(),
           map);
     });
 

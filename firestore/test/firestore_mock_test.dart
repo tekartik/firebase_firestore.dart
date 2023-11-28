@@ -1,6 +1,5 @@
+import 'package:tekartik_firebase_firestore/src/common/firestore_mock.dart';
 import 'package:test/test.dart';
-
-import 'common/mixin_test.dart';
 
 //import 'src_firestore_common_test.dart';
 

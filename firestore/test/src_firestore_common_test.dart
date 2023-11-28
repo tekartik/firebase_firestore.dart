@@ -1,11 +1,10 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/firestore_mock.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/src/record_data.dart';
 import 'package:test/test.dart';
-
-import 'common/mixin_test.dart';
 
 // Use this test to properly test on all platform
 // pub run test -p chrome,node,vm,firefox .\test\timestamp_test.dart
