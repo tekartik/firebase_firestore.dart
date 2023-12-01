@@ -25,10 +25,13 @@ export 'package:tekartik_firebase_firestore/src/record_data.dart'
         recordMapRev,
         revKey,
         documentDataFromRecordMap,
+        // ignore: deprecated_member_use_from_same_package
         documentDataToRecordMap,
         recordMapUpdateTime,
         RecordMetaData,
+        // ignore: deprecated_member_use_from_same_package
         valueToRecordValue,
+        valueToJsonRecordValue,
         documentDataMap,
         recordMapCreateTime,
         FieldValueArray,
@@ -833,17 +836,7 @@ abstract mixin class AttributesMixin implements ReferenceAttributes {
 
   @override
   String? get parentPath {
-    final dirPath = url.dirname(path);
-    if (dirPath.isEmpty) {
-      return null;
-    } else if (dirPath == '.') {
-      // Mimic firestore behavior where the top document has a '' path
-      return '';
-    } else if (dirPath == '/') {
-      // Mimic firestore behavior where the top document has a '' path
-      return '';
-    }
-    return dirPath;
+    return getParentPathOrNull(path);
   }
 
   @override

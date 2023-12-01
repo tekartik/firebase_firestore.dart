@@ -1,11 +1,10 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/firestore_mock.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
-import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
+import 'package:tekartik_firebase_firestore/src/record_data.dart';
 import 'package:test/test.dart';
-
-import 'common/mixin_test.dart';
 
 // Use this test to properly test on all platform
 // pub run test -p chrome,node,vm,firefox .\test\timestamp_test.dart
@@ -128,13 +127,17 @@ void main() {
       var documentData = DocumentData();
       documentData.setDateTime('utcDateTime', utcDate);
       documentData.setDateTime('dateTime', localDate);
-      expect(documentDataToRecordMap(documentData), {
+      expect(documentData.toJsonRecordValueMap(), {
         'utcDateTime': {r'$t': 'Timestamp', r'$v': '2361-03-21T13:24:50.123Z'},
         'dateTime': {r'$t': 'Timestamp', r'$v': '5882-03-08T14:08:21.234Z'}
       });
+      expect(documentData.toJsonRecordMap(), {
+        'utcDateTime': {r'$t': 'DateTime', r'$v': '2361-03-21T13:24:50.123Z'},
+        'dateTime': {r'$t': 'DateTime', r'$v': '5882-03-08T14:08:21.234Z'}
+      });
 
       documentData = documentDataFromRecordMap(
-          firestore, documentDataToRecordMap(documentData))!;
+          firestore, documentData.toJsonRecordValueMap())!;
       // this is local time
       expect(documentData.getDateTime('utcDateTime'), utcDate.toLocal());
       expect(documentData.getDateTime('dateTime'), localDate);
@@ -144,7 +147,7 @@ void main() {
       var timestamp = Timestamp(1234567890, 123456000);
       var documentData = DocumentData();
       documentData.setTimestamp('timestamp', timestamp);
-      var map = documentDataToRecordMap(documentData);
+      var map = documentData.toJsonRecordValueMap();
       expect(map, {
         'timestamp': {r'$t': 'Timestamp', r'$v': '2009-02-13T23:31:30.123456Z'},
       });
@@ -159,7 +162,7 @@ void main() {
       documentData.setData('sub', subData);
       // store as a map
       expect(documentData.map['sub'], const TypeMatcher<Map>());
-      expect(documentDataToRecordMap(documentData), {
+      expect(documentData.toJsonRecordValueMap(), {
         'sub': {'test': 1234}
       });
 
@@ -178,7 +181,7 @@ void main() {
       documentData.setData('sub', subData);
       subData.setData('subsub', subSubData);
       expect(documentData.map['sub'], const TypeMatcher<Map>());
-      expect(documentDataToRecordMap(documentData), {
+      expect(documentData.toJsonRecordValueMap(), {
         'sub': {
           'subsub': {'test': 1234}
         }
@@ -206,7 +209,7 @@ void main() {
       documentData.setData('sub', subData);
       // store as a map
       expect(documentData.map['sub'], const TypeMatcher<Map>());
-      expect(documentDataToRecordMap(documentData), {
+      expect(documentData.toJsonRecordValueMap(), {
         'sub': {'test': 1234}
       });
 
@@ -220,7 +223,7 @@ void main() {
     test('list', () {
       var documentData = DocumentData();
       documentData.setList('test', [1, 2]);
-      expect(documentDataToRecordMap(documentData), {
+      expect(documentData.toJsonRecordValueMap(), {
         'test': [1, 2]
       });
 
@@ -280,9 +283,9 @@ void main() {
           }
         }
       };
-      expect(documentDataToRecordMap(documentData), expected);
+      expect(documentData.toJsonRecordValueMap(), expected);
       documentData = documentDataFromRecordMap(firestore, expected)!;
-      expect(documentDataToRecordMap(documentData), expected);
+      expect(documentData.toJsonRecordValueMap(), expected);
     });
   });
 }

@@ -1,11 +1,22 @@
 import 'dart:typed_data';
 
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
+import 'package:tekartik_firebase_firestore/src/common/firestore_mock.dart';
+import 'package:tekartik_firebase_firestore/src/firestore.dart'
+    show DocumentDataMap;
+import 'package:tekartik_firebase_firestore/src/firestore_common.dart'
+    show
+        dateTimeToJsonValue,
+        documentDataFromJsonMap,
+        documentDataMapFromJsonMap,
+        documentDataMapToJsonMap,
+        documentDataToJsonMap,
+        fieldValueToJsonValue,
+        jsonValueToDateTime,
+        jsonValueToTimestamp,
+        timestampToJsonValue;
+import 'package:tekartik_firebase_firestore/utils/document_data.dart';
 import 'package:test/test.dart';
-
-import 'common/mixin_test.dart';
 
 void main() {
   var firestore = FirestoreMock();
@@ -165,7 +176,7 @@ void main() {
       });
     });
 
-    test('all types to/from json', () {
+    test('all types to/from json with firestore', () {
       var map = {
         'int': 1,
         'bool': true,
@@ -178,6 +189,23 @@ void main() {
       };
       expect(
           documentDataMapFromJsonMap(firestore, documentDataMapToJsonMap(map)),
+          map);
+    });
+
+    test('all types to/from json no firestore', () {
+      var map = {
+        'int': 1,
+        'bool': true,
+        'list': [1],
+        'map': {'test': 1},
+        'blob': Blob.fromList([1, 2, 3]),
+        //  'ref': firestore.doc('test/1'), ref not supported
+        'geoPoint': GeoPoint(1, 2),
+        'timestamp': Timestamp(1, 2)
+      };
+      expect(
+          documentDataFromJsonMapNoFirestore(documentDataMapToJsonMap(map))!
+              .asMap(),
           map);
     });
 
@@ -227,6 +255,30 @@ void main() {
         subSubData = subData.getData('inner')!;
         expect(subSubData.getString('test'), 'test_value');
       });
+    });
+    test('path', () {
+      expect(firestorePathGetParent(''), isNull);
+      expect(firestorePathGetParent('/'), isNull);
+      expect(firestorePathGetParent('.'), isNull);
+      expect(firestorePathGetParent('a'), isNull);
+      expect(firestorePathGetParent('a/b'), 'a');
+      expect(firestorePathGetParent('a/b/c'), 'a/b');
+
+      expect(firestorePathGetGenericPath('a'), 'a');
+      expect(firestorePathGetGenericPath('a/1'), 'a/*');
+      expect(firestorePathGetGenericPath('a/1/b/2'), 'a/*/b/*');
+      expect(firestorePathGetGenericPath(''), '');
+
+      expect(firestorePathGetChild('a', 'b'), 'a/b');
+      expect(firestorePathReplaceId('a/b', 'c'), 'a/c');
+      expect(firestorePathReplaceId('a/b/c', 'd'), 'a/b/d');
+      expect(firestorePathReplaceId('a', 'b'), 'b');
+      expect(firestorePathReplaceId('', 'b'), 'b');
+
+      expect(firestorePathGetId('a/b/c'), 'c');
+      expect(firestorePathGetId('a/b'), 'b');
+      expect(firestorePathGetId('a'), 'a');
+      expect(firestorePathGetId(''), '');
     });
   });
 }

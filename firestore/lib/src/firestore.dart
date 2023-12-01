@@ -1,4 +1,4 @@
-import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/import_firestore_mixin.dart';
 
 // don't export it yet
 enum FieldValueType {
@@ -55,6 +55,7 @@ dynamic valueToDocumentValue(dynamic value) {
   }
 }
 
+/// IMplementation of [DocumentData] using a map
 class DocumentDataMap implements DocumentData {
   Map<String, Object?> get map => _map;
   late Map<String, Object?> _map;
@@ -208,6 +209,7 @@ enum FieldValueMapValue {
   serverTimestamp,
 }
 
+/// Special name field representing the document id (for sort order)
 const String firestoreNameFieldPath = '__name__';
 
 class FirestoreSettings {
@@ -216,13 +218,13 @@ class FirestoreSettings {
   @Deprecated('No longer needed')
   final bool? timestampsInSnapshots;
 
-  // ignore: deprecated_member_use_from_same_package
+// ignore: deprecated_member_use_from_same_package
   FirestoreSettings(
       {@Deprecated('No longer needed') this.timestampsInSnapshots});
 
   @override
   String toString() {
-    // ignore: deprecated_member_use_from_same_package
+// ignore: deprecated_member_use_from_same_package
     var map = {'timestampsInSnapshots': timestampsInSnapshots};
     return map.toString();
   }

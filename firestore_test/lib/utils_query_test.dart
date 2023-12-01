@@ -2,13 +2,16 @@ import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/query.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 import 'package:test/test.dart';
 
 void runUtilsQueryTest(
     {required FirestoreService firestoreService,
-    required Firestore firestore}) {
+    required Firestore firestore,
+    required FirestoreTestContext? testContext}) {
   group('utils_query', () {
-    var testsRefPath = 'tests/tekartik_firebase_firestore/tests';
+    var testsRefPath =
+        url.join(FirestoreTestContext.getRootCollectionPath(testContext));
 
     test('deleteQuery one', () async {
       var ref = firestore

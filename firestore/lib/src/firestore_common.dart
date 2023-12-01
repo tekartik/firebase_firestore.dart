@@ -1,13 +1,16 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:cv/cv.dart';
 import 'package:tekartik_common_utils/date_time_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/snapshot_meta_data_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/record_data.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 
+import 'common/firestore_mock.dart';
 import 'common/reference_mixin.dart';
 
 const String jsonTypeField = r'$t';
@@ -105,17 +108,24 @@ bool _isCommonValue(dynamic value) {
       (value is bool);
 }
 
-dynamic documentDataValueToJson(dynamic value) {
+/// Root document data to json map.
+Map<String, Object?> documentDataMapToJsonMap(Map documentDataMap) {
+  return documentDataMap.map<String, Object?>(
+      (key, value) => MapEntry(key as String, documentDataValueToJson(value)));
+}
+
+/// Handle any document data source (map, DocumentData)
+/// Convert to something that can be send, not a value to save.
+Object? documentDataValueToJson(Object? value) {
   if (_isCommonValue(value)) {
     return value;
   } else if (value is List) {
     return value.map((value) => documentDataValueToJson(value)).toList();
   } else if (value is Map) {
-    return value.map<String, Object?>((key, value) =>
-        MapEntry(key as String, documentDataValueToJson(value)));
+    return documentDataMapToJsonMap(value);
   } else if (value is DocumentData) {
     // Handle this that could happen from a map
-    return documentDataValueToJson((value as DocumentDataMap).map);
+    return documentDataMapToJsonMap(value.asMap());
   } else if (value is DateTime) {
     return dateTimeToJsonValue(value);
   } else if (value is Timestamp) {
@@ -134,7 +144,15 @@ dynamic documentDataValueToJson(dynamic value) {
   }
 }
 
-dynamic jsonToDocumentDataValue(Firestore firestore, dynamic value) {
+final _firebaseMock = FirestoreMock();
+
+/// Does not support record reference.
+Model? jsonToDocumentDataValueNoFirestore(Map value) {
+  return jsonToDocumentDataValue(_firebaseMock, value) as Model?;
+}
+
+/// Convert a json encoded value as a document data value
+Object? jsonToDocumentDataValue(Firestore firestore, Object? value) {
   if (_isCommonValue(value)) {
     return value;
   } else if (value is List) {
@@ -201,15 +219,18 @@ DocumentData? documentDataFromJsonMap(
       map: jsonToDocumentDataValue(firestore, map) as Map<String, Object?>?);
 }
 
+/// Read a document data from a json map without firestore (used only for references=
+DocumentData? documentDataFromJsonMapNoFirestore(Map<String, Object?>? map) {
+  if (map == null) {
+    return null;
+  }
+  return DocumentDataMap(map: jsonToDocumentDataValueNoFirestore(map));
+}
+
 /// Json map to firestore document data map.
 Map<String, Object?> documentDataMapFromJsonMap(
     Firestore firestore, Map<String, Object?> map) {
   return documentDataFromJsonMap(firestore, map)!.asMap();
-}
-
-/// Firestore document data to json map.
-Map<String, Object?> documentDataMapToJsonMap(Map<String, Object?> map) {
-  return documentDataToJsonMap(documentDataFromMap(map))!;
 }
 
 /// will return null if map is null
@@ -233,8 +254,7 @@ Map<String, Object?>? documentDataToJsonMap(DocumentData? documentData) {
   if (documentData == null) {
     return null;
   }
-  return documentDataValueToJson((documentData as DocumentDataMap).map)
-      as Map<String, Object?>?;
+  return documentData.toJsonRecordMap();
 }
 
 class OrderByInfo {

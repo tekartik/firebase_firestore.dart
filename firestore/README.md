@@ -7,7 +7,7 @@ dependencies:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore
       ref: dart3a
-    version: '>=0.8.0'
+    version: '>=1.1.4'
 ```
 
 ## Utilities:

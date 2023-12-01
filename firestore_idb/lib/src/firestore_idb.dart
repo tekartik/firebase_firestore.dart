@@ -1,8 +1,6 @@
-import 'dart:async';
-
 import 'package:idb_shim/idb.dart' as idb;
 import 'package:path/path.dart';
-import 'package:tekartik_common_utils/common_utils_import.dart';
+
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/utils/document_data.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
@@ -10,6 +8,7 @@ import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:uuid/uuid.dart';
 
+import 'import_common.dart';
 import 'import_firestore.dart';
 
 const String parentIndexName = 'parentIndex';
@@ -205,31 +204,36 @@ class FirestoreIdb extends Object
 
       // Update rev
       final rev = (snapshot.rev ?? 0) + 1;
+
+      DocumentData newDocumentData;
       // merging?
-      if (options?.merge == true && snapshot.exists) {
-        recordMap = documentDataToRecordMap(documentData, snapshot.data);
+      if (options?.merge == true) {
+        if (snapshot.exists) {
+          newDocumentData =
+              DocumentData(cloneMap(snapshot.data).cast<String, Object?>());
+        } else {
+          newDocumentData = DocumentData();
+        }
+        newDocumentData.merge(documentData);
+        recordMap = newDocumentData.toJsonRecordValueMap();
       } else {
-        recordMap = documentDataToRecordMap(documentData);
+        recordMap = documentData.toJsonRecordValueMap();
       }
 
-      if (recordMap != null) {
-        recordMap[revKey] = rev;
-      }
+      recordMap[revKey] = rev;
 
       // set update Time
-      if (recordMap != null) {
-        var now = Timestamp.now();
-        recordMap[createTimeKey] =
-            (result.previousSnapshot?.createTime ?? now).toIso8601String();
-        recordMap[updateTimeKey] = now.toIso8601String();
-      }
+      var now = Timestamp.now();
+      recordMap[createTimeKey] =
+          (result.previousSnapshot?.createTime ?? now).toIso8601String();
+      recordMap[updateTimeKey] = now.toIso8601String();
 
       result.newSnapshot = documentFromRecordMap(documentRef, recordMap);
 
       // TODO
       return txn
           .objectStore(storeName)
-          .put(recordMap!, documentRef.path)
+          .put(recordMap, documentRef.path)
           .then((_) {
         return result;
       });
@@ -332,6 +336,7 @@ class TransactionIdb extends WriteBatchIdb implements Transaction {
   }
 }
 
+@Deprecated('Unused')
 dynamic valueToUpdateValue(dynamic value) {
   if (value == FieldValue.delete) {
     throw 'TODO';

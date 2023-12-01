@@ -39,7 +39,7 @@ mixin PathReferenceImplMixin implements FirestorePathReference {
 mixin PathReferenceMixin implements PathReference {
   /// Parent path.
   @override
-  String? get parentPath => getParentPath(path);
+  String? get parentPath => getParentPathOrNull(path);
 
   @override
   String get id => getPathId(path);
@@ -53,7 +53,15 @@ mixin PathReferenceMixin implements PathReference {
 }
 
 String getParentPath(String path) {
-  return url.dirname(path);
+  return getParentPathOrNull(path)!;
+}
+
+String? getParentPathOrNull(String path) {
+  var dirname = url.dirname(path);
+  if (dirname == '.' || dirname == '/') {
+    return null;
+  }
+  return dirname;
 }
 
 String getPathId(String path) => url.basename(path);
@@ -93,12 +101,13 @@ mixin DocumentReferenceDefaultMixin implements DocumentReference {
     throw UnimplementedError();
   }
 }
+
 mixin DocumentReferenceMixin
     implements DocumentReference, FirestorePathReference {
   @override
-  CollectionReference? get parent {
-    var parentPath = this.parentPath;
-    return parentPath == null ? null : firestore.collection(parentPath);
+  CollectionReference get parent {
+    var parentPath = this.parentPath!;
+    return firestore.collection(parentPath);
   }
 
   @override

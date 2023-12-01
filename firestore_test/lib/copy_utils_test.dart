@@ -4,13 +4,14 @@ import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/copy_utils.dart';
 
-// ignore: implementation_imports
-import 'package:tekartik_firebase_firestore_test/utils_test.dart';
 import 'package:test/test.dart';
 
-void runCopyUtilsTest({
-  required Firestore firestore,
-}) {
+import 'firestore_test.dart';
+
+void runCopyUtilsTest(
+    {required Firestore firestore,
+    required FirestoreTestContext? testContext}) {
+  var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
   group('copy utils collections', () {
     // firestore = firestore.debugQuickLoggerWrapper();
 
@@ -25,7 +26,7 @@ void runCopyUtilsTest({
       await doc1.set({});
       var doc2 = doc1.collection('c1').doc('d2');
       await doc2.set({});
-      var collection = doc1.parent!;
+      var collection = doc1.parent;
       expect((await collection.recursiveListDocuments()).map((e) => e.path),
           [doc1.path, doc2.path]);
 
@@ -52,7 +53,7 @@ void runCopyUtilsTest({
       await doc1.set({});
       var doc2 = doc1.collection('c1').doc('d2').collection('c3').doc('d3');
       await doc2.set({});
-      var collection = doc1.parent!;
+      var collection = doc1.parent;
       expect((await collection.recursiveListDocuments()).map((e) => e.path), [
         doc1.path,
         // Missing? bug or feature?

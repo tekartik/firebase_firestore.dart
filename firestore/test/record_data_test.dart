@@ -7,7 +7,7 @@ void main() {
   group('record_data', () {
     test('recordMapUpdate', () {
       expect(recordMapUpdate(null, null), isNull);
-      expect(recordMapUpdate({}, null), isNull);
+      expect(recordMapUpdate({}, null), isEmpty);
       expect(recordMapUpdate(null, DocumentData()), isEmpty);
       expect(
           recordMapUpdate(
@@ -36,6 +36,26 @@ void main() {
           fieldArrayValueMergeValue(
               FieldValueArray(FieldValueType.arrayUnion, ['a']), ['a', 'b']),
           ['a', 'b']);
+    });
+
+    test('documentDataToRecordMap merge', () {
+      // ignore: deprecated_member_use_from_same_package
+      var map = documentDataToRecordMap(
+          DocumentDataMap(map: {'test1': 1}), {'test2': 2});
+      expect(map, {'test1': 1, 'test2': 2});
+    });
+    test('documentDataToRecordMap deep merge', () {
+      // ignore: deprecated_member_use_from_same_package
+      var map = documentDataToRecordMap(
+          DocumentDataMap(map: {
+            'sub': {'test1': 1}
+          }),
+          {
+            'sub': {'test2': 2}
+          });
+      expect(map, {
+        'sub': {'test1': 1, 'test2': 2}
+      });
     });
   });
 }

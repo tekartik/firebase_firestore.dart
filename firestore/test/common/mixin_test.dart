@@ -1,8 +1,6 @@
-import 'package:tekartik_common_utils/common_utils_import.dart';
-import 'package:tekartik_firebase/firebase.dart';
+import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart';
-import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart';
+import 'package:tekartik_firebase_firestore/src/common/firestore_mock.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
@@ -10,136 +8,18 @@ import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:test/test.dart';
 
-class FirestoreServiceMock with FirestoreServiceDefaultMixin {
-  @override
-  Firestore firestore(App app) {
-    throw UnimplementedError();
-  }
-}
-
-class FirestoreMock with FirestoreDefaultMixin, FirestoreMixin {
-  @override
-  WriteBatch batch() {
-    throw UnimplementedError();
-  }
-
-  @override
-  CollectionReference collection(String path) {
-    return CollectionReferenceMock(this, path);
-  }
-
-  @override
-  DocumentReference doc(String path) {
-    return DocumentReferenceMock(this, path);
-  }
-
-  @override
-  Future<T> runTransaction<T>(
-      FutureOr<T> Function(Transaction transaction) updateFunction) {
-    throw UnimplementedError();
-  }
-
-  @override
-  FirestoreService get service => throw UnimplementedError();
-}
-
-class DocumentSnapshotMock
-    with DocumentSnapshotMixin
-    implements DocumentSnapshot {
-  @override
-  final DocumentReferenceMock ref;
-
-  DocumentSnapshotMock(this.ref);
-
-  @override
-  Map<String, Object?> get data => throw UnimplementedError();
-
-  @override
-  bool get exists => throw UnimplementedError();
-
-  @override
-  Timestamp? get updateTime => throw UnimplementedError();
-
-  @override
-  Timestamp? get createTime => throw UnimplementedError();
-}
-
-class CollectionReferenceMock
-    with
-        CollectionReferenceMixin,
-        PathReferenceImplMixin,
-        PathReferenceMixin,
-        FirestoreQueryExecutorMixin,
-        FirestoreQueryMixin {
-  CollectionReferenceMock(FirestoreMock firestoreMock, String path) {
-    init(firestoreMock, path);
-  }
-
-  @override
-  Future<DocumentReference> add(Map<String, Object?> data) {
-    throw UnimplementedError();
-  }
-
-  @override
-  FirestoreQueryMixin clone() {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<DocumentSnapshot>> getCollectionDocuments() {
-    throw UnimplementedError();
-  }
-
-  @override
-  DocumentReference? get parent => null;
-
-  @override
-  QueryInfo? get queryInfo => null;
-}
-
-class DocumentReferenceMock
-    with
-        DocumentReferenceDefaultMixin,
-        DocumentReferenceMixin,
-        PathReferenceImplMixin,
-        PathReferenceMixin {
-  DocumentReferenceMock(FirestoreMock firestoreMock, String path) {
-    init(firestoreMock, path);
-  }
-
-  @override
-  Future<void> delete() async {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<DocumentSnapshot> get() {
-    throw UnimplementedError();
-  }
-
-  @override
-  Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> set(Map<String, Object?> data, [SetOptions? options]) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> update(Map<String, Object?> data) {
-    throw UnimplementedError();
-  }
-}
-
 void main() {
   group('mixin_mock', () {
     var mock = FirestoreMock();
     test('path', () {
       var doc = mock.doc('my/path');
       expect('my/path', doc.path);
-      expect('my', doc.parent!.path);
+      expect('my', doc.parent.path);
+      doc = mock.doc('my/path/sub/high');
+      expect('my/path/sub', doc.parent.path);
+      expect(doc.parent.parent?.path, 'my/path');
+      expect('my', doc.parent.parent?.parent.path);
+      expect(doc.parent.parent?.parent.parent?.path, isNull);
     });
   });
   group('value_key_mixin', () {
@@ -416,5 +296,12 @@ void main() {
     expect(mapWhere(documentData, WhereInfo('value', arrayContains: 1)), true);
     expect(mapWhere(documentData, WhereInfo('value', arrayContains: false)),
         false);
+  });
+  test('parentPath', () {
+    expect(url.dirname('some root dir name'), '.');
+    expect(getParentPathOrNull('some root dir name'), isNull);
+    expect(getParentPathOrNull(''), isNull);
+    expect(getParentPathOrNull('/'), isNull);
+    expect(getParentPathOrNull('.'), isNull);
   });
 }
