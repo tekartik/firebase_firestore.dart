@@ -10,7 +10,7 @@ dev_dependencies:
   path:
   pub_semver:
   test:
-  dev_test:
+  dev_build:
   process_run:
   lints: '>=2.1.1'
   tekartik_lints:

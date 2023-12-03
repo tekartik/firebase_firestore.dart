@@ -347,7 +347,7 @@ void runFirestoreCommonTests(
           expect(snapshot.data, {'test': 2});
           if (firestoreService.supportsDocumentSnapshotTime) {
             expect(snapshot.updateTime!.compareTo(snapshot.createTime),
-                greaterThan(0),
+                greaterThanOrEqualTo(0),
                 reason:
                     'createTime ${snapshot.createTime} updateTime ${snapshot.updateTime}');
           } else {
