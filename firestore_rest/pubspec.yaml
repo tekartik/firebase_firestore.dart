@@ -1,6 +1,6 @@
 name: tekartik_firebase_firestore_rest
 description: Firebase firestore rest API
-version: 0.8.4+1
+version: 0.8.5
 publish_to: none
 
 environment:
@@ -22,7 +22,6 @@ dependencies:
       ref: dart3a
     version: '>=0.7.4'
   googleapis: '>=10.1.0'
-  googleapis_beta:
   googleapis_auth:
   tekartik_http:
     git:
