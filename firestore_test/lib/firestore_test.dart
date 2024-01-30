@@ -7,6 +7,7 @@ import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
+import 'package:tekartik_firebase_firestore_test/aggregate_query_test.dart';
 import 'package:tekartik_firebase_firestore_test/timestamp_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_collection_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_query_test.dart';
@@ -1957,6 +1958,7 @@ void runFirestoreCommonTests(
       expect((await query.get()).docs, isNotEmpty);
     }, skip: true);
     runListCollectionsTest(firestore: firestore, testContext: testContext);
+    runAggregateQueryTest(firestore: firestore, testContext: testContext);
   });
 }
 

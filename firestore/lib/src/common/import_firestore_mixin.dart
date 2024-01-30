@@ -1,5 +1,7 @@
 // ignore_for_file: implementation_imports, deprecated_member_use_from_same_package
 export 'package:tekartik_firebase_firestore/firestore.dart';
+export 'package:tekartik_firebase_firestore/src/aggregate_field.dart'
+    show AggregateFieldCount, AggregateFieldAverage, AggregateFieldSum;
 export 'package:tekartik_firebase_firestore/src/common/document_reference_mixin.dart';
 export 'package:tekartik_firebase_firestore/src/common/document_snapshot_mixin.dart';
 export 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart';
