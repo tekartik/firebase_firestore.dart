@@ -3,10 +3,9 @@ import 'dart:typed_data';
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/firestore_service_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart'; // ignore: implementation_imports
+// ignore: implementation_imports
+// ignore: implementation_imports
+// ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore_rest/firestore_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/collection_reference_rest.dart';
@@ -16,13 +15,15 @@ import 'package:tekartik_firebase_firestore_rest/src/firestore/v1_fixed.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore/v1_fixed.dart'
     as api;
 import 'package:tekartik_firebase_firestore_rest/src/patch_document_rest_impl.dart';
-import 'package:tekartik_firebase_firestore_rest/src/query.dart';
+import 'package:tekartik_firebase_firestore_rest/src/query_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/transaction_rest.dart';
 import 'package:tekartik_firebase_firestore_rest/src/write_batch.dart';
 import 'package:tekartik_firebase_rest/src/firebase_rest.dart'; // ignore: implementation_imports
 import 'package:tekartik_http/http.dart';
 
+import 'aggregate_query_rest.dart';
 import 'import.dart';
+import 'import_firestore.dart';
 
 const restNullValue = 'NULL_VALUE';
 const restRequestTime = 'REQUEST_TIME';
@@ -468,6 +469,38 @@ class FirestoreRestImpl
     throw UnsupportedError('where $whereInfo');
   }
 
+  String indexAlias(int index) => 'field_$index';
+  int aliasIndex(String alias) => int.parse(alias.substring('field_'.length));
+  Aggregation toAggregation(int index, AggregateField aggregateField) {
+    var alias = indexAlias(index);
+    if (aggregateField is AggregateFieldCount) {
+      return Aggregation(alias: alias, count: Count());
+    } else if (aggregateField is AggregateFieldSum) {
+      return Aggregation(
+          alias: alias,
+          sum: Sum()
+            ..field = (FieldReference()..fieldPath = aggregateField.field));
+    } else if (aggregateField is AggregateFieldAverage) {
+      return Aggregation(
+          alias: alias,
+          avg: Avg()
+            ..field = (FieldReference()..fieldPath = aggregateField.field));
+    }
+    throw ArgumentError(aggregateField);
+  }
+
+  StructuredAggregationQuery toStructuredAggregationQuery(
+      AggregateQueryRest aggregateQueryRest) {
+    var queryRest = aggregateQueryRest.queryRest;
+    var structuredQuery = toStructuredQuery(queryRest);
+    var structuredAggregationQuery = StructuredAggregationQuery()
+      ..structuredQuery = structuredQuery;
+    structuredAggregationQuery.aggregations = aggregateQueryRest.fields.indexed
+        .map((e) => toAggregation(e.$1, e.$2))
+        .toList(growable: false);
+    return structuredAggregationQuery;
+  }
+
   StructuredQuery toStructuredQuery(QueryRestImpl queryRestImpl) {
     var queryInfo = queryRestImpl.queryInfo;
     var collectionPath = queryRestImpl.path;
@@ -551,6 +584,54 @@ class FirestoreRestImpl
       return 'DIRECTION_UNSPECIFIED';
     } else {
       return 'DESCENDING';
+    }
+  }
+
+  Future<AggregateQuerySnapshotRest> runAggregationQuery(
+      AggregateQueryRest aggregateQueryRest) async {
+    var queryRest = aggregateQueryRest.queryRest;
+    var request = RunAggregationQueryRequest()
+      ..structuredAggregationQuery =
+          toStructuredAggregationQuery(aggregateQueryRest);
+
+    var parent = url.dirname(getDocumentName(queryRest.path));
+    try {
+      // Debug
+      // devPrint('request: ${jsonPretty(request.toJson())}');
+      // devPrint('parent: $parent');
+      var response = await firestoreFixedApi.projects.databases.documents
+          .runAggregationQuery(request, parent);
+
+      // devPrint(jsonPretty(response.map((e) => e.toJson()).toList()));
+      // Example:
+      // [
+      //   {
+      //     "readTime": "2024-01-30T23:30:18.619327Z",
+      //     "result": {
+      //       "aggregateFields": {
+      //         "field_0": {
+      //           "integerValue": "1"
+      //         },
+      //         "field_1": {
+      //           "doubleValue": 2.0
+      //         },
+      //         "field_2": {
+      //           "integerValue": "2"
+      //         }
+      //       }
+      //     }
+      //   }
+      // ]
+      // devPrint('get ${jsonPretty(response.toJson())}');
+      return AggregateQuerySnapshotRest(aggregateQueryRest, response);
+    } catch (e) {
+      if (e is api.DetailedApiRequestError) {
+        // devPrint(e.status);
+        if (e.status == httpStatusCodeNotFound) {
+          // return DocumentSnapshotRestImpl(this, null);
+        }
+      }
+      rethrow;
     }
   }
 
@@ -811,6 +892,9 @@ class FirestoreServiceRestImpl
 
   @override
   bool get supportsListCollections => true;
+
+  @override
+  bool get supportsAggregateQueries => true;
 }
 
 /// Join ignoring null but not both!

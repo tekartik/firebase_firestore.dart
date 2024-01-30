@@ -1,6 +1,6 @@
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
-import 'package:tekartik_firebase_firestore_rest/src/query.dart';
+import 'package:tekartik_firebase_firestore_rest/src/query_rest.dart';
 
 import 'import_firestore.dart';
 
@@ -9,7 +9,7 @@ mixin PathReferenceRestMixin implements FirestorePathReference {
 }
 
 class CollectionReferenceRestImpl extends QueryRestImpl
-    with QueryDefaultMixin, CollectionReferenceMixin
+    with CollectionReferenceMixin
     implements CollectionReference {
   CollectionReferenceRestImpl(FirestoreRestImpl firestoreRest, String path)
       : super(firestoreRest, path) {

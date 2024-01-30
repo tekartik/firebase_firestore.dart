@@ -7,6 +7,8 @@ import 'package:tekartik_firebase_firestore_rest/src/firestore/v1_fixed.dart'
     show RunQueryFixedResponse;
 import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 
+import 'aggregate_query_rest.dart';
+
 class QueryRestImpl
     with
         QueryDefaultMixin,
@@ -32,6 +34,11 @@ class QueryRestImpl
 
   @override
   Future<QuerySnapshot> get() => firestoreRestImpl.runQuery(this);
+
+  @override
+  AggregateQuery aggregate(List<AggregateField> fields) {
+    return AggregateQueryRest(this, fields);
+  }
 }
 
 class QuerySnapshotRestImpl implements QuerySnapshot {

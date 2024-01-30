@@ -40,20 +40,25 @@ void runAggregateQueryTest(
         await firestore.runTransaction((transaction) async {
           transaction.set(collection.doc('doc1'), {'test': 1, 'value': 3});
           transaction.set(collection.doc('doc2'), {'test': 2, 'value': 5.5});
-          transaction.set(collection.doc('doc3'), {'test': 2, 'value': 8});
-          transaction.set(collection.doc('doc4'), {'test': 2, 'value': 8.5});
-          transaction.set(collection.doc('doc5'), {'test': 2, 'value': null});
+          transaction.set(collection.doc('doc3'), {'test': 3, 'value': 8});
+          transaction.set(collection.doc('doc4'), {'test': 4, 'value': 8.5});
+          transaction.set(collection.doc('doc5'), {'test': 5, 'value': null});
           transaction.set(
-              collection.doc('doc6'), {'test': 2, 'value': 'not a number'});
+              collection.doc('doc6'), {'test': 6, 'value': 'not a number'});
         });
-        var snapshot = await collection.where('test', isEqualTo: 2).aggregate([
+        var snapshot =
+            await collection.where('test', isGreaterThan: 1).aggregate([
           AggregateField.count(),
           AggregateField.average('value'),
-          AggregateField.sum('value')
+          AggregateField.sum('value'),
+          AggregateField.average('test'),
+          AggregateField.sum('test')
         ]).get();
         expect(snapshot.count, 5);
         expect(snapshot.getAverage('value'), closeTo(7.333, 0.01));
         expect(snapshot.getSum('value'), closeTo(22, 0.01));
+        expect(snapshot.getAverage('test'), closeTo(4, 0.01));
+        expect(snapshot.getSum('test'), closeTo(20, 0.01));
       });
     },
     skip: !firestore.service.supportsAggregateQueries,
