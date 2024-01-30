@@ -560,7 +560,11 @@ class CollectionReferenceSembast extends QuerySembast
 }
 
 class QuerySembast extends FirestoreReferenceBase
-    with FirestoreQueryMixin, AttributesMixin, FirestoreQueryExecutorMixin
+    with
+        QueryDefaultMixin,
+        FirestoreQueryMixin,
+        AttributesMixin,
+        FirestoreQueryExecutorMixin
     implements Query {
   FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
 

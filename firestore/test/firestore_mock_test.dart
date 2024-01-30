@@ -9,6 +9,7 @@ void main() {
   group('Mock', () {
     test('service', () {
       expect(firestoreService.supportsListCollections, isFalse);
+      expect(firestoreService.supportsAggregateQueries, isFalse);
     });
     test('documentReference', () {
       expect(firestore.doc('test/doc'), firestore.doc('test/doc'));

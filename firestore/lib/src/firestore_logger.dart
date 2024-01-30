@@ -320,7 +320,7 @@ class FirestoreLoggerBatch implements WriteBatch {
 }
 
 abstract class QueryLoggerBase
-    with FirestoreQueryExecutorMixin
+    with QueryDefaultMixin, FirestoreQueryExecutorMixin
     implements Query {
   final Query query;
   FirestoreLogger get firestoreLogger => refLogger.firestoreLogger;

@@ -18,6 +18,12 @@ mixin FirestoreQueryExecutorMixin implements Query {
       orderBy(firestoreNameFieldPath, descending: descending);
 }
 
+mixin QueryDefaultMixin implements Query {
+  @override
+  AggregateQuery aggregate(List<AggregateField> fields) {
+    throw UnimplementedError();
+  }
+}
 // Common mixin, no executor for non firestore native implementation
 mixin QueryMixin implements Query {
   late QueryInfo queryInfo;

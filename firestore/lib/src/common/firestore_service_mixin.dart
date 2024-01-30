@@ -24,6 +24,9 @@ mixin FirestoreServiceDefaultMixin implements FirestoreService {
 
   @override
   bool get supportsTrackChanges => false;
+
+  @override
+  bool get supportsAggregateQueries => false;
 }
 mixin FirestoreServiceMixin implements FirestoreService {
   /// Most implementation need a single instance, keep it in memory!

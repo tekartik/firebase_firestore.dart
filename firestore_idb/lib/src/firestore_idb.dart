@@ -429,7 +429,11 @@ class DocumentChangeIdb extends DocumentChangeBase {
 }
 
 class QueryIdb extends FirestoreReferenceBase
-    with FirestoreQueryMixin, AttributesMixin, FirestoreQueryExecutorMixin
+    with
+        QueryDefaultMixin,
+        FirestoreQueryMixin,
+        AttributesMixin,
+        FirestoreQueryExecutorMixin
     implements Query {
   FirestoreIdb get firestoreIdb => firestore as FirestoreIdb;
 

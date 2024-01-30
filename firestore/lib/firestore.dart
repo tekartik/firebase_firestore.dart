@@ -24,11 +24,15 @@ export 'package:tekartik_firebase_firestore/src/firestore_path.dart'
         firestorePathGetId;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
 
+export 'src/aggregate_field.dart' show AggregateField;
+export 'src/aggregate_query.dart' show AggregateQuery;
+export 'src/aggregate_query_snapshot.dart' show AggregateQuerySnapshot;
 export 'src/document_reference.dart'
     show DocumentReference, DocumentReferenceListExtension;
 export 'src/document_snapshot.dart' show DocumentSnapshot;
 export 'src/firestore_logger.dart'
     show FirestoreLoggerDebugExt, FirestoreServiceLoggerDebugExt;
+export 'src/query.dart' show Query;
 export 'src/query_snapshot.dart' show QuerySnapshotExtension, QuerySnapshot;
 export 'src/snapshot_meta_data.dart' show SnapshotMetadata;
 
@@ -54,6 +58,9 @@ abstract class FirestoreService {
 
   /// True if it supports listing collections.
   bool get supportsListCollections;
+
+  /// True if it supports aggregate queries
+  bool get supportsAggregateQueries;
 
   Firestore firestore(App app);
 }
@@ -352,59 +359,6 @@ abstract class DocumentChange {
 
   /// The document affected by this change.
   DocumentSnapshot get document;
-}
-
-abstract class Query {
-  /// The [Firestore] instance of this query.
-  Firestore get firestore;
-
-  /// Execute the query.
-  Future<QuerySnapshot> get();
-
-  /// Count the number of element matching the query.
-  ///
-  /// Check [FirestoreService.supportsQueryCount] before use
-  Future<int> count();
-
-  /// Count the number of element matching the query.
-  ///
-  /// Check [FirestoreService.supportsQueryCount] before use
-  Stream<int> onCount();
-
-  Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false});
-
-  Query limit(int limit);
-
-  /// Multiple orders by can be used.
-  Query orderBy(String key, {bool? descending});
-
-  /// No other orderBy can be used after orderById.
-  Query orderById({bool? descending});
-
-  Query select(List<String> keyPaths);
-
-  // Query offset(int offset);
-
-  Query startAt({DocumentSnapshot? snapshot, List<Object?>? values});
-
-  Query startAfter({DocumentSnapshot? snapshot, List<Object?>? values});
-
-  Query endAt({DocumentSnapshot? snapshot, List<Object?>? values});
-
-  Query endBefore({DocumentSnapshot? snapshot, List<Object?>? values});
-
-  Query where(
-    String fieldPath, {
-    dynamic isEqualTo,
-    dynamic isLessThan,
-    dynamic isLessThanOrEqualTo,
-    dynamic isGreaterThan,
-    dynamic isGreaterThanOrEqualTo,
-    dynamic arrayContains,
-    List<Object>? arrayContainsAny,
-    List<Object>? whereIn,
-    bool? isNull,
-  });
 }
 
 // get must be done first

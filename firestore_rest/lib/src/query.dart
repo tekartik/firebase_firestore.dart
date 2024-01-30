@@ -9,6 +9,7 @@ import 'package:tekartik_firebase_firestore_rest/src/firestore_rest_impl.dart';
 
 class QueryRestImpl
     with
+        QueryDefaultMixin,
         QueryMixin,
         PathReferenceMixin,
         PathReferenceImplMixin,

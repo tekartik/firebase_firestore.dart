@@ -64,6 +64,7 @@ class DocumentSnapshotMock
 
 class CollectionReferenceMock
     with
+        QueryDefaultMixin,
         CollectionReferenceMixin,
         PathReferenceImplMixin,
         PathReferenceMixin,
