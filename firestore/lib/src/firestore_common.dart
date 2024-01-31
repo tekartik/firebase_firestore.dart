@@ -769,6 +769,12 @@ abstract class DocumentSnapshotBase //with DocumentSnapshotMixin
   }
 }
 
+extension DocumentSnapshotBaseExtension on DocumentSnapshotBase {
+  Object? valueAtFieldPath(String fieldPath) {
+    return (documentData as DocumentDataMap).valueAtFieldPath(fieldPath);
+  }
+}
+
 /// Meta data always ok.
 class SnapshotMetadataSembast
     with SnapshotMetadataMixin

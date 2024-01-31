@@ -41,7 +41,6 @@ void runAggregateQueryTest(
           print('Failing OK for flutter here: $e');
         }
       });
-      // firestore = firestore.debugQuickLoggerWrapper();
       test('one item', () async {
         var collectionId = 'aggregate_query_one_item';
         var collection = firestore.collection(join(docParent, collectionId));
@@ -49,17 +48,6 @@ void runAggregateQueryTest(
         var doc = collection.doc('doc');
         expect(await collection.count(), 0);
 
-        /*
-        var snapshot = await collection.aggregate([
-          AggregateField.count(),
-          //AggregateField.average('value'),
-          AggregateField.sum('value')
-        ]).get();
-        expect(snapshot.count, 0);
-        expect(snapshot.getAverage('value'), isNull);
-        expect(snapshot.getSum('value'), closeTo(0, 0.01));
-
-         */
         await doc.set({'value': 2});
         expect(await collection.count(), 1);
         var snapshot = await collection.aggregate([
@@ -70,6 +58,27 @@ void runAggregateQueryTest(
         expect(snapshot.count, 1);
         expect(snapshot.getAverage('value'), closeTo(2, 0.01));
         expect(snapshot.getSum('value'), closeTo(2, 0.01));
+      });
+      test('sub.field item', () async {
+        var collectionId = 'aggregate_query_sub_field';
+        var collection = firestore.collection(join(docParent, collectionId));
+        await deleteCollection(firestore, collection);
+        await firestore.runTransaction((transaction) async {
+          transaction.set(collection.doc('doc1'), {
+            'test': {'value': 3}
+          });
+          transaction.set(collection.doc('doc2'), {
+            'test': {'value': 7}
+          });
+        });
+        var snapshot = await collection.aggregate([
+          AggregateField.count(),
+          AggregateField.average('test.value'),
+          AggregateField.sum('test.value')
+        ]).get();
+        expect(snapshot.count, 2);
+        expect(snapshot.getAverage('test.value'), closeTo(5, 0.01));
+        expect(snapshot.getSum('test.value'), closeTo(10, 0.01));
       });
       test('complex', () async {
         // Warning this requires an index
