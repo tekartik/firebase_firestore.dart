@@ -17,12 +17,51 @@ void runAggregateQueryTest(
     'aggregate_query',
     () {
       // firestore = firestore.debugQuickLoggerWrapper();
+      test('empty collection', () async {
+        var collectionId = 'aggregate_query_empty_collection';
+        var collection = firestore.collection(join(docParent, collectionId));
+        await deleteCollection(firestore, collection);
+        expect(await collection.count(), 0);
+
+        var snapshot = await collection.aggregate([
+          AggregateField.count(),
+          //AggregateField.average('value'),
+          AggregateField.sum('value')
+        ]).get();
+        expect(snapshot.count, 0);
+        expect(snapshot.getAverage('value'), isNull);
+        expect(snapshot.getSum('value'), closeTo(0, 0.01));
+
+        try {
+          snapshot = await collection.aggregate([
+            AggregateField.average('value'),
+          ]).get();
+          expect(snapshot.getAverage('value'), isNull);
+        } catch (e) {
+          print('Failing OK for flutter here: $e');
+        }
+      });
+      // firestore = firestore.debugQuickLoggerWrapper();
       test('one item', () async {
         var collectionId = 'aggregate_query_one_item';
         var collection = firestore.collection(join(docParent, collectionId));
         await deleteCollection(firestore, collection);
         var doc = collection.doc('doc');
+        expect(await collection.count(), 0);
+
+        /*
+        var snapshot = await collection.aggregate([
+          AggregateField.count(),
+          //AggregateField.average('value'),
+          AggregateField.sum('value')
+        ]).get();
+        expect(snapshot.count, 0);
+        expect(snapshot.getAverage('value'), isNull);
+        expect(snapshot.getSum('value'), closeTo(0, 0.01));
+
+         */
         await doc.set({'value': 2});
+        expect(await collection.count(), 1);
         var snapshot = await collection.aggregate([
           AggregateField.count(),
           AggregateField.average('value'),
