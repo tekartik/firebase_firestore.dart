@@ -19,7 +19,8 @@ void runAggregateQueryTest(
       // firestore = firestore.debugQuickLoggerWrapper();
       test('empty collection', () async {
         var collectionId = 'aggregate_query_empty_collection';
-        var collection = firestore.collection(join(docParent, collectionId));
+        var collection =
+            firestore.collection(url.join(docParent, collectionId));
         await deleteCollection(firestore, collection);
         expect(await collection.count(), 0);
 
@@ -43,7 +44,8 @@ void runAggregateQueryTest(
       });
       test('one item', () async {
         var collectionId = 'aggregate_query_one_item';
-        var collection = firestore.collection(join(docParent, collectionId));
+        var collection =
+            firestore.collection(url.join(docParent, collectionId));
         await deleteCollection(firestore, collection);
         var doc = collection.doc('doc');
         expect(await collection.count(), 0);
@@ -61,7 +63,8 @@ void runAggregateQueryTest(
       });
       test('sub.field item', () async {
         var collectionId = 'aggregate_query_sub_field';
-        var collection = firestore.collection(join(docParent, collectionId));
+        var collection =
+            firestore.collection(url.join(docParent, collectionId));
         await deleteCollection(firestore, collection);
         await firestore.runTransaction((transaction) async {
           transaction.set(collection.doc('doc1'), {
@@ -83,7 +86,8 @@ void runAggregateQueryTest(
       test('complex', () async {
         // Warning this requires an index
         var collectionId = 'aggregate_query_complex';
-        var collection = firestore.collection(join(docParent, collectionId));
+        var collection =
+            firestore.collection(url.join(docParent, collectionId));
         await deleteCollection(firestore, collection);
         await firestore.runTransaction((transaction) async {
           transaction.set(collection.doc('doc1'), {'test': 1, 'value': 3});
