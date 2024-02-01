@@ -421,7 +421,7 @@ class QuerySnapshotSim implements QuerySnapshot {
 }
 
 class QuerySim extends Object
-    with QueryMixinSim, FirestoreQueryExecutorMixin
+    with QueryDefaultMixin, QueryMixinSim, FirestoreQueryExecutorMixin
     implements Query {
   @override
   final CollectionReferenceSim simCollectionReference;
@@ -439,6 +439,7 @@ class QuerySim extends Object
 
 class CollectionReferenceSim extends Object
     with
+        QueryDefaultMixin,
         QueryMixinSim,
         FirestoreQueryExecutorMixin,
         CollectionReferenceMixin,

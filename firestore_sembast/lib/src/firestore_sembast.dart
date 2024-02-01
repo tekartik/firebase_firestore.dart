@@ -41,6 +41,9 @@ class FirestoreServiceSembast
   @override
   bool get supportsTimestamps => true;
 
+  @override
+  bool get supportsAggregateQueries => true;
+
   //TODO
   Future deleteApp(App app) async {}
 
@@ -560,7 +563,11 @@ class CollectionReferenceSembast extends QuerySembast
 }
 
 class QuerySembast extends FirestoreReferenceBase
-    with FirestoreQueryMixin, AttributesMixin, FirestoreQueryExecutorMixin
+    with
+        QueryDefaultMixin,
+        FirestoreQueryMixin,
+        AttributesMixin,
+        FirestoreQueryExecutorMixin
     implements Query {
   FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
 
@@ -587,6 +594,11 @@ class QuerySembast extends FirestoreReferenceBase
     }
     return docs;
   }
+
+  @override
+  AggregateQuery aggregate(List<AggregateField> fields) {
+    return AggregateQuerySembast(this, fields);
+  }
 }
 
 class DocumentChangeSembast extends DocumentChangeBase {
@@ -599,4 +611,82 @@ class DocumentChangeSembast extends DocumentChangeBase {
 
 class QuerySnapshotSembast extends QuerySnapshotBase {
   QuerySnapshotSembast(super.docs, super.documentChanges);
+}
+
+class AggregateQuerySembast implements AggregateQuery {
+  final QuerySembast querySembast;
+  final List<AggregateField> fields;
+
+  AggregateQuerySembast(this.querySembast, this.fields);
+
+  @override
+  Future<AggregateQuerySnapshot> get() async {
+    var snapshot = await querySembast.get();
+    return AggregateQuerySnapshotSembast(this, snapshot);
+  }
+}
+
+class AggregateQuerySnapshotSembast implements AggregateQuerySnapshot {
+  final AggregateQuerySembast aggregateQuerySembast;
+  final QuerySnapshot querySnapshot;
+
+  AggregateQuerySnapshotSembast(this.aggregateQuerySembast, this.querySnapshot);
+
+  @override
+  int? get count => querySnapshot.docs.length;
+
+  final _cache = <int, double?>{};
+
+  @override
+  double? getAverage(String field) {
+    for (var e in aggregateQuerySembast.fields.indexed) {
+      var aggregateField = e.$2;
+      if (aggregateField is AggregateFieldAverage &&
+          aggregateField.field == field) {
+        var index = e.$1;
+        if (_cache.containsKey(index)) {
+          return _cache[index];
+        }
+        var total = 0.0;
+        var itemCount = 0;
+        for (var doc in querySnapshot.docs) {
+          var value = (doc as DocumentSnapshotSembast).valueAtFieldPath(field);
+          if (value != null && value is num) {
+            total += value.toDouble();
+            itemCount++;
+          }
+        }
+        var average = (itemCount == 0) ? null : total / itemCount;
+
+        return _cache[index] = average;
+      }
+    }
+    return null;
+  }
+
+  @override
+  double? getSum(String field) {
+    for (var e in aggregateQuerySembast.fields.indexed) {
+      var aggregateField = e.$2;
+      if (aggregateField is AggregateFieldSum &&
+          aggregateField.field == field) {
+        var index = e.$1;
+        if (_cache.containsKey(index)) {
+          return _cache[index];
+        }
+        var total = 0.0;
+        for (var doc in querySnapshot.docs) {
+          var value = (doc as DocumentSnapshotSembast).valueAtFieldPath(field);
+          if (value != null && value is num) {
+            total += value.toDouble();
+          }
+        }
+        return _cache[index] = total;
+      }
+    }
+    return null;
+  }
+
+  @override
+  Query get query => aggregateQuerySembast.querySembast;
 }

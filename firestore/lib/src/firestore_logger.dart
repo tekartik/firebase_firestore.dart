@@ -320,7 +320,7 @@ class FirestoreLoggerBatch implements WriteBatch {
 }
 
 abstract class QueryLoggerBase
-    with FirestoreQueryExecutorMixin
+    with QueryDefaultMixin, FirestoreQueryExecutorMixin
     implements Query {
   final Query query;
   FirestoreLogger get firestoreLogger => refLogger.firestoreLogger;
@@ -413,6 +413,16 @@ abstract class QueryLoggerBase
               whereIn: whereIn,
               isNull: isNull),
           refLogger);
+
+  @override
+  Future<int> count() {
+    return query.count();
+  }
+
+  @override
+  AggregateQuery aggregate(List<AggregateField> fields) {
+    return query.aggregate(fields);
+  }
 }
 
 class DocumentSnapshotLogger
@@ -794,6 +804,10 @@ class FirestoreServiceLogger
 
   @override
   bool get supportsTrackChanges => firestoreService.supportsTrackChanges;
+
+  @override
+  bool get supportsAggregateQueries =>
+      firestoreService.supportsAggregateQueries;
 }
 
 /// Debug extension for Logger.

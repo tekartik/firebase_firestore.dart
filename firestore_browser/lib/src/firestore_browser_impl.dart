@@ -463,7 +463,9 @@ QuerySnapshotBrowser _wrapQuerySnapshot(
 QueryBrowser _wrapQuery(Firestore firestore, native.Query native) =>
     QueryBrowser(firestore, native);
 
-class QueryBrowser with FirestoreQueryExecutorMixin implements Query {
+class QueryBrowser
+    with QueryDefaultMixin, FirestoreQueryExecutorMixin
+    implements Query {
   @override
   final Firestore firestore;
   final native.Query _native;
