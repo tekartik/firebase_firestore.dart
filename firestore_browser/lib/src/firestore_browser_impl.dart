@@ -1,5 +1,5 @@
 import 'package:js/js_util.dart';
-import 'package:tekartik_browser_utils/browser_utils_import.dart' hide Blob;
+import 'package:tekartik_browser_utils/browser_utils_import.dart';
 
 import 'import_browser.dart';
 import 'import_native.dart' as native;
