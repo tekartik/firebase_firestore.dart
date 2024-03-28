@@ -15,6 +15,7 @@ import 'package:tekartik_firebase_firestore_test/utils_test.dart';
 import 'package:test/test.dart';
 
 import 'copy_utils_test.dart';
+import 'firestore_track_changes_support_test.dart';
 import 'list_collections_test.dart';
 
 /// collection
@@ -72,6 +73,10 @@ void runFirestoreTests(
       firestore: firestore,
       testContext: testContext);
   runUtilsQueryTest(
+      firestoreService: firestoreService,
+      firestore: firestore,
+      testContext: testContext);
+  runFirestoreTrackChangesSupportTests(
       firestoreService: firestoreService,
       firestore: firestore,
       testContext: testContext);
