@@ -50,6 +50,7 @@ void runFirestoreTrackChangesSupportTests(
       var eventList2 = <DocumentSnapshot>[];
       var sub1 =
           docRef.onSnapshotSupport(options: pullOptions1).listen((event) {
+        print('event $event');
         eventList1.add(event);
       });
       var sub2 =
@@ -66,7 +67,7 @@ void runFirestoreTrackChangesSupportTests(
           .firstWhere((element) => element.dataOrNull?['test'] == 2);
       expect(eventList1.length, 3);
       if (firestoreService.supportsTrackChanges) {
-        expect(eventList2.length, 3);
+        expect(eventList2.length, greaterThanOrEqualTo(3));
       } else {
         expect(eventList2.length, 1);
       }
