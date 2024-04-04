@@ -187,6 +187,7 @@ void main() {
         // After 2.7.1
         // Invalid argument(s): invalid seconds part 10000-01-01 00:00:01.000Z
       }
+      expect(Timestamp.tryParse(''), isNull);
     });
 
     test('anyAsTimestamp', () {

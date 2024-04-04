@@ -1,12 +1,25 @@
-import 'dart:async';
-
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
+const _defaultDelay = Duration(seconds: 10);
+
 /// Track changes simulation.
-class TrackChangesPullOptions {
+abstract class TrackChangesPullOptions {
+  /// Refresh delay.
+  factory TrackChangesPullOptions({Duration refreshDelay = _defaultDelay}) =>
+      _TrackChangesPullOptionsWithDelay(refreshDelay: refreshDelay);
+
+  /// Get first change only.
+  factory TrackChangesPullOptions.first() => _TrackChangesPullOptionsFirst();
+}
+
+class _TrackChangesPullOptionsFirst implements TrackChangesPullOptions {}
+
+class _TrackChangesPullOptionsWithDelay implements TrackChangesPullOptions {
   final Duration refreshDelay;
 
-  TrackChangesPullOptions({this.refreshDelay = const Duration(seconds: 10)});
+  _TrackChangesPullOptionsWithDelay(
+      {this.refreshDelay = const Duration(seconds: 10)});
 }
 
 extension DocumentReferenceExtension on DocumentReference {
@@ -31,7 +44,16 @@ extension DocumentReferenceExtension on DocumentReference {
             return;
           }
           controller.add(snapshot);
-          await Future<void>.delayed(options!.refreshDelay);
+
+          if (options is _TrackChangesPullOptionsWithDelay) {
+            await Future<void>.delayed(options.refreshDelay);
+          } else if (options is _TrackChangesPullOptionsFirst) {
+            // Do nothing
+            controller.close().unawait();
+            break;
+          } else {
+            throw UnsupportedError('options $options');
+          }
         }
       }, onCancel: () {
         controller.close();

@@ -231,6 +231,7 @@ mixin FirestoreLoggerEventWithDocumentDataMixin
 }
 
 void _logDefault(FirestoreLoggerEvent event) {
+  // ignore: avoid_print
   print(event);
 }
 

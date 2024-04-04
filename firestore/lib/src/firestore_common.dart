@@ -732,9 +732,9 @@ class DocumentChangeBase implements DocumentChange {
   String toString() => '${document.ref.path} $type $oldIndex $newIndex';
 }
 
-abstract class DocumentSnapshotBase //with DocumentSnapshotMixin
-    implements
-        DocumentSnapshot {
+abstract class DocumentSnapshotBase
+    with DocumentSnapshotMixin
+    implements DocumentSnapshot {
   final RecordMetaData? meta;
   @override
   final DocumentReference ref;
@@ -762,11 +762,6 @@ abstract class DocumentSnapshotBase //with DocumentSnapshotMixin
 
   @override
   SnapshotMetadata get metadata => _snapshotMetadataSembast;
-
-  @override
-  String toString() {
-    return 'DocumentSnapshot(ref: $ref, exists: $exists, meta $meta)';
-  }
 }
 
 extension DocumentSnapshotBaseExtension on DocumentSnapshotBase {
