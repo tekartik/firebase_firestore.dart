@@ -81,7 +81,7 @@ class CollectionReferenceMock
 
   @override
   FirestoreQueryMixin clone() {
-    throw UnimplementedError();
+    return QueryMock(this, QueryInfo());
   }
 
   @override
@@ -127,4 +127,31 @@ class DocumentReferenceMock
   Future<void> update(Map<String, Object?> data) {
     throw UnimplementedError();
   }
+}
+
+class QueryMock
+    with
+        QueryDefaultMixin,
+        FirestoreQueryExecutorMixin,
+        AttributesMixin,
+        FirestoreQueryMixin {
+  final CollectionReferenceMock collMock;
+  final QueryInfo queryInfo;
+  QueryMock(this.collMock, this.queryInfo) {}
+
+  @override
+  FirestoreQueryMixin clone() {
+    return QueryMock(collMock, queryInfo.clone());
+  }
+
+  @override
+  Firestore get firestore => collMock.firestore;
+
+  @override
+  Future<List<DocumentSnapshot>> getCollectionDocuments() {
+    throw UnimplementedError();
+  }
+
+  @override
+  String get path => collMock.path;
 }

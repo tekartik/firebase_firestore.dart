@@ -1,4 +1,6 @@
 import 'package:tekartik_firebase_firestore/src/common/firestore_mock.dart';
+import 'package:tekartik_firebase_firestore/src/common/import_firestore_mixin.dart';
+import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:test/test.dart';
 
 //import 'src_firestore_common_test.dart';
@@ -18,6 +20,15 @@ void main() {
     test('parent', () {
       expect(firestore.doc('test/doc').parent,
           CollectionReferenceMock(firestore, 'test'));
+    });
+    test('query', () {
+      var queryInfo = QueryInfo()
+        ..limit = 1
+        ..startLimit = LimitInfo(values: [1], inclusive: true);
+      var query = (applyQueryInfoNoDocumentId(firestore, 'test', queryInfo))
+          as QueryMock;
+      expect(query.queryInfo.limit, 1);
+      expect(query.queryInfo.startLimit!.values, [1]);
     });
   });
 }

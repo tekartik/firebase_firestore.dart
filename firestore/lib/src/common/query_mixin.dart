@@ -91,9 +91,40 @@ mixin QueryMixin implements Query {
         key, descending == true ? orderByDescending : orderByAscending);
 }
 
+/// Apply query info to query/collection synchroneously, after/at/before snapshot is not supported.
+Query applyQueryInfoNoDocumentId(
+    Firestore firestore, String path, QueryInfo? queryInfo) {
+  var query = _applyQueryInfoNoLimit(firestore, path, queryInfo);
+  if (queryInfo != null) {
+    if (queryInfo.startLimit != null) {
+      if (queryInfo.startLimit!.documentId != null) {
+        throw ArgumentError(
+            'documentId not supported for startLimit use applyQueryInfo');
+      }
+      if (queryInfo.startLimit!.inclusive) {
+        query = query.startAt(values: queryInfo.startLimit!.values);
+      } else {
+        query = query.startAfter(values: queryInfo.startLimit!.values);
+      }
+    }
+    if (queryInfo.endLimit != null) {
+      if (queryInfo.endLimit!.documentId != null) {
+        throw ArgumentError(
+            'documentId not supported for endLimit use applyQueryInfo');
+      }
+      if (queryInfo.endLimit!.inclusive) {
+        query = query.endAt(values: queryInfo.endLimit!.values);
+      } else {
+        query = query.endBefore(values: queryInfo.endLimit!.values);
+      }
+    }
+  }
+  return query;
+}
+
 /// Apply query info to query/collection
-Future<Query> applyQueryInfo(
-    Firestore firestore, String path, QueryInfo? queryInfo) async {
+Query _applyQueryInfoNoLimit(
+    Firestore firestore, String path, QueryInfo? queryInfo) {
   Query query = firestore.collection(path);
   if (queryInfo != null) {
     if (queryInfo.selectKeyPaths != null) {
@@ -121,7 +152,15 @@ Future<Query> applyQueryInfo(
           isNull: where.isNull,
           isLessThanOrEqualTo: where.isLessThanOrEqualTo);
     }
+  }
+  return query;
+}
 
+/// Apply query info to query/collection
+Future<Query> applyQueryInfo(
+    Firestore firestore, String path, QueryInfo? queryInfo) async {
+  var query = _applyQueryInfoNoLimit(firestore, path, queryInfo);
+  if (queryInfo != null) {
     if (queryInfo.startLimit != null) {
       // get it
       DocumentSnapshot? snapshot;

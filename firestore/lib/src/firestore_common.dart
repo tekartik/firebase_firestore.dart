@@ -272,6 +272,11 @@ class LimitInfo {
   List? values;
   late bool inclusive; // true = At
 
+  LimitInfo({this.documentId, this.values, bool? inclusive}) {
+    if (inclusive != null) {
+      this.inclusive = inclusive;
+    }
+  }
   LimitInfo clone() {
     return LimitInfo()
       ..documentId = documentId
