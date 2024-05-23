@@ -136,8 +136,9 @@ class QueryMock
         AttributesMixin,
         FirestoreQueryMixin {
   final CollectionReferenceMock collMock;
+  @override
   final QueryInfo queryInfo;
-  QueryMock(this.collMock, this.queryInfo) {}
+  QueryMock(this.collMock, this.queryInfo);
 
   @override
   FirestoreQueryMixin clone() {
