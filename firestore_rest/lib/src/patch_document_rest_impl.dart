@@ -24,17 +24,27 @@ class SetMergedDocument extends WriteDocument {
     return keys.map((key) => restEscapeKey(key)).join('.');
   }
 
+  String _keyToString(String key) {
+    print('key: $key');
+    /*
+    if (key.isNotEmpty && isDigit(key[0])) {
+      return '`$key`';
+    }*/
+
+    return key.toString();
+  }
+
   Map<String, Value> _firstMapToFields(Map map) {
     var fields = <String, Value>{};
 
     map.forEach((key, value) {
-      var topStringKey = key.toString();
+      var topStringKey = _keyToString(key.toString());
 
       /// keys will be added
       void handleMapGetKeys(List<String> keys, Map subMap) {
         fieldPaths ??= [];
         subMap.forEach((key, value) {
-          var stringKey = key.toString();
+          var stringKey = _keyToString(key.toString());
 
           var newKeys = [...keys, stringKey];
           if (value is Map) {

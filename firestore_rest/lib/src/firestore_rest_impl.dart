@@ -33,7 +33,12 @@ bool get debugRest => debugFirestoreRest; // devWarning(true); // false
 /// Exported for strict debugging
 var debugFirestoreRest = false; // devWarning(true);
 
+bool _isDigit(String chr) => (chr.codeUnitAt(0) ^ 0x30) <= 9;
+
 String restEscapeKey(String key) {
+  if (key.isNotEmpty && _isDigit(key[0])) {
+    return '`$key`';
+  }
   return escapeKey(key);
 }
 

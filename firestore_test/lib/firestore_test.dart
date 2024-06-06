@@ -39,13 +39,16 @@ class FirestoreTestContext {
   /// Default
   static final defaultRootCollectionPath = _testsRefPathDefault;
   final String? _rootCollectionPath;
+
   // ignore: unused_field
   final String? _noAuthRootCollectionPath;
 
   static String getRootCollectionPath(FirestoreTestContext? testContext) =>
       testContext?.rootCollectionPath ?? defaultRootCollectionPath;
+
   String get rootCollectionPath =>
       _rootCollectionPath ?? defaultRootCollectionPath;
+
   FirestoreTestContext(
       {String? rootCollectionPath, String? noAuthRootCollectionPath})
       : _rootCollectionPath = rootCollectionPath,
@@ -791,7 +794,8 @@ void runFirestoreCommonTests(
         });
         await docRef.set({
           'field2': {
-            'sub2': {'sub4': 'value4'}
+            'sub2': {'4321': 'value4', '5sub': 'value5', 'sub6': 'value6'}
+            // Use a key that looks like a number on purpose here
           }
         }, SetOptions(merge: true));
 
@@ -799,7 +803,12 @@ void runFirestoreCommonTests(
         expect(snapshot.data, {
           'field1': 'value1',
           'field2': {
-            'sub2': {'sub3': 'value3', 'sub4': 'value4'}
+            'sub2': {
+              'sub3': 'value3',
+              '4321': 'value4',
+              '5sub': 'value5',
+              'sub6': 'value6'
+            }
           }
         });
         print(snapshot.data);
