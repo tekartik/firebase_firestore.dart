@@ -887,8 +887,6 @@ void runFirestoreCommonTests(
           print('supportsFieldValueArray false');
         }
       });
-
-      //test('subData')
     });
 
     group('DocumentReference', () {
