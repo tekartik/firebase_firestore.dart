@@ -27,13 +27,26 @@ bool skipConcurrentTransactionTests = false;
 List<DocumentReference?> docsKeys(List<DocumentSnapshot> snashots) =>
     snashots.map((e) => e.ref).toList();
 
-//@Deprecated('Use runFirestoreTests')
+// @Deprecated('Use runFirestoreTests')
+@Deprecated('Use runFirestoreTests')
 void run(
     {required Firebase firebase,
     required FirestoreService firestoreService,
     AppOptions? options,
     FirestoreTestContext? testContext}) {
-  runFirestoreTests(
+  _runFirestoreTests(
+      firebase: firebase,
+      firestoreService: firestoreService,
+      options: options,
+      testContext: testContext);
+}
+
+void runFirestoreTests(
+    {required Firebase firebase,
+    required FirestoreService firestoreService,
+    AppOptions? options,
+    FirestoreTestContext? testContext}) {
+  _runFirestoreTests(
       firebase: firebase,
       firestoreService: firestoreService,
       options: options,
@@ -69,7 +82,7 @@ class FirestoreTestContext {
   }
 }
 
-void runFirestoreTests(
+void _runFirestoreTests(
     {required Firebase firebase,
     required FirestoreService firestoreService,
     AppOptions? options,

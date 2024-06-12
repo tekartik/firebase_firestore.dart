@@ -22,7 +22,7 @@ void main() async {
       expect(firestoreService.supportsTimestamps, isTrue);
       expect(firestoreService.supportsTrackChanges, isFalse);
     });
-    run(
+    runFirestoreTests(
       firebase: firebase,
       firestoreService: firestoreService,
     );

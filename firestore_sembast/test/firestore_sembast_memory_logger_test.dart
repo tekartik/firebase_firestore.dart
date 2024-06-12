@@ -30,7 +30,7 @@ void main() {
     });
     expect(events.length, 1);
   });
-  run(
+  runFirestoreTests(
       firebase: firebase,
       firestoreService: FirestoreServiceLogger(
           firestoreService: newFirestoreServiceMemory(),

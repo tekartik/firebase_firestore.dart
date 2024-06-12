@@ -9,5 +9,5 @@ import 'package:test/test.dart';
 void main() {
   skipConcurrentTransactionTests = true;
   var firebase = FirebaseLocal();
-  run(firebase: firebase, firestoreService: firestoreServiceWeb);
+  runFirestoreTests(firebase: firebase, firestoreService: firestoreServiceWeb);
 }

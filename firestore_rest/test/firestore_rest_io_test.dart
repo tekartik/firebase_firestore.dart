@@ -15,7 +15,7 @@ Future main() async {
   group('rest_io', () {
     if (context != null) {
       var firebase = firebaseRest;
-      run(
+      runFirestoreTests(
           firebase: firebase,
           firestoreService: firestoreServiceRest,
           options: context.options);

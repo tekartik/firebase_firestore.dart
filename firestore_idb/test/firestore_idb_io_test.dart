@@ -20,7 +20,7 @@ void main() async {
     test('factory', () {
       expect(firestoreService.supportsQuerySelect, isTrue);
     });
-    run(
+    runFirestoreTests(
       firebase: firebase,
       firestoreService: firestoreService,
     );

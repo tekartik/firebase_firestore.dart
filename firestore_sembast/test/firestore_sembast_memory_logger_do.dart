@@ -25,7 +25,7 @@ void main() {
       transaction.set(ref, {});
     });
   });
-  run(
+  runFirestoreTests(
       firebase: firebase,
       firestoreService: FirestoreServiceLogger(
           firestoreService: newFirestoreServiceMemory(),

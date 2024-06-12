@@ -10,5 +10,5 @@ void main() {
   var firebase = FirebaseLocal();
   var firestoreService = newFirestoreServiceSembast(
       databaseFactory: sembast.newDatabaseFactoryMemory());
-  run(firebase: firebase, firestoreService: firestoreService);
+  runFirestoreTests(firebase: firebase, firestoreService: firestoreService);
 }
