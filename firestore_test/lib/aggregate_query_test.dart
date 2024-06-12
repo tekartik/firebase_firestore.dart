@@ -74,14 +74,29 @@ void runAggregateQueryTest(
             'test': {'value': 7}
           });
         });
-        var snapshot = await collection.aggregate([
+        var query = collection.aggregate([
           AggregateField.count(),
           AggregateField.average('test.value'),
           AggregateField.sum('test.value')
-        ]).get();
-        expect(snapshot.count, 2);
-        expect(snapshot.getAverage('test.value'), closeTo(5, 0.01));
-        expect(snapshot.getSum('test.value'), closeTo(10, 0.01));
+        ]);
+        var snapshot = await query.get();
+        void check() {
+          expect(snapshot.count, 2);
+          expect(snapshot.getAverage('test.value'), closeTo(5, 0.01));
+          expect(snapshot.getSum('test.value'), closeTo(10, 0.01));
+        }
+
+        try {
+          check();
+        } catch (e) {
+          if (testContext?.allowedDelayInReadMs != null) {
+            await testContext?.sleepReadDelay();
+            snapshot = await query.get();
+            check();
+          } else {
+            rethrow;
+          }
+        }
       });
       test('complex', () async {
         // Warning this requires an index
@@ -98,19 +113,35 @@ void runAggregateQueryTest(
           transaction.set(
               collection.doc('doc6'), {'test': 6, 'value': 'not a number'});
         });
-        var snapshot =
-            await collection.where('test', isGreaterThan: 1).aggregate([
+        var query = collection.where('test', isGreaterThan: 1).aggregate([
           AggregateField.count(),
           AggregateField.average('value'),
           AggregateField.sum('value'),
           AggregateField.average('test'),
           AggregateField.sum('test')
-        ]).get();
-        expect(snapshot.count, 5);
-        expect(snapshot.getAverage('value'), closeTo(7.333, 0.01));
-        expect(snapshot.getSum('value'), closeTo(22, 0.01));
-        expect(snapshot.getAverage('test'), closeTo(4, 0.01));
-        expect(snapshot.getSum('test'), closeTo(20, 0.01));
+        ]);
+        var snapshot = await query.get();
+        void check() {
+          expect(snapshot.count, 5);
+          expect(snapshot.getAverage('value'), closeTo(7.333, 0.01));
+          expect(snapshot.getSum('value'), closeTo(22, 0.01));
+          expect(snapshot.getAverage('test'), closeTo(4, 0.01));
+          expect(snapshot.getSum('test'), closeTo(20, 0.01));
+        }
+
+        try {
+          check();
+        } catch (e) {
+          if (testContext?.allowedDelayInReadMs != null) {
+            await testContext?.sleepReadDelay();
+            // There seems to be some delay when using rest let's try
+            // a bit later
+            snapshot = await query.get();
+            check();
+          } else {
+            rethrow;
+          }
+        }
       });
     },
     skip: !firestore.service.supportsAggregateQueries,

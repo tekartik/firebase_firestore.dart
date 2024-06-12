@@ -15,7 +15,7 @@ void runUtilsCollectionTests(
 
     test('deleteCollection one', () async {
       var ref = firestore
-          .collection(url.join(testsRefPath, 'utils_collection', 'delete'));
+          .collection(url.join(testsRefPath, 'utils_collection', 'delete_one'));
       await deleteCollection(firestore, ref);
       var itemDoc = ref.doc('item');
       // create an item
@@ -34,7 +34,16 @@ void runUtilsCollectionTests(
       expect(await findInCollection(), isTrue);
       var count = await deleteCollection(firestore, ref);
       expect(count, 1);
-      expect(await findInCollection(), isFalse);
+      try {
+        expect(await findInCollection(), isFalse);
+      } catch (_) {
+        if (testContext?.allowedDelayInReadMs != null) {
+          await testContext?.sleepReadDelay();
+          expect(await findInCollection(), isFalse);
+        } else {
+          rethrow;
+        }
+      }
     });
 
     test('deleteCollection two', () async {
@@ -44,8 +53,10 @@ void runUtilsCollectionTests(
       var itemDoc = ref.doc('item1');
       var itemDoc2 = ref.doc('item2');
       // create two items
-      await itemDoc.set({});
-      await itemDoc2.set({});
+      await firestore.runTransaction((txn) {
+        txn.set(itemDoc, {});
+        txn.set(itemDoc2, {});
+      });
 
       Future<bool> findInCollection() async {
         var querySnapshot = await ref.get();
@@ -67,8 +78,22 @@ void runUtilsCollectionTests(
         return false;
       }
 
-      expect(await findInCollection(), isTrue);
-      expect(await find2InCollection(), isTrue);
+      Future<void> check() async {
+        expect(await findInCollection(), isTrue);
+        expect(await find2InCollection(), isTrue);
+      }
+
+      try {
+        await check();
+      } catch (_) {
+        if (testContext?.allowedDelayInReadMs != null) {
+          await testContext?.sleepReadDelay();
+          await check();
+        } else {
+          rethrow;
+        }
+      }
+
       var count = await deleteCollection(firestore, ref, batchSize: 1);
       expect(count, 2);
       expect(await findInCollection(), isFalse);

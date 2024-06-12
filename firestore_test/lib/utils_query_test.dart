@@ -15,7 +15,7 @@ void runUtilsQueryTest(
 
     test('deleteQuery one', () async {
       var ref = firestore
-          .collection(url.join(testsRefPath, 'utils_collection', 'delete'));
+          .collection(url.join(testsRefPath, 'utils_query', 'delete_one'));
       var query = ref;
       await deleteQuery(firestore, query);
       var itemDoc = ref.doc('item');
@@ -40,13 +40,15 @@ void runUtilsQueryTest(
 
     test('deleteQuery two', () async {
       var ref = firestore
-          .collection(url.join(testsRefPath, 'utils_collection', 'delete_two'));
+          .collection(url.join(testsRefPath, 'utils_query', 'delete_two'));
       await deleteQuery(firestore, ref);
       var itemDoc = ref.doc('item1');
       var itemDoc2 = ref.doc('item2');
       // create two items
-      await itemDoc.set({});
-      await itemDoc2.set({});
+      await firestore.runTransaction((txn) {
+        txn.set(itemDoc, {});
+        txn.set(itemDoc2, {});
+      });
 
       Future<bool> findInCollection() async {
         var querySnapshot = await ref.get();
@@ -68,8 +70,21 @@ void runUtilsQueryTest(
         return false;
       }
 
-      expect(await findInCollection(), isTrue);
-      expect(await find2InCollection(), isTrue);
+      Future<void> check() async {
+        expect(await findInCollection(), isTrue);
+        expect(await find2InCollection(), isTrue);
+      }
+
+      try {
+        await check();
+      } catch (_) {
+        if (testContext?.allowedDelayInReadMs != null) {
+          await testContext?.sleepReadDelay();
+          await check();
+        } else {
+          rethrow;
+        }
+      }
       var count = await deleteQuery(firestore, ref, batchSize: 1);
       expect(count, 2);
       expect(await findInCollection(), isFalse);

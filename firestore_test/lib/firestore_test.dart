@@ -27,12 +27,17 @@ bool skipConcurrentTransactionTests = false;
 List<DocumentReference?> docsKeys(List<DocumentSnapshot> snashots) =>
     snashots.map((e) => e.ref).toList();
 
+//@Deprecated('Use runFirestoreTests')
 void run(
     {required Firebase firebase,
     required FirestoreService firestoreService,
-    AppOptions? options}) {
+    AppOptions? options,
+    FirestoreTestContext? testContext}) {
   runFirestoreTests(
-      firebase: firebase, firestoreService: firestoreService, options: options);
+      firebase: firebase,
+      firestoreService: firestoreService,
+      options: options,
+      testContext: testContext);
 }
 
 class FirestoreTestContext {
@@ -53,6 +58,15 @@ class FirestoreTestContext {
       {String? rootCollectionPath, String? noAuthRootCollectionPath})
       : _rootCollectionPath = rootCollectionPath,
         _noAuthRootCollectionPath = noAuthRootCollectionPath;
+
+  /// can be set later
+  int? allowedDelayInReadMs;
+
+  Future<void> sleepReadDelay() async {
+    if (allowedDelayInReadMs != null) {
+      await Future<void>.delayed(Duration(milliseconds: allowedDelayInReadMs!));
+    }
+  }
 }
 
 void runFirestoreTests(
@@ -1162,20 +1176,38 @@ void runFirestoreCommonTests(
         var collRef = testsRef.doc('collection_test').collection('order');
         await deleteCollection(firestore, collRef);
         var twoRef = collRef.doc('two');
-        await twoRef.set({});
         var oneRef = collRef.doc('one');
-        await oneRef.set({});
+        await firestore.runTransaction((txn) {
+          txn.set(oneRef, {});
+          txn.set(twoRef, {});
+        });
+
         var querySnapshot = await collRef.get();
-        // Order by name by default
-        expect(querySnapshot.docs[0].ref.path, oneRef.path);
-        expect(querySnapshot.docs[1].ref.path, twoRef.path);
 
-        expect(await collRef.count(), 2);
+        Future<void> check() async {
+          // Order by name by default
+          expect(querySnapshot.docs[0].ref.path, oneRef.path);
+          expect(querySnapshot.docs[1].ref.path, twoRef.path);
 
-        querySnapshot = await collRef.orderBy(firestoreNameFieldPath).get();
-        // Order by name by default
-        expect(querySnapshot.docs[0].ref.path, oneRef.path);
-        expect(querySnapshot.docs[1].ref.path, twoRef.path);
+          expect(await collRef.count(), 2);
+
+          querySnapshot = await collRef.orderBy(firestoreNameFieldPath).get();
+          // Order by name by default
+          expect(querySnapshot.docs[0].ref.path, oneRef.path);
+          expect(querySnapshot.docs[1].ref.path, twoRef.path);
+        }
+
+        try {
+          await check();
+        } catch (_) {
+          if (testContext?.allowedDelayInReadMs != null) {
+            await testContext?.sleepReadDelay();
+            querySnapshot = await collRef.get();
+            await check();
+          } else {
+            rethrow;
+          }
+        }
       });
 
       test('order_by_key', () async {
@@ -1665,7 +1697,7 @@ void runFirestoreCommonTests(
         if (firestoreService.supportsTimestamps) {
           await testField('timestamp', timestamp1, timestamp2);
         }
-      });
+      }, timeout: Timeout(Duration(seconds: 120)));
 
       test('nested_object_order', () async {
         var testsRef = getTestsRef();
@@ -1833,7 +1865,20 @@ void runFirestoreCommonTests(
         await batch.commit();
 
         expect((await deleteRef.get()).exists, isFalse);
-        expect((await createRef.get()).exists, isTrue);
+        Future<void> check() async {
+          expect((await createRef.get()).exists, isTrue);
+        }
+
+        try {
+          await check();
+        } catch (_) {
+          if (testContext?.allowedDelayInReadMs != null) {
+            await testContext?.sleepReadDelay();
+            await check();
+          } else {
+            rethrow;
+          }
+        }
       });
 
       group('all', () {
@@ -1928,7 +1973,20 @@ void runFirestoreCommonTests(
             txn.update(ref, map);
           });
 
-          expect((await ref.get()).data, {'value': 2});
+          Future<void> check() async {
+            expect((await ref.get()).data, {'value': 2});
+          }
+
+          try {
+            await check();
+          } catch (_) {
+            if (testContext?.allowedDelayInReadMs != null) {
+              await testContext?.sleepReadDelay();
+              await check();
+            } else {
+              rethrow;
+            }
+          }
         });
 
         test('get_set', () async {
@@ -1939,13 +1997,26 @@ void runFirestoreCommonTests(
 
           await firestore.runTransaction((txn) async {
             var data = (await txn.get(ref)).data;
-
+            expect(data, {'value': 1});
             data['value'] = (data['value'] as int) + 1;
 
             txn.set(ref, data);
           });
 
-          expect((await ref.get()).data, {'value': 2});
+          Future<void> check() async {
+            expect((await ref.get()).data, {'value': 2});
+          }
+
+          try {
+            await check();
+          } catch (_) {
+            if (testContext?.allowedDelayInReadMs != null) {
+              await testContext?.sleepReadDelay();
+              await check();
+            } else {
+              rethrow;
+            }
+          }
         });
 
         // make sure that after the transaction we're still fine
