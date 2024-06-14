@@ -88,11 +88,21 @@ void _runFirestoreTests(
     AppOptions? options,
     FirestoreTestContext? testContext}) {
   final app = firebase.initializeApp(options: options);
-
+  runFirestoreAppTests(
+      app: app,
+      firestoreService: firestoreService,
+      options: options,
+      testContext: testContext);
   tearDownAll(() {
     return app.delete();
   });
+}
 
+void runFirestoreAppTests(
+    {required FirebaseApp app,
+    required FirestoreService firestoreService,
+    AppOptions? options,
+    FirestoreTestContext? testContext}) {
   var firestore = firestoreService.firestore(app);
   runFirestoreCommonTests(
       firestoreService: firestoreService,
