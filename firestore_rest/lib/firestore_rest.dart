@@ -1,3 +1,6 @@
+@Deprecated('Use https://github.com/tekartik/firebase_rest.dart')
+library;
+
 import 'package:googleapis/firestore/v1.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore_rest/src/firestore/v1_fixed.dart';
