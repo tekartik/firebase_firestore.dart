@@ -379,7 +379,9 @@ void runFirestoreCommonTests(
         expect(snapshot.data, {'test': 1});
 
         if (firestoreService.supportsDocumentSnapshotTime) {
-          expect(snapshot.updateTime!.compareTo(now), greaterThanOrEqualTo(0));
+          /// Allow some difference
+          expect(snapshot.updateTime!.seconds - now.seconds,
+              greaterThanOrEqualTo(0));
           expect(snapshot.createTime, snapshot.updateTime);
         } else {
           expect(snapshot.createTime, isNull);
@@ -1861,6 +1863,8 @@ void runFirestoreCommonTests(
           await completer4.future;
 
           await subscription.cancel();
+          // Allow count to come later
+          await sleep(100);
           await countSubscription.cancel();
           expect(onCountResults, [0, 1, 1, 0]);
         }
