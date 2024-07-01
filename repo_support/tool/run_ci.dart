@@ -14,8 +14,6 @@ Future<void> main() async {
     'firestore_sim_browser',
     'firestore_sim_io',
     'firestore_test',
-    // Run last
-    'firestore_rest',
   ]) {
     await packageRunCi(join(topDir, dir));
   }

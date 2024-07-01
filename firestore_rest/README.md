@@ -1,1 +1,0 @@
-**Move to https://github.com/tekartik/firebase_rest.dart/tree/main/firestore_rest**
