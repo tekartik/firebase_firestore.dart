@@ -14,7 +14,7 @@ import 'import_firestore.dart';
 const String parentIndexName = 'parentIndex';
 
 class FirestoreServiceIdb
-    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
+    with FirestoreServiceDefaultMixin, FirebaseProductServiceMixin<Firestore>
     implements FirestoreService {
   @override
   Firestore firestore(App app) {

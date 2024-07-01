@@ -14,7 +14,7 @@ import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart'; // ignore: 
 import 'import_firestore.dart'; // ignore: implementation_imports
 
 class FirestoreServiceSim
-    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
+    with FirestoreServiceDefaultMixin, FirebaseProductServiceMixin<Firestore>
     implements FirestoreService {
   @override
   Firestore firestore(App app) {

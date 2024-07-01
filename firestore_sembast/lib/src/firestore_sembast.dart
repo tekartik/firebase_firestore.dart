@@ -16,7 +16,7 @@ import 'package:uuid/uuid.dart';
 import 'import_firestore.dart';
 
 class FirestoreServiceSembast
-    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
+    with FirestoreServiceDefaultMixin, FirebaseProductServiceMixin<Firestore>
     implements FirestoreService {
   @override
   Firestore firestore(App app) {

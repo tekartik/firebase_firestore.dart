@@ -768,7 +768,7 @@ class FirestoreLogger
 }
 
 class FirestoreServiceLogger
-    with FirestoreServiceDefaultMixin, FirestoreServiceMixin
+    with FirestoreServiceDefaultMixin, FirebaseProductServiceMixin<Firestore>
     implements FirestoreService {
   final FirestoreLoggerOptions options;
   final FirestoreService firestoreService;
@@ -777,7 +777,7 @@ class FirestoreServiceLogger
       {required this.firestoreService, required this.options});
 
   @override
-  Firestore firestore(App app) => getInstance<FirestoreLogger>(app, () {
+  Firestore firestore(App app) => getInstance(app, () {
         return FirestoreLogger(
             firestore: firestoreService.firestore(app), options: options);
       });
