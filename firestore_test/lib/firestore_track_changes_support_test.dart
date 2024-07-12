@@ -38,6 +38,32 @@ void runFirestoreTrackChangesSupportTests(
           {'test': 1});
     });
 
+    test('twoOnSnapshotSupport', () async {
+      var testsRef = getTestsRef();
+      var docRef = testsRef.doc('two_onSnapshotSupport');
+      await docRef.delete();
+
+      var completer1 = Completer<void>();
+      var completer2 = Completer<void>();
+      var subscription1 = docRef.onSnapshotSupport().listen((event) {
+        print('event1 $event');
+        if (event.exists) {
+          completer1.complete();
+        }
+      });
+      var subscription2 = docRef.onSnapshotSupport().listen((event) {
+        print('event2 $event');
+        if (event.exists) {
+          completer2.complete();
+        }
+      });
+      await docRef.set({'test': 1});
+      await completer1.future;
+      await completer2.future;
+      await subscription1.cancel();
+      await subscription2.cancel();
+    });
+
     test('updatesOnSnapshotSupport', () async {
       var testsRef = getTestsRef();
       var docRef = testsRef.doc('simple_updatesOnSnapshotSupport');
