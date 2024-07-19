@@ -31,7 +31,7 @@ dev_dependencies:
   tekartik_firebase_firestore_test:
     path: ../firestore_test
   test: ">=0.12.37"
-  dev_test: '>=0.12.0-dev.1'
+  dev_build: '>=0.12.0-dev.1'
   http: any
   yaml: any
   build_runner: ">=0.9.1"

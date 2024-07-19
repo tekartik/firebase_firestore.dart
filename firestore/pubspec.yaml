@@ -23,6 +23,6 @@ dependencies:
   collection:
   cv: '>=0.2.17+2'
 dev_dependencies:
-  dev_test:
+  dev_build:
   test: "^1.0.0"
   process_run: '>=0.10.2'

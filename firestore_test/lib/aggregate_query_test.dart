@@ -1,10 +1,10 @@
 // ignore_for_file: inference_failure_on_collection_literal
 
+// ignore: implementation_imports
+import 'package:dev_test/test.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
-// ignore: implementation_imports
-import 'package:test/test.dart';
 
 import 'firestore_test.dart';
 

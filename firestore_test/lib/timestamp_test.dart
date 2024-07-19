@@ -1,6 +1,6 @@
+import 'package:dev_test/test.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:test/test.dart';
 
 import 'firestore_test.dart';
 

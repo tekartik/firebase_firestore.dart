@@ -1,6 +1,6 @@
-import 'package:dev_test/test.dart';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';
 import 'package:tekartik_firebase_firestore_sembast/utils/export_utils.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('export_utils', () {

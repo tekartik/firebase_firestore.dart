@@ -1,10 +1,9 @@
 // ignore_for_file: inference_failure_on_collection_literal
 
+import 'package:dev_test/test.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/copy_utils.dart';
-
-import 'package:test/test.dart';
 
 import 'firestore_test.dart';
 
