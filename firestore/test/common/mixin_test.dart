@@ -257,8 +257,8 @@ void main() {
   test('FirestoreComparable', () {
     expect(FirestoreComparable(1).compareTo(FirestoreComparable(1)), 0);
     expect(FirestoreComparable(1).compareTo(FirestoreComparable(4)), -1);
-    expect(FirestoreComparable(1).compareTo(FirestoreComparable(null, true)),
-        -9999);
+    expect(
+        FirestoreComparable(1).compareTo(FirestoreComparable(null, true)), 1);
     expect(
         FirestoreComparable(null, true).compareTo(FirestoreComparable(1)), -1);
     expect(
