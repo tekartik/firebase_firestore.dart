@@ -254,7 +254,20 @@ void main() {
     });
   });
 
+  test('compare bool', () {
+    expect(
+        FirestoreComparable(null, false)
+            .compareTo(FirestoreComparable(null, true)),
+        -1);
+    expect(
+        FirestoreComparable(null, true)
+            .compareTo(FirestoreComparable(null, false)),
+        1);
+  });
   test('FirestoreComparable', () {
+    expect(FirestoreComparable(1).compareTo(FirestoreComparable(2)), -1);
+    expect(FirestoreComparable(2).compareTo(FirestoreComparable(1)), 1);
+
     expect(FirestoreComparable(1).compareTo(FirestoreComparable(1)), 0);
     expect(FirestoreComparable(1).compareTo(FirestoreComparable(4)), -1);
     expect(

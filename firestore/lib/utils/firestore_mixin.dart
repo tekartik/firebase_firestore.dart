@@ -400,6 +400,9 @@ int _rawCompareType(Object object1, Object object2) {
 class FirestoreComparable {
   final Comparable? comparable;
   final Object? nonComparable;
+
+  int get _boolComparable =>
+      (nonComparable as bool) ? 1 : 0; // if nonComparable is bool only
   Object? get anyComparable => comparable ?? nonComparable;
 
   FirestoreComparable(this.comparable, [this.nonComparable]);
@@ -425,6 +428,9 @@ class FirestoreComparable {
       } else if (other.comparable != null) {
         return -1;
       } else {
+        if (nonComparable is bool && other.nonComparable is bool) {
+          return _boolComparable.compareTo(other._boolComparable);
+        }
         return (nonComparable == other.nonComparable) ? 0 : -1;
       }
     } catch (_) {

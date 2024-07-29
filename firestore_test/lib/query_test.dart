@@ -50,11 +50,12 @@ void runFirestoreQueryTests(
         txn.set(collRef.doc('0'), {'value': 0});
         txn.set(collRef.doc('0.5'), {'value': 0.5});
         txn.set(collRef.doc('1'), {'value': 1});
-        txn.set(collRef.doc('false'), {'value': false});
         txn.set(collRef.doc('-1'), {'value': -1});
         txn.set(collRef.doc('true'), {'value': true});
+        txn.set(collRef.doc('false'), {'value': false});
         txn.set(collRef.doc('text'), {'value': 'text'});
-        txn.set(collRef.doc('timestamp'), {'value': Timestamp(1, 2000)});
+        txn.set(collRef.doc('timestamp2'), {'value': Timestamp(2, 2000)});
+        txn.set(collRef.doc('timestamp1'), {'value': Timestamp(1, 2000)});
         txn.set(collRef.doc('bytes'), {
           'value': Blob.fromList([1, 2, 3])
         });
@@ -80,7 +81,8 @@ void runFirestoreQueryTests(
           '0',
           '0.5',
           '1',
-          'timestamp',
+          'timestamp1',
+          'timestamp2',
           'text',
           'bytes',
           'ref',
