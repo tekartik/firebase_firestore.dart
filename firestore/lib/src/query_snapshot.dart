@@ -8,7 +8,7 @@ abstract class QuerySnapshot {
   List<DocumentChange> get documentChanges;
 }
 
-/// Commnon helpers.
+/// Common helpers.
 extension QuerySnapshotExtension on QuerySnapshot {
   /// Document reference list.
   List<DocumentReference> get refs =>

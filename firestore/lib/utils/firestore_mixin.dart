@@ -2,11 +2,8 @@ import 'dart:math';
 
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
-import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
-import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/common/import_firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
-import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 
 export 'package:tekartik_firebase_firestore/src/common/document_snapshot_mixin.dart'
     show DocumentSnapshotMixin;
@@ -352,9 +349,58 @@ T? safeGetItem<T>(List<T>? list, int index) {
   return null;
 }
 
+int _typeOrderIndex(Object object) {
+  var index = 0;
+  if (object is bool) {
+    return index;
+  }
+  index++;
+  if (object is num) {
+    return index;
+  }
+  index++;
+  if (object is Timestamp) {
+    return index;
+  }
+  index++;
+  if (object is String) {
+    return index;
+  }
+  index++;
+  if (object is Blob) {
+    return index;
+  }
+  index++;
+  if (object is DocumentReference) {
+    return index;
+  }
+  index++;
+  if (object is GeoPoint) {
+    return index;
+  }
+  index++;
+  if (object is List) {
+    return index;
+  }
+  index++;
+  if (object is Map) {
+    return index;
+  }
+  index++;
+
+  return index;
+}
+
+int _rawCompareType(Object object1, Object object2) {
+  var typeOrderIndex1 = _typeOrderIndex(object1);
+  var typeOrderIndex2 = _typeOrderIndex(object2);
+  return typeOrderIndex1.compareTo(typeOrderIndex2);
+}
+
 class FirestoreComparable {
   final Comparable? comparable;
-  final dynamic nonComparable;
+  final Object? nonComparable;
+  Object? get anyComparable => comparable ?? nonComparable;
 
   FirestoreComparable(this.comparable, [this.nonComparable]);
 
@@ -364,6 +410,15 @@ class FirestoreComparable {
     try {
       if (other == null) {
         return -1;
+      }
+      // Handle types first
+      var anyComparable1 = anyComparable;
+      var anyComparable2 = other.anyComparable;
+      if (anyComparable1 != null && anyComparable2 != null) {
+        var cmp = _rawCompareType(anyComparable1, anyComparable2);
+        if (cmp != 0) {
+          return cmp;
+        }
       }
       if (comparable != null) {
         return comparable!.compareTo(other.comparable);
