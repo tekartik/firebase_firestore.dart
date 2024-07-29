@@ -1,6 +1,5 @@
 import 'package:test/test.dart';
-
-bool get _runningAsJavascript => identical(1, 1.0);
+import 'src_firestore_common_test.dart' show dateTimeSupportsMicroseconds;
 
 void main() {
   group('timestamp', () {
@@ -20,9 +19,9 @@ void main() {
       // Node 2018-10-20T05:13:45.985Z
       expect(
           dateTime!.toIso8601String(),
-          _runningAsJavascript
-              ? '2018-10-20T05:13:45.985Z'
-              : '2018-10-20T05:13:45.985343Z');
+          dateTimeSupportsMicroseconds
+              ? '2018-10-20T05:13:45.985343Z'
+              : '2018-10-20T05:13:45.985Z');
       // print(dateTime.toIso8601String());
 
       text = '2018-10-20T05:13:45.985Z';

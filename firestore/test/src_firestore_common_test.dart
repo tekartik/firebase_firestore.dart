@@ -9,7 +9,13 @@ import 'package:test/test.dart';
 // Use this test to properly test on all platform
 // pub run test -p chrome,node,vm,firefox .\test\timestamp_test.dart
 bool get runningAsJavascript => identical(1, 1.0);
-
+final dateTimeSupportsMicroseconds = () {
+  var iso = DateTime.utc(2100, 1, 2, 3, 4, 5, 6, 7).toIso8601String();
+  if (iso == '2100-01-02T03:04:05.006007Z') {
+    return true;
+  }
+  return false;
+}();
 void main() {
   group('path', () {
     test('sanitizeReferencePath', () {

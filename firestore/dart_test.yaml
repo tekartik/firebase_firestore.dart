@@ -1,4 +1,8 @@
 platforms:
   - vm
   - chrome
+  - vm
+compiler:
+  - dart2js
+  - dart2wasm
 concurrency: 1

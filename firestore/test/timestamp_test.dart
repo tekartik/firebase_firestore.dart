@@ -1,7 +1,8 @@
 import 'package:tekartik_firebase_firestore/src/timestamp.dart';
 import 'package:test/test.dart';
 
-import 'src_firestore_common_test.dart' show runningAsJavascript;
+import 'src_firestore_common_test.dart'
+    show dateTimeSupportsMicroseconds, runningAsJavascript;
 
 void main() {
   group('timestamp', () {
@@ -70,23 +71,22 @@ void main() {
       checkToIso8601(
         Timestamp(0, 100000),
         '1970-01-01T00:00:00.000100Z',
-        runningAsJavascript
-            ? '1970-01-01T00:00:00.000Z'
-            : '1970-01-01T00:00:00.000100Z',
+        dateTimeSupportsMicroseconds
+            ? '1970-01-01T00:00:00.000100Z'
+            : '1970-01-01T00:00:00.000Z',
       );
       checkToIso8601(
         Timestamp(0, 100),
         '1970-01-01T00:00:00.000000100Z',
-        runningAsJavascript
-            ? '1970-01-01T00:00:00.000Z'
-            : '1970-01-01T00:00:00.000Z',
+        '1970-01-01T00:00:00.000Z',
       );
       checkToIso8601(
         Timestamp(0, 999999999),
         '1970-01-01T00:00:00.999999999Z',
-        runningAsJavascript
-            ? '1970-01-01T00:00:01.000Z' // Precision issue
-            : '1970-01-01T00:00:00.999999Z',
+        dateTimeSupportsMicroseconds
+            ? '1970-01-01T00:00:00.999999Z'
+            : '1970-01-01T00:00:01.000Z' // Precision issue
+        ,
       );
     });
 
@@ -120,21 +120,21 @@ void main() {
       checkParse(
           '2018-10-20T05:13:45.985343123Z',
           '2018-10-20T05:13:45.985343123Z',
-          runningAsJavascript
-              ? '2018-10-20T05:13:45.985Z'
-              : '2018-10-20T05:13:45.985343Z');
+          dateTimeSupportsMicroseconds
+              ? '2018-10-20T05:13:45.985343Z'
+              : '2018-10-20T05:13:45.985Z');
       checkParse(
           '2018-10-20T05:13:45.98534312Z',
           '2018-10-20T05:13:45.985343120Z',
-          runningAsJavascript
-              ? '2018-10-20T05:13:45.985Z'
-              : '2018-10-20T05:13:45.985343Z');
+          dateTimeSupportsMicroseconds
+              ? '2018-10-20T05:13:45.985343Z'
+              : '2018-10-20T05:13:45.985Z');
       checkParse(
           '2018-10-20T05:13:45.985343Z',
           '2018-10-20T05:13:45.985343Z',
-          runningAsJavascript
-              ? '2018-10-20T05:13:45.985Z'
-              : '2018-10-20T05:13:45.985343Z');
+          dateTimeSupportsMicroseconds
+              ? '2018-10-20T05:13:45.985343Z'
+              : '2018-10-20T05:13:45.985Z');
       checkParse('2018-10-20T05:13:45.985Z', '2018-10-20T05:13:45.985Z',
           '2018-10-20T05:13:45.985Z');
       checkParse('1234-01-23T01:23:45.123Z', '1234-01-23T01:23:45.123Z',
@@ -151,9 +151,9 @@ void main() {
       checkParse(
           '2018-10-20T05:13:45.9853431239Z',
           '2018-10-20T05:13:45.985343123Z',
-          runningAsJavascript
-              ? '2018-10-20T05:13:45.985Z'
-              : '2018-10-20T05:13:45.985343Z');
+          dateTimeSupportsMicroseconds
+              ? '2018-10-20T05:13:45.985343Z'
+              : '2018-10-20T05:13:45.985Z');
 
       // Limit
       checkParse('0001-01-01T00:00:00Z', '0001-01-01T00:00:00.000Z',
@@ -180,7 +180,7 @@ void main() {
 
       // Limit
       checkParseSecondsNanos('0001-01-01T00:00:00Z', -62135596800, 0);
-      if (!runningAsJavascript) {
+      if (dateTimeSupportsMicroseconds) {
         checkParseSecondsNanos(
             '9999-12-31T23:59:59.999999999Z', 253402300799, 999999999);
       } else {
