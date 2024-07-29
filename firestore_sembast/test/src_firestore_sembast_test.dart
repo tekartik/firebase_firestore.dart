@@ -1,5 +1,5 @@
 @TestOn('vm')
-library tekartik_firebase_sembast.firebase_io_src_test;
+library;
 
 import 'dart:io';
 

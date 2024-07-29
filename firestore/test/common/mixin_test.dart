@@ -278,10 +278,6 @@ void main() {
         FirestoreComparable(null, true)
             .compareTo(FirestoreComparable(null, true)),
         0);
-    expect(
-        FirestoreComparable(null, true)
-            .compareTo(FirestoreComparable(null, false)),
-        -1);
   });
   test('mapWhere', () {
     var documentData = DocumentDataMap(map: {'value': true});

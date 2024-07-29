@@ -1,5 +1,5 @@
 @TestOn('browser')
-library tekartik_firebase_firestore_sembast.firebase_web_test;
+library;
 
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast_web.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
