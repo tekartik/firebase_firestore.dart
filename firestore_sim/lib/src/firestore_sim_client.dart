@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
+import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_common.dart';
@@ -14,7 +15,7 @@ import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart'; // ignore: 
 import 'import_firestore.dart'; // ignore: implementation_imports
 
 class FirestoreServiceSim
-    with FirestoreServiceDefaultMixin, FirebaseProductServiceMixin<Firestore>
+    with FirebaseProductServiceMixin<Firestore>, FirestoreServiceDefaultMixin
     implements FirestoreService {
   @override
   Firestore firestore(App app) {
@@ -500,7 +501,10 @@ class CollectionReferenceSim extends Object
 }
 
 class FirestoreSim extends Object
-    with FirestoreDefaultMixin, FirestoreMixin
+    with
+        FirebaseAppProductMixin<Firestore>,
+        FirestoreDefaultMixin,
+        FirestoreMixin
     implements Firestore {
   FirestoreSim(this.firestoreServiceSim, this.appSim);
 

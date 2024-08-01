@@ -1,5 +1,7 @@
 import 'package:js/js_util.dart';
 import 'package:tekartik_browser_utils/browser_utils_import.dart';
+import 'package:tekartik_firebase/firebase_mixin.dart';
+
 import 'import_browser.dart';
 import 'import_native.dart' as native;
 
@@ -53,7 +55,10 @@ FirestoreService get firestoreService =>
     _firebaseFirestoreServiceBrowser ??= FirestoreServiceBrowser();
 
 class FirestoreBrowser
-    with FirestoreDefaultMixin, FirestoreMixin
+    with
+        FirebaseAppProductMixin<Firestore>,
+        FirestoreDefaultMixin,
+        FirestoreMixin
     implements Firestore {
   @override
   final FirestoreServiceBrowser service;

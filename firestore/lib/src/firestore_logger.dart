@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
+import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/common/transaction_mixin.dart';
@@ -731,7 +732,10 @@ class TransactionLogger with TransactionMixin implements Transaction {
 }
 
 class FirestoreLogger
-    with FirestoreDefaultMixin, FirestoreMixin
+    with
+        FirebaseAppProductMixin<Firestore>,
+        FirestoreDefaultMixin,
+        FirestoreMixin
     implements Firestore {
   final FirestoreLoggerOptions options;
   final Firestore firestore;
@@ -768,7 +772,7 @@ class FirestoreLogger
 }
 
 class FirestoreServiceLogger
-    with FirestoreServiceDefaultMixin, FirebaseProductServiceMixin<Firestore>
+    with FirebaseProductServiceMixin<Firestore>, FirestoreServiceDefaultMixin
     implements FirestoreService {
   final FirestoreLoggerOptions options;
   final FirestoreService firestoreService;
