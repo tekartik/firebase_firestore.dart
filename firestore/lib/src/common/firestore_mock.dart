@@ -17,6 +17,7 @@ class FirestoreMock with FirestoreDefaultMixin, FirestoreMixin {
 
   FirestoreMock({FirestoreServiceMock? service})
       : service = service ?? FirestoreServiceMock();
+
   @override
   WriteBatch batch() {
     throw UnimplementedError();
@@ -138,6 +139,7 @@ class QueryMock
   final CollectionReferenceMock collMock;
   @override
   final QueryInfo queryInfo;
+
   QueryMock(this.collMock, this.queryInfo);
 
   @override

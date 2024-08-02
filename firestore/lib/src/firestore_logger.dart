@@ -143,6 +143,7 @@ class FirestoreLoggerAddEvent extends FirestoreLoggerEventImpl
     implements FirestoreLoggerEvent {
   /// Added id on success.
   final String? id;
+
   FirestoreLoggerAddEvent(
       CollectionReferenceLogger ref, Map<String, Object?> data,
       {Object? exception, this.id}) {
@@ -157,6 +158,7 @@ class FirestoreLoggerOnSnapshotEvent extends FirestoreLoggerEventImpl
     implements FirestoreLoggerEvent {
   /// Data read on success (even if it does not exist)
   final DocumentSnapshotLogger snapshot;
+
   FirestoreLoggerOnSnapshotEvent(this.snapshot, {Object? exception}) {
     ref = snapshot.ref;
     this.exception = exception;
@@ -170,6 +172,7 @@ class FirestoreLoggerGetEvent extends FirestoreLoggerEventImpl
     implements FirestoreLoggerEvent {
   /// Data read on success (even if it does not exist)
   final DocumentSnapshotLogger? snapshot;
+
   FirestoreLoggerGetEvent(DocumentReferenceLogger ref,
       {Object? exception, this.snapshot, String? tag}) {
     this.ref = ref;
@@ -186,6 +189,7 @@ class FirestoreLoggerQueryGetEvent extends FirestoreLoggerEventImpl
     implements FirestoreLoggerEvent {
   /// Data read on success (even if it does not exist)
   final QuerySnapshotLogger? snapshot;
+
   FirestoreLoggerQueryGetEvent(QueryLoggerBase query,
       {Object? exception, required this.snapshot, String? tag}) {
     this.query = query;
@@ -202,6 +206,7 @@ class FirestoreLoggerQueryOnSnapshotEvent extends FirestoreLoggerEventImpl
     implements FirestoreLoggerEvent {
   /// Data read on success (even if it does not exist)
   final QuerySnapshotLogger snapshot;
+
   FirestoreLoggerQueryOnSnapshotEvent(QueryLoggerBase query, this.snapshot,
       {Object? exception}) {
     this.query = query;
@@ -256,6 +261,7 @@ class FirestoreLoggerBatch implements WriteBatch {
   static var _id = 0;
   final FirestoreLogger firestoreLogger;
   final WriteBatch writeBatch;
+
   FirestoreLoggerOptions get options => firestoreLogger.options;
 
   FirestoreLoggerBatch(this.writeBatch, this.firestoreLogger) {
@@ -325,8 +331,10 @@ abstract class QueryLoggerBase
     with QueryDefaultMixin, FirestoreQueryExecutorMixin
     implements Query {
   final Query query;
+
   FirestoreLogger get firestoreLogger => refLogger.firestoreLogger;
   late final CollectionReferenceLogger refLogger;
+
   FirestoreLoggerOptions get options => firestoreLogger.options;
 
   QueryLoggerBase(this.query) {
@@ -480,6 +488,7 @@ class DocumentChangeLogger implements DocumentChange {
     assert(documentChange is! DocumentChangeLogger,
         'You cannot reference a logger');
   }
+
   @override
   DocumentSnapshot get document =>
       DocumentSnapshotLogger(documentChange.document, firestoreLogger);
@@ -497,6 +506,7 @@ class DocumentChangeLogger implements DocumentChange {
 class QueryLogger extends QueryLoggerBase implements Query {
   @override
   Firestore get firestore => firestoreLogger;
+
   QueryLogger(super.query, CollectionReferenceLogger refLogger) {
     this.refLogger = refLogger;
   }
@@ -507,6 +517,7 @@ class CollectionReferenceLogger extends QueryLoggerBase
     implements CollectionReference, FirestorePathReference {
   @override
   final FirestoreLogger firestoreLogger;
+
   CollectionReference get ref => query as CollectionReference;
 
   CollectionReferenceLogger(CollectionReference ref, this.firestoreLogger)
@@ -548,7 +559,9 @@ class DocumentReferenceLogger
     implements DocumentReference, FirestorePathReference {
   final DocumentReference ref;
   final FirestoreLogger firestoreLogger;
+
   FirestoreLoggerOptions get options => firestoreLogger.options;
+
   DocumentReferenceLogger(this.ref, this.firestoreLogger) {
     assert(ref is! DocumentReferenceLogger, 'You cannot reference a logger');
   }
@@ -646,6 +659,7 @@ class DocumentReferenceLogger
 class TransactionLogger with TransactionMixin implements Transaction {
   final Transaction transaction;
   final FirestoreLogger firestoreLogger;
+
   FirestoreLoggerOptions get options => firestoreLogger.options;
   static var _id = 0;
 

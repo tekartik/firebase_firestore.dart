@@ -277,6 +277,7 @@ class LimitInfo {
       this.inclusive = inclusive;
     }
   }
+
   LimitInfo clone() {
     return LimitInfo()
       ..documentId = documentId

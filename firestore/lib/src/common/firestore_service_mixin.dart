@@ -3,6 +3,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 mixin FirestoreServiceDefaultMixin implements FirestoreService {
   @override
   bool get supportsListCollections => false;
+
   @override
   bool get supportsDocumentSnapshotTime => false;
 

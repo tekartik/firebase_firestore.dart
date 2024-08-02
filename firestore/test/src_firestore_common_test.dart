@@ -16,6 +16,7 @@ final dateTimeSupportsMicroseconds = () {
   }
   return false;
 }();
+
 void main() {
   group('path', () {
     test('sanitizeReferencePath', () {

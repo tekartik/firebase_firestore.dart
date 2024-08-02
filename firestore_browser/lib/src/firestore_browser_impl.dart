@@ -290,6 +290,7 @@ class DocumentSnapshotBrowser
   final native.DocumentSnapshot _native;
 
   final Firestore firestore;
+
   DocumentSnapshotBrowser(this.firestore, this._native);
 
   @override

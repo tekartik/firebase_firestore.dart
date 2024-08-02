@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:tekartik_firebase/firebase.dart';
+import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 
@@ -106,6 +107,10 @@ abstract class Firestore {
 
   /// Service access
   FirestoreService get service;
+
+  /// Default Firestore instance.
+  static Firestore get instance =>
+      (FirebaseApp.instance as FirebaseAppMixin).getProduct<Firestore>()!;
 }
 
 /// Representa firestore document data.
