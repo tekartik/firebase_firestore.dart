@@ -83,9 +83,12 @@ mixin CollectionReferenceMixin
   @override
   bool operator ==(other) {
     if (other is CollectionReferenceMixin) {
+      /*
+      No longer check firestore to support logger
       if (firestore != (other).firestore) {
         return false;
       }
+       */
       if (path != (other).path) {
         return false;
       }
@@ -119,10 +122,12 @@ mixin DocumentReferenceMixin
 
   @override
   bool operator ==(other) {
-    if (other is DocumentReferenceMixin) {
+    if (other is DocumentReference) {
+      /*
+      No longer check firestore to support logger
       if (firestore != (other).firestore) {
         return false;
-      }
+      }*/
       if (path != (other).path) {
         return false;
       }
