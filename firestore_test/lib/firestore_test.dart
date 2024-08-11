@@ -14,6 +14,7 @@ import 'package:tekartik_firebase_firestore_test/utils_query_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_test.dart';
 
 import 'copy_utils_test.dart';
+import 'firestore_document_test.dart';
 import 'firestore_track_changes_support_test.dart';
 import 'firestore_track_changes_test.dart';
 import 'list_collections_test.dart';
@@ -142,14 +143,8 @@ void runFirestoreAppTests(
   runFirestoreQueryTests(firestore: firestore, testContext: testContext);
   runListCollectionsTest(firestore: firestore, testContext: testContext);
   runAggregateQueryTest(firestore: firestore, testContext: testContext);
-  /*
-  if (firestoreService.supportsTimestampsInSnapshots) {
-    runNoTimestampsInSnapshots(
-        firestoreService: firestoreService,
-        firebase: firebase,
-        options: options);
-  }
-   */
+  runFirestoreDocumentTests(firestore: firestore, testContext: testContext);
+
   utilsTest(
       firestoreService: firestoreService,
       firestore: firestore,
