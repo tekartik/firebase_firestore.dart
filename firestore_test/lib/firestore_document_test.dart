@@ -11,7 +11,7 @@ void runFirestoreDocumentTests(
     {required Firestore firestore, FirestoreTestContext? testContext}) {
   var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
   group('document', () {
-    test('all types to/from json with firestore', () async {
+    test('all types', () async {
       var map = {
         'int': 1,
         'bool': true,
@@ -22,7 +22,7 @@ void runFirestoreDocumentTests(
         'geoPoint': GeoPoint(5, 6),
         'timestamp': Timestamp(7, 8000)
       };
-      var doc = firestore.doc(join(testsRefPath, 'doc_all_types'));
+      var doc = firestore.doc(url.join(testsRefPath, 'doc_all_types'));
       await doc.set(map);
       expect((await doc.get()).data, map);
     });
