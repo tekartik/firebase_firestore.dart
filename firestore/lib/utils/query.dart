@@ -6,11 +6,15 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 
 /// Delete all item in a query, return the count deleted
 /// Batch size default to 10
+/// Keep doc with paths in keepPaths
 Future<int> deleteQuery(Firestore firestore, Query query,
-    {int? batchSize}) async {
+    {int? batchSize, Iterable<String>? keepPaths}) async {
   batchSize ??= 10;
   var count = 0;
   var deletedPaths = <String>{};
+  if (keepPaths != null) {
+    deletedPaths.addAll(keepPaths);
+  }
   int snapshotSize;
   do {
     var snapshot = await query.limit(batchSize).get();

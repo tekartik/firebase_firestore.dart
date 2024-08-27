@@ -6,11 +6,14 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/query.dart';
 
 /// Delete all items in a collection, return the count deleted
+/// Keep ids in keepIds
 Future<int> deleteCollection(
     Firestore firestore, CollectionReference collectionRef,
-    {int? batchSize}) async {
+    {int? batchSize, Iterable<String>? keepIds}) async {
   var query = collectionRef.orderBy(firestoreNameFieldPath);
-  return await deleteQuery(firestore, query, batchSize: batchSize);
+  return await deleteQuery(firestore, query,
+      batchSize: batchSize,
+      keepPaths: keepIds?.map((id) => collectionRef.doc(id).path));
 }
 
 /// Copy all items to a collection, return the count copied
