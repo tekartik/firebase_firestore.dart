@@ -4,6 +4,8 @@
 
 import 'dart:math';
 
+import 'package:tekartik_firebase_firestore/firestore.dart';
+
 /// Utility class for generating Firebase child node keys.
 ///
 /// Since the Flutter plugin API is asynchronous, there's no way for us
@@ -31,5 +33,20 @@ class AutoIdGenerator {
     }
 
     return stringBuffer.toString();
+  }
+}
+
+/// Collection reference extension to generate unique id
+extension TekartikCollectionReferenceUniqueId on CollectionReference {
+  /// Safe unique id generation
+  Future<String> txnGenerateUniqueId(Transaction txn) async {
+    String uniqueId;
+    while (true) {
+      uniqueId = AutoIdGenerator.autoId();
+      if (!(await txn.get(doc(uniqueId))).exists) {
+        break;
+      }
+    }
+    return uniqueId;
   }
 }

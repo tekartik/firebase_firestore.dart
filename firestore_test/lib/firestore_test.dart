@@ -19,6 +19,7 @@ import 'firestore_track_changes_support_test.dart';
 import 'firestore_track_changes_test.dart';
 import 'list_collections_test.dart';
 import 'query_test.dart';
+import 'utils_auto_id_test.dart';
 
 /// collection
 @Deprecated('Use FirestoreTestContext')
@@ -149,6 +150,7 @@ void runFirestoreAppTests(
       firestoreService: firestoreService,
       firestore: firestore,
       testContext: testContext);
+  utilsAutoIdTest(firestore: firestore, testContext: testContext);
   runCopyUtilsTest(firestore: firestore, testContext: testContext);
 }
 
