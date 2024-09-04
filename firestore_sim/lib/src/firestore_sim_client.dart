@@ -621,7 +621,7 @@ class FirestoreSim extends Object
   FirestoreService get service => firestoreServiceSim;
 
   @override
-  FirebaseApp get app => throw UnimplementedError();
+  FirebaseApp get app => appSim;
 }
 
 class TransactionSim extends WriteBatchSim implements Transaction {
