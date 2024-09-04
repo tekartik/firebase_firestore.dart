@@ -93,6 +93,9 @@ class FirestoreBrowser
   void settings(FirestoreSettings settings) {
     nativeInstance.settings(_unwrapSettings(settings)!);
   }
+
+  @override
+  FirebaseApp get app => throw UnimplementedError();
 }
 
 native.Settings? _unwrapSettings(FirestoreSettings settings) {

@@ -288,6 +288,9 @@ class FirestoreIdb extends Object
 
   @override
   FirestoreService get service => firestoreServiceIdb;
+
+  @override
+  FirebaseApp get app => throw UnimplementedError();
 }
 
 class LocalTransaction {

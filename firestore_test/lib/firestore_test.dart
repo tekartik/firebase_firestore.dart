@@ -121,6 +121,10 @@ void runFirestoreAppTests(
     AppOptions? options,
     required FirestoreTestContext testContext}) {
   var firestore = firestoreService.firestore(app);
+  test('app', () {
+    expect(firestore.app, app);
+    expect(firestore.service, firestoreService);
+  });
   runFirestoreCommonTests(
       firestoreService: firestoreService,
       firestore: firestore,

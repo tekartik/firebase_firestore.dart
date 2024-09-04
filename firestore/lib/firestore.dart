@@ -68,7 +68,7 @@ abstract class FirestoreService {
 
 /// Represents a Firestore Database and is the entry point for all
 /// Firestore operations.
-abstract class Firestore {
+abstract class Firestore implements FirebaseAppProduct<Firestore> {
   /// Gets a [CollectionReference] for the specified Firestore path.
   CollectionReference collection(String path);
 

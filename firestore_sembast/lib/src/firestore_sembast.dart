@@ -118,6 +118,7 @@ class FirestoreSembast extends Object
   var dbLock = Lock();
   Database? db;
   final FirestoreServiceSembast firestoreService;
+  @override
   final App app;
 
   FirestoreSembast(this.firestoreService, this.app);

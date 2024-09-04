@@ -751,10 +751,17 @@ class FirestoreLogger
         FirestoreDefaultMixin,
         FirestoreMixin
     implements Firestore {
+  late final FirestoreServiceLogger serviceLogger;
   final FirestoreLoggerOptions options;
   final Firestore firestore;
 
-  FirestoreLogger({required this.firestore, required this.options}) {
+  FirestoreLogger(
+      {FirestoreServiceLogger? serviceLogger,
+      required this.firestore,
+      required this.options}) {
+    this.serviceLogger = serviceLogger ??
+        FirestoreServiceLogger(
+            firestoreService: firestore.service, options: options);
     assert(firestore is! FirestoreLogger, 'You cannot log a logger!');
   }
 
@@ -778,11 +785,14 @@ class FirestoreLogger
   }
 
   @override
-  FirestoreService get service => firestore.service;
+  FirestoreService get service => serviceLogger;
 
   @override
   Future<List<CollectionReference>> listCollections() =>
       firestore.listCollections();
+
+  @override
+  FirebaseApp get app => firestore.app;
 }
 
 class FirestoreServiceLogger
@@ -797,7 +807,9 @@ class FirestoreServiceLogger
   @override
   Firestore firestore(App app) => getInstance(app, () {
         return FirestoreLogger(
-            firestore: firestoreService.firestore(app), options: options);
+            serviceLogger: this,
+            firestore: firestoreService.firestore(app),
+            options: options);
       });
 
   @override
@@ -849,8 +861,12 @@ extension FirestoreLoggerDebugExt on Firestore {
   /// databaseFactory = databaseFactory.debugQuickLoggerWrapper()
   @Deprecated('Debug/dev mode')
   Firestore debugQuickLoggerWrapper() {
-    var firestore =
-        FirestoreLogger(firestore: this, options: FirestoreLoggerOptions.all());
+    var options = FirestoreLoggerOptions.all();
+    var firestore = FirestoreLogger(
+        serviceLogger:
+            FirestoreServiceLogger(firestoreService: service, options: options),
+        firestore: this,
+        options: options);
     return firestore;
   }
 }
