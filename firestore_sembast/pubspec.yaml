@@ -22,6 +22,15 @@ dependencies:
       ref: dart3a
     version: '>=0.3.7'
   path:
+  tekartik_common_utils:
+    git:
+      url: https://github.com/tekartik/common_utils.dart
+      ref: dart3a
+  tekartik_firebase:
+    git:
+      url: https://github.com/tekartik/firebase.dart
+      ref: dart3a
+      path: firebase
 dev_dependencies:
   test: any
   dev_build:

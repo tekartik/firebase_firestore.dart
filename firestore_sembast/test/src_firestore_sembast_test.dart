@@ -79,9 +79,9 @@ void main() {
 
     group('DocumentData', () {
       test('valueToUpdateValue', () {
-        expect(
-            valueToUpdateValue(FieldValue.delete), sembast.FieldValue.delete);
-        expect(valueToUpdateValue({'test': FieldValue.delete}),
+        expect(firestoreValueToSembastUpdateValue(FieldValue.delete),
+            sembast.FieldValue.delete);
+        expect(firestoreValueToSembastUpdateValue({'test': FieldValue.delete}),
             {'test': sembast.FieldValue.delete});
         //var union = FieldValue.arrayUnion([1]);
         //expect(valueToUpdateValue({'test': union}), {'test': union});

@@ -4,6 +4,7 @@ import 'package:sembast/sembast.dart' hide Transaction, FieldValue;
 import 'package:sembast/sembast_memory.dart' as sembast;
 import 'package:sembast/utils/value_utils.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
+import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
@@ -16,6 +17,7 @@ import 'package:uuid/uuid.dart';
 
 import 'import_firestore.dart';
 
+/// Firestore service on sembast
 class FirestoreServiceSembast
     with FirebaseProductServiceMixin<Firestore>, FirestoreServiceDefaultMixin
     implements FirestoreService {
@@ -26,8 +28,10 @@ class FirestoreServiceSembast
     });
   }
 
+  /// Sembast database factory
   final sembast.DatabaseFactory databaseFactory;
 
+  /// Constructor
   FirestoreServiceSembast(this.databaseFactory);
 
   @override
@@ -45,7 +49,8 @@ class FirestoreServiceSembast
   @override
   bool get supportsAggregateQueries => true;
 
-  //TODO
+  /// Delete a sembast app
+  @Deprecated('Used?')
   Future deleteApp(App app) async {}
 
   @override
@@ -63,50 +68,60 @@ class FirestoreServiceSembast
 
 FirestoreServiceSembast? _firestoreServiceSembastMemory;
 
+/// Firestore service for memory based on sembast memory
 FirestoreServiceSembast get firestoreServiceSembastMemory =>
     _firestoreServiceSembastMemory ??=
         FirestoreServiceSembast(sembast.databaseFactoryMemory);
 
+/// Firestore service for memory based on sembast memory
 FirestoreService newFirestoreServiceSembastMemory() =>
     newFirestoreServiceSembast(
         databaseFactory: sembast.newDatabaseFactoryMemory());
 
-dynamic valueToUpdateValue(dynamic value) {
+/// firestore value to sembast value
+Object? firestoreValueToSembastUpdateValue(Object? value) {
   if (value == FieldValue.delete) {
     return sembast.FieldValue.delete;
   }
-  return valueToJsonRecordValue(value, valueToUpdateValue);
+  return valueToJsonRecordValue(value, firestoreValueToSembastUpdateValue);
 }
 
-Map<String, Object?> documentDataToUpdateMap(
+/// Document data to sebmast update map
+Map<String, Object?> firestoreDocumentDataToSembastUpdateMap(
     DocumentData documentData, Map<String, Object?> recordMap) {
   var updateMap = <String, Object?>{};
   documentDataMap(documentData)!.map.forEach((String key, value) {
     if (value is FieldValueArray) {
       updateMap[key] = fieldArrayValueMergeValue(value, recordMap[key]);
     } else {
-      updateMap[key] = valueToUpdateValue(value);
+      updateMap[key] = firestoreValueToSembastUpdateValue(value);
     }
   });
   return updateMap;
 }
 
-// new format
+/// Initial version
 int firestoreSembastDatabaseVersion = 1;
 
+/// The document store
 final StoreRef<String, Map<String, Object?>> docStore =
     stringMapStoreFactory.store('doc');
 
+/// Write result
 class WriteResultSembast extends WriteResultBase {
+  /// Constructor
   WriteResultSembast(super.path);
 
+  /// Previous snapshot
   DocumentSnapshotSembast? get previousSnapshotSembast =>
       previousSnapshot as DocumentSnapshotSembast?;
 
+  /// New snapshot
   DocumentSnapshotSembast? get newSnapshotSembast =>
       newSnapshot as DocumentSnapshotSembast?;
 }
 
+/// Firestore on sembast
 class FirestoreSembast extends Object
     with
         FirebaseAppProductMixin<Firestore>,
@@ -115,23 +130,32 @@ class FirestoreSembast extends Object
         FirestoreSubscriptionMixin,
         FirestoreDocumentsMixin
     implements Firestore {
+  /// Lock
   var dbLock = Lock();
+
+  /// Sembast database
   Database? db;
+
+  /// Firestore service
   final FirestoreServiceSembast firestoreService;
   @override
   final App app;
 
+  /// Constructor
   FirestoreSembast(this.firestoreService, this.app);
 
+  /// App local path
   String get appLocalPath => ((app is AppLocal)
       ? (app as AppLocal).localPath
       : join('.dart_tool', 'tekartik_firebase_firestore_local',
           AppLocal.appPathPart(app.name)));
 
+  /// Close
   Future close() async {
     await closeSubscriptions();
   }
 
+  /// Database path
   String get dbPath => join(appLocalPath, 'firestore.db');
 
   @override
@@ -144,6 +168,7 @@ class FirestoreSembast extends Object
     return DocumentReferenceSembast(this, path);
   }
 
+  /// Wait for db to be ready
   Future<Database> get ready async {
     if (db != null) {
       return db!;
@@ -153,7 +178,10 @@ class FirestoreSembast extends Object
         // If it is a name (no path, no extension) use it as id
 
         final name = dbPath;
-        print('opening database $name');
+        if (isDebug) {
+          // ignore: avoid_print
+          print('opening database $name');
+        }
         var openedDb = await firestoreService.databaseFactory
             .openDatabase(name, version: firestoreSembastDatabaseVersion,
                 onVersionChanged: (db, oldVersion, newVersion) async {
@@ -174,19 +202,21 @@ class FirestoreSembast extends Object
     });
   }
 
+  /// Get a record map
   Future<Map<String, Object?>?> txnGetRecordMap(
       sembast.Transaction txn, String path) async {
     var recordMap = await docStore.record(path).get(txn);
     return recordMap;
   }
 
+  /// Get a document snapshot
   Future<DocumentSnapshotSembast> txnGetDocumentSnapshot(
       sembast.Transaction txn, DocumentReference ref) async {
     final recordMap = await txnGetRecordMap(txn, ref.path);
     return documentFromRecordMap(ref, recordMap) as DocumentSnapshotSembast;
   }
 
-  // return previous data
+  /// Delete and return result
   Future<WriteResultSembast> txnDelete(
       sembast.Transaction txn, DocumentReference ref) async {
     var result = WriteResultSembast(ref.path);
@@ -195,6 +225,7 @@ class FirestoreSembast extends Object
     return result;
   }
 
+  /// Set in transaction
   Future<WriteResultSembast> txnSet(
       sembast.Transaction txn, DocumentReference ref, DocumentData documentData,
       [SetOptions? options]) async {
@@ -233,6 +264,7 @@ class FirestoreSembast extends Object
     return result;
   }
 
+  /// Update in transaction
   Future<WriteResultSembast> txnUpdate(sembast.Transaction txn,
       DocumentReference ref, DocumentData documentData) async {
     var result = WriteResultSembast(ref.path);
@@ -254,9 +286,10 @@ class FirestoreSembast extends Object
         (result.previousSnapshot?.createTime ?? now).toIso8601String();
     updateMap[updateTimeKey] = now.toIso8601String();
 
-    var recordMap = await docStore
-        .record(ref.path)
-        .update(txn, documentDataToUpdateMap(documentData, existingRecordMap));
+    var recordMap = await docStore.record(ref.path).update(
+        txn,
+        firestoreDocumentDataToSembastUpdateMap(
+            documentData, existingRecordMap));
 
     result.newSnapshot = documentFromRecordMap(ref, recordMap);
     return result;
@@ -324,9 +357,9 @@ class FirestoreSembast extends Object
       final recordPath = record.key;
 
       final parentPath = url.dirname(recordPath);
-      print(parentPath);
+      // print(parentPath);
       var collParentPath = url.dirname(parentPath);
-      print(collParentPath);
+      // print(collParentPath);
       if (collParentPath == '.') {
         ids.add(basename(parentPath));
       }
@@ -335,11 +368,15 @@ class FirestoreSembast extends Object
   }
 }
 
+/// Write batch on sembast
 class WriteBatchSembast extends WriteBatchBase implements WriteBatch {
+  /// Firestore
   final FirestoreSembast firestore;
 
+  /// Constructor
   WriteBatchSembast(this.firestore);
 
+  /// Commit.
   Future<List<WriteResultSembast>> txnCommit(sembast.Transaction txn) async {
     final results = <WriteResultSembast>[];
     for (var operation in operations) {
@@ -369,7 +406,7 @@ class WriteBatchSembast extends WriteBatchBase implements WriteBatch {
     notify(results);
   }
 
-  // To use after txtCommit
+  /// To use after txtCommit
   void notify(List<WriteResultSembast> results) {
     for (var result in results) {
       firestore.notify(result);
@@ -377,10 +414,12 @@ class WriteBatchSembast extends WriteBatchBase implements WriteBatch {
   }
 }
 
-// It is basically a batch with gets before in a transaction
+/// It is basically a batch with gets before in a transaction
 class TransactionSembast extends WriteBatchSembast implements Transaction {
+  /// Native transaction
   late sembast.Transaction nativeTransaction;
 
+  /// Constructor
   TransactionSembast(super.firestore);
 
   @override
@@ -391,16 +430,20 @@ class TransactionSembast extends WriteBatchSembast implements Transaction {
   }
 }
 
+/// Document snapshot on sembast
 class DocumentSnapshotSembast extends DocumentSnapshotBase {
+  /// Constructor
   DocumentSnapshotSembast(super.ref, super.meta, super.documentData,
       {super.exists});
 
+  /// Document snapshot from snapshot
   DocumentSnapshotSembast.fromSnapshot(DocumentSnapshotSembast snapshot,
       {bool? exists})
       : this(snapshot.ref, snapshot.meta, snapshot.documentData,
             exists: exists ?? snapshot.exists);
 }
 
+/// Document Reference on sembast
 class DocumentReferenceSembast extends FirestoreReferenceBase
     with
         DocumentReferenceDefaultMixin,
@@ -408,10 +451,12 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
         DocumentReferenceMixin,
         PathReferenceMixin
     implements DocumentReference {
+  /// Constructor
   DocumentReferenceSembast(super.firestore, super.path) {
     checkDocumentReferencePath(path);
   }
 
+  /// Firestore
   FirestoreSembast get firestoreSembast => firestore as FirestoreSembast;
 
   @override
@@ -484,7 +529,7 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
   Future<List<CollectionReference>> listCollections() async {
     var db = await firestoreSembast.ready;
 
-    print('path: $path');
+    // print('path: $path');
     var ids = <String>{};
     for (var record in await docStore.find(db)) {
       final recordPath = record.key;
@@ -499,6 +544,7 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
   }
 }
 
+/// Collection reference on sembast
 class CollectionReferenceSembast extends QuerySembast
     implements CollectionReference {
   @override

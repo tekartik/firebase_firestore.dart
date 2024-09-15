@@ -17,6 +17,7 @@ void main() {
     firestore = FirestoreLogger(
         firestore: firestore,
         options: FirestoreLoggerOptions.all(log: (event) {
+          // ignore: avoid_print
           print(event);
         }));
     var ref = firestore.doc('test/1');
@@ -30,6 +31,7 @@ void main() {
       firestoreService: FirestoreServiceLogger(
           firestoreService: newFirestoreServiceMemory(),
           options: FirestoreLoggerOptions.all(log: (event) {
+            // ignore: avoid_print
             print(event);
           })));
 }
