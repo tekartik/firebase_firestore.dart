@@ -40,6 +40,8 @@ String eventToString(FirestoreLoggerEvent event) {
     type = 'add';
   } else if (event is FirestoreLoggerOnSnapshotEvent) {
     type = 'gos';
+  } else if (event is FirestoreLoggerOnSnapshotTriggerEvent) {
+    type = 'got';
   } else if (event is FirestoreLoggerQueryOnSnapshotEvent) {
     type = 'qos';
   } else if (event is FirestoreLoggerQueryGetEvent) {
@@ -161,6 +163,16 @@ class FirestoreLoggerOnSnapshotEvent extends FirestoreLoggerEventImpl
 
   FirestoreLoggerOnSnapshotEvent(this.snapshot, {Object? exception}) {
     ref = snapshot.ref;
+    this.exception = exception;
+  }
+}
+
+class FirestoreLoggerOnSnapshotTriggerEvent extends FirestoreLoggerEventImpl
+    with FirestoreLoggerEventWithDocumentRefMixin
+    implements FirestoreLoggerEvent {
+  FirestoreLoggerOnSnapshotTriggerEvent(DocumentReferenceLogger ref,
+      {Object? exception}) {
+    this.ref = ref;
     this.exception = exception;
   }
 }
@@ -606,6 +618,9 @@ class DocumentReferenceLogger
 
   @override
   Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
+    if (options.read) {
+      options.log(FirestoreLoggerOnSnapshotTriggerEvent(this));
+    }
     return StreamTransformer<DocumentSnapshot, DocumentSnapshot>.fromHandlers(
         handleData: (snapshot, sink) {
       var snapshotLogger = DocumentSnapshotLogger(snapshot, firestoreLogger);
