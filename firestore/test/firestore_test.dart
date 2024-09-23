@@ -92,7 +92,7 @@ void main() {
       data.setNull('geo');
       expect(documentDataToJsonMap(data), {'geo': null});
 
-      data.setGeoPoint('geo', GeoPoint(3.5, 4.0));
+      data.setGeoPoint('geo', const GeoPoint(3.5, 4.0));
 
       data = documentDataFromJsonMap(firestore, documentDataToJsonMap(data))!;
       var geoPoint = data.getGeoPoint('geo')!;
@@ -184,7 +184,7 @@ void main() {
         'map': {'test': 1},
         'blob': Blob.fromList([1, 2, 3]),
         'ref': firestore.doc('test/1'),
-        'geoPoint': GeoPoint(1, 2),
+        'geoPoint': const GeoPoint(1, 2),
         'timestamp': Timestamp(1, 2)
       };
       expect(
@@ -200,7 +200,7 @@ void main() {
         'map': {'test': 1},
         'blob': Blob.fromList([1, 2, 3]),
         //  'ref': firestore.doc('test/1'), ref not supported
-        'geoPoint': GeoPoint(1, 2),
+        'geoPoint': const GeoPoint(1, 2),
         'timestamp': Timestamp(1, 2)
       };
       expect(

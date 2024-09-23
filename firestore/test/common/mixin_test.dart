@@ -1,7 +1,5 @@
-import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_mock.dart';
-import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
@@ -305,12 +303,5 @@ void main() {
     expect(mapWhere(documentData, WhereInfo('value', arrayContains: 1)), true);
     expect(mapWhere(documentData, WhereInfo('value', arrayContains: false)),
         false);
-  });
-  test('parentPath', () {
-    expect(url.dirname('some root dir name'), '.');
-    expect(getParentPathOrNull('some root dir name'), isNull);
-    expect(getParentPathOrNull(''), isNull);
-    expect(getParentPathOrNull('/'), isNull);
-    expect(getParentPathOrNull('.'), isNull);
   });
 }

@@ -37,6 +37,7 @@ export 'src/query.dart' show Query;
 export 'src/query_snapshot.dart' show QuerySnapshotExtension, QuerySnapshot;
 export 'src/snapshot_meta_data.dart' show SnapshotMetadata;
 
+/// Firestore service
 abstract class FirestoreService {
   // True if query supporting selecting a set of fields
   bool get supportsQuerySelect;
