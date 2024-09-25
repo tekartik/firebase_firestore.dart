@@ -4,9 +4,9 @@ import 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast.dart'
     as firestore_sembast;
 import 'package:tekartik_firebase_local/firebase_local.dart';
 
+export 'package:tekartik_firebase_firestore/firestore.dart';
 export 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast.dart'
     show FirestoreServiceSembast;
-
 export 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast_ext.dart'
     show TekartikFirestoreSembastExt;
 

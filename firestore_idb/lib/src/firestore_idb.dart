@@ -1,6 +1,5 @@
 import 'package:idb_shim/idb.dart' as idb;
 import 'package:path/path.dart';
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/document_data.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';

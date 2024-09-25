@@ -1,5 +1,4 @@
 import 'package:tekartik_common_utils/common_utils_import.dart';
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 

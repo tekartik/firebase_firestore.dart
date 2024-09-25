@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:tekartik_common_utils/common_utils_import.dart';
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';

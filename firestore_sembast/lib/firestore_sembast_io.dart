@@ -1,6 +1,7 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast_io.dart'
     as firestore_sembast_io;
+export 'firestore_sembast.dart';
 
 /// Firestore service for io based on sembast io
 FirestoreService get firestoreServiceIo =>

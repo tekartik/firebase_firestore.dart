@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 
 import 'firestore.dart';
 
+export 'package:tekartik_firebase/firebase.dart';
 export 'package:tekartik_firebase_firestore/src/collection_reference.dart'
     show CollectionReference;
 export 'package:tekartik_firebase_firestore/src/firestore.dart'

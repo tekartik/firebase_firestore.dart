@@ -5,7 +5,6 @@ import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:sembast/sembast.dart' as sembast;
-import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast_io.dart';
 import 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';

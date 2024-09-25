@@ -2,7 +2,6 @@ import 'package:sembast/utils/sembast_import_export.dart';
 import 'package:tekartik_firebase_firestore/utils/copy_utils.dart';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';
 import 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast.dart';
-import 'package:tekartik_firebase_firestore_sembast/src/import_firestore.dart';
 
 export 'package:sembast/utils/sembast_import_export.dart'
     show

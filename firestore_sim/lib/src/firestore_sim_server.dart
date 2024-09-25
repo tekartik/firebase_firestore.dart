@@ -3,7 +3,6 @@ import 'dart:core' hide Error;
 import 'package:json_rpc_2/json_rpc_2.dart' as rpc;
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_common_utils/stream/stream_poller.dart';
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
