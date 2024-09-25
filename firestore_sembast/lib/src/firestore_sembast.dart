@@ -1,5 +1,5 @@
 import 'package:path/path.dart';
-import 'package:sembast/sembast.dart' as sembast;
+
 import 'package:sembast/sembast.dart' hide Transaction, FieldValue;
 import 'package:sembast/sembast_memory.dart' as sembast;
 import 'package:sembast/utils/value_utils.dart';
