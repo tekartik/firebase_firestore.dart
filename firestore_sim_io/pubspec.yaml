@@ -39,6 +39,21 @@ dev_dependencies:
       ref: dart3a
     version: '>=0.1.0'
 
+  tekartik_firebase_local:
+    git:
+      url: https://github.com/tekartik/firebase.dart
+      ref: dart3a
+      path: firebase_local
+  tekartik_firebase_sim:
+    git:
+      url: https://github.com/tekartik/firebase.dart
+      ref: dart3a
+      path: firebase_sim
+  tekartik_web_socket_io:
+    git:
+      url: https://github.com/tekartik/web_socket.dart
+      ref: dart3a
+      path: web_socket_io
 dependency_overrides:
   tekartik_firebase_firestore_test:
     path: ../firestore_test

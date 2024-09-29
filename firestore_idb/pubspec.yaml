@@ -26,6 +26,11 @@ dependencies:
       url: https://github.com/tekartik/browser_utils.dart
       ref: dart3a
   path:
+  tekartik_firebase:
+    git:
+      url: https://github.com/tekartik/firebase.dart
+      ref: dart3a
+      path: firebase
 dev_dependencies:
   test: ">=0.12.37"
   dev_build: '>=0.12.0-dev.1'

@@ -1,5 +1,5 @@
 @TestOn('vm')
-library tekartik_firebase_firestore_sim_io.firestore_sim_io_test;
+library;
 
 import 'dart:async';
 

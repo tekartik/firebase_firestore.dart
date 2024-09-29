@@ -1,5 +1,5 @@
 @TestOn('browser')
-library tekartik_firebase_firestore_browser.firestore_browser_test;
+library;
 
 import 'package:tekartik_firebase_browser/firebase_browser.dart';
 // ignore: deprecated_member_use_from_same_package

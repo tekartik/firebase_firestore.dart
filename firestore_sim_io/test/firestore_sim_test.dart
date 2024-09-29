@@ -1,4 +1,4 @@
-library tekartik_firebase_server_sim_io.firebase_sim_test;
+library;
 
 import 'dart:async';
 

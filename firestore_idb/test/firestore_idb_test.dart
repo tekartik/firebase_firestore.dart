@@ -1,4 +1,4 @@
-library tekartik_firebase_firestore_idb.firestore_idb_test;
+library;
 
 import 'package:idb_shim/idb_client_memory.dart';
 import 'package:tekartik_firebase_firestore_idb/firestore_idb.dart';

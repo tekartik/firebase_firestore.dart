@@ -1,4 +1,4 @@
-library tekartik_firebase_firestore_sembast.firestroage_memory_logger_test;
+library;
 
 import 'package:tekartik_firebase_firestore/firestore_logger.dart';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';

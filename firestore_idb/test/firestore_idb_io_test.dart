@@ -1,5 +1,5 @@
 @TestOn('vm')
-library tekartik_firebase_firestore_idb.firestore_idb_io_test;
+library;
 
 import 'package:idb_shim/idb_io.dart';
 import 'package:path/path.dart';

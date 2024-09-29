@@ -1,5 +1,5 @@
 @TestOn('browser')
-library tekartik_firebase_firestore_idb.firestore_idb_browser_test;
+library;
 
 import 'package:tekartik_firebase_firestore_idb/firestore_idb_browser.dart'
     as idb;
