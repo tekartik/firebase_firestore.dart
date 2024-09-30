@@ -137,7 +137,7 @@ mixin DocumentReferenceMixin
   }
 }
 
-/// Remove 'projects/<project>/databases/(default)/documents if any
+/// Remove `projects/<project>/databases/(default)/documents` if any
 List<String> localPathReferenceParts(String path) {
   var parts = url.split(sanitizeReferencePath(path));
   if (parts.length > 6 &&
