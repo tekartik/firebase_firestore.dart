@@ -1,6 +1,7 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_mock.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/auto_id_generator.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
@@ -97,6 +98,19 @@ void main() {
 
     test('auto_id_generator', () {
       expect(AutoIdGenerator.autoId(), hasLength(20));
+    });
+
+    test('FirestoreDocumentInfo', () {
+      var documentData = DocumentData();
+      documentData.setTimestamp('timestamp', Timestamp(0, 1000000));
+      var firestoreDocumentInfo =
+          FirestoreDocumentInfo(data: documentData, path: 'some/path');
+      expect(firestoreDocumentInfo.toJsonMap(), {
+        'path': 'some/path',
+        'data': {
+          'timestamp': {r'$t': 'Timestamp', r'$v': '1970-01-01T00:00:00.001Z'}
+        }
+      });
     });
   });
 }

@@ -6,6 +6,7 @@ import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore_test/aggregate_query_test.dart';
 import 'package:tekartik_firebase_firestore_test/timestamp_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_collection_test.dart';
@@ -442,7 +443,8 @@ void runFirestoreCommonTests(
         subData.setData('inner', subSubData);
 
         await docRef.set(documentData.asMap());
-        documentData = DocumentData((await docRef.get()).data);
+        var snapshot = await docRef.get();
+        documentData = DocumentData(snapshot.data);
         expect(documentData.getString('string'), 'string_value');
 
         expect(documentData.getInt('int'), 12345678901);
@@ -472,6 +474,11 @@ void runFirestoreCommonTests(
 
         subSubData = subData.getData('inner');
         expect(subSubData, isNotNull);
+
+        var docInfo = FirestoreDocumentInfo.fromDocumentSnapshot(snapshot);
+        var map = docInfo.toJsonMap();
+        docInfo = FirestoreDocumentInfo.fromJsonMap(map);
+        expect(docInfo.toJsonMap(), map);
       });
     });
 

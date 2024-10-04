@@ -1,4 +1,5 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 
 const paramPath = 'path';
@@ -134,7 +135,7 @@ class DocumentSnapshotData extends FirestorePathData
 
   DocumentSnapshotData.fromSnapshot(DocumentSnapshot snapshot) {
     path = snapshot.ref.path;
-    data = snapshotToJsonMap(snapshot);
+    data = snapshotDataToJsonMap(snapshot);
     createTime = snapshot.createTime;
     updateTime = snapshot.updateTime;
   }

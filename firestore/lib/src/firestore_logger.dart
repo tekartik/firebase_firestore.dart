@@ -6,7 +6,6 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/common/transaction_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
-import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 
 import 'common/firestore_service_mixin.dart';
 import 'common/query_mixin.dart';

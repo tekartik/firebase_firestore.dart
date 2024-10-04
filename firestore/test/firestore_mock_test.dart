@@ -1,6 +1,6 @@
 import 'package:tekartik_firebase_firestore/src/common/firestore_mock.dart';
 import 'package:tekartik_firebase_firestore/src/common/import_firestore_mixin.dart';
-import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
+import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:test/test.dart';
 
 //import 'src_firestore_common_test.dart';

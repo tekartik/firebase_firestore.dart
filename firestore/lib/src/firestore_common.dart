@@ -241,7 +241,7 @@ DocumentData documentDataFromMap(Map<String, Object?> map) {
 DocumentData? documentDataFromSnapshot(DocumentSnapshot snapshot) =>
     snapshot.exists ? DocumentData(snapshot.data) : null;
 
-Map<String, Object?>? snapshotToJsonMap(DocumentSnapshot snapshot) {
+Map<String, Object?>? snapshotDataToJsonMap(DocumentSnapshot snapshot) {
   if (snapshot.exists) {
     var map = documentDataToJsonMap(documentDataFromSnapshot(snapshot));
     return map;

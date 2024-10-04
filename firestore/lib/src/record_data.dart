@@ -4,8 +4,9 @@ import 'package:tekartik_common_utils/map_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
-import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
+
+import 'firestore_common.dart';
 
 const revKey = r'$rev';
 
@@ -112,10 +113,19 @@ dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
   throw 'recordValueToValue not supported $recordValue ${recordValue.runtimeType}';
 }
 
+/// TODO make non nullable
 DocumentDataMap? documentDataMap(DocumentData? documentData) =>
     documentData as DocumentDataMap?;
 
+DocumentDataMap? documentDataMapOrNull(DocumentData? documentData) =>
+    documentData as DocumentDataMap?;
+
 extension DocumentDataExt on DocumentData {
+  /// Map
+  Map<String, Object?> asMap() {
+    return documentDataMapOrNull(this)!.map;
+  }
+
   Map _mergeMap(Map map, Map override) {
     override.forEach((key, value) {
       // special delete field

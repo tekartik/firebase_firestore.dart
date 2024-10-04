@@ -16,7 +16,11 @@ export 'package:tekartik_firebase_firestore/src/firestore_common.dart'
         WriteResultBase,
         DocumentChangeBase,
         QuerySnapshotBase,
-        DocumentSnapshotBase;
+        DocumentSnapshotBase,
+        QueryInfo,
+        queryInfoFromJsonMap,
+        queryInfoToJsonMap,
+        WhereInfo;
 export 'package:tekartik_firebase_firestore/src/record_data.dart'
     show
         recordMapRev,

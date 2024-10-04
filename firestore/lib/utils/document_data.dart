@@ -3,7 +3,7 @@ export 'package:tekartik_firebase_firestore/src/firestore_common.dart'
         documentDataToJsonMap,
         documentDataFromJsonMap,
         documentDataFromJsonMapNoFirestore,
-        snapshotToJsonMap,
+        snapshotDataToJsonMap,
         documentDataMapToJsonMap,
         documentDataFromSnapshot,
         documentDataFromSnapshotJsonMap,
