@@ -469,10 +469,8 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
     await db.transaction((txn) async {
       result = await firestoreSembast.txnDelete(txn, this);
     });
-    // We must either have added or removed it
-    if (result.shouldNotify) {
-      firestoreSembast.notify(result);
-    }
+
+    firestoreSembast.notify(result);
   }
 
   @override
@@ -485,22 +483,21 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
 
   @override
   Future set(Map<String, Object?> data, [SetOptions? options]) async {
-    WriteResultBase? result;
+    late WriteResultBase result;
     var db = await firestoreSembast.ready;
     await db.transaction((txn) async {
       result =
           await firestoreSembast.txnSet(txn, this, DocumentData(data), options);
     });
-    if (result != null) {
-      firestoreSembast.notify(result!);
-    }
+
+    firestoreSembast.notify(result);
   }
 
   String get _key => path;
 
   @override
   Future update(Map<String, Object?> data) async {
-    WriteResultSembast? result;
+    late WriteResultSembast result;
 
     var db = await firestoreSembast.ready;
     await db.transaction((txn) async {
@@ -510,9 +507,8 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
       }
       result = await firestoreSembast.txnUpdate(txn, this, DocumentData(data));
     });
-    if (result != null) {
-      firestoreSembast.notify(result!);
-    }
+
+    firestoreSembast.notify(result);
   }
 
   @override

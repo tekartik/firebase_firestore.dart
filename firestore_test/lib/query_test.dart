@@ -722,6 +722,8 @@ void runFirestoreQueryTests(
                 DocumentChangeType.removed);
 
             completer4.complete();
+          } else {
+            fail('unexpected');
           }
         });
         // wait for receiving first data
@@ -744,6 +746,11 @@ void runFirestoreQueryTests(
 
         // wait for receiving change data
         await completer4.future;
+
+        // delete it again
+        await docRef.delete();
+        // any further notification
+        await sleep(100);
 
         await subscription.cancel();
         // Allow count to come later

@@ -690,24 +690,39 @@ class WriteBatchOperationUpdate extends WriteBatchOperationBase {
   WriteBatchOperationUpdate(DocumentReference super.docRef, this.documentData);
 }
 
+/// Write result to prepare for notification
 abstract class WriteResultBase {
+  /// The path of the document
   final String path;
 
+  /// Constructor
   WriteResultBase(this.path);
 
+  /// Added if previous does not exist and new exists
   bool get added => newExists && !previousExists;
 
+  /// Removed if previous exists and new does not
   bool get removed => previousExists && !newExists;
 
+  /// Modified if both previous and new exists
+  bool get modified => previousExists && newExists;
+
+  /// Exists if new exists
   bool get exists => newExists;
 
+  /// Previous exists
   bool get previousExists => previousSnapshot?.exists == true;
 
+  /// New exists
   bool get newExists => newSnapshot?.exists == true;
 
+  /// Previous snapshot
   DocumentSnapshot? previousSnapshot;
+
+  /// New snapshot (can be null for delete)
   DocumentSnapshot? newSnapshot;
 
+  /// Either previous or new should exists
   bool get shouldNotify => previousExists || newExists;
 
   @override

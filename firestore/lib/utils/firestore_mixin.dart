@@ -217,14 +217,19 @@ mixin FirestoreSubscriptionMixin on Firestore {
       DocumentSnapshot document, int newIndex, int oldIndex);
 
   void notify(WriteResultBase result) {
+    if (!result.shouldNotify) {
+      return;
+    }
     var path = result.path;
     var documentSubscription = findSubscription<Object?>(path);
     var newSnapshot = result.newSnapshot;
     var previousSnapshot = result.previousSnapshot;
     var added = result.added;
     var removed = result.removed;
+    var modified = result.modified;
+    assert(added || removed || modified);
     if (documentSubscription != null) {
-      if (newSnapshot?.exists == true) {
+      if (added || modified) {
         documentSubscription.streamController.add(cloneSnapshot(newSnapshot!));
       } else {
         // this is a delete
