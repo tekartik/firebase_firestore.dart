@@ -7,6 +7,7 @@ import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
 export 'package:tekartik_firebase_firestore/src/common/document_snapshot_mixin.dart'
     show DocumentSnapshotMixin;
+export 'package:tekartik_firebase_firestore/src/common/time_mixin.dart';
 export 'package:tekartik_firebase_firestore/src/firestore_common.dart'
     show
         WriteBatchBase,

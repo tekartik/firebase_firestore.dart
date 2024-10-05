@@ -8,7 +8,7 @@ import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/document_data.dart';
-import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
+
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart'
     show newFirestoreServiceSembast;
 import 'package:tekartik_firebase_local/firebase_local.dart';

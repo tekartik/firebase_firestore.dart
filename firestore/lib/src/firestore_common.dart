@@ -8,7 +8,6 @@ import 'package:tekartik_firebase_firestore/src/common/snapshot_meta_data_mixin.
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/record_data.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
-import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
 
 import 'common/firestore_mock.dart';
 import 'common/reference_mixin.dart';

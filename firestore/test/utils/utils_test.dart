@@ -5,7 +5,7 @@ import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 import 'package:tekartik_firebase_firestore/utils/auto_id_generator.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
-import 'package:tekartik_firebase_firestore/utils/timestamp_utils.dart';
+
 import 'package:test/test.dart';
 
 class DocumentSnapshotMock extends DocumentSnapshotBase {
