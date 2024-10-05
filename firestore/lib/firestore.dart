@@ -23,7 +23,8 @@ export 'package:tekartik_firebase_firestore/src/firestore_path.dart'
         firestorePathGetGenericPath,
         firestorePathReplaceId,
         firestorePathGetId;
-export 'package:tekartik_firebase_firestore/src/timestamp.dart' show Timestamp;
+export 'package:tekartik_firebase_firestore/src/timestamp.dart'
+    show Timestamp, TekartikFirestoreTimestampExt;
 
 export 'src/aggregate_field.dart' show AggregateField;
 export 'src/aggregate_query.dart' show AggregateQuery;
@@ -39,20 +40,22 @@ export 'src/snapshot_meta_data.dart' show SnapshotMetadata;
 
 /// Firestore service
 abstract class FirestoreService {
-  // True if query supporting selecting a set of fields
+  /// True if query supporting selecting a set of fields
   bool get supportsQuerySelect;
 
-  // Temporary flag
+  /// Temporary flag
   bool get supportsFieldValueArray;
 
-  // True if startAt/startAfter/endAt/endAfter can be used with snapshot
+  /// True if startAt/startAfter/endAt/endAfter can be used with snapshot
   bool get supportsQuerySnapshotCursor;
 
+  /// True if support document snapshot time
   bool get supportsDocumentSnapshotTime;
 
   /// Where it supports timestamp precision on date and time values in document data
   bool get supportsTimestamps;
 
+  /// True if timestamps is supported (should be true)
   bool get supportsTimestampsInSnapshots;
 
   /// Return true if it supports tracking changes
@@ -114,62 +117,82 @@ abstract class Firestore implements FirebaseAppProduct<Firestore> {
       (FirebaseApp.instance as FirebaseAppMixin).getProduct<Firestore>()!;
 }
 
-/// Representa firestore document data.
+/// Represents firestore document data.
 abstract class DocumentData {
+  /// Create a new instance of [DocumentData].
   factory DocumentData([Map<String, Object?>? map]) =>
       DocumentDataMap(map: map);
 
+  /// Set a string value
   void setString(String key, String value);
 
+  /// Get a string value
   String? getString(String key);
 
+  /// Set null value
   void setNull(String key);
 
+  /// Set a field value
   void setFieldValue(String key, FieldValue value);
 
+  /// set int value
   void setInt(String key, int value);
 
+  /// get int value
   int? getInt(String key);
 
+  /// Set a num value
   void setNum(String key, num value);
 
+  /// Set a bool value
   void setBool(String key, bool value);
 
+  /// Get a num value
   num? getNum(String key);
 
+  /// Get a bool value
   bool? getBool(String key);
 
+  /// Set a date time value
   void setDateTime(String key, DateTime value);
 
+  /// Get a date time value
   DateTime? getDateTime(String key);
 
+  /// Set a timestamp value
   void setTimestamp(String key, Timestamp value);
 
+  /// Get a timestamp value
   Timestamp? getTimestamp(String key);
 
+  /// Set a list value
   void setList<T>(String key, List<T> list);
 
+  /// Get a list value
   List<T>? getList<T>(String key);
 
+  /// Get a document data value
   DocumentData? getData(String key);
 
+  /// Set a document data value
   void setData(String key, DocumentData value);
 
-  // Return the native property
+  /// Return the native property
   dynamic getProperty(String key);
 
-  // Set the native property
+  /// Set the native property
   void setProperty(String key, dynamic value);
 
-  // Check the native property
+  /// Check the native property
   bool has(String key);
 
-  // Return the key list
+  /// Return the key list
   Iterable<String> get keys;
 
+  /// Return the map
   Map<String, Object?> asMap();
 
-  // use hasProperty
+  /// use hasProperty
   @Deprecated('Use hasProperty')
   bool containsKey(String key);
 
