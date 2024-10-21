@@ -39,7 +39,7 @@ export 'src/query_snapshot.dart' show QuerySnapshotExtension, QuerySnapshot;
 export 'src/snapshot_meta_data.dart' show SnapshotMetadata;
 
 /// Firestore service
-abstract class FirestoreService {
+abstract class FirestoreService implements FirebaseAppProductService {
   /// True if query supporting selecting a set of fields
   bool get supportsQuerySelect;
 
@@ -67,6 +67,7 @@ abstract class FirestoreService {
   /// True if it supports aggregate queries
   bool get supportsAggregateQueries;
 
+  /// Firestore instance of the app
   Firestore firestore(App app);
 }
 
