@@ -205,6 +205,9 @@ class Timestamp implements Comparable<Timestamp?> {
       return tryParse(any.toString());
     }
   }
+
+  /// The minimum representable [Timestamp]
+  static final zero = Timestamp(0, 0);
 }
 
 const _nanosPerSeconds = 1000000000;
@@ -233,5 +236,23 @@ extension TekartikFirestoreTimestampExt on Timestamp {
   /// Substract a duration to a timestamp
   Timestamp substractDuration(Duration duration) {
     return _addMicroseconds(-duration.inMicroseconds);
+  }
+
+  /// Returns a [Duration] with the difference when subtracting [other] from
+  /// this [DateTime].
+  ///
+  /// The returned [Duration] will be negative if [other] occurs after this
+  /// [DateTime].
+  ///
+  ///
+  /// The difference is measured in seconds and fractions of seconds.
+  Duration difference(Timestamp other) {
+    var diffSeconds = seconds - other.seconds;
+    var diffNanos = nanoseconds - other.nanoseconds;
+    if (diffNanos < 0) {
+      diffSeconds--;
+      diffNanos += _nanosPerSeconds;
+    }
+    return Duration(seconds: diffSeconds, microseconds: diffNanos ~/ 1000);
   }
 }
