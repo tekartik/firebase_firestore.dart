@@ -100,6 +100,15 @@ class FirestoreTestContext {
   }
 }
 
+Future<void> runTestAndIfNeededAllowDelay(
+    FirestoreTestContext? testContext, Future<void> Function() action) async {
+  if (testContext != null) {
+    await testContext.runTestAndIfNeededAllowDelay(action);
+  } else {
+    await action();
+  }
+}
+
 void _runFirestoreTests(
     {required Firebase firebase,
     required FirestoreService firestoreService,
@@ -1162,21 +1171,14 @@ void runFirestoreCommonTests(
         batch.set(createRef, {});
         await batch.commit();
 
-        expect((await deleteRef.get()).exists, isFalse);
         Future<void> check() async {
+          expect((await deleteRef.get()).exists, isFalse);
           expect((await createRef.get()).exists, isTrue);
         }
 
-        try {
+        await runTestAndIfNeededAllowDelay(testContext, () async {
           await check();
-        } catch (_) {
-          if (testContext?.allowedDelayInReadMs != null) {
-            await testContext?.sleepReadDelay();
-            await check();
-          } else {
-            rethrow;
-          }
-        }
+        });
       });
 
       group('all', () {
