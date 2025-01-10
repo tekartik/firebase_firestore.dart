@@ -33,10 +33,4 @@ dev_dependencies:
       ref: dart3a
     version: '>=0.1.0'
 
-dependency_overrides:
-  tekartik_firebase_firestore_test:
-    path: ../firestore_test
-  tekartik_firebase_firestore_sim:
-    path: ../firestore_sim
-  tekartik_firebase_firestore:
-    path: ../firestore
+resolution: workspace

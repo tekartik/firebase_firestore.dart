@@ -1,0 +1,14 @@
+name: _
+publish_to: none
+environment:
+  sdk: ^3.6.0
+workspace:
+  - firestore
+  - firestore_browser
+  - firestore_idb
+  - firestore_sembast
+  - firestore_sim
+  - firestore_sim_browser
+  - firestore_sim_io
+  - firestore_test
+  - repo_support

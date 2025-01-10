@@ -21,6 +21,7 @@ class _SnapshotMetadataMixinTest with SnapshotMetadataMixin {
   _SnapshotMetadataMixinTest();
 }
 
+/// Default implementation for SnapshotMetadata
 class SnapshotMetadataDefaultImpl
     with SnapshotMetadataMixin
     implements SnapshotMetadata {
@@ -30,5 +31,3 @@ class SnapshotMetadataDefaultImpl
   @override
   bool get isFromCache => false;
 }
-
-final snapshotMetadataDefaultImpl = SnapshotMetadataDefaultImpl();

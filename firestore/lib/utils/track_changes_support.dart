@@ -1,12 +1,14 @@
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
-const _defaultDelay = Duration(seconds: 10);
+const _defaultShortDelay = Duration(seconds: 10);
+const _defaultLongDelay = Duration(minutes: 60);
 
 /// Track changes simulation.
 abstract class TrackChangesPullOptions {
   /// Refresh delay.
-  factory TrackChangesPullOptions({Duration refreshDelay = _defaultDelay}) =>
+  factory TrackChangesPullOptions(
+          {Duration refreshDelay = _defaultShortDelay}) =>
       _TrackChangesPullOptionsWithDelay(refreshDelay: refreshDelay);
 
   /// Get first change only.
@@ -22,7 +24,7 @@ class _TrackChangesPullOptionsWithDelay implements TrackChangesPullOptions {
       {this.refreshDelay = const Duration(seconds: 10)});
 }
 
-extension DocumentReferenceExtension on DocumentReference {
+extension DocumentReferenceSnapshotSupportExtension on DocumentReference {
   Stream<DocumentSnapshot> onSnapshotSupport(
       {bool includeMetadataChanges = false, TrackChangesPullOptions? options}) {
     Future<DocumentSnapshot> getSnapshot() async {
@@ -32,7 +34,7 @@ extension DocumentReferenceExtension on DocumentReference {
     if (firestore.service.supportsTrackChanges) {
       return onSnapshot(includeMetadataChanges: includeMetadataChanges);
     } else {
-      options ??= TrackChangesPullOptions();
+      options ??= TrackChangesPullOptions(refreshDelay: _defaultShortDelay);
       late StreamController<DocumentSnapshot> controller;
       controller = StreamController<DocumentSnapshot>(onListen: () async {
         while (true) {
@@ -62,6 +64,49 @@ extension DocumentReferenceExtension on DocumentReference {
     }
   }
 
+  @Deprecated('to move')
+
   /// Get a child collection.
   CollectionReference operator [](String path) => collection(path);
+}
+
+extension QuerySnapshotSupportExtension on Query {
+  Stream<QuerySnapshot> onSnapshotsSupport(
+      {bool includeMetadataChanges = false, TrackChangesPullOptions? options}) {
+    Future<QuerySnapshot> getSnapshot() async {
+      return get();
+    }
+
+    if (firestore.service.supportsTrackChanges) {
+      return onSnapshot(includeMetadataChanges: includeMetadataChanges);
+    } else {
+      options ??= TrackChangesPullOptions(refreshDelay: _defaultLongDelay);
+      late StreamController<QuerySnapshot> controller;
+      controller = StreamController<QuerySnapshot>(onListen: () async {
+        while (true) {
+          if (controller.isClosed) {
+            return;
+          }
+          var snapshot = await getSnapshot();
+          if (controller.isClosed) {
+            return;
+          }
+          controller.add(snapshot);
+
+          if (options is _TrackChangesPullOptionsWithDelay) {
+            await Future<void>.delayed(options.refreshDelay);
+          } else if (options is _TrackChangesPullOptionsFirst) {
+            // Do nothing
+            controller.close().unawait();
+            break;
+          } else {
+            throw UnsupportedError('options $options');
+          }
+        }
+      }, onCancel: () {
+        controller.close();
+      });
+      return controller.stream;
+    }
+  }
 }

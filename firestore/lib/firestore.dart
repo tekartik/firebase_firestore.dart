@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:tekartik_common_utils/byte_utils.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
@@ -197,19 +198,22 @@ abstract class DocumentData {
   @Deprecated('Use hasProperty')
   bool containsKey(String key);
 
-  // Document reference
+  /// Document reference
   void setDocumentReference(String key, DocumentReference doc);
 
-  // Document reference
+  /// Document reference
   DocumentReference? getDocumentReference(String key);
 
-  // blob
+  /// blob
   void setBlob(String key, Blob blob);
 
+  /// blob
   Blob? getBlob(String key);
 
+  /// geo point
   void setGeoPoint(String key, GeoPoint geoPoint);
 
+  /// geo point
   GeoPoint? getGeoPoint(String key);
 }
 
@@ -221,7 +225,10 @@ extension DocumentSnapshotExt on DocumentSnapshot {
 
 /// Sentinel values for update/set
 class FieldValue {
-  dynamic get data => null;
+  /// Data
+  Object? get data => null;
+
+  /// Type
   final FieldValueType type;
 
   /// Set the field as the current timestamp value.
@@ -231,26 +238,27 @@ class FieldValue {
   /// Delete the field.
   static final FieldValue delete = FieldValue(FieldValueType.delete);
 
-  // Returns a sentinel value that can be used with set(merge: true) or update()
-  // that tells the server to union the given elements with any array value that
-  // already exists on the server. Each specified element that doesn't already
-  // exist in the array will be added to the end. If the field being modified
-  // is not already an array it will be overwritten with an array containing
-  // exactly the specified elements.
+  /// Returns a sentinel value that can be used with set(merge: true) or update()
+  /// that tells the server to union the given elements with any array value that
+  /// already exists on the server. Each specified element that doesn't already
+  /// exist in the array will be added to the end. If the field being modified
+  /// is not already an array it will be overwritten with an array containing
+  /// exactly the specified elements.
   factory FieldValue.arrayUnion(List<Object?> data) {
     return FieldValueArray(FieldValueType.arrayUnion, data);
   }
 
-  // Returns a sentinel value that can be used with set(merge: true) or
-  // update() that tells
-  // the server to remove the given elements from any array value that already
-  // exists on the server. All instances of each element specified will be
-  // removed from the array. If the field being modified is not already an array
-  // it will be overwritten with an empty array.
+  /// Returns a sentinel value that can be used with set(merge: true) or
+  /// update() that tells
+  /// the server to remove the given elements from any array value that already
+  /// exists on the server. All instances of each element specified will be
+  /// removed from the array. If the field being modified is not already an array
+  /// it will be overwritten with an empty array.
   factory FieldValue.arrayRemove(List<Object?> data) {
     return FieldValueArray(FieldValueType.arrayRemove, data);
   }
 
+  /// Create a new instance of [FieldValue].
   FieldValue(this.type);
 
   @override
@@ -263,13 +271,16 @@ class FieldValue {
 class Blob {
   final Uint8List _data;
 
-  Blob.fromList(List<int> data) : _data = Uint8List.fromList(data);
+  /// Create a new instance of [Blob].
+  Blob.fromList(List<int> data) : _data = asUint8List(data);
 
   /// Compat with cloud_firestore.
   Uint8List get bytes => _data;
 
+  /// data bytes
   Uint8List get data => _data;
 
+  /// Create a new instance of [Blob].
   Blob(this._data);
 
   @override
@@ -289,10 +300,15 @@ class Blob {
   }
 }
 
+/// Geo point
 class GeoPoint {
+  /// Latitude
   final num latitude;
+
+  /// Longitude
   final num longitude;
 
+  /// Create a new instance of [GeoPoint].
   const GeoPoint(this.latitude, this.longitude);
 
   @override
@@ -313,40 +329,67 @@ class GeoPoint {
   String toString() => '[$latitude° N, $longitude° E]';
 }
 
+/// Set options
 class SetOptions {
   /// Set to true to replace only the values from the new data.
   /// Fields omitted will remain untouched.
   bool? merge;
 
+  /// Create a new instance of [SetOptions].
   SetOptions({this.merge});
 }
 
+/// Operator equals
 const String operatorEqual = '=';
+
+/// Operator less than
 const String operatorLessThan = '<';
+
+/// Operator greater than
 const String operatorGreaterThan = '>';
+
+/// Operator less than or equal
 const String operatorLessThanOrEqual = '<=';
+
+/// Operator greater than or equal
 const String operatorGreaterThanOrEqual = '>=';
+
+/// Operator array contains
 const String operatorArrayContains = 'array-contains';
+
+/// Operator array contains any
 const String operatorArrayContainsAny = 'array-contains-any';
+
+/// Operator in
 const String operatorIn = 'in';
+
+/// Operator not in
 const String operatorNotIn = 'not-in';
 
-// compat 2019-10-24, fix mistake
+/// compat 2019-10-24, fix mistake
 @Deprecated('Typo use operatorArrayContains')
 const String opeatorArrayContains = operatorArrayContains;
 
+/// Order by ascending
 const orderByAscending = 'asc';
+
+/// Order by descending
 const orderByDescending = 'desc';
 
+/// Write batch
 abstract class WriteBatch {
+  /// Deletes the document referred to by the provided [DocumentReference].
   void delete(DocumentReference ref);
 
+  /// Writes to the document referred to by the provided [DocumentReference].
   void set(DocumentReference ref, Map<String, Object?> data,
       [SetOptions? options]);
 
+  /// Updates fields in the document referred to by the provided [DocumentReference].
   void update(DocumentReference ref, Map<String, Object?> data);
 
-  Future commit();
+  /// Commits all of the writes in this write batch as a single atomic unit.
+  Future<void> commit();
 }
 
 /// An enumeration of document change types.
@@ -391,7 +434,8 @@ abstract class DocumentChange {
   DocumentSnapshot get document;
 }
 
-// get must be done first
+/// Firestore transaction.
+/// get must be done first
 abstract class Transaction {
   /// Deletes the document referred to by the provided [DocumentReference].
   ///

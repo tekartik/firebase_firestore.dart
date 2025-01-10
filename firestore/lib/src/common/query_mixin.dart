@@ -1,7 +1,7 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
-// Every implementation should use this default mixin for missing implementation
+/// Every implementation should use this default mixin for missing implementation
 mixin FirestoreQueryExecutorMixin implements Query {
   /// Expensive default implementation.
   @override
@@ -18,16 +18,20 @@ mixin FirestoreQueryExecutorMixin implements Query {
       orderBy(firestoreNameFieldPath, descending: descending);
 }
 
+/// Every implementation should use this default mixin for missing implementation
 mixin QueryDefaultMixin implements Query {
   @override
   AggregateQuery aggregate(List<AggregateField> fields) {
     throw UnimplementedError();
   }
 }
-// Common mixin, no executor for non firestore native implementation
+
+/// Common mixin, no executor for non firestore native implementation
 mixin QueryMixin implements Query {
+  /// The query that produced this snapshot.
   late QueryInfo queryInfo;
 
+  /// clone a query
   QueryMixin clone();
 
   @override
@@ -55,6 +59,7 @@ mixin QueryMixin implements Query {
             whereIn: whereIn,
             isNull: isNull));
 
+  /// Add order by
   void addOrderBy(String key, String directionStr) {
     var orderBy = OrderByInfo(
         fieldPath: key, ascending: directionStr != orderByDescending);

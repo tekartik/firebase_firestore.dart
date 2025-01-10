@@ -15,6 +15,7 @@ DateTime? toLocaleTime(DateTime? value) {
   return value.toLocal();
 }
 
+/// Parse a date time from a dynamic value
 DateTime? parseDateTime(dynamic value) {
   if (value is DateTime) {
     return value;
@@ -23,6 +24,7 @@ DateTime? parseDateTime(dynamic value) {
   }
 }
 
+/// Parse a timestamp from a dynamic value
 Timestamp? parseTimestamp(dynamic value) {
   if (value is Timestamp) {
     return value;
@@ -35,6 +37,7 @@ Timestamp? parseTimestamp(dynamic value) {
   return null;
 }
 
+/// Convert a dynamic value to a document value
 dynamic valueToDocumentValue(dynamic value) {
   if (value == null ||
       value is num ||

@@ -26,6 +26,4 @@ dev_dependencies:
   dev_build: '>=0.12.0-dev.1'
   process_run: '>=0.10.2'
 
-dependency_overrides:
-  tekartik_firebase_firestore:
-    path: ../firestore
+resolution: workspace

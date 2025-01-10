@@ -1,5 +1,6 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
+/// Firestore service mixin
 mixin FirestoreServiceDefaultMixin implements FirestoreService {
   @override
   bool get supportsListCollections => false;
@@ -28,4 +29,6 @@ mixin FirestoreServiceDefaultMixin implements FirestoreService {
   @override
   bool get supportsAggregateQueries => false;
 }
+
+/// Firestore service mixin
 mixin FirestoreServiceMixin implements FirestoreService {}

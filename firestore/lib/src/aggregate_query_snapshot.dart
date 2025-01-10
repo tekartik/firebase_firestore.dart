@@ -3,6 +3,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 /// [AggregateQuerySnapshot] represents a response to an [AggregateQuery] request.
 ///
 abstract class AggregateQuerySnapshot {
+  /// Returns the query that produced this snapshot.
   Query get query;
 
   /// Returns the count of the documents that match the query. if asked

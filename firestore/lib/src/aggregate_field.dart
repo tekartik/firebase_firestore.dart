@@ -23,8 +23,10 @@ class AggregateFieldCount implements AggregateField {
 /// Create an object that can be used to compute the sum of a specified field
 /// over a range of documents in the result set of a query.
 class AggregateFieldSum implements AggregateField {
+  /// Create an object that can be used to compute the sum of a specified field
   AggregateFieldSum(this.field);
 
+  /// The field to sum
   final String field;
 
   @override
@@ -34,8 +36,10 @@ class AggregateFieldSum implements AggregateField {
 /// Create an object that can be used to compute the average of a specified field
 /// over a range of documents in the result set of a query.
 class AggregateFieldAverage implements AggregateField {
+  /// Create an object that can be used to compute the average of a specified field
   AggregateFieldAverage(this.field);
 
+  /// The field to average
   final String field;
 
   @override

@@ -3,6 +3,7 @@ import 'package:tekartik_firebase/firebase_mixin.dart';
 
 import 'import_firestore_mixin.dart';
 
+/// Firestore service mock
 class FirestoreServiceMock with FirestoreServiceDefaultMixin {
   @override
   Firestore firestore(App app) {
@@ -10,6 +11,7 @@ class FirestoreServiceMock with FirestoreServiceDefaultMixin {
   }
 }
 
+/// Firestore mock
 class FirestoreMock
     with
         FirestoreDefaultMixin,
@@ -18,6 +20,7 @@ class FirestoreMock
   @override
   final FirestoreServiceMock service;
 
+  /// Constructor
   FirestoreMock({FirestoreServiceMock? service})
       : service = service ?? FirestoreServiceMock();
 
@@ -48,12 +51,14 @@ class FirestoreMock
   FirebaseApp get app => throw UnimplementedError();
 }
 
+/// Firestore mock
 class DocumentSnapshotMock
     with DocumentSnapshotMixin
     implements DocumentSnapshot {
   @override
   final DocumentReferenceMock ref;
 
+  /// Constructor
   DocumentSnapshotMock(this.ref);
 
   @override
@@ -69,6 +74,7 @@ class DocumentSnapshotMock
   Timestamp? get createTime => throw UnimplementedError();
 }
 
+/// Firestore mock
 class CollectionReferenceMock
     with
         QueryDefaultMixin,
@@ -77,6 +83,7 @@ class CollectionReferenceMock
         PathReferenceMixin,
         FirestoreQueryExecutorMixin,
         FirestoreQueryMixin {
+  /// Constructor
   CollectionReferenceMock(FirestoreMock firestoreMock, String path) {
     init(firestoreMock, path);
   }
@@ -100,12 +107,14 @@ class CollectionReferenceMock
   QueryInfo? get queryInfo => null;
 }
 
+/// Firestore mock
 class DocumentReferenceMock
     with
         DocumentReferenceDefaultMixin,
         DocumentReferenceMixin,
         PathReferenceImplMixin,
         PathReferenceMixin {
+  /// Constructor
   DocumentReferenceMock(FirestoreMock firestoreMock, String path) {
     init(firestoreMock, path);
   }
@@ -136,16 +145,19 @@ class DocumentReferenceMock
   }
 }
 
+/// Firestore mock
 class QueryMock
     with
         QueryDefaultMixin,
         FirestoreQueryExecutorMixin,
         AttributesMixin,
         FirestoreQueryMixin {
+  /// Collection reference
   final CollectionReferenceMock collMock;
   @override
   final QueryInfo queryInfo;
 
+  /// Constructor
   QueryMock(this.collMock, this.queryInfo);
 
   @override

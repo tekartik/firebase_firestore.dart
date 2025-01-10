@@ -3,20 +3,24 @@ import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
+/// Path reference
 abstract class PathReference {
-  // Firestore get firestore;
+  /// Path
   String get path;
 
   /// Parent path.
   String? get parentPath;
 
+  /// Id
   String get id;
 
   /// Child path
   String getChildPath(String child);
 }
 
+/// Firestore path reference
 abstract class FirestorePathReference extends PathReference {
+  /// Firestore
   Firestore get firestore;
 }
 
@@ -31,11 +35,14 @@ mixin PathReferenceImplMixin implements FirestorePathReference {
   @override
   String get path => _path;
 
+  /// Init
   void init(Firestore firestore, String path) {
     _firestore = firestore;
     _path = path;
   }
 }
+
+/// Firestore path reference
 mixin PathReferenceMixin implements PathReference {
   /// Parent path.
   @override
@@ -52,10 +59,12 @@ mixin PathReferenceMixin implements PathReference {
   String toString() => 'path: $path';
 }
 
+/// Get parent path
 String getParentPath(String path) {
   return getParentPathOrNull(path)!;
 }
 
+/// Get parent path or null
 String? getParentPathOrNull(String path) {
   var dirname = url.dirname(path);
   if (dirname == '.' || dirname == '/') {
@@ -64,8 +73,10 @@ String? getParentPathOrNull(String path) {
   return dirname;
 }
 
+/// Get path id
 String getPathId(String path) => url.basename(path);
 
+/// Collection reference mixin
 mixin CollectionReferenceMixin
     implements CollectionReference, PathReferenceMixin, FirestorePathReference {
   @override
@@ -98,6 +109,7 @@ mixin CollectionReferenceMixin
   }
 }
 
+/// Document reference mixin
 mixin DocumentReferenceDefaultMixin implements DocumentReference {
   @override
   Future<List<CollectionReference>> listCollections() {
@@ -105,6 +117,7 @@ mixin DocumentReferenceDefaultMixin implements DocumentReference {
   }
 }
 
+/// Document reference mixin
 mixin DocumentReferenceMixin
     implements DocumentReference, FirestorePathReference {
   @override
@@ -158,6 +171,7 @@ void checkCollectionReferencePath(String path) {
   }
 }
 
+/// Throw if not valid - debug only
 void checkDocumentReferencePath(String path) {
   if (isDebug) {
     var parts = localPathReferenceParts(path);
