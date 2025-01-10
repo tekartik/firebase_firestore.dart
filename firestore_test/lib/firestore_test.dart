@@ -12,6 +12,7 @@ import 'package:tekartik_firebase_firestore_test/timestamp_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_collection_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_query_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_test.dart';
+import 'package:tekartik_firebase_firestore_test/vector_value_test.dart';
 
 import 'copy_utils_test.dart';
 import 'firestore_document_test.dart';
@@ -180,6 +181,7 @@ void runFirestoreCommonTests(
     }
   });
   group('firestore', () {
+    vectorValueGroup(firestore: firestore, testContext: testContext);
     timestampGroup(
         service: firestoreService,
         firestore: firestore,

@@ -63,6 +63,9 @@ class FirestoreServiceSembast
 
   @override
   bool get supportsListCollections => true;
+
+  @override
+  bool get supportsVectorValue => true;
 }
 
 FirestoreServiceSembast? _firestoreServiceSembastMemory;

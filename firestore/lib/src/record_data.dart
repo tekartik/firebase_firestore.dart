@@ -305,6 +305,8 @@ dynamic valueToJsonRecordValue(dynamic value,
     } else if (value.type == FieldValueType.arrayRemove) {
       return <Object>[];
     }
+  } else if (value is VectorValue) {
+    return vectorToRecordValue(value);
   }
   throw 'not supported $value ${value.runtimeType}';
 }
@@ -315,7 +317,8 @@ Map<String, Object?> dateTimeToRecordValue(DateTime dateTime) =>
 // For now it is still a date
 Map<String, Object?> timestampToRecordValue(Timestamp timestamp) =>
     timestampToJsonValue(timestamp);
-
+Map<String, Object?> vectorToRecordValue(VectorValue vector) =>
+    vectorToJsonValue(vector);
 Map<String, Object?> documentReferenceToRecordValue(
         DocumentReference documentReference) =>
     documentReferenceToJsonValue(documentReference);

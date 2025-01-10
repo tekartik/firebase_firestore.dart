@@ -16,6 +16,7 @@ const String jsonTypeField = r'$t';
 const String jsonValueField = r'$v';
 const String typeDateTime = 'DateTime';
 const String typeTimestamp = 'Timestamp';
+const String typeVector = 'Vector';
 const String typeFieldValue = 'FieldValue';
 const String typeDocumentReference = 'DocumentReference';
 const String typeGeoPoint = 'GeoPoint';
@@ -32,6 +33,9 @@ Map<String, Object?> dateTimeToJsonValue(DateTime dateTime) =>
 
 Map<String, Object?> timestampToJsonValue(Timestamp timestamp) =>
     typeValueToJson(typeTimestamp, timestamp.toIso8601String());
+
+Map<String, Object?> vectorToJsonValue(VectorValue vector) =>
+    typeValueToJson(typeVector, vector.toArray());
 
 Map<String, Object?> documentReferenceToJsonValue(
         DocumentReference documentReference) =>
@@ -84,6 +88,15 @@ Blob jsonValueToBlob(Map map) {
   } else {
     return Blob(base64.decode(base64value));
   }
+}
+
+VectorValue jsonValueToVector(Map map) {
+  assert(map[jsonTypeField] == typeVector);
+  var array = (map[jsonValueField] as List)
+      .cast<num>()
+      .map((e) => e.toDouble())
+      .toList();
+  return VectorValue(array);
 }
 
 Map<String, Object?> geoPointToJsonValue(GeoPoint geoPoint) {
@@ -187,6 +200,9 @@ Object? jsonToDocumentDataValue(Firestore firestore, Object? value) {
           return jsonValueToBlob(value);
         case typeGeoPoint:
           return jsonValueToGeoPoint(value);
+        case typeVector:
+          return jsonValueToVector(value);
+
         default:
           throw UnsupportedError('value $value');
       }

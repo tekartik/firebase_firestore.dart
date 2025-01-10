@@ -38,6 +38,7 @@ export 'src/firestore_logger.dart'
 export 'src/query.dart' show Query;
 export 'src/query_snapshot.dart' show QuerySnapshotExtension, QuerySnapshot;
 export 'src/snapshot_meta_data.dart' show SnapshotMetadata;
+export 'src/vector_value.dart' show VectorValue;
 
 /// Firestore service
 abstract class FirestoreService implements FirebaseAppProductService {
@@ -58,6 +59,9 @@ abstract class FirestoreService implements FirebaseAppProductService {
 
   /// True if timestamps is supported (should be true)
   bool get supportsTimestampsInSnapshots;
+
+  /// True if VectorValue is supported (should be true)
+  bool get supportsVectorValue;
 
   /// Return true if it supports tracking changes
   bool get supportsTrackChanges;
