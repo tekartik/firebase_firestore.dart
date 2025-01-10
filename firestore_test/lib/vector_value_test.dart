@@ -118,5 +118,5 @@ void vectorValueGroup(
       await docRef.set(map);
       expect((await docRef.get()).data, map);
     });
-  }, solo: true, skip: !firestore.service.supportsVectorValue);
+  }, skip: !firestore.service.supportsVectorValue);
 }
