@@ -42,16 +42,20 @@ void runFirestoreTrackChangesSupportTests(
       var testsRef = getTestsRef();
       var docRef = testsRef.doc('two_onSnapshotSupport');
       await docRef.delete();
+      var pullOptions1 =
+          TrackChangesPullOptions(refreshDelay: Duration(milliseconds: 200));
 
       var completer1 = Completer<void>();
       var completer2 = Completer<void>();
-      var subscription1 = docRef.onSnapshotSupport().listen((event) {
+      var subscription1 =
+          docRef.onSnapshotSupport(options: pullOptions1).listen((event) {
         print('event1 $event');
         if (event.exists) {
           completer1.complete();
         }
       });
-      var subscription2 = docRef.onSnapshotSupport().listen((event) {
+      var subscription2 =
+          docRef.onSnapshotSupport(options: pullOptions1).listen((event) {
         print('event2 $event');
         if (event.exists) {
           completer2.complete();
