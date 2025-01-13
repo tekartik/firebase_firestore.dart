@@ -1,14 +1,14 @@
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
-const _defaultShortDelay = Duration(seconds: 10);
+// const _defaultShortDelay = Duration(seconds: 10);
 const _defaultLongDelay = Duration(minutes: 60);
 
 /// Track changes simulation.
 abstract class TrackChangesPullOptions {
   /// Refresh delay.
   factory TrackChangesPullOptions(
-          {Duration refreshDelay = _defaultShortDelay}) =>
+          {Duration refreshDelay = _defaultLongDelay}) =>
       _TrackChangesPullOptionsWithDelay(refreshDelay: refreshDelay);
 
   /// Get first change only.
@@ -20,8 +20,7 @@ class _TrackChangesPullOptionsFirst implements TrackChangesPullOptions {}
 class _TrackChangesPullOptionsWithDelay implements TrackChangesPullOptions {
   final Duration refreshDelay;
 
-  _TrackChangesPullOptionsWithDelay(
-      {this.refreshDelay = const Duration(seconds: 10)});
+  _TrackChangesPullOptionsWithDelay({required this.refreshDelay});
 }
 
 extension DocumentReferenceSnapshotSupportExtension on DocumentReference {
@@ -34,7 +33,7 @@ extension DocumentReferenceSnapshotSupportExtension on DocumentReference {
     if (firestore.service.supportsTrackChanges) {
       return onSnapshot(includeMetadataChanges: includeMetadataChanges);
     } else {
-      options ??= TrackChangesPullOptions(refreshDelay: _defaultShortDelay);
+      options ??= TrackChangesPullOptions(refreshDelay: _defaultLongDelay);
       late StreamController<DocumentSnapshot> controller;
       controller = StreamController<DocumentSnapshot>(onListen: () async {
         while (true) {
