@@ -70,8 +70,10 @@ extension DocumentReferenceSnapshotSupportExtension on DocumentReference {
   CollectionReference operator [](String path) => collection(path);
 }
 
+/// Helper for query snapshot support
 extension QuerySnapshotSupportExtension on Query {
-  Stream<QuerySnapshot> onSnapshotsSupport(
+  /// Default is to delay to 1h when onSnapshot is not supported
+  Stream<QuerySnapshot> onSnapshotSupport(
       {bool includeMetadataChanges = false, TrackChangesPullOptions? options}) {
     Future<QuerySnapshot> getSnapshot() async {
       return get();
