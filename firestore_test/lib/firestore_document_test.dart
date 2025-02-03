@@ -26,5 +26,16 @@ void runFirestoreDocumentTests(
       await doc.set(map);
       expect((await doc.get()).data, map);
     });
+    test('special chars', () async {
+      var map = {'some|key': 1, 'other@key': 2};
+      var doc = firestore.doc(
+          url.join(testsRefPath, 'special_chars', 'some|coll', 'some|doc'));
+      await doc.set(map);
+      expect((await doc.get()).data, map);
+      doc = firestore.doc(
+          url.join(testsRefPath, 'special_chars', 'some@coll', 'some@doc'));
+      await doc.set(map);
+      expect((await doc.get()).data, map);
+    });
   });
 }
