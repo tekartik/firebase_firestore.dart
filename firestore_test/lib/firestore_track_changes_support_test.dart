@@ -2,7 +2,9 @@
 import 'dart:async';
 
 import 'package:dev_test/test.dart';
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/utils/collection.dart';
 import 'package:tekartik_firebase_firestore/utils/track_changes_support.dart';
 
 import 'firestore_test.dart';
@@ -32,10 +34,75 @@ void runFirestoreTrackChangesSupportTests(
 
       expect(
           (await docRef
-                  .onSnapshotSupport(options: TrackChangesPullOptions.first())
+                  .onSnapshotSupport(
+                      options: TrackChangesSupportOptions.first())
                   .first)
               .data,
           {'test': 1});
+    });
+
+    test('simplePullOnSnapshotSupport', () async {
+      var testsRef = getTestsRef();
+      var parentDocRef = testsRef.doc('simplePullOnSnapshotSupport');
+      var collRef = parentDocRef.collection('one');
+      await deleteCollection(firestore, collRef);
+
+      var docRef = collRef.doc('one_record');
+
+      var pullOptions1 =
+          TrackChangesSupportOptions(refreshDelay: Duration(milliseconds: 200));
+
+      var future = Future.wait([
+        () async {
+          expect(
+              (await docRef
+                      .onSnapshotSupport(options: pullOptions1)
+                      .firstWhere((snapshot) => snapshot.exists))
+                  .data,
+              {'test': 1});
+        }(),
+        () async {
+          await collRef
+              .onSnapshotSupport(options: pullOptions1)
+              .firstWhere((snapshots) => snapshots.ids.contains(docRef.id));
+        }()
+      ]);
+      await docRef.set({'test': 1});
+      await future;
+    });
+
+    test('simpleTriggerOnSnapshotSupport', () async {
+      var testsRef = getTestsRef();
+      var parentDocRef = testsRef.doc('simplePullOnSnapshotSupport');
+      var collRef = parentDocRef.collection('one');
+      await deleteCollection(firestore, collRef);
+
+      var docRef = collRef.doc('one_record');
+
+      var controller1 = TrackChangesSupportOptionsController();
+      var controller2 = TrackChangesSupportOptionsController();
+
+      var future = Future.wait([
+        () async {
+          expect(
+              (await docRef
+                      .onSnapshotSupport(options: controller1)
+                      .firstWhere((snapshot) => snapshot.exists))
+                  .data,
+              {'test': 1});
+        }(),
+        () async {
+          await collRef
+              .onSnapshotSupport(options: controller2)
+              .firstWhere((snapshots) => snapshots.ids.contains(docRef.id));
+        }()
+      ]);
+      await docRef.set({'test': 1});
+      controller1.trigger();
+      controller2.trigger();
+      await future;
+      controller1.dispose();
+      controller2.dispose();
     });
 
     test('twoOnSnapshotSupport', () async {
@@ -43,20 +110,18 @@ void runFirestoreTrackChangesSupportTests(
       var docRef = testsRef.doc('two_onSnapshotSupport');
       await docRef.delete();
       var pullOptions1 =
-          TrackChangesPullOptions(refreshDelay: Duration(milliseconds: 200));
+          TrackChangesSupportOptions(refreshDelay: Duration(milliseconds: 200));
 
       var completer1 = Completer<void>();
       var completer2 = Completer<void>();
       var subscription1 =
           docRef.onSnapshotSupport(options: pullOptions1).listen((event) {
-        print('event1 $event');
         if (event.exists) {
           completer1.complete();
         }
       });
       var subscription2 =
           docRef.onSnapshotSupport(options: pullOptions1).listen((event) {
-        print('event2 $event');
         if (event.exists) {
           completer2.complete();
         }
@@ -73,14 +138,13 @@ void runFirestoreTrackChangesSupportTests(
       var docRef = testsRef.doc('simple_updatesOnSnapshotSupport');
       await docRef.delete();
       var pullOptions1 =
-          TrackChangesPullOptions(refreshDelay: Duration(milliseconds: 200));
-      var pullOptions2 = TrackChangesPullOptions.first();
+          TrackChangesSupportOptions(refreshDelay: Duration(milliseconds: 200));
+      var pullOptions2 = TrackChangesSupportOptions.first();
 
       var eventList1 = <DocumentSnapshot>[];
       var eventList2 = <DocumentSnapshot>[];
       var sub1 =
           docRef.onSnapshotSupport(options: pullOptions1).listen((event) {
-        print('event $event');
         eventList1.add(event);
       });
       var sub2 =

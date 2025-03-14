@@ -8,7 +8,7 @@ export 'package:tekartik_firebase_firestore/firestore.dart';
 export 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast.dart'
     show FirestoreServiceSembast;
 export 'package:tekartik_firebase_firestore_sembast/src/firestore_sembast_ext.dart'
-    show TekartikFirestoreSembastExt;
+    show TekartikFirestoreSembastExt, TekartikFirestoreServiceSembastExt;
 
 /// In memory service
 FirestoreService get firestoreServiceMemory =>

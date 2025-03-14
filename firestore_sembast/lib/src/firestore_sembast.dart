@@ -16,6 +16,14 @@ import 'package:uuid/uuid.dart';
 
 import 'import_firestore.dart';
 
+/// Private extension
+extension TekartikFirestoreServiceSembastPrvExt on FirestoreServiceSembast {
+  /// Set track changes to false
+  set supportsTrackChanges(bool value) {
+    _supportTrackChanges = value;
+  }
+}
+
 /// Firestore service on sembast
 class FirestoreServiceSembast
     with FirebaseProductServiceMixin<Firestore>, FirestoreServiceDefaultMixin
@@ -58,8 +66,10 @@ class FirestoreServiceSembast
   @override
   bool get supportsFieldValueArray => true;
 
+  /// Visible for testing
+  var _supportTrackChanges = true;
   @override
-  bool get supportsTrackChanges => true;
+  bool get supportsTrackChanges => _supportTrackChanges;
 
   @override
   bool get supportsListCollections => true;

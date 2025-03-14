@@ -26,6 +26,7 @@ String _unescapeKey(String field) => field.substring(1, field.length - 1);
 /// Get field segments.
 List<String> getRawFieldParts(String field) => field.split('.');
 
+/// Sanitize a map
 Map<String, Object?>? sanitizeInputEntry(Map map) {
   Map<String, Object?>? sanitized = <String, Object?>{};
   map.forEach((k, v) {
@@ -35,6 +36,7 @@ Map<String, Object?>? sanitizeInputEntry(Map map) {
   return sanitized;
 }
 
+/// Sanitize a map entry
 Map<String, Object?> sanitizeInputEntryKey(String key, dynamic value) {
   var sanitized = <String, Object?>{};
   var parts = getFieldParts(key);
