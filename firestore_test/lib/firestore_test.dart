@@ -8,6 +8,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_firestore_test/aggregate_query_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_multi_client_test.dart';
 import 'package:tekartik_firebase_firestore_test/timestamp_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_collection_test.dart';
 import 'package:tekartik_firebase_firestore_test/utils_query_test.dart';
@@ -166,6 +167,10 @@ void runFirestoreAppTests(
       testContext: testContext);
   utilsAutoIdTest(firestore: firestore, testContext: testContext);
   runCopyUtilsTest(firestore: firestore, testContext: testContext);
+  firestoreMulticlientTest(
+      firestore1: firestore,
+      firestore2: firestore,
+      docTopPath: '${testContext.rootCollectionPath}/multi_client');
 }
 
 @Deprecated('User runFirestoreCommonTests')

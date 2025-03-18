@@ -12,16 +12,16 @@ class TestContext {
   late Firebase firebase;
 }
 
-// using real websocker
-Future<TestContext> initTestContextSimIo() async {
+// memory only
+Future<TestContext> initTestContextSim() async {
   var testContext = TestContext();
+  // The server use firebase io
   testContext.simServer =
-      await serve(FirebaseLocal(), webSocketChannelFactoryIo);
+      await serve(FirebaseLocal(), webSocketChannelFactoryMemory);
   testContext.firebase = sim.getFirebaseSim(
-      clientFactory: webSocketChannelClientFactoryIo,
+      clientFactory: webSocketChannelClientFactoryMemory,
       url: testContext.simServer.webSocketChannelServer.url);
-  FirestoreSimServer(
-      firestoreServiceMemory, testContext.simServer, testContext.firebase);
+  FirestoreSimServer(newFirestoreServiceMemory(), testContext.simServer);
   return testContext;
 }
 

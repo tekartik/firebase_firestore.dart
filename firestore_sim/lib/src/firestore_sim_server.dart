@@ -392,7 +392,7 @@ class FirestireSimPluginClient implements FirebaseSimPluginClient {
 class FirestoreSimServer implements FirebaseSimPlugin {
   final FirestoreService firestoreService;
   final FirebaseSimServer firebaseSimServer;
-  final Firebase firebase;
+  late final Firebase firebase;
   final Map<Firestore, Lock> _locks = <Firestore, Lock>{};
 
   Lock? transactionLock(Firestore firestore) => _locks[firestore];
@@ -400,8 +400,9 @@ class FirestoreSimServer implements FirebaseSimPlugin {
   // App app;
   Firestore? firestore;
 
-  FirestoreSimServer(
-      this.firestoreService, this.firebaseSimServer, this.firebase) {
+  FirestoreSimServer(this.firestoreService, this.firebaseSimServer,
+      [Firebase? firebase]) {
+    this.firebase = firebase ?? firebaseSimServer.firebase!;
     firebaseSimServer.addPlugin(this);
   }
 

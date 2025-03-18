@@ -22,6 +22,11 @@ dependencies:
     version: '>=0.8.0'
   dev_test: ">=1.0.0"
   path:
+  tekartik_app_dev_menu:
+    git:
+      url: https://github.com/tekartik/app_common_utils.dart
+      ref: dart3a
+      path: app_dev_menu
 dev_dependencies:
   dev_build: '>=0.12.0-dev.1'
   process_run: '>=0.10.2'

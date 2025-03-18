@@ -13,7 +13,15 @@ Future main() async {
   skipConcurrentTransactionTests = true;
   var testContext = await initTestContextSim();
   var firebase = testContext.firebase;
-  runFirestoreTests(firebase: firebase, firestoreService: firestoreServiceSim);
+  var app = firebase.initializeApp();
+  runFirestoreAppTests(
+      app: app,
+      firestoreService: firestoreServiceSim,
+      testContext: FirestoreTestContext());
+
+  test('projectId', () {
+    expect(app.options.projectId, 'sim');
+  });
 
   tearDownAll(() async {
     await close(testContext);
