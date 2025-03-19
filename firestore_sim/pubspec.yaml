@@ -10,9 +10,8 @@ dependencies:
   tekartik_firebase_sim:
     git:
       url: https://github.com/tekartik/firebase.dart
-      path: firebase_sim
       ref: dart3a
-    version: '>=0.3.7'
+      path: firebase_sim
   tekartik_firebase_firestore:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart

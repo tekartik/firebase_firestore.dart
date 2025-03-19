@@ -6,8 +6,7 @@ import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_common.dart';
-import 'package:tekartik_firebase_sim/firebase_sim_client.dart';
-import 'package:tekartik_firebase_sim/rpc_message.dart';
+
 import 'package:tekartik_firebase_sim/src/firebase_sim_client.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart'; // ignore: implementation_imports
 
@@ -369,15 +368,11 @@ class ServerSubscriptionSim<T> {
   int? id;
   final StreamController<T> _controller;
 
-  // register for notification during the query
-  StreamSubscription<Notification>? notificationSubscription;
-
   ServerSubscriptionSim(this._controller);
 
   Stream<T> get stream => _controller.stream;
 
   Future close() async {
-    await notificationSubscription?.cancel();
     await _controller.close();
   }
 
