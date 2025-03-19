@@ -338,7 +338,7 @@ abstract mixin class QueryMixinSim implements Query {
     late ServerSubscriptionSim<QuerySnapshot> subscription;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {
       await firestoreSim.removeSubscription(subscription);
-      await simClient!.sendRequest<Map>(
+      await simClient!.sendRequest<void>(
           methodFirestoreQueryCancel, {paramSubscriptionId: subscription.id});
       await subscription.done;
     }));
@@ -679,6 +679,6 @@ class WriteBatchSim extends WriteBatchBase {
       }
     }
     var simClient = await firestore.simClient;
-    await simClient.sendRequest<Map>(method, batchData.toMap());
+    await simClient.sendRequest<void>(method, batchData.toMap());
   }
 }
