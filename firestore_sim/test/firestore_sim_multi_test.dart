@@ -18,7 +18,7 @@ Future main() async {
   var firebase = testContext.firebase;
   var firebase2 = sim.getFirebaseSim(
       clientFactory: webSocketChannelClientFactoryMemory,
-      url: testContext.simServer.webSocketChannelServer.url);
+      uri: testContext.simServer.uri);
   var app1 = firebase.initializeApp();
   var app2 = firebase2.initializeApp();
 

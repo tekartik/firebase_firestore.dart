@@ -6,6 +6,7 @@ import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_common.dart';
+import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_server.dart';
 
 import 'package:tekartik_firebase_sim/src/firebase_sim_client.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart'; // ignore: implementation_imports
@@ -101,7 +102,7 @@ class DocumentReferenceSim
   Future delete() async {
     var simClient = await firestoreSim.simClient;
     var firestoreDeleteData = FirestorePathData()..path = path;
-    await simClient.sendRequest<void>(
+    await simClient.sendRequest<void>(FirestoreSimService.serviceName,
         methodFirestoreDelete, firestoreDeleteData.toMap());
   }
 
@@ -119,7 +120,7 @@ class DocumentReferenceSim
       ..path = path
       ..data = jsonMap
       ..merge = options?.merge;
-    await simClient.sendRequest<void>(
+    await simClient.sendRequest<void>(FirestoreSimService.serviceName,
         methodFirestoreSet, firestoreSetData.toMap());
   }
 
@@ -130,7 +131,7 @@ class DocumentReferenceSim
     var firestoreSetData = FirestoreSetData()
       ..path = path
       ..data = jsonMap;
-    await simClient.sendRequest<void>(
+    await simClient.sendRequest<void>(FirestoreSimService.serviceName,
         methodFirestoreUpdate, firestoreSetData.toMap());
   }
 
@@ -145,7 +146,9 @@ class DocumentReferenceSim
     while (true) {
       if (firestoreSim._subscriptions.containsKey(subscriptionId)) {
         var result = resultAsMap(await simClient!.sendRequest<Object?>(
-            methodFirestoreGetStream, {paramSubscriptionId: subscriptionId}));
+            FirestoreSimService.serviceName,
+            methodFirestoreGetStream,
+            {paramSubscriptionId: subscriptionId}));
         // devPrint(result);
         // null means cancelled
         if (result[paramDone] == true) {
@@ -166,15 +169,17 @@ class DocumentReferenceSim
     FirebaseSimClient? simClient;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {
       await firestoreSim.removeSubscription(subscription);
-      await simClient!.sendRequest<void>(
+      await simClient!.sendRequest<void>(FirestoreSimService.serviceName,
           methodFirestoreGetCancel, {paramSubscriptionId: subscription.id});
       await subscription.done;
     }));
 
     () async {
       simClient = await firestoreSim.simClient;
-      var result = resultAsMap(await simClient!
-          .sendRequest<Object>(methodFirestoreGetListen, {paramPath: path}));
+      var result = resultAsMap(await simClient!.sendRequest<Object>(
+          FirestoreSimService.serviceName,
+          methodFirestoreGetListen,
+          {paramPath: path}));
 
       subscription.id = result[paramSubscriptionId] as int?;
       firestoreSim.addSubscription(subscription);
@@ -270,8 +275,8 @@ abstract mixin class QueryMixinSim implements Query {
     var data = FirestoreQueryData()
       ..path = simCollectionReference.path
       ..queryInfo = queryInfo;
-    var result = resultAsMap(
-        await simClient.sendRequest<Map>(methodFirestoreQuery, data.toMap()));
+    var result = resultAsMap(await simClient.sendRequest<Map>(
+        FirestoreSimService.serviceName, methodFirestoreQuery, data.toMap()));
 
     var querySnapshotData = FirestoreQuerySnapshotData()..fromMap(result);
     return QuerySnapshotSim(
@@ -289,7 +294,9 @@ abstract mixin class QueryMixinSim implements Query {
     while (true) {
       if (firestoreSim._subscriptions.containsKey(subscriptionId)) {
         var result = resultAsMap(await simClient!.sendRequest<Map>(
-            methodFirestoreQueryStream, {paramSubscriptionId: subscriptionId}));
+            FirestoreSimService.serviceName,
+            methodFirestoreQueryStream,
+            {paramSubscriptionId: subscriptionId}));
         // null means cancelled
         if (result[paramDone] == true) {
           break;
@@ -338,7 +345,7 @@ abstract mixin class QueryMixinSim implements Query {
     late ServerSubscriptionSim<QuerySnapshot> subscription;
     subscription = ServerSubscriptionSim(StreamController(onCancel: () async {
       await firestoreSim.removeSubscription(subscription);
-      await simClient!.sendRequest<void>(
+      await simClient!.sendRequest<void>(FirestoreSimService.serviceName,
           methodFirestoreQueryCancel, {paramSubscriptionId: subscription.id});
       await subscription.done;
     }));
@@ -350,8 +357,10 @@ abstract mixin class QueryMixinSim implements Query {
         ..path = simCollectionReference.path
         ..queryInfo = queryInfo;
 
-      var result = resultAsMap(await simClient!
-          .sendRequest<Map>(methodFirestoreQueryListen, data.toMap()));
+      var result = resultAsMap(await simClient!.sendRequest<Map>(
+          FirestoreSimService.serviceName,
+          methodFirestoreQueryListen,
+          data.toMap()));
 
       subscription.id = result[paramSubscriptionId] as int?;
       firestoreSim.addSubscription(subscription);
@@ -463,7 +472,9 @@ class CollectionReferenceSim extends Object
       ..path = path
       ..data = jsonMap;
     var result = await simClient.sendRequest<Map>(
-        methodFirestoreAdd, firestoreSetData.toMap());
+        FirestoreSimService.serviceName,
+        methodFirestoreAdd,
+        firestoreSetData.toMap());
     var firestorePathData = FirestorePathData()
       ..fromMap(result as Map<String, Object?>);
     return DocumentReferenceSim(firestoreSim, firestorePathData.path);
@@ -577,8 +588,9 @@ class FirestoreSim extends Object
   Future<T> runTransaction<T>(
       FutureOr<T> Function(Transaction transaction) updateFunction) async {
     var simClient = await this.simClient;
-    var result = resultAsMap(await simClient
-        .sendRequest<Map>(methodFirestoreTransaction, <String, Object?>{}));
+    var result = resultAsMap(await simClient.sendRequest<Map>(
+        FirestoreSimService.serviceName,
+        methodFirestoreTransaction, <String, Object?>{}));
 
     var responseData = FirestoreTransactionResponseData()..fromMap(result);
     final transactionSim = TransactionSim(this, responseData.transactionId);
@@ -596,7 +608,9 @@ class FirestoreSim extends Object
   Future<DocumentSnapshot> get(FirestoreGetRequestData requestData) async {
     var simClient = await this.simClient;
     var result = resultAsMap(await simClient.sendRequest<Map>(
-        methodFirestoreGet, requestData.toMap()));
+        FirestoreSimService.serviceName,
+        methodFirestoreGet,
+        requestData.toMap()));
 
     var documentSnapshotData = FirestoreDocumentSnapshotDataImpl()
       ..fromMap(result);
@@ -641,7 +655,7 @@ class TransactionSim extends WriteBatchSim implements Transaction {
     var requestData = FirestoreTransactionCancelRequestData()
       ..transactionId = transactionId;
     var simClient = await firestore.simClient;
-    await simClient.sendRequest<Map>(
+    await simClient.sendRequest<Map>(FirestoreSimService.serviceName,
         methodFirestoreTransactionCancel, requestData.toMap());
   }
 }
@@ -679,6 +693,7 @@ class WriteBatchSim extends WriteBatchBase {
       }
     }
     var simClient = await firestore.simClient;
-    await simClient.sendRequest<void>(method, batchData.toMap());
+    await simClient.sendRequest<void>(
+        FirestoreSimService.serviceName, method, batchData.toMap());
   }
 }

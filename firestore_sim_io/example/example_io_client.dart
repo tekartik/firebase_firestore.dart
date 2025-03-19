@@ -8,7 +8,7 @@ var urlKv = '4338987.url'.kvFromVar(
 
 int? get urlKvPort => int.tryParse((urlKv.value ?? '').split(':').last);
 Future<void> main(List<String> args) async {
-  var firebase = getFirebaseSim(url: urlKv.value);
+  var firebase = getFirebaseSim(uri: Uri.parse(urlKv.value!));
   var app = firebase.initializeApp();
   var firestore =
       firestoreServiceSim.firestore(app); // .debugQuickLoggerWrapper();
