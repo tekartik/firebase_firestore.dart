@@ -5,7 +5,6 @@ import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_server.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
-import 'package:tekartik_web_socket_io/web_socket_io.dart';
 
 import 'example_io_client.dart';
 

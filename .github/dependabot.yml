@@ -3,60 +3,49 @@
 version: 2
 
 enable-beta-ecosystems: true
+
 updates:
+  - package-ecosystem: "pub"
+    directory: "."
+    schedule:
+      interval: "monthly"
   - package-ecosystem: "pub"
     directory: "firestore"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "firestore_browser"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "firestore_idb"
     schedule:
       interval: "monthly"
-
-  - package-ecosystem: "pub"
-    directory: "firestore_rest"
-    schedule:
-      interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "firestore_sembast"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "firestore_sim"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "firestore_sim_browser"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "firestore_sim_io"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "firestore_test"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "pub"
     directory: "repo_support"
     schedule:
       interval: "monthly"
-
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
-    labels:
-      - autosubmit
