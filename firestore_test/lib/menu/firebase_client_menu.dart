@@ -17,9 +17,9 @@ class FirestoreMainMenuContext {
 }
 
 void firestoreMainMenu({required FirestoreMainMenuContext context}) {
-  menu('firestore', () {
+  menu('collection', () {
     StreamSubscription? subscription;
-    var coll = context.doc.collection('changes');
+    var coll = context.doc.collection('change');
     item('register changes', () {
       subscription?.cancel();
       subscription = coll.onSnapshotSupport().listen((event) {
@@ -42,6 +42,33 @@ void firestoreMainMenu({required FirestoreMainMenuContext context}) {
       for (var item in list.docs) {
         write('item: $item');
       }
+    });
+  });
+  menu('singleton', () {
+    StreamSubscription? subscription;
+    var doc = context.doc.collection('changes').doc('singleton');
+    item('register changes', () {
+      subscription?.cancel();
+      subscription = doc.onSnapshotSupport().listen((event) {
+        var now = Timestamp.now();
+        var eventTimestamp = (event.data['timestamp'] as Timestamp?) ?? now;
+        write(
+            'diff: ${now.millisecondsSinceEpoch - eventTimestamp.millisecondsSinceEpoch} ms');
+        write('onItem: ${event}');
+      });
+    });
+    item('cancel registration', () {
+      subscription?.cancel();
+    });
+    item('set item', () async {
+      await doc.set({'timestamp': Timestamp.now()});
+    });
+    item('delete', () async {
+      await doc.delete();
+    });
+    item('get', () async {
+      var item = await doc.get();
+      write('item: $item');
     });
   });
 }
