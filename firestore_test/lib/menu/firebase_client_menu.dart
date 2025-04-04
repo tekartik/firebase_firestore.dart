@@ -54,7 +54,7 @@ void firestoreMainMenu({required FirestoreMainMenuContext context}) {
         var eventTimestamp = (event.data['timestamp'] as Timestamp?) ?? now;
         write(
             'diff: ${now.millisecondsSinceEpoch - eventTimestamp.millisecondsSinceEpoch} ms');
-        write('onItem: ${event}');
+        write('onItem: $event');
       });
     });
     item('cancel registration', () {
