@@ -5,49 +5,54 @@ import 'dart:async';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/query.dart';
 
+/// Prefer extension
 /// Delete all items in a collection, return the count deleted
 /// Keep ids in keepIds
 Future<int> deleteCollection(
     Firestore firestore, CollectionReference collectionRef,
     {int? batchSize, Iterable<String>? keepIds}) async {
-  var query = collectionRef.orderBy(firestoreNameFieldPath);
-  return await deleteQuery(firestore, query,
-      batchSize: batchSize,
-      keepPaths: keepIds?.map((id) => collectionRef.doc(id).path));
+  return await collectionRef.delete(batchSize: batchSize, keepIds: keepIds);
 }
 
+/// Firestore extension
+extension TekartikFirestoreCollectionReferenceExt on CollectionReference {
+  /// Delete all items in a collection, return the count deleted
+  /// Keep ids in keepIds
+  Future<int> delete({int? batchSize, Iterable<String>? keepIds}) async {
+    return await queryDelete(batchSize: batchSize, keepIds: keepIds);
+  }
+
+  /// Copy all items to a collection, return the count copied
+  /// [clearExisting] means the destination collection will be cleared first
+  Future<int> copyTo(CollectionReference dstCollectionRef,
+      {int? batchSize, bool? clearExisting}) async {
+    return await _copyTo(dstCollectionRef,
+        batchSize: batchSize, clearExisting: clearExisting);
+  }
+
+  /// Copy all items to a collection, return the count copied
+  /// [clearExisting] means the destination collection will be cleared first
+  Future<int> _copyTo(CollectionReference dstCollectionRef,
+      {int? batchSize, bool? clearExisting}) async {
+    var dstFirestore = dstCollectionRef.firestore;
+    if (clearExisting ?? false) {
+      // Clear the destination collection first
+      await deleteCollection(dstFirestore, dstCollectionRef);
+    }
+    return await queryCopyTo(dstCollectionRef, batchSize: batchSize);
+  }
+}
+
+/// Compat. (deprecated)
+///
+/// Prefer extension
 /// Copy all items to a collection, return the count copied
+/// [clearExisting] means the destination collection will be cleared first
 Future<int> copyCollection(
     Firestore firestore,
     CollectionReference collectionRef,
     Firestore dstFirestore,
     CollectionReference dstCollectionRef,
     {int? batchSize}) async {
-  var query = collectionRef.orderBy(firestoreNameFieldPath);
-  batchSize ??= 10;
-  var count = 0;
-
-  int snapshotSize;
-  do {
-    var snapshot = await query.limit(batchSize).get();
-    snapshotSize = snapshot.docs.length;
-
-    // When there are no documents left, we are done
-    if (snapshotSize == 0) {
-      break;
-    }
-
-    // Delete documents in a batch
-    var batch = dstFirestore.batch();
-    for (var doc in snapshot.docs) {
-      batch.set(dstCollectionRef.doc(doc.ref.id), doc.data);
-    }
-
-    await batch.commit();
-    count += snapshot.docs.length;
-
-    query = query.startAfter(values: [snapshot.docs.last.ref.id]);
-  } while (snapshotSize >= batchSize);
-
-  return count;
+  return await collectionRef.copyTo(dstCollectionRef, batchSize: batchSize);
 }

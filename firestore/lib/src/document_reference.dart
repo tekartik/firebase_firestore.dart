@@ -23,8 +23,10 @@ abstract class DocumentReference {
   /// Get a document.
   Future<DocumentSnapshot> get();
 
+  /// Set the document to the given data.
   Future<void> set(Map<String, Object?> data, [SetOptions? options]);
 
+  /// Update the document with the given data.
   Future<void> update(Map<String, Object?> data);
 
   /// Notifies of document updates at this location.
