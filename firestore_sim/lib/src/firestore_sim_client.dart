@@ -67,8 +67,13 @@ class DocumentSnapshotSim
 
   final DocumentData? documentData;
 
-  DocumentSnapshotSim(this.ref, this.exists, this.documentData,
-      {required this.createTime, required this.updateTime});
+  DocumentSnapshotSim(
+    this.ref,
+    this.exists,
+    this.documentData, {
+    required this.createTime,
+    required this.updateTime,
+  });
 
   @override
   Map<String, Object?> get data => documentData!.asMap();
@@ -102,8 +107,11 @@ class DocumentReferenceSim
   Future delete() async {
     var simClient = await firestoreSim.simClient;
     var firestoreDeleteData = FirestorePathData()..path = path;
-    await simClient.sendRequest<void>(FirestoreSimService.serviceName,
-        methodFirestoreDelete, firestoreDeleteData.toMap());
+    await simClient.sendRequest<void>(
+      FirestoreSimService.serviceName,
+      methodFirestoreDelete,
+      firestoreDeleteData.toMap(),
+    );
   }
 
   @override
@@ -116,46 +124,65 @@ class DocumentReferenceSim
   Future set(Map<String, Object?> data, [SetOptions? options]) async {
     var jsonMap = documentDataToJsonMap(DocumentData(data));
     var simClient = await firestoreSim.simClient;
-    var firestoreSetData = FirestoreSetData()
-      ..path = path
-      ..data = jsonMap
-      ..merge = options?.merge;
-    await simClient.sendRequest<void>(FirestoreSimService.serviceName,
-        methodFirestoreSet, firestoreSetData.toMap());
+    var firestoreSetData =
+        FirestoreSetData()
+          ..path = path
+          ..data = jsonMap
+          ..merge = options?.merge;
+    await simClient.sendRequest<void>(
+      FirestoreSimService.serviceName,
+      methodFirestoreSet,
+      firestoreSetData.toMap(),
+    );
   }
 
   @override
   Future update(Map<String, Object?> data) async {
     var jsonMap = documentDataToJsonMap(DocumentData(data));
     var simClient = await firestoreSim.simClient;
-    var firestoreSetData = FirestoreSetData()
-      ..path = path
-      ..data = jsonMap;
-    await simClient.sendRequest<void>(FirestoreSimService.serviceName,
-        methodFirestoreUpdate, firestoreSetData.toMap());
+    var firestoreSetData =
+        FirestoreSetData()
+          ..path = path
+          ..data = jsonMap;
+    await simClient.sendRequest<void>(
+      FirestoreSimService.serviceName,
+      methodFirestoreUpdate,
+      firestoreSetData.toMap(),
+    );
   }
 
   DocumentSnapshotSim documentSnapshotFromDataMap(
-          String path, Map<String, Object?> map) =>
-      firestoreSim.documentSnapshotFromDataMap(path, map);
+    String path,
+    Map<String, Object?> map,
+  ) => firestoreSim.documentSnapshotFromDataMap(path, map);
 
   // do until cancelled
-  Future _getStream(FirebaseSimClient? simClient, String path,
-      ServerSubscriptionSim subscription) async {
+  Future _getStream(
+    FirebaseSimClient? simClient,
+    String path,
+    ServerSubscriptionSim subscription,
+  ) async {
     var subscriptionId = subscription.id;
     while (true) {
       if (firestoreSim._subscriptions.containsKey(subscriptionId)) {
-        var result = resultAsMap(await simClient!.sendRequest<Object?>(
+        var result = resultAsMap(
+          await simClient!.sendRequest<Object?>(
             FirestoreSimService.serviceName,
             methodFirestoreGetStream,
-            {paramSubscriptionId: subscriptionId}));
+            {paramSubscriptionId: subscriptionId},
+          ),
+        );
         // devPrint(result);
         // null means cancelled
         if (result[paramDone] == true) {
           break;
         }
-        subscription.add(firestoreSim.documentSnapshotFromMessageMap(
-            path, (result[paramSnapshot] as Map).cast<String, dynamic>()));
+        subscription.add(
+          firestoreSim.documentSnapshotFromMessageMap(
+            path,
+            (result[paramSnapshot] as Map).cast<String, dynamic>(),
+          ),
+        );
       } else {
         break;
       }
@@ -167,19 +194,29 @@ class DocumentReferenceSim
   Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     late ServerSubscriptionSim<DocumentSnapshotSim> subscription;
     FirebaseSimClient? simClient;
-    subscription = ServerSubscriptionSim(StreamController(onCancel: () async {
-      await firestoreSim.removeSubscription(subscription);
-      await simClient!.sendRequest<void>(FirestoreSimService.serviceName,
-          methodFirestoreGetCancel, {paramSubscriptionId: subscription.id});
-      await subscription.done;
-    }));
+    subscription = ServerSubscriptionSim(
+      StreamController(
+        onCancel: () async {
+          await firestoreSim.removeSubscription(subscription);
+          await simClient!.sendRequest<void>(
+            FirestoreSimService.serviceName,
+            methodFirestoreGetCancel,
+            {paramSubscriptionId: subscription.id},
+          );
+          await subscription.done;
+        },
+      ),
+    );
 
     () async {
       simClient = await firestoreSim.simClient;
-      var result = resultAsMap(await simClient!.sendRequest<Object>(
+      var result = resultAsMap(
+        await simClient!.sendRequest<Object>(
           FirestoreSimService.serviceName,
           methodFirestoreGetListen,
-          {paramPath: path}));
+          {paramPath: path},
+        ),
+      );
 
       subscription.id = result[paramSubscriptionId] as int?;
       firestoreSim.addSubscription(subscription);
@@ -218,7 +255,9 @@ abstract mixin class QueryMixinSim implements Query {
     bool? isNull,
   }) =>
       clone()
-        ..queryInfo!.addWhere(WhereInfo(fieldPath,
+        ..queryInfo!.addWhere(
+          WhereInfo(
+            fieldPath,
             isEqualTo: isEqualTo,
             isLessThan: isLessThan,
             isLessThanOrEqualTo: isLessThanOrEqualTo,
@@ -227,11 +266,15 @@ abstract mixin class QueryMixinSim implements Query {
             arrayContains: arrayContains,
             arrayContainsAny: arrayContainsAny,
             whereIn: whereIn,
-            isNull: isNull));
+            isNull: isNull,
+          ),
+        );
 
   void addOrderBy(String key, String directionStr) {
     var orderBy = OrderByInfo(
-        fieldPath: key, ascending: directionStr != orderByDescending);
+      fieldPath: key,
+      ascending: directionStr != orderByDescending,
+    );
     queryInfo!.orderBys.add(orderBy);
   }
 
@@ -260,55 +303,76 @@ abstract mixin class QueryMixinSim implements Query {
   Query limit(int limit) => clone()..queryInfo!.limit = limit;
 
   @override
-  Query orderBy(String key, {bool? descending}) => clone()
-    ..addOrderBy(
-        key, descending == true ? orderByDescending : orderByAscending);
+  Query orderBy(String key, {bool? descending}) =>
+      clone()..addOrderBy(
+        key,
+        descending == true ? orderByDescending : orderByAscending,
+      );
 
   DocumentSnapshotSim documentSnapshotFromData(
-      DocumentSnapshotData documentSnapshotData) {
+    DocumentSnapshotData documentSnapshotData,
+  ) {
     return firestoreSim.documentSnapshotFromData(documentSnapshotData);
   }
 
   @override
   Future<QuerySnapshot> get() async {
     var simClient = await appSim.simClient;
-    var data = FirestoreQueryData()
-      ..path = simCollectionReference.path
-      ..queryInfo = queryInfo;
-    var result = resultAsMap(await simClient.sendRequest<Map>(
-        FirestoreSimService.serviceName, methodFirestoreQuery, data.toMap()));
+    var data =
+        FirestoreQueryData()
+          ..path = simCollectionReference.path
+          ..queryInfo = queryInfo;
+    var result = resultAsMap(
+      await simClient.sendRequest<Map>(
+        FirestoreSimService.serviceName,
+        methodFirestoreQuery,
+        data.toMap(),
+      ),
+    );
 
     var querySnapshotData = FirestoreQuerySnapshotData()..fromMap(result);
     return QuerySnapshotSim(
-        querySnapshotData.list
-            .map((DocumentSnapshotData documentSnapshotData) =>
-                documentSnapshotFromData(documentSnapshotData))
-            .toList(),
-        <DocumentChangeSim>[]);
+      querySnapshotData.list
+          .map(
+            (DocumentSnapshotData documentSnapshotData) =>
+                documentSnapshotFromData(documentSnapshotData),
+          )
+          .toList(),
+      <DocumentChangeSim>[],
+    );
   }
 
   // do until cancelled
   Future _getStream(
-      FirebaseSimClient? simClient, ServerSubscriptionSim subscription) async {
+    FirebaseSimClient? simClient,
+    ServerSubscriptionSim subscription,
+  ) async {
     var subscriptionId = subscription.id;
     while (true) {
       if (firestoreSim._subscriptions.containsKey(subscriptionId)) {
-        var result = resultAsMap(await simClient!.sendRequest<Map>(
+        var result = resultAsMap(
+          await simClient!.sendRequest<Map>(
             FirestoreSimService.serviceName,
             methodFirestoreQueryStream,
-            {paramSubscriptionId: subscriptionId}));
+            {paramSubscriptionId: subscriptionId},
+          ),
+        );
         // null means cancelled
         if (result[paramDone] == true) {
           break;
         }
 
-        var querySnapshotData = FirestoreQuerySnapshotData()
-          ..fromMap((result[paramSnapshot] as Map).cast<String, dynamic>());
+        var querySnapshotData =
+            FirestoreQuerySnapshotData()
+              ..fromMap((result[paramSnapshot] as Map).cast<String, dynamic>());
 
-        var docs = querySnapshotData.list
-            .map((DocumentSnapshotData documentSnapshotData) =>
-                documentSnapshotFromData(documentSnapshotData))
-            .toList();
+        var docs =
+            querySnapshotData.list
+                .map(
+                  (DocumentSnapshotData documentSnapshotData) =>
+                      documentSnapshotFromData(documentSnapshotData),
+                )
+                .toList();
 
         var changes = <DocumentChangeSim>[];
         for (var changeData in querySnapshotData.changes!) {
@@ -316,8 +380,9 @@ abstract mixin class QueryMixinSim implements Query {
           DocumentSnapshotSim? snapshot;
           if (changeData.data != null) {
             snapshot = firestoreSim.documentSnapshotFromDataMap(
-                url.join(simCollectionReference.path, changeData.id),
-                changeData.data);
+              url.join(simCollectionReference.path, changeData.id),
+              changeData.data,
+            );
           } else {
             // find in doc
             snapshot = snapshotsFindById(docs, changeData.id);
@@ -343,24 +408,35 @@ abstract mixin class QueryMixinSim implements Query {
   Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     FirebaseSimClient? simClient;
     late ServerSubscriptionSim<QuerySnapshot> subscription;
-    subscription = ServerSubscriptionSim(StreamController(onCancel: () async {
-      await firestoreSim.removeSubscription(subscription);
-      await simClient!.sendRequest<void>(FirestoreSimService.serviceName,
-          methodFirestoreQueryCancel, {paramSubscriptionId: subscription.id});
-      await subscription.done;
-    }));
+    subscription = ServerSubscriptionSim(
+      StreamController(
+        onCancel: () async {
+          await firestoreSim.removeSubscription(subscription);
+          await simClient!.sendRequest<void>(
+            FirestoreSimService.serviceName,
+            methodFirestoreQueryCancel,
+            {paramSubscriptionId: subscription.id},
+          );
+          await subscription.done;
+        },
+      ),
+    );
 
     () async {
       simClient = await firestoreSim.simClient;
 
-      var data = FirestoreQueryData()
-        ..path = simCollectionReference.path
-        ..queryInfo = queryInfo;
+      var data =
+          FirestoreQueryData()
+            ..path = simCollectionReference.path
+            ..queryInfo = queryInfo;
 
-      var result = resultAsMap(await simClient!.sendRequest<Map>(
+      var result = resultAsMap(
+        await simClient!.sendRequest<Map>(
           FirestoreSimService.serviceName,
           methodFirestoreQueryListen,
-          data.toMap()));
+          data.toMap(),
+        ),
+      );
 
       subscription.id = result[paramSubscriptionId] as int?;
       firestoreSim.addSubscription(subscription);
@@ -468,15 +544,17 @@ class CollectionReferenceSim extends Object
   Future<DocumentReference> add(Map<String, Object?> data) async {
     var jsonMap = documentDataToJsonMap(DocumentData(data));
     var simClient = await firestoreSim.simClient;
-    var firestoreSetData = FirestoreSetData()
-      ..path = path
-      ..data = jsonMap;
+    var firestoreSetData =
+        FirestoreSetData()
+          ..path = path
+          ..data = jsonMap;
     var result = await simClient.sendRequest<Map>(
-        FirestoreSimService.serviceName,
-        methodFirestoreAdd,
-        firestoreSetData.toMap());
-    var firestorePathData = FirestorePathData()
-      ..fromMap(result as Map<String, Object?>);
+      FirestoreSimService.serviceName,
+      methodFirestoreAdd,
+      firestoreSetData.toMap(),
+    );
+    var firestorePathData =
+        FirestorePathData()..fromMap(result as Map<String, Object?>);
     return DocumentReferenceSim(firestoreSim, firestorePathData.path);
   }
 
@@ -549,14 +627,16 @@ class FirestoreSim extends Object
   }
 
   DocumentSnapshotSim documentSnapshotFromData(
-      FirestoreDocumentSnapshotData documentSnapshotData) {
+    FirestoreDocumentSnapshotData documentSnapshotData,
+  ) {
     var dataMap = documentSnapshotData.data;
     return DocumentSnapshotSim(
-        DocumentReferenceSim(this, documentSnapshotData.path),
-        dataMap != null,
-        documentDataFromJsonMap(this, dataMap),
-        createTime: documentSnapshotData.createTime,
-        updateTime: documentSnapshotData.updateTime);
+      DocumentReferenceSim(this, documentSnapshotData.path),
+      dataMap != null,
+      documentDataFromJsonMap(this, dataMap),
+      createTime: documentSnapshotData.createTime,
+      updateTime: documentSnapshotData.updateTime,
+    );
     /*
     return documentSnapshotFromDataMap(
         documentSnapshotData.path, documentSnapshotData.data);
@@ -565,20 +645,31 @@ class FirestoreSim extends Object
 
   // warning no createTime and update time here
   DocumentSnapshotSim documentSnapshotFromDataMap(
-      String path, Map<String, Object?>? map) {
-    return DocumentSnapshotSim(DocumentReferenceSim(this, path), map != null,
-        documentDataFromJsonMap(this, map),
-        createTime: null, updateTime: null);
+    String path,
+    Map<String, Object?>? map,
+  ) {
+    return DocumentSnapshotSim(
+      DocumentReferenceSim(this, path),
+      map != null,
+      documentDataFromJsonMap(this, map),
+      createTime: null,
+      updateTime: null,
+    );
   }
 
   DocumentSnapshotSim documentSnapshotFromMessageMap(
-      String path, Map<String, Object?> map) {
+    String path,
+    Map<String, Object?> map,
+  ) {
     var documentSnapshotData = DocumentSnapshotData.fromMessageMap(map);
     var data = documentSnapshotData.data;
-    return DocumentSnapshotSim(DocumentReferenceSim(this, path), data != null,
-        documentDataFromJsonMap(this, data),
-        createTime: documentSnapshotData.createTime,
-        updateTime: documentSnapshotData.updateTime);
+    return DocumentSnapshotSim(
+      DocumentReferenceSim(this, path),
+      data != null,
+      documentDataFromJsonMap(this, data),
+      createTime: documentSnapshotData.createTime,
+      updateTime: documentSnapshotData.updateTime,
+    );
   }
 
   @override
@@ -586,11 +677,16 @@ class FirestoreSim extends Object
 
   @override
   Future<T> runTransaction<T>(
-      FutureOr<T> Function(Transaction transaction) updateFunction) async {
+    FutureOr<T> Function(Transaction transaction) updateFunction,
+  ) async {
     var simClient = await this.simClient;
-    var result = resultAsMap(await simClient.sendRequest<Map>(
+    var result = resultAsMap(
+      await simClient.sendRequest<Map>(
         FirestoreSimService.serviceName,
-        methodFirestoreTransaction, <String, Object?>{}));
+        methodFirestoreTransaction,
+        <String, Object?>{},
+      ),
+    );
 
     var responseData = FirestoreTransactionResponseData()..fromMap(result);
     final transactionSim = TransactionSim(this, responseData.transactionId);
@@ -607,19 +703,23 @@ class FirestoreSim extends Object
 
   Future<DocumentSnapshot> get(FirestoreGetRequestData requestData) async {
     var simClient = await this.simClient;
-    var result = resultAsMap(await simClient.sendRequest<Map>(
+    var result = resultAsMap(
+      await simClient.sendRequest<Map>(
         FirestoreSimService.serviceName,
         methodFirestoreGet,
-        requestData.toMap()));
+        requestData.toMap(),
+      ),
+    );
 
-    var documentSnapshotData = FirestoreDocumentSnapshotDataImpl()
-      ..fromMap(result);
+    var documentSnapshotData =
+        FirestoreDocumentSnapshotDataImpl()..fromMap(result);
     return DocumentSnapshotSim(
-        DocumentReferenceSim(this, documentSnapshotData.path),
-        documentSnapshotData.data != null,
-        documentDataFromJsonMap(this, documentSnapshotData.data),
-        createTime: documentSnapshotData.createTime,
-        updateTime: documentSnapshotData.updateTime);
+      DocumentReferenceSim(this, documentSnapshotData.path),
+      documentSnapshotData.data != null,
+      documentDataFromJsonMap(this, documentSnapshotData.data),
+      createTime: documentSnapshotData.createTime,
+      updateTime: documentSnapshotData.updateTime,
+    );
   }
 
   @override
@@ -639,9 +739,10 @@ class TransactionSim extends WriteBatchSim implements Transaction {
 
   @override
   Future<DocumentSnapshot> get(DocumentReference documentRef) {
-    var requestData = FirestoreGetRequestData()
-      ..path = documentRef.path
-      ..transactionId = transactionId;
+    var requestData =
+        FirestoreGetRequestData()
+          ..path = documentRef.path
+          ..transactionId = transactionId;
     return firestore.get(requestData);
   }
 
@@ -652,11 +753,14 @@ class TransactionSim extends WriteBatchSim implements Transaction {
   }
 
   Future cancel() async {
-    var requestData = FirestoreTransactionCancelRequestData()
-      ..transactionId = transactionId;
+    var requestData =
+        FirestoreTransactionCancelRequestData()..transactionId = transactionId;
     var simClient = await firestore.simClient;
-    await simClient.sendRequest<Map>(FirestoreSimService.serviceName,
-        methodFirestoreTransactionCancel, requestData.toMap());
+    await simClient.sendRequest<Map>(
+      FirestoreSimService.serviceName,
+      methodFirestoreTransactionCancel,
+      requestData.toMap(),
+    );
   }
 }
 
@@ -674,26 +778,35 @@ class WriteBatchSim extends WriteBatchBase {
   Future batchCommit(String method, FirestoreBatchData batchData) async {
     for (var operation in operations) {
       if (operation is WriteBatchOperationDelete) {
-        batchData.operations.add(BatchOperationDeleteData()
-          ..method = methodFirestoreDelete
-          ..path = operation.docRef!.path);
+        batchData.operations.add(
+          BatchOperationDeleteData()
+            ..method = methodFirestoreDelete
+            ..path = operation.docRef!.path,
+        );
       } else if (operation is WriteBatchOperationSet) {
-        batchData.operations.add(BatchOperationSetData()
-          ..method = methodFirestoreSet
-          ..path = operation.docRef!.path
-          ..data = documentDataToJsonMap(operation.documentData)
-          ..merge = operation.options?.merge);
+        batchData.operations.add(
+          BatchOperationSetData()
+            ..method = methodFirestoreSet
+            ..path = operation.docRef!.path
+            ..data = documentDataToJsonMap(operation.documentData)
+            ..merge = operation.options?.merge,
+        );
       } else if (operation is WriteBatchOperationUpdate) {
-        batchData.operations.add(BatchOperationUpdateData()
-          ..method = methodFirestoreUpdate
-          ..path = operation.docRef!.path
-          ..data = documentDataToJsonMap(operation.documentData));
+        batchData.operations.add(
+          BatchOperationUpdateData()
+            ..method = methodFirestoreUpdate
+            ..path = operation.docRef!.path
+            ..data = documentDataToJsonMap(operation.documentData),
+        );
       } else {
         throw 'not supported $operation';
       }
     }
     var simClient = await firestore.simClient;
     await simClient.sendRequest<void>(
-        FirestoreSimService.serviceName, method, batchData.toMap());
+      FirestoreSimService.serviceName,
+      method,
+      batchData.toMap(),
+    );
   }
 }

@@ -9,9 +9,10 @@ mixin SnapshotMetadataMixin implements SnapshotMetadata {
   bool get isFromCache => false;
 
   @override
-  String toString() => {
+  String toString() =>
+      {
         'hasPendingWrites': hasPendingWrites,
-        'isFromCache': isFromCache
+        'isFromCache': isFromCache,
       }.toString();
 }
 

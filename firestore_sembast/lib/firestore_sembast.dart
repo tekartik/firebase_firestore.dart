@@ -23,6 +23,6 @@ Firestore newFirestoreMemory() =>
     newFirestoreServiceMemory().firestore(newFirebaseAppLocal());
 
 /// New sembast service
-FirestoreService newFirestoreServiceSembast(
-        {required DatabaseFactory databaseFactory}) =>
-    firestore_sembast.FirestoreServiceSembast(databaseFactory);
+FirestoreService newFirestoreServiceSembast({
+  required DatabaseFactory databaseFactory,
+}) => firestore_sembast.FirestoreServiceSembast(databaseFactory);

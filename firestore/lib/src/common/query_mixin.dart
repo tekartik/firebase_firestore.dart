@@ -48,7 +48,9 @@ mixin QueryMixin implements Query {
     bool? isNull,
   }) =>
       clone()
-        ..queryInfo.addWhere(WhereInfo(fieldPath,
+        ..queryInfo.addWhere(
+          WhereInfo(
+            fieldPath,
             isEqualTo: isEqualTo,
             isLessThan: isLessThan,
             isLessThanOrEqualTo: isLessThanOrEqualTo,
@@ -57,12 +59,16 @@ mixin QueryMixin implements Query {
             arrayContains: arrayContains,
             arrayContainsAny: arrayContainsAny,
             whereIn: whereIn,
-            isNull: isNull));
+            isNull: isNull,
+          ),
+        );
 
   /// Add order by
   void addOrderBy(String key, String directionStr) {
     var orderBy = OrderByInfo(
-        fieldPath: key, ascending: directionStr != orderByDescending);
+      fieldPath: key,
+      ascending: directionStr != orderByDescending,
+    );
     queryInfo.orderBys.add(orderBy);
   }
 
@@ -91,20 +97,26 @@ mixin QueryMixin implements Query {
   Query limit(int limit) => clone()..queryInfo.limit = limit;
 
   @override
-  Query orderBy(String key, {bool? descending}) => clone()
-    ..addOrderBy(
-        key, descending == true ? orderByDescending : orderByAscending);
+  Query orderBy(String key, {bool? descending}) =>
+      clone()..addOrderBy(
+        key,
+        descending == true ? orderByDescending : orderByAscending,
+      );
 }
 
 /// Apply query info to query/collection synchroneously, after/at/before snapshot is not supported.
 Query applyQueryInfoNoDocumentId(
-    Firestore firestore, String path, QueryInfo? queryInfo) {
+  Firestore firestore,
+  String path,
+  QueryInfo? queryInfo,
+) {
   var query = _applyQueryInfoNoLimit(firestore, path, queryInfo);
   if (queryInfo != null) {
     if (queryInfo.startLimit != null) {
       if (queryInfo.startLimit!.documentId != null) {
         throw ArgumentError(
-            'documentId not supported for startLimit use applyQueryInfo');
+          'documentId not supported for startLimit use applyQueryInfo',
+        );
       }
       if (queryInfo.startLimit!.inclusive) {
         query = query.startAt(values: queryInfo.startLimit!.values);
@@ -115,7 +127,8 @@ Query applyQueryInfoNoDocumentId(
     if (queryInfo.endLimit != null) {
       if (queryInfo.endLimit!.documentId != null) {
         throw ArgumentError(
-            'documentId not supported for endLimit use applyQueryInfo');
+          'documentId not supported for endLimit use applyQueryInfo',
+        );
       }
       if (queryInfo.endLimit!.inclusive) {
         query = query.endAt(values: queryInfo.endLimit!.values);
@@ -129,7 +142,10 @@ Query applyQueryInfoNoDocumentId(
 
 /// Apply query info to query/collection
 Query _applyQueryInfoNoLimit(
-    Firestore firestore, String path, QueryInfo? queryInfo) {
+  Firestore firestore,
+  String path,
+  QueryInfo? queryInfo,
+) {
   Query query = firestore.collection(path);
   if (queryInfo != null) {
     if (queryInfo.selectKeyPaths != null) {
@@ -146,16 +162,18 @@ Query _applyQueryInfoNoLimit(
     }
 
     for (var where in queryInfo.wheres) {
-      query = query.where(where.fieldPath,
-          isEqualTo: where.isEqualTo,
-          isGreaterThan: where.isGreaterThan,
-          whereIn: where.whereIn,
-          arrayContains: where.arrayContains,
-          arrayContainsAny: where.arrayContainsAny,
-          isGreaterThanOrEqualTo: where.isGreaterThanOrEqualTo,
-          isLessThan: where.isLessThan,
-          isNull: where.isNull,
-          isLessThanOrEqualTo: where.isLessThanOrEqualTo);
+      query = query.where(
+        where.fieldPath,
+        isEqualTo: where.isEqualTo,
+        isGreaterThan: where.isGreaterThan,
+        whereIn: where.whereIn,
+        arrayContains: where.arrayContains,
+        arrayContainsAny: where.arrayContainsAny,
+        isGreaterThanOrEqualTo: where.isGreaterThanOrEqualTo,
+        isLessThan: where.isLessThan,
+        isNull: where.isNull,
+        isLessThanOrEqualTo: where.isLessThanOrEqualTo,
+      );
     }
   }
   return query;
@@ -163,41 +181,54 @@ Query _applyQueryInfoNoLimit(
 
 /// Apply query info to query/collection
 Future<Query> applyQueryInfo(
-    Firestore firestore, String path, QueryInfo? queryInfo) async {
+  Firestore firestore,
+  String path,
+  QueryInfo? queryInfo,
+) async {
   var query = _applyQueryInfoNoLimit(firestore, path, queryInfo);
   if (queryInfo != null) {
     if (queryInfo.startLimit != null) {
       // get it
       DocumentSnapshot? snapshot;
       if (queryInfo.startLimit!.documentId != null) {
-        snapshot = await firestore
-            .collection(path)
-            .doc(queryInfo.startLimit!.documentId!)
-            .get();
+        snapshot =
+            await firestore
+                .collection(path)
+                .doc(queryInfo.startLimit!.documentId!)
+                .get();
       }
       if (queryInfo.startLimit!.inclusive) {
         query = query.startAt(
-            snapshot: snapshot, values: queryInfo.startLimit!.values);
+          snapshot: snapshot,
+          values: queryInfo.startLimit!.values,
+        );
       } else {
         query = query.startAfter(
-            snapshot: snapshot, values: queryInfo.startLimit!.values);
+          snapshot: snapshot,
+          values: queryInfo.startLimit!.values,
+        );
       }
     }
     if (queryInfo.endLimit != null) {
       // get it
       DocumentSnapshot? snapshot;
       if (queryInfo.endLimit!.documentId != null) {
-        snapshot = await firestore
-            .collection(path)
-            .doc(queryInfo.endLimit!.documentId!)
-            .get();
+        snapshot =
+            await firestore
+                .collection(path)
+                .doc(queryInfo.endLimit!.documentId!)
+                .get();
       }
       if (queryInfo.endLimit!.inclusive) {
-        query =
-            query.endAt(snapshot: snapshot, values: queryInfo.endLimit!.values);
+        query = query.endAt(
+          snapshot: snapshot,
+          values: queryInfo.endLimit!.values,
+        );
       } else {
         query = query.endBefore(
-            snapshot: snapshot, values: queryInfo.endLimit!.values);
+          snapshot: snapshot,
+          values: queryInfo.endLimit!.values,
+        );
       }
     }
   }

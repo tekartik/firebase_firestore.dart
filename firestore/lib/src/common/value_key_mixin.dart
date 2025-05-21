@@ -30,8 +30,10 @@ List<String> getRawFieldParts(String field) => field.split('.');
 Map<String, Object?>? sanitizeInputEntry(Map map) {
   Map<String, Object?>? sanitized = <String, Object?>{};
   map.forEach((k, v) {
-    sanitized =
-        mergeSanitizedMap(sanitized, sanitizeInputEntryKey(k as String, v));
+    sanitized = mergeSanitizedMap(
+      sanitized,
+      sanitizeInputEntryKey(k as String, v),
+    );
   });
   return sanitized;
 }
@@ -83,7 +85,8 @@ String escapeKey(String field) {
 dynamic cloneValue(dynamic value) {
   if (value is Map) {
     return value.map<String, Object?>(
-        (key, value) => MapEntry(key as String, cloneValue(value)));
+      (key, value) => MapEntry(key as String, cloneValue(value)),
+    );
   }
   if (value is Iterable) {
     return value.map((value) => cloneValue(value)).toList();
@@ -127,7 +130,7 @@ dynamic _fixValue(dynamic value) {
 
 /// Merge an existing value with a new value, Map only!
 Map<String, Object?>? mergeSanitizedMap(Map? existingValue, Map? newValue) {
-//  allowDotsInKeys ??= false;
+  //  allowDotsInKeys ??= false;
 
   if (newValue == null) {
     return existingValue?.cast<String, Object?>();

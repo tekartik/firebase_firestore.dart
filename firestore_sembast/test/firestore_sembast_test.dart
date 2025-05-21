@@ -10,7 +10,8 @@ void main() {
 
   var firebase = FirebaseLocal();
   var firestoreService = newFirestoreServiceSembast(
-      databaseFactory: sembast.newDatabaseFactoryMemory());
+    databaseFactory: sembast.newDatabaseFactoryMemory(),
+  );
   test('supports', () {
     expect(firestoreService.supportsVectorValue, isTrue);
   });

@@ -7,7 +7,9 @@ void main() {
     var firestore = FirestoreMock();
 
     var firestoreLogger = FirestoreLogger(
-        firestore: firestore, options: FirestoreLoggerOptions.all());
+      firestore: firestore,
+      options: FirestoreLoggerOptions.all(),
+    );
 
     test('document', () {
       var doc1 = firestore.doc('test/doc');

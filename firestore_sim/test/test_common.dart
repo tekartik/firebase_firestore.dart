@@ -17,12 +17,16 @@ Future<TestContext> initTestContextSim() async {
   var testContext = TestContext();
   var firestoreSimPlugin = FirestoreSimPlugin(newFirestoreServiceMemory());
   // The server use firebase io
-  var simServer = testContext.simServer = await firebaseSimServe(
-      FirebaseLocal(),
-      webSocketChannelServerFactory: webSocketChannelServerFactoryMemory,
-      plugins: [firestoreSimPlugin]);
+  var simServer =
+      testContext.simServer = await firebaseSimServe(
+        FirebaseLocal(),
+        webSocketChannelServerFactory: webSocketChannelServerFactoryMemory,
+        plugins: [firestoreSimPlugin],
+      );
   testContext.firebase = sim.getFirebaseSim(
-      clientFactory: webSocketChannelClientFactoryMemory, uri: simServer.uri);
+    clientFactory: webSocketChannelClientFactoryMemory,
+    uri: simServer.uri,
+  );
 
   return testContext;
 }

@@ -8,8 +8,10 @@ import 'package:tekartik_firebase_firestore/utils/collection.dart';
 
 import 'firestore_test.dart';
 
-void runFirestoreQueryTests(
-    {required Firestore firestore, required FirestoreTestContext testContext}) {
+void runFirestoreQueryTests({
+  required Firestore firestore,
+  required FirestoreTestContext testContext,
+}) {
   group('query', () {
     CollectionReference getTestsRef() {
       return firestore.collection(testContext.rootCollectionPath);
@@ -43,8 +45,9 @@ void runFirestoreQueryTests(
 
     test('order_by_different_type', () async {
       var testsRef = getTestsRef();
-      var collRef =
-          testsRef.doc('collection_test').collection('order_by_different_type');
+      var collRef = testsRef
+          .doc('collection_test')
+          .collection('order_by_different_type');
       await deleteCollection(firestore, collRef);
       await firestore.runTransaction((txn) {
         txn.set(collRef.doc('0'), {'value': 0});
@@ -57,16 +60,16 @@ void runFirestoreQueryTests(
         txn.set(collRef.doc('timestamp2'), {'value': Timestamp(2, 2000)});
         txn.set(collRef.doc('timestamp1'), {'value': Timestamp(1, 2000)});
         txn.set(collRef.doc('bytes'), {
-          'value': Blob.fromList([1, 2, 3])
+          'value': Blob.fromList([1, 2, 3]),
         });
         txn.set(collRef.doc('list'), {
-          'value': [1]
+          'value': [1],
         });
         txn.set(collRef.doc('map'), {
-          'value': {'test': 1}
+          'value': {'test': 1},
         });
         txn.set(collRef.doc('bytes'), {
-          'value': Blob.fromList([1, 2, 3])
+          'value': Blob.fromList([1, 2, 3]),
         });
         txn.set(collRef.doc('ref'), {'value': firestore.doc('test/1')});
         txn.set(collRef.doc('geoPoint'), {'value': GeoPoint(1, 2)});
@@ -88,7 +91,7 @@ void runFirestoreQueryTests(
           'ref',
           'geoPoint',
           'list',
-          'map'
+          'map',
         ]);
       }
 
@@ -144,8 +147,9 @@ void runFirestoreQueryTests(
     /// Requires an index
     test('where_and_order_by_name', () async {
       var testsRef = getTestsRef();
-      var collRef =
-          testsRef.doc('collection_test').collection('where_and_order');
+      var collRef = testsRef
+          .doc('collection_test')
+          .collection('where_and_order');
       await deleteCollection(firestore, collRef);
       var oneRef = collRef.doc('one');
       var twoRef = collRef.doc('two');
@@ -186,19 +190,22 @@ void runFirestoreQueryTests(
 
         QuerySnapshot querySnapshot;
 
-        querySnapshot = await collRef
-            .orderBy('value', descending: true)
-            .orderBy(firestoreNameFieldPath)
-            .get();
+        querySnapshot =
+            await collRef
+                .orderBy('value', descending: true)
+                .orderBy(firestoreNameFieldPath)
+                .get();
         // Order by name by default
         expect(querySnapshot.docs[0].ref.path, oneRef.path);
         expect(querySnapshot.docs[1].ref.path, threeRef.path);
         expect(querySnapshot.docs[2].ref.path, twoRef.path);
 
-        querySnapshot = await collRef
-            .orderBy('value', descending: true)
-            .orderBy(firestoreNameFieldPath)
-            .startAt(values: [1, 'three']).get();
+        querySnapshot =
+            await collRef
+                .orderBy('value', descending: true)
+                .orderBy(firestoreNameFieldPath)
+                .startAt(values: [1, 'three'])
+                .get();
         // Order by name by default
 
         expect(querySnapshot.docs[0].ref.path, threeRef.path);
@@ -226,9 +233,12 @@ void runFirestoreQueryTests(
 
       var querySnapshot = await collRef.orderBy('value').get();
       expect(querySnapshot.ids, [oneRef, twoRef, threeRef].ids);
-      querySnapshot = await collRef
-          .orderBy('value')
-          .startAt(values: [2]).endBefore(values: [3]).get();
+      querySnapshot =
+          await collRef
+              .orderBy('value')
+              .startAt(values: [2])
+              .endBefore(values: [3])
+              .get();
       expect(querySnapshot.ids, [twoRef].ids);
       querySnapshot = await collRef.orderBy('value', descending: true).get();
       expect(querySnapshot.ids, [threeRef, twoRef, oneRef].ids);
@@ -244,13 +254,13 @@ void runFirestoreQueryTests(
         'value': 1,
         'date': DateTime.fromMillisecondsSinceEpoch(2),
         'timestamp': Timestamp(2, 0),
-        'sub': {'value': 'b'}
+        'sub': {'value': 'b'},
       });
       var docRefTwo = collRef.doc('two');
       await docRefTwo.set({
         'value': 2,
         'date': DateTime.fromMillisecondsSinceEpoch(1),
-        'sub': {'value': 'a'}
+        'sub': {'value': 'a'},
       });
       // limit
       var querySnapshot = await collRef.limit(1).get();
@@ -322,10 +332,11 @@ void runFirestoreQueryTests(
 
       if (firestore.service.supportsQuerySnapshotCursor) {
         // start after using snapshot
-        querySnapshot = await collRef
-            .orderBy('value')
-            .startAfter(snapshot: list.first)
-            .get();
+        querySnapshot =
+            await collRef
+                .orderBy('value')
+                .startAfter(snapshot: list.first)
+                .get();
         list = querySnapshot.docs;
         expect(list.length, 1);
         expect(list.first.ref.id, 'two');
@@ -345,34 +356,38 @@ void runFirestoreQueryTests(
       expect(list.first.ref.id, 'two');
 
       // where >= timestamp
-      querySnapshot = await collRef
-          .where('timestamp', isGreaterThanOrEqualTo: Timestamp(2, 0))
-          .get();
+      querySnapshot =
+          await collRef
+              .where('timestamp', isGreaterThanOrEqualTo: Timestamp(2, 0))
+              .get();
       list = querySnapshot.docs;
 
       expect(list.length, 1);
       expect(list.first.ref.id, 'one');
 
       // where == timestamp
-      querySnapshot = await collRef
-          .where('timestamp', isGreaterThanOrEqualTo: Timestamp(2, 0))
-          .get();
+      querySnapshot =
+          await collRef
+              .where('timestamp', isGreaterThanOrEqualTo: Timestamp(2, 0))
+              .get();
       list = querySnapshot.docs;
 
       expect(list.length, 1);
       expect(list.first.ref.id, 'one');
 
       // where > timestamp
-      querySnapshot = await collRef
-          .where('timestamp', isGreaterThan: Timestamp(2, 0))
-          .get();
+      querySnapshot =
+          await collRef
+              .where('timestamp', isGreaterThan: Timestamp(2, 0))
+              .get();
       list = querySnapshot.docs;
       expect(list.length, 0);
 
       // where > timestamp
-      querySnapshot = await collRef
-          .where('timestamp', isGreaterThan: Timestamp(1, 1))
-          .get();
+      querySnapshot =
+          await collRef
+              .where('timestamp', isGreaterThan: Timestamp(1, 1))
+              .get();
       list = querySnapshot.docs;
       expect(list.length, 1);
       expect(list.first.ref.id, 'one');
@@ -432,12 +447,12 @@ void runFirestoreQueryTests(
       List<DocumentSnapshot> list;
       await docRefOne.set({
         'array': [3, 4],
-        'timestamp_array': [Timestamp(1, 1)]
+        'timestamp_array': [Timestamp(1, 1)],
       });
       var docRefTwo = collRef.doc('two');
       await docRefTwo.set({
         'array': [3],
-        'timestamp_array': [Timestamp(1, 1), Timestamp(2, 2)]
+        'timestamp_array': [Timestamp(1, 1), Timestamp(2, 2)],
       });
       var docRefThree = collRef.doc('three');
       await docRefThree.set({
@@ -476,8 +491,10 @@ void runFirestoreQueryTests(
         expect(list.length, 2);
         expect(list.first.ref.id, 'one');
 
-        querySnapshot = await collRef.where('timestamp_array',
-            arrayContainsAny: [Timestamp(1, 1)]).get();
+        querySnapshot =
+            await collRef
+                .where('timestamp_array', arrayContainsAny: [Timestamp(1, 1)])
+                .get();
         list = querySnapshot.docs;
         expect(list.length, 2);
         expect(list.first.ref.id, 'one');
@@ -488,8 +505,9 @@ void runFirestoreQueryTests(
 
     test('order', () async {
       var testsRef = getTestsRef();
-      var collRef =
-          testsRef.doc('collection_test').collection('complex_timestamp');
+      var collRef = testsRef
+          .doc('collection_test')
+          .collection('complex_timestamp');
       var docRefOne = collRef.doc('one');
       var docRefTwo = collRef.doc('two');
 
@@ -501,7 +519,7 @@ void runFirestoreQueryTests(
         'date': date2,
         'int': 2,
         'text': '2',
-        'double': 1.5
+        'double': 1.5,
       };
       if (firestore.service.supportsTimestamps) {
         map2['timestamp'] = timestamp2;
@@ -514,7 +532,7 @@ void runFirestoreQueryTests(
         'date': date1,
         'int': 1,
         'text': '1',
-        'double': 0.5
+        'double': 0.5,
       };
       if (firestore.service.supportsTimestamps) {
         map1['timestamp'] = timestamp1;
@@ -561,10 +579,11 @@ void runFirestoreQueryTests(
 
         if (firestore.service.supportsQuerySnapshotCursor) {
           // start after using snapshot
-          querySnapshot = await collRef
-              .orderBy(field)
-              .startAfter(snapshot: list.first)
-              .get();
+          querySnapshot =
+              await collRef
+                  .orderBy(field)
+                  .startAfter(snapshot: list.first)
+                  .get();
           list = querySnapshot.docs;
           expect(list.length, 1);
           expect(list.first.ref.id, 'two');
@@ -612,17 +631,17 @@ void runFirestoreQueryTests(
       var collRef = testsRef.doc('nested_order_test').collection('many');
       var docRefOne = collRef.doc('one');
       await docRefOne.set({
-        'sub': {'value': 'b'}
+        'sub': {'value': 'b'},
       });
       var docRefTwo = collRef.doc('two');
       await docRefTwo.set({
-        'sub': {'value': 'a'}
+        'sub': {'value': 'a'},
       });
       var docRefThree = collRef.doc('three');
       await docRefThree.set({'no_sub': false});
       var docRefFour = collRef.doc('four');
       await docRefFour.set({
-        'sub': {'other': 'a', 'value': 'c'}
+        'sub': {'other': 'a', 'value': 'c'},
       });
 
       List<String> querySnapshotDocIds(QuerySnapshot querySnapshot) {
@@ -644,17 +663,17 @@ void runFirestoreQueryTests(
       var collRef = testsRef.doc('list_order_test').collection('many');
       var docRefOne = collRef.doc('one');
       await docRefOne.set({
-        'sub': ['b']
+        'sub': ['b'],
       });
       var docRefTwo = collRef.doc('two');
       await docRefTwo.set({
-        'sub': ['a']
+        'sub': ['a'],
       });
       var docRefThree = collRef.doc('three');
       await docRefThree.set({'no_sub': false});
       var docRefFour = collRef.doc('four');
       await docRefFour.set({
-        'sub': ['a', 'b']
+        'sub': ['a', 'b'],
       });
 
       // complex object
@@ -696,30 +715,37 @@ void runFirestoreQueryTests(
         var countSubscription = collRef.onCount().listen((count) {
           onCountResults.add(count);
         });
-        var subscription =
-            collRef.onSnapshot().listen((QuerySnapshot querySnapshot) {
+        var subscription = collRef.onSnapshot().listen((
+          QuerySnapshot querySnapshot,
+        ) {
           if (++count == 1) {
             // first step ignore the result
             completer1.complete();
           } else if (count == 2) {
             // second step expect an added item
             expect(querySnapshot.documentChanges.length, 1);
-            expect(querySnapshot.documentChanges.first.type,
-                DocumentChangeType.added);
+            expect(
+              querySnapshot.documentChanges.first.type,
+              DocumentChangeType.added,
+            );
 
             completer2.complete();
           } else if (count == 3) {
             // second step expect a modified item
             expect(querySnapshot.documentChanges.length, 1);
-            expect(querySnapshot.documentChanges.first.type,
-                DocumentChangeType.modified);
+            expect(
+              querySnapshot.documentChanges.first.type,
+              DocumentChangeType.modified,
+            );
 
             completer3.complete();
           } else if (count == 4) {
             // second step expect a deletion
             expect(querySnapshot.documentChanges.length, 1);
-            expect(querySnapshot.documentChanges.first.type,
-                DocumentChangeType.removed);
+            expect(
+              querySnapshot.documentChanges.first.type,
+              DocumentChangeType.removed,
+            );
 
             completer4.complete();
           } else {

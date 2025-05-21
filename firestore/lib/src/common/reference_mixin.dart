@@ -166,8 +166,10 @@ List<String> localPathReferenceParts(String path) {
 void checkCollectionReferencePath(String path) {
   if (isDebug) {
     var parts = localPathReferenceParts(path);
-    assert(isCollectionReferencePath(path),
-        'Collection references must have an odd number of segments, but $path ($parts) has length ${parts.length}');
+    assert(
+      isCollectionReferencePath(path),
+      'Collection references must have an odd number of segments, but $path ($parts) has length ${parts.length}',
+    );
   }
 }
 
@@ -175,7 +177,9 @@ void checkCollectionReferencePath(String path) {
 void checkDocumentReferencePath(String path) {
   if (isDebug) {
     var parts = localPathReferenceParts(path);
-    assert(isDocumentReferencePath(path),
-        'Document references must have an even number of segments, but $path ($parts) has length ${parts.length}');
+    assert(
+      isDocumentReferencePath(path),
+      'Document references must have an even number of segments, but $path ($parts) has length ${parts.length}',
+    );
   }
 }

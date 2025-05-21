@@ -19,17 +19,20 @@ class FirestoreSimService extends FirebaseSimServiceBase {
 
   @override
   FutureOr<Object?> onCall(
-      RpcServerChannel channel, RpcMethodCall methodCall) async {
+    RpcServerChannel channel,
+    RpcMethodCall methodCall,
+  ) async {
     try {
       var simServerChannel = firebaseSimServerExpando[channel]!;
-      var firestoreSimPluginServer = _expando[channel] ??= () {
-        var app = simServerChannel.app!;
-        var firestore = firestoreSimPlugin.firestoreService.firestore(app);
-        //.debugQuickLoggerWrapper();
-        // One transaction lock per server
-        //firestoreSimPlugin._locks[firestore] ??= Lock();
-        return _FirestoreSimPluginServer(firestoreSimPlugin, firestore);
-      }();
+      var firestoreSimPluginServer =
+          _expando[channel] ??= () {
+            var app = simServerChannel.app!;
+            var firestore = firestoreSimPlugin.firestoreService.firestore(app);
+            //.debugQuickLoggerWrapper();
+            // One transaction lock per server
+            //firestoreSimPlugin._locks[firestore] ??= Lock();
+            return _FirestoreSimPluginServer(firestoreSimPlugin, firestore);
+          }();
       var parameters = methodCall.arguments;
       switch (methodCall.method) {
         case methodFirestoreSet:
@@ -37,8 +40,9 @@ class FirestoreSimService extends FirebaseSimServiceBase {
           return await firestoreSimPluginServer.handleFirestoreSetRequest(map);
 
         case methodFirestoreDelete:
-          return await firestoreSimPluginServer
-              .handleFirestoreDeleteRequest(resultAsMap(parameters));
+          return await firestoreSimPluginServer.handleFirestoreDeleteRequest(
+            resultAsMap(parameters),
+          );
         case methodFirestoreAdd:
           var map = resultAsMap(parameters);
           return await firestoreSimPluginServer.handleFirestoreAddRequest(map);
@@ -78,8 +82,9 @@ class FirestoreSimService extends FirebaseSimServiceBase {
 
         case methodFirestoreUpdate:
           var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer
-              .handleFirestoreUpdateRequest(map);
+          return await firestoreSimPluginServer.handleFirestoreUpdateRequest(
+            map,
+          );
 
         case methodFirestoreBatch:
           var map = resultAsMap(parameters);
@@ -210,8 +215,10 @@ class _FirestoreSimPluginServer {
 
   Future handleFirestoreAddRequest(Map<String, Object?> params) async {
     var firestoreSetData = FirestoreSetData()..fromMap(params);
-    var documentData =
-        documentDataFromJsonMap(firestore, firestoreSetData.data);
+    var documentData = documentDataFromJsonMap(
+      firestore,
+      firestoreSetData.data,
+    );
 
     return await transactionLock.synchronized(() async {
       var docRef = await firestore
@@ -243,8 +250,10 @@ class _FirestoreSimPluginServer {
 
   Future handleFirestoreSetRequest(Map<String, Object?> params) async {
     var firestoreSetData = FirestoreSetData()..fromMap(params);
-    var documentData =
-        documentDataFromJsonMap(firestore, firestoreSetData.data);
+    var documentData = documentDataFromJsonMap(
+      firestore,
+      firestoreSetData.data,
+    );
     SetOptions? options;
     if (firestoreSetData.merge != null) {
       options = SetOptions(merge: firestoreSetData.merge);
@@ -259,8 +268,10 @@ class _FirestoreSimPluginServer {
 
   Future handleFirestoreUpdateRequest(Map<String, Object?> params) async {
     var firestoreSetData = FirestoreSetData()..fromMap(params);
-    var documentData =
-        documentDataFromJsonMap(firestore, firestoreSetData.data);
+    var documentData = documentDataFromJsonMap(
+      firestore,
+      firestoreSetData.data,
+    );
 
     await transactionLock.synchronized(() async {
       await firestore.doc(firestoreSetData.path).update(documentData!.asMap());
@@ -281,8 +292,9 @@ class _FirestoreSimPluginServer {
     return await transactionLock.synchronized(() async {
       var ref = firestore.doc(path!);
 
-      subscriptions[subscriptionId] =
-          SimSubscription<DocumentSnapshot>(ref.onSnapshot());
+      subscriptions[subscriptionId] = SimSubscription<DocumentSnapshot>(
+        ref.onSnapshot(),
+      );
       return {paramSubscriptionId: subscriptionId};
     });
   }
@@ -332,8 +344,9 @@ class _FirestoreSimPluginServer {
     return await transactionLock.synchronized(() async {
       final query = await getQuery(queryData);
 
-      subscriptions[subscriptionId] =
-          SimSubscription<QuerySnapshot>(query.onSnapshot());
+      subscriptions[subscriptionId] = SimSubscription<QuerySnapshot>(
+        query.onSnapshot(),
+      );
 
       return {paramSubscriptionId: subscriptionId};
     });
@@ -367,11 +380,12 @@ class _FirestoreSimPluginServer {
       // Changes
       data.changes = <DocumentChangeData>[];
       for (var change in querySnapshot.documentChanges) {
-        var documentChangeData = DocumentChangeData()
-          ..id = change.document.ref.id
-          ..type = documentChangeTypeToString(change.type)
-          ..newIndex = change.newIndex
-          ..oldIndex = change.oldIndex;
+        var documentChangeData =
+            DocumentChangeData()
+              ..id = change.document.ref.id
+              ..type = documentChangeTypeToString(change.type)
+              ..newIndex = change.newIndex
+              ..oldIndex = change.oldIndex;
         // need data?
         var path = change.document.ref.path;
 
@@ -385,8 +399,9 @@ class _FirestoreSimPluginServer {
         }
 
         if (!findDocByPath()) {
-          documentChangeData.data =
-              documentDataToJsonMap(documentDataFromSnapshot(change.document));
+          documentChangeData.data = documentDataToJsonMap(
+            documentDataFromSnapshot(change.document),
+          );
         }
         data.changes!.add(documentChangeData);
       }
@@ -418,12 +433,15 @@ class _FirestoreSimPluginServer {
         batch.delete(firestore.doc(item.path!));
       } else if (item is BatchOperationSetData) {
         batch.set(
-            firestore.doc(item.path!),
-            documentDataFromJsonMap(firestore, item.data)!.asMap(),
-            item.merge != null ? SetOptions(merge: item.merge) : null);
+          firestore.doc(item.path!),
+          documentDataFromJsonMap(firestore, item.data)!.asMap(),
+          item.merge != null ? SetOptions(merge: item.merge) : null,
+        );
       } else if (item is BatchOperationUpdateData) {
-        batch.update(firestore.doc(item.path!),
-            documentDataFromJsonMap(firestore, item.data)!.asMap());
+        batch.update(
+          firestore.doc(item.path!),
+          documentDataFromJsonMap(firestore, item.data)!.asMap(),
+        );
       } else {
         throw 'not supported $item';
       }
@@ -435,15 +453,17 @@ class _FirestoreSimPluginServer {
 
   // Transaction
   Future handleFirestoreTransaction(Map<String, Object?>? params) async {
-    var responseData = FirestoreTransactionResponseData()
-      ..transactionId = ++lastTransactionId;
+    var responseData =
+        FirestoreTransactionResponseData()..transactionId = ++lastTransactionId;
 
     // start locking but don't wait
-    unawaited(transactionLock.synchronized(() async {
-      transactionCompleter = Completer();
-      await transactionCompleter!.future;
-      transactionCompleter = null;
-    }));
+    unawaited(
+      transactionLock.synchronized(() async {
+        transactionCompleter = Completer();
+        await transactionCompleter!.future;
+        transactionCompleter = null;
+      }),
+    );
     return responseData.toMap();
   }
 

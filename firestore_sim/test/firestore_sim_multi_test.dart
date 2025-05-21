@@ -17,8 +17,9 @@ Future main() async {
   var testContext = await initTestContextSim();
   var firebase = testContext.firebase;
   var firebase2 = sim.getFirebaseSim(
-      clientFactory: webSocketChannelClientFactoryMemory,
-      uri: testContext.simServer.uri);
+    clientFactory: webSocketChannelClientFactoryMemory,
+    uri: testContext.simServer.uri,
+  );
   var app1 = firebase.initializeApp();
   var app2 = firebase2.initializeApp();
 
@@ -26,7 +27,10 @@ Future main() async {
   var firestore2 = firestoreServiceSim.firestore(app2);
 
   firestoreMulticlientTest(
-      firestore1: firestore1, firestore2: firestore2, docTopPath: 'test/doc');
+    firestore1: firestore1,
+    firestore2: firestore2,
+    docTopPath: 'test/doc',
+  );
   tearDownAll(() async {
     await close(testContext);
   });

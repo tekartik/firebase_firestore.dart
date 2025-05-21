@@ -70,7 +70,8 @@ String eventToString(FirestoreLoggerEvent event) {
     sb.write(' ${event.data}');
   } else if (event is FirestoreLoggerGetEvent) {
     sb.write(
-        ' ${(event.snapshot?.exists ?? false) ? event.snapshot!.data : 'null'}');
+      ' ${(event.snapshot?.exists ?? false) ? event.snapshot!.data : 'null'}',
+    );
   } else if (event is FirestoreLoggerOnSnapshotEvent) {
     sb.write(' ${(event.snapshot.exists) ? event.snapshot.data : 'null'}');
   } else if (event is FirestoreLoggerEventWithQueryMixin) {
@@ -94,8 +95,11 @@ class FirestoreLoggerDeleteEvent extends FirestoreLoggerEventImpl
         FirestoreLoggerEventWithDocumentRefMixin,
         FirestoreLoggerEventWithTagMixin
     implements FirestoreLoggerEvent {
-  FirestoreLoggerDeleteEvent(DocumentReferenceLogger ref,
-      {Object? exception, String? tag}) {
+  FirestoreLoggerDeleteEvent(
+    DocumentReferenceLogger ref, {
+    Object? exception,
+    String? tag,
+  }) {
     this.ref = ref;
     this.exception = exception;
     this.tag = tag;
@@ -111,8 +115,12 @@ class FirestoreLoggerSetEvent extends FirestoreLoggerEventImpl
   final SetOptions? options;
 
   FirestoreLoggerSetEvent(
-      DocumentReferenceLogger ref, Map<String, Object?> data,
-      {this.options, Object? exception, String? tag}) {
+    DocumentReferenceLogger ref,
+    Map<String, Object?> data, {
+    this.options,
+    Object? exception,
+    String? tag,
+  }) {
     this.ref = ref;
     this.data = data;
     this.exception = exception;
@@ -127,8 +135,11 @@ class FirestoreLoggerUpdateEvent extends FirestoreLoggerEventImpl
         FirestoreLoggerEventWithTagMixin
     implements FirestoreLoggerEvent {
   FirestoreLoggerUpdateEvent(
-      DocumentReferenceLogger ref, Map<String, Object?> data,
-      {Object? exception, String? tag}) {
+    DocumentReferenceLogger ref,
+    Map<String, Object?> data, {
+    Object? exception,
+    String? tag,
+  }) {
     this.ref = ref;
     this.data = data;
     this.exception = exception;
@@ -145,8 +156,11 @@ class FirestoreLoggerAddEvent extends FirestoreLoggerEventImpl
   final String? id;
 
   FirestoreLoggerAddEvent(
-      CollectionReferenceLogger ref, Map<String, Object?> data,
-      {Object? exception, this.id}) {
+    CollectionReferenceLogger ref,
+    Map<String, Object?> data, {
+    Object? exception,
+    this.id,
+  }) {
     this.ref = ref;
     this.data = data;
     this.exception = exception;
@@ -168,8 +182,10 @@ class FirestoreLoggerOnSnapshotEvent extends FirestoreLoggerEventImpl
 class FirestoreLoggerOnSnapshotTriggerEvent extends FirestoreLoggerEventImpl
     with FirestoreLoggerEventWithDocumentRefMixin
     implements FirestoreLoggerEvent {
-  FirestoreLoggerOnSnapshotTriggerEvent(DocumentReferenceLogger ref,
-      {Object? exception}) {
+  FirestoreLoggerOnSnapshotTriggerEvent(
+    DocumentReferenceLogger ref, {
+    Object? exception,
+  }) {
     this.ref = ref;
     this.exception = exception;
   }
@@ -183,8 +199,12 @@ class FirestoreLoggerGetEvent extends FirestoreLoggerEventImpl
   /// Data read on success (even if it does not exist)
   final DocumentSnapshotLogger? snapshot;
 
-  FirestoreLoggerGetEvent(DocumentReferenceLogger ref,
-      {Object? exception, this.snapshot, String? tag}) {
+  FirestoreLoggerGetEvent(
+    DocumentReferenceLogger ref, {
+    Object? exception,
+    this.snapshot,
+    String? tag,
+  }) {
     this.ref = ref;
     this.exception = exception;
     this.tag = tag;
@@ -200,8 +220,12 @@ class FirestoreLoggerQueryGetEvent extends FirestoreLoggerEventImpl
   /// Data read on success (even if it does not exist)
   final QuerySnapshotLogger? snapshot;
 
-  FirestoreLoggerQueryGetEvent(QueryLoggerBase query,
-      {Object? exception, required this.snapshot, String? tag}) {
+  FirestoreLoggerQueryGetEvent(
+    QueryLoggerBase query, {
+    Object? exception,
+    required this.snapshot,
+    String? tag,
+  }) {
     this.query = query;
     ref = query.refLogger;
     this.exception = exception;
@@ -217,8 +241,11 @@ class FirestoreLoggerQueryOnSnapshotEvent extends FirestoreLoggerEventImpl
   /// Data read on success (even if it does not exist)
   final QuerySnapshotLogger snapshot;
 
-  FirestoreLoggerQueryOnSnapshotEvent(QueryLoggerBase query, this.snapshot,
-      {Object? exception}) {
+  FirestoreLoggerQueryOnSnapshotEvent(
+    QueryLoggerBase query,
+    this.snapshot, {
+    Object? exception,
+  }) {
     this.query = query;
     ref = query.refLogger;
     this.exception = exception;
@@ -258,11 +285,12 @@ class FirestoreLoggerOptions {
   final bool list;
   late final void Function(FirestoreLoggerEvent event) log;
 
-  FirestoreLoggerOptions.all(
-      {void Function(FirestoreLoggerEvent event)? log,
-      this.write = true,
-      this.read = true,
-      this.list = true}) {
+  FirestoreLoggerOptions.all({
+    void Function(FirestoreLoggerEvent event)? log,
+    this.write = true,
+    this.read = true,
+    this.list = true,
+  }) {
     this.log = log ?? _logDefault;
   }
 }
@@ -295,15 +323,23 @@ class FirestoreLoggerBatch implements WriteBatch {
       rethrow;
     } finally {
       if (options.write) {
-        options.log(FirestoreLoggerDeleteEvent(ref as DocumentReferenceLogger,
-            exception: exception, tag: _tag));
+        options.log(
+          FirestoreLoggerDeleteEvent(
+            ref as DocumentReferenceLogger,
+            exception: exception,
+            tag: _tag,
+          ),
+        );
       }
     }
   }
 
   @override
-  void set(DocumentReference ref, Map<String, Object?> data,
-      [SetOptions? options]) {
+  void set(
+    DocumentReference ref,
+    Map<String, Object?> data, [
+    SetOptions? options,
+  ]) {
     Object? exception;
     try {
       writeBatch.set((ref as DocumentReferenceLogger).ref, data, options);
@@ -312,9 +348,14 @@ class FirestoreLoggerBatch implements WriteBatch {
       rethrow;
     } finally {
       if (this.options.write) {
-        this.options.log(FirestoreLoggerSetEvent(
-            ref as DocumentReferenceLogger, data,
-            exception: exception, tag: _tag));
+        this.options.log(
+          FirestoreLoggerSetEvent(
+            ref as DocumentReferenceLogger,
+            data,
+            exception: exception,
+            tag: _tag,
+          ),
+        );
       }
     }
   }
@@ -329,9 +370,14 @@ class FirestoreLoggerBatch implements WriteBatch {
       rethrow;
     } finally {
       if (options.write) {
-        options.log(FirestoreLoggerUpdateEvent(
-            ref as DocumentReferenceLogger, data,
-            exception: exception, tag: _tag));
+        options.log(
+          FirestoreLoggerUpdateEvent(
+            ref as DocumentReferenceLogger,
+            data,
+            exception: exception,
+            tag: _tag,
+          ),
+        );
       }
     }
   }
@@ -358,7 +404,9 @@ abstract class QueryLoggerBase
   @override
   Query endBefore({DocumentSnapshot? snapshot, List<Object?>? values}) =>
       QueryLogger(
-          query.endBefore(snapshot: snapshot, values: values), refLogger);
+        query.endBefore(snapshot: snapshot, values: values),
+        refLogger,
+      );
 
   @override
   Future<QuerySnapshot> get() async {
@@ -372,8 +420,13 @@ abstract class QueryLoggerBase
       rethrow;
     } finally {
       if (options.list) {
-        options.log(FirestoreLoggerQueryGetEvent(this,
-            exception: exception, snapshot: snapshot));
+        options.log(
+          FirestoreLoggerQueryGetEvent(
+            this,
+            exception: exception,
+            snapshot: snapshot,
+          ),
+        );
       }
     }
   }
@@ -384,13 +437,16 @@ abstract class QueryLoggerBase
   @override
   Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     return StreamTransformer<QuerySnapshot, QuerySnapshot>.fromHandlers(
-        handleData: (snapshot, sink) {
-      var snapshotLogger = QuerySnapshotLogger(snapshot, firestoreLogger);
-      if (options.list) {
-        options.log(FirestoreLoggerQueryOnSnapshotEvent(this, snapshotLogger));
-      }
-      sink.add(snapshotLogger);
-    }).bind(query.onSnapshot());
+      handleData: (snapshot, sink) {
+        var snapshotLogger = QuerySnapshotLogger(snapshot, firestoreLogger);
+        if (options.list) {
+          options.log(
+            FirestoreLoggerQueryOnSnapshotEvent(this, snapshotLogger),
+          );
+        }
+        sink.add(snapshotLogger);
+      },
+    ).bind(query.onSnapshot());
   }
 
   @override
@@ -404,35 +460,41 @@ abstract class QueryLoggerBase
   @override
   Query startAfter({DocumentSnapshot? snapshot, List<Object?>? values}) =>
       QueryLogger(
-          query.startAfter(snapshot: snapshot, values: values), refLogger);
+        query.startAfter(snapshot: snapshot, values: values),
+        refLogger,
+      );
 
   @override
   Query startAt({DocumentSnapshot? snapshot, List<Object?>? values}) =>
       QueryLogger(query.startAt(snapshot: snapshot, values: values), refLogger);
 
   @override
-  Query where(String fieldPath,
-          {isEqualTo,
-          isLessThan,
-          isLessThanOrEqualTo,
-          isGreaterThan,
-          isGreaterThanOrEqualTo,
-          arrayContains,
-          List<Object>? arrayContainsAny,
-          List<Object>? whereIn,
-          bool? isNull}) =>
-      QueryLogger(
-          query.where(fieldPath,
-              isEqualTo: isEqualTo,
-              isLessThan: isLessThan,
-              isLessThanOrEqualTo: isLessThanOrEqualTo,
-              isGreaterThan: isGreaterThan,
-              isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
-              arrayContains: arrayContains,
-              arrayContainsAny: arrayContainsAny,
-              whereIn: whereIn,
-              isNull: isNull),
-          refLogger);
+  Query where(
+    String fieldPath, {
+    isEqualTo,
+    isLessThan,
+    isLessThanOrEqualTo,
+    isGreaterThan,
+    isGreaterThanOrEqualTo,
+    arrayContains,
+    List<Object>? arrayContainsAny,
+    List<Object>? whereIn,
+    bool? isNull,
+  }) => QueryLogger(
+    query.where(
+      fieldPath,
+      isEqualTo: isEqualTo,
+      isLessThan: isLessThan,
+      isLessThanOrEqualTo: isLessThanOrEqualTo,
+      isGreaterThan: isGreaterThan,
+      isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
+      arrayContains: arrayContains,
+      arrayContainsAny: arrayContainsAny,
+      whereIn: whereIn,
+      isNull: isNull,
+    ),
+    refLogger,
+  );
 
   @override
   Future<int> count() {
@@ -453,7 +515,9 @@ class DocumentSnapshotLogger
 
   DocumentSnapshotLogger(this.snapshot, this.firestoreLogger) {
     assert(
-        snapshot is! DocumentSnapshotLogger, 'You cannot reference a logger');
+      snapshot is! DocumentSnapshotLogger,
+      'You cannot reference a logger',
+    );
   }
 
   @override
@@ -480,14 +544,16 @@ class QuerySnapshotLogger implements QuerySnapshot {
   QuerySnapshotLogger(this.snapshot, this.firestoreLogger);
 
   @override
-  List<DocumentSnapshot> get docs => snapshot.docs
-      .map((doc) => DocumentSnapshotLogger(doc, firestoreLogger))
-      .toList();
+  List<DocumentSnapshot> get docs =>
+      snapshot.docs
+          .map((doc) => DocumentSnapshotLogger(doc, firestoreLogger))
+          .toList();
 
   @override
-  List<DocumentChange> get documentChanges => snapshot.documentChanges
-      .map((docChange) => DocumentChangeLogger(docChange, firestoreLogger))
-      .toList();
+  List<DocumentChange> get documentChanges =>
+      snapshot.documentChanges
+          .map((docChange) => DocumentChangeLogger(docChange, firestoreLogger))
+          .toList();
 }
 
 class DocumentChangeLogger implements DocumentChange {
@@ -495,8 +561,10 @@ class DocumentChangeLogger implements DocumentChange {
   final FirestoreLogger firestoreLogger;
 
   DocumentChangeLogger(this.documentChange, this.firestoreLogger) {
-    assert(documentChange is! DocumentChangeLogger,
-        'You cannot reference a logger');
+    assert(
+      documentChange is! DocumentChangeLogger,
+      'You cannot reference a logger',
+    );
   }
 
   @override
@@ -531,7 +599,7 @@ class CollectionReferenceLogger extends QueryLoggerBase
   CollectionReference get ref => query as CollectionReference;
 
   CollectionReferenceLogger(CollectionReference ref, this.firestoreLogger)
-      : super(ref) {
+    : super(ref) {
     assert(ref is! CollectionReferenceLogger, 'You cannot reference a logger');
     refLogger = this;
   }
@@ -548,8 +616,14 @@ class CollectionReferenceLogger extends QueryLoggerBase
       rethrow;
     } finally {
       if (options.write) {
-        options.log(FirestoreLoggerAddEvent(this, data,
-            exception: exception, id: result?.id));
+        options.log(
+          FirestoreLoggerAddEvent(
+            this,
+            data,
+            exception: exception,
+            id: result?.id,
+          ),
+        );
       }
     }
   }
@@ -606,8 +680,13 @@ class DocumentReferenceLogger
       rethrow;
     } finally {
       if (options.read) {
-        options.log(FirestoreLoggerGetEvent(this,
-            exception: exception, snapshot: snapshot));
+        options.log(
+          FirestoreLoggerGetEvent(
+            this,
+            exception: exception,
+            snapshot: snapshot,
+          ),
+        );
       }
     }
   }
@@ -620,13 +699,14 @@ class DocumentReferenceLogger
       options.log(FirestoreLoggerOnSnapshotTriggerEvent(this));
     }
     return StreamTransformer<DocumentSnapshot, DocumentSnapshot>.fromHandlers(
-        handleData: (snapshot, sink) {
-      var snapshotLogger = DocumentSnapshotLogger(snapshot, firestoreLogger);
-      if (options.read) {
-        options.log(FirestoreLoggerOnSnapshotEvent(snapshotLogger));
-      }
-      sink.add(snapshotLogger);
-    }).bind(ref.onSnapshot());
+      handleData: (snapshot, sink) {
+        var snapshotLogger = DocumentSnapshotLogger(snapshot, firestoreLogger);
+        if (options.read) {
+          options.log(FirestoreLoggerOnSnapshotEvent(snapshotLogger));
+        }
+        sink.add(snapshotLogger);
+      },
+    ).bind(ref.onSnapshot());
   }
 
   @override
@@ -642,9 +722,9 @@ class DocumentReferenceLogger
       rethrow;
     } finally {
       if (this.options.write) {
-        this
-            .options
-            .log(FirestoreLoggerSetEvent(this, data, exception: exception));
+        this.options.log(
+          FirestoreLoggerSetEvent(this, data, exception: exception),
+        );
       }
     }
   }
@@ -659,8 +739,9 @@ class DocumentReferenceLogger
       rethrow;
     } finally {
       if (options.write) {
-        options
-            .log(FirestoreLoggerUpdateEvent(this, data, exception: exception));
+        options.log(
+          FirestoreLoggerUpdateEvent(this, data, exception: exception),
+        );
       }
     }
   }
@@ -692,8 +773,13 @@ class TransactionLogger with TransactionMixin implements Transaction {
       rethrow;
     } finally {
       if (options.write) {
-        options.log(FirestoreLoggerDeleteEvent(ref as DocumentReferenceLogger,
-            exception: exception, tag: _tag));
+        options.log(
+          FirestoreLoggerDeleteEvent(
+            ref as DocumentReferenceLogger,
+            exception: exception,
+            tag: _tag,
+          ),
+        );
       }
     }
   }
@@ -704,38 +790,53 @@ class TransactionLogger with TransactionMixin implements Transaction {
     DocumentSnapshotLogger? snapshot;
     try {
       snapshot = DocumentSnapshotLogger(
-          await transaction.get((documentRef as DocumentReferenceLogger).ref),
-          firestoreLogger);
+        await transaction.get((documentRef as DocumentReferenceLogger).ref),
+        firestoreLogger,
+      );
       return snapshot;
     } catch (e) {
       exception = e;
       rethrow;
     } finally {
       if (options.read) {
-        options.log(FirestoreLoggerGetEvent(
+        options.log(
+          FirestoreLoggerGetEvent(
             documentRef as DocumentReferenceLogger,
             exception: exception,
             snapshot: snapshot,
-            tag: _tag));
+            tag: _tag,
+          ),
+        );
       }
     }
   }
 
   @override
-  void set(DocumentReference documentRef, Map<String, Object?> data,
-      [SetOptions? options]) {
+  void set(
+    DocumentReference documentRef,
+    Map<String, Object?> data, [
+    SetOptions? options,
+  ]) {
     Object? exception;
     try {
       transaction.set(
-          (documentRef as DocumentReferenceLogger).ref, data, options);
+        (documentRef as DocumentReferenceLogger).ref,
+        data,
+        options,
+      );
     } catch (e) {
       exception = e;
       rethrow;
     } finally {
       if (this.options.write) {
-        this.options.log(FirestoreLoggerSetEvent(
-            documentRef as DocumentReferenceLogger, data,
-            exception: exception, tag: _tag));
+        this.options.log(
+          FirestoreLoggerSetEvent(
+            documentRef as DocumentReferenceLogger,
+            data,
+            exception: exception,
+            tag: _tag,
+          ),
+        );
       }
     }
   }
@@ -750,9 +851,14 @@ class TransactionLogger with TransactionMixin implements Transaction {
       rethrow;
     } finally {
       if (options.write) {
-        options.log(FirestoreLoggerUpdateEvent(
-            documentRef as DocumentReferenceLogger, data,
-            exception: exception, tag: _tag));
+        options.log(
+          FirestoreLoggerUpdateEvent(
+            documentRef as DocumentReferenceLogger,
+            data,
+            exception: exception,
+            tag: _tag,
+          ),
+        );
       }
     }
   }
@@ -768,13 +874,17 @@ class FirestoreLogger
   final FirestoreLoggerOptions options;
   final Firestore firestore;
 
-  FirestoreLogger(
-      {FirestoreServiceLogger? serviceLogger,
-      required this.firestore,
-      required this.options}) {
-    this.serviceLogger = serviceLogger ??
+  FirestoreLogger({
+    FirestoreServiceLogger? serviceLogger,
+    required this.firestore,
+    required this.options,
+  }) {
+    this.serviceLogger =
+        serviceLogger ??
         FirestoreServiceLogger(
-            firestoreService: firestore.service, options: options);
+          firestoreService: firestore.service,
+          options: options,
+        );
     assert(firestore is! FirestoreLogger, 'You cannot log a logger!');
   }
 
@@ -791,7 +901,8 @@ class FirestoreLogger
 
   @override
   Future<T> runTransaction<T>(
-      FutureOr<T> Function(Transaction transaction) action) async {
+    FutureOr<T> Function(Transaction transaction) action,
+  ) async {
     return firestore.runTransaction((transaction) {
       return action(TransactionLogger(transaction, this));
     });
@@ -814,16 +925,19 @@ class FirestoreServiceLogger
   final FirestoreLoggerOptions options;
   final FirestoreService firestoreService;
 
-  FirestoreServiceLogger(
-      {required this.firestoreService, required this.options});
+  FirestoreServiceLogger({
+    required this.firestoreService,
+    required this.options,
+  });
 
   @override
   Firestore firestore(App app) => getInstance(app, () {
-        return FirestoreLogger(
-            serviceLogger: this,
-            firestore: firestoreService.firestore(app),
-            options: options);
-      });
+    return FirestoreLogger(
+      serviceLogger: this,
+      firestore: firestoreService.firestore(app),
+      options: options,
+    );
+  });
 
   @override
   bool get supportsDocumentSnapshotTime =>
@@ -862,7 +976,9 @@ extension FirestoreServiceLoggerDebugExt on FirestoreService {
   @Deprecated('Debug/dev mode')
   FirestoreService debugQuickLoggerWrapper() {
     var firestoreService = FirestoreServiceLogger(
-        firestoreService: this, options: FirestoreLoggerOptions.all());
+      firestoreService: this,
+      options: FirestoreLoggerOptions.all(),
+    );
     return firestoreService;
   }
 }
@@ -876,10 +992,13 @@ extension FirestoreLoggerDebugExt on Firestore {
   Firestore debugQuickLoggerWrapper() {
     var options = FirestoreLoggerOptions.all();
     var firestore = FirestoreLogger(
-        serviceLogger:
-            FirestoreServiceLogger(firestoreService: service, options: options),
-        firestore: this,
-        options: options);
+      serviceLogger: FirestoreServiceLogger(
+        firestoreService: service,
+        options: options,
+      ),
+      firestore: this,
+      options: options,
+    );
     return firestore;
   }
 }

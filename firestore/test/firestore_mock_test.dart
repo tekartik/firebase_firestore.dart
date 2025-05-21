@@ -18,15 +18,19 @@ void main() {
       expect(firestore.collection('test').parent, isNull);
     });
     test('parent', () {
-      expect(firestore.doc('test/doc').parent,
-          CollectionReferenceMock(firestore, 'test'));
+      expect(
+        firestore.doc('test/doc').parent,
+        CollectionReferenceMock(firestore, 'test'),
+      );
     });
     test('query', () {
-      var queryInfo = QueryInfo()
-        ..limit = 1
-        ..startLimit = LimitInfo(values: [1], inclusive: true);
-      var query = (applyQueryInfoNoDocumentId(firestore, 'test', queryInfo))
-          as QueryMock;
+      var queryInfo =
+          QueryInfo()
+            ..limit = 1
+            ..startLimit = LimitInfo(values: [1], inclusive: true);
+      var query =
+          (applyQueryInfoNoDocumentId(firestore, 'test', queryInfo))
+              as QueryMock;
       expect(query.queryInfo.limit, 1);
       expect(query.queryInfo.startLimit!.values, [1]);
     });

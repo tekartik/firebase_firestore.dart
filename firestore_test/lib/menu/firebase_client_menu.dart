@@ -53,7 +53,8 @@ void firestoreMainMenu({required FirestoreMainMenuContext context}) {
         var now = Timestamp.now();
         var eventTimestamp = (event.data['timestamp'] as Timestamp?) ?? now;
         write(
-            'diff: ${now.millisecondsSinceEpoch - eventTimestamp.millisecondsSinceEpoch} ms');
+          'diff: ${now.millisecondsSinceEpoch - eventTimestamp.millisecondsSinceEpoch} ms',
+        );
         write('onItem: $event');
       });
     });

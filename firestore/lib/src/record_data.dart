@@ -20,7 +20,9 @@ Timestamp? recordMapCreateTime(Map<String, Object?> recordMap) =>
 
 /// Merge documentData onto existing recordMap
 Map<String, Object?>? recordMapMerge(
-    Map<String, Object?>? existing, DocumentData? documentData) {
+  Map<String, Object?>? existing,
+  DocumentData? documentData,
+) {
   if (documentData == null) {
     return existing;
   }
@@ -31,13 +33,16 @@ Map<String, Object?>? recordMapMerge(
 
 /// Generic record update using documentData
 Map<String, Object?>? recordMapUpdate(
-    Map<String, Object?>? existing, DocumentData? documentData) {
+  Map<String, Object?>? existing,
+  DocumentData? documentData,
+) {
   if (documentData == null) {
     return existing;
   }
-  final recordMap = (existing != null)
-      ? cloneMap(existing).cast<String, Object?>()
-      : <String, Object?>{};
+  final recordMap =
+      (existing != null)
+          ? cloneMap(existing).cast<String, Object?>()
+          : <String, Object?>{};
 
   var map = expandUpdateData(documentDataMap(documentData)!.map)!;
   map.forEach((String key, value) {
@@ -56,8 +61,10 @@ Map<String, Object?>? recordMapUpdate(
 }
 
 DocumentDataMap? documentDataFromRecordMap(
-    Firestore firestore, Map<String, Object?>? recordMap,
-    [DocumentData? documentData]) {
+  Firestore firestore,
+  Map<String, Object?>? recordMap, [
+  DocumentData? documentData,
+]) {
   if (documentData == null && recordMap == null) {
     return null;
   }
@@ -77,8 +84,10 @@ DocumentDataMap? documentDataFromRecordMap(
         return;
       }
       // call setValue to prevent checking type again
-      (documentData as DocumentDataMap)
-          .setValue(key, recordValueToValue(firestore, value));
+      (documentData as DocumentDataMap).setValue(
+        key,
+        recordValueToValue(firestore, value),
+      );
     });
   }
   return documentData as DocumentDataMap;
@@ -95,8 +104,10 @@ dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
       return jsonToDocumentDataValue(firestore, recordValue);
     } else {
       return recordValue
-          .map((key, recordValue) =>
-              MapEntry(key, recordValueToValue(firestore, recordValue)))
+          .map(
+            (key, recordValue) =>
+                MapEntry(key, recordValueToValue(firestore, recordValue)),
+          )
           .cast<String, Object?>();
     }
   } else if (recordValue is Iterable) {
@@ -171,16 +182,19 @@ extension DocumentDataExt on DocumentData {
 
 // merge with existing record map if any
 @Deprecated('Use DocumentData, merge if needed and toJsonRecordValueMap')
-Map<String, Object?>? documentDataToRecordMap(DocumentData? documentData,
+Map<String, Object?>? documentDataToRecordMap(
+  DocumentData? documentData, [
 
-    /// Needed for arrayRemove and merge, this is the existing record map!
-    [Map<String, Object?>? recordMap]) {
+  /// Needed for arrayRemove and merge, this is the existing record map!
+  Map<String, Object?>? recordMap,
+]) {
   if (documentData == null && recordMap == null) {
     return null;
   }
-  recordMap = (recordMap != null)
-      ? cloneMap(recordMap).cast<String, Object?>()
-      : <String, Object?>{};
+  recordMap =
+      (recordMap != null)
+          ? cloneMap(recordMap).cast<String, Object?>()
+          : <String, Object?>{};
   if (documentData == null) {
     return recordMap;
   }
@@ -205,10 +219,7 @@ Map<String, Object?>? documentDataToRecordMap(DocumentData? documentData,
     });
   }
 
-  fixMap(
-    recordMap,
-    documentDataMap(documentData)!.map,
-  );
+  fixMap(recordMap, documentDataMap(documentData)!.map);
 
   return recordMap;
 }
@@ -225,7 +236,9 @@ class FieldValueArray extends FieldValue {
 }
 
 List fieldArrayValueMergeValue(
-    FieldValueArray fieldValueArray, Object? existing) {
+  FieldValueArray fieldValueArray,
+  Object? existing,
+) {
   // get the list
   var existingIterable = existing;
   List list;
@@ -235,8 +248,10 @@ List fieldArrayValueMergeValue(
     list = [];
   }
   if (fieldValueArray.type == FieldValueType.arrayUnion) {
-    list.addAll(List.from(fieldValueArray.data)
-      ..removeWhere((value) => list.contains(value)));
+    list.addAll(
+      List.from(fieldValueArray.data)
+        ..removeWhere((value) => list.contains(value)),
+    );
   } else if (fieldValueArray.type == FieldValueType.arrayRemove) {
     list.removeWhere((item) => fieldValueArray.data.contains(item));
   }
@@ -245,7 +260,8 @@ List fieldArrayValueMergeValue(
 
 /// Handle merge when no existing.
 List<Object?> fieldArrayValueToRecordMapNoMerge(
-    FieldValueArray fieldValueArray) {
+  FieldValueArray fieldValueArray,
+) {
   if (fieldValueArray.type == FieldValueType.arrayRemove) {
     return [];
   } else {
@@ -254,29 +270,38 @@ List<Object?> fieldArrayValueToRecordMapNoMerge(
 }
 
 @Deprecated('Use valueToJsonRecordValue')
-dynamic valueToRecordValue(dynamic value,
-    [dynamic Function(dynamic value)? chainConverter]) {
+dynamic valueToRecordValue(
+  dynamic value, [
+  dynamic Function(dynamic value)? chainConverter,
+]) {
   return valueToJsonRecordValue(value, chainConverter);
 }
 
 /// Convert to real value for saving
-Model mapValueToJsonRecordMapValue(Map map,
-    [dynamic Function(dynamic value)? chainConverter]) {
+Model mapValueToJsonRecordMapValue(
+  Map map, [
+  dynamic Function(dynamic value)? chainConverter,
+]) {
   return map.map<String, Object?>(
-      (key, value) => MapEntry(key.toString(), chainConverter!(value)));
+    (key, value) => MapEntry(key.toString(), chainConverter!(value)),
+  );
 }
 
 /// Convert to real value for saving
-List listValueToJsonRecordListValue(List list,
-    [dynamic Function(dynamic value)? chainConverter]) {
+List listValueToJsonRecordListValue(
+  List list, [
+  dynamic Function(dynamic value)? chainConverter,
+]) {
   return list.map((subValue) => chainConverter!(subValue)).toList();
 }
 
 //@Deprecated('Use documentDataValueToJson')
 /// Convert to real value for saving
 /// Cannot be FieldValue
-dynamic valueToJsonRecordValue(dynamic value,
-    [dynamic Function(dynamic value)? chainConverter]) {
+dynamic valueToJsonRecordValue(
+  dynamic value, [
+  dynamic Function(dynamic value)? chainConverter,
+]) {
   chainConverter ??= valueToJsonRecordValue;
   if (value == null || value is num || value is bool || value is String) {
     return value;
@@ -320,14 +345,15 @@ Map<String, Object?> timestampToRecordValue(Timestamp timestamp) =>
 Map<String, Object?> vectorToRecordValue(VectorValue vector) =>
     vectorToJsonValue(vector);
 Map<String, Object?> documentReferenceToRecordValue(
-        DocumentReference documentReference) =>
-    documentReferenceToJsonValue(documentReference);
+  DocumentReference documentReference,
+) => documentReferenceToJsonValue(documentReference);
 
 DateTime? recordValueToDateTime(Map map) => jsonValueToDateTime(map)?.toLocal();
 
 DocumentReference recordValueToDocumentReference(
-        Firestore firestore, Map map) =>
-    jsonValueToDocumentReference(firestore, map);
+  Firestore firestore,
+  Map map,
+) => jsonValueToDocumentReference(firestore, map);
 
 class RecordMetaData {
   int? rev;

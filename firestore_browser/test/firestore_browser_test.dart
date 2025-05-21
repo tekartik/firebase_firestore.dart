@@ -27,8 +27,9 @@ void main() async {
       expect(firestoreService.supportsQuerySelect, isFalse);
     });
     runFirestoreTests(
-        firebase: firebase,
-        firestoreService: firestoreService,
-        options: options);
+      firebase: firebase,
+      firestoreService: firestoreService,
+      options: options,
+    );
   });
 }

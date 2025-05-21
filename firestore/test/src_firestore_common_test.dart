@@ -30,23 +30,29 @@ void main() {
       expect(isDocumentReferencePath('tests/doc/'), isTrue);
       expect(isDocumentReferencePath('tests/doc/coll/doc'), isTrue);
       expect(
-          isDocumentReferencePath(
-              'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many/one'),
-          isTrue);
+        isDocumentReferencePath(
+          'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many/one',
+        ),
+        isTrue,
+      );
       checkDocumentReferencePath(
-          'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many/one');
+        'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many/one',
+      );
       checkCollectionReferencePath(
-          'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many');
+        'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many',
+      );
       try {
         checkDocumentReferencePath(
-            'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many');
+          'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many',
+        );
         fail('should fail');
       } catch (e) {
         expect(e, isNot(const TypeMatcher<TestFailure>()));
       }
       try {
         checkCollectionReferencePath(
-            'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many/one');
+          'projects/tekartik-free-dev/databases/(default)/documents/tests/tekartik_firebase/tests/collection_test/many/one',
+        );
         fail('should fail');
       } catch (e) {
         expect(e, isNot(const TypeMatcher<TestFailure>()));
@@ -62,16 +68,26 @@ void main() {
       queryInfo.limit = 1;
       queryInfo.offset = 2;
       queryInfo.orderBys = [OrderByInfo(fieldPath: 'field', ascending: true)];
-      queryInfo.startAt(values: [
-        Timestamp.fromDateTime(
-            DateTime.fromMillisecondsSinceEpoch(1234567890123))
-      ]);
+      queryInfo.startAt(
+        values: [
+          Timestamp.fromDateTime(
+            DateTime.fromMillisecondsSinceEpoch(1234567890123),
+          ),
+        ],
+      );
       queryInfo.endAt(
-          snapshot: DocumentSnapshotMock(
-              DocumentReferenceMock(firestore, 'path/to/dock')));
-      queryInfo.addWhere(WhereInfo('whereField',
+        snapshot: DocumentSnapshotMock(
+          DocumentReferenceMock(firestore, 'path/to/dock'),
+        ),
+      );
+      queryInfo.addWhere(
+        WhereInfo(
+          'whereField',
           isLessThanOrEqualTo: Timestamp.fromDateTime(
-              DateTime.fromMillisecondsSinceEpoch(12345678901234))));
+            DateTime.fromMillisecondsSinceEpoch(12345678901234),
+          ),
+        ),
+      );
       queryInfo.addWhere(WhereInfo('whereIn', whereIn: [1]));
       queryInfo.addWhere(WhereInfo('notIn', notIn: [2]));
       queryInfo.addWhere(WhereInfo('arrayContains', arrayContains: 3));
@@ -84,45 +100,47 @@ void main() {
           {
             'fieldPath': 'whereField',
             'operator': '<=',
-            'value': {r'$t': 'Timestamp', r'$v': '2361-03-21T19:15:01.234Z'}
+            'value': {r'$t': 'Timestamp', r'$v': '2361-03-21T19:15:01.234Z'},
           },
           {
             'fieldPath': 'whereIn',
             'operator': 'in',
-            'value': [1]
+            'value': [1],
           },
           {
             'fieldPath': 'notIn',
             'operator': 'not-in',
-            'value': [2]
+            'value': [2],
           },
           {
             'fieldPath': 'arrayContains',
             'operator': 'array-contains',
-            'value': 3
+            'value': 3,
           },
           {
             'fieldPath': 'arrayContainsAny',
             'operator': 'array-contains-any',
-            'value': [4]
-          }
+            'value': [4],
+          },
         ],
         'orderBys': [
-          {'fieldPath': 'field', 'direction': 'asc'}
+          {'fieldPath': 'field', 'direction': 'asc'},
         ],
         'startLimit': {
           'inclusive': true,
           'values': [
-            {r'$t': 'Timestamp', r'$v': '2009-02-13T23:31:30.123Z'}
-          ]
+            {r'$t': 'Timestamp', r'$v': '2009-02-13T23:31:30.123Z'},
+          ],
         },
-        'endLimit': {'inclusive': true, 'documentId': 'dock'}
+        'endLimit': {'inclusive': true, 'documentId': 'dock'},
       };
       expect(queryInfoToJsonMap(queryInfo), expected);
 
       // round trip
-      expect(queryInfoToJsonMap(queryInfoFromJsonMap(firestore, expected)),
-          expected);
+      expect(
+        queryInfoToJsonMap(queryInfoFromJsonMap(firestore, expected)),
+        expected,
+      );
     });
   });
 
@@ -136,15 +154,18 @@ void main() {
       documentData.setDateTime('dateTime', localDate);
       expect(documentData.toJsonRecordValueMap(), {
         'utcDateTime': {r'$t': 'Timestamp', r'$v': '2361-03-21T13:24:50.123Z'},
-        'dateTime': {r'$t': 'Timestamp', r'$v': '5882-03-08T14:08:21.234Z'}
+        'dateTime': {r'$t': 'Timestamp', r'$v': '5882-03-08T14:08:21.234Z'},
       });
       expect(documentData.toJsonRecordMap(), {
         'utcDateTime': {r'$t': 'DateTime', r'$v': '2361-03-21T13:24:50.123Z'},
-        'dateTime': {r'$t': 'DateTime', r'$v': '5882-03-08T14:08:21.234Z'}
+        'dateTime': {r'$t': 'DateTime', r'$v': '5882-03-08T14:08:21.234Z'},
       });
 
-      documentData = documentDataFromRecordMap(
-          firestore, documentData.toJsonRecordValueMap())!;
+      documentData =
+          documentDataFromRecordMap(
+            firestore,
+            documentData.toJsonRecordValueMap(),
+          )!;
       // this is local time
       expect(documentData.getDateTime('utcDateTime'), utcDate.toLocal());
       expect(documentData.getDateTime('dateTime'), localDate);
@@ -170,12 +191,13 @@ void main() {
       // store as a map
       expect(documentData.map['sub'], const TypeMatcher<Map>());
       expect(documentData.toJsonRecordValueMap(), {
-        'sub': {'test': 1234}
+        'sub': {'test': 1234},
       });
 
-      documentData = documentDataFromRecordMap(firestore, {
-        'sub': {'test': 1234}
-      })!;
+      documentData =
+          documentDataFromRecordMap(firestore, {
+            'sub': {'test': 1234},
+          })!;
       subData = documentData.getData('sub')!;
       expect(subData.getInt('test'), 1234);
     });
@@ -190,20 +212,21 @@ void main() {
       expect(documentData.map['sub'], const TypeMatcher<Map>());
       expect(documentData.toJsonRecordValueMap(), {
         'sub': {
-          'subsub': {'test': 1234}
-        }
+          'subsub': {'test': 1234},
+        },
       });
       expect(documentData.asMap(), {
         'sub': {
-          'subsub': {'test': 1234}
-        }
+          'subsub': {'test': 1234},
+        },
       });
 
-      documentData = documentDataFromRecordMap(firestore, {
-        'sub': {
-          'subsub': {'test': 1234}
-        }
-      })!;
+      documentData =
+          documentDataFromRecordMap(firestore, {
+            'sub': {
+              'subsub': {'test': 1234},
+            },
+          })!;
       subData = documentData.getData('sub')!;
       subSubData = subData.getData('subsub')!;
       expect(subSubData.getInt('test'), 1234);
@@ -217,12 +240,13 @@ void main() {
       // store as a map
       expect(documentData.map['sub'], const TypeMatcher<Map>());
       expect(documentData.toJsonRecordValueMap(), {
-        'sub': {'test': 1234}
+        'sub': {'test': 1234},
       });
 
-      documentData = documentDataFromRecordMap(firestore, {
-        'sub': {'test': 1234}
-      })!;
+      documentData =
+          documentDataFromRecordMap(firestore, {
+            'sub': {'test': 1234},
+          })!;
       subData = documentData.getData('sub')!;
       expect(subData.getInt('test'), 1234);
     });
@@ -231,12 +255,13 @@ void main() {
       var documentData = DocumentData();
       documentData.setList('test', [1, 2]);
       expect(documentData.toJsonRecordValueMap(), {
-        'test': [1, 2]
+        'test': [1, 2],
       });
 
-      documentData = documentDataFromRecordMap(firestore, {
-        'test': [1, 2]
-      })!;
+      documentData =
+          documentDataFromRecordMap(firestore, {
+            'test': [1, 2],
+          })!;
       expect(documentData.getList<int>('test'), [1, 2]);
     });
 
@@ -249,18 +274,26 @@ void main() {
       expect(documentData.map, isEmpty);
 
       // basic types
-      documentDataFromRecordMap(
-          firestore,
-          {'int': 1234, 'bool': true, 'string': 'text', 'double': 1.5},
-          documentData);
-      expect(documentData.map,
-          {'int': 1234, 'bool': true, 'string': 'text', 'double': 1.5});
+      documentDataFromRecordMap(firestore, {
+        'int': 1234,
+        'bool': true,
+        'string': 'text',
+        'double': 1.5,
+      }, documentData);
+      expect(documentData.map, {
+        'int': 1234,
+        'bool': true,
+        'string': 'text',
+        'double': 1.5,
+      });
 
       // date time
-      documentDataFromRecordMap(
-          firestore,
-          {'dateTime': 1234, 'bool': true, 'string': 'text', 'double': 1.5},
-          documentData);
+      documentDataFromRecordMap(firestore, {
+        'dateTime': 1234,
+        'bool': true,
+        'string': 'text',
+        'double': 1.5,
+      }, documentData);
     });
 
     test('complex', () {
@@ -281,14 +314,14 @@ void main() {
             {r'$t': 'Timestamp', r'$v': '2361-03-21T13:24:50.123Z'},
             {
               'date': {r'$t': 'Timestamp', r'$v': '2361-03-21T13:24:50.123Z'},
-              'test': 12345
-            }
+              'test': 12345,
+            },
           ],
           'map': {
             'date': {r'$t': 'Timestamp', r'$v': '2361-03-21T13:24:50.123Z'},
-            'test': 12345
-          }
-        }
+            'test': 12345,
+          },
+        },
       };
       expect(documentData.toJsonRecordValueMap(), expected);
       documentData = documentDataFromRecordMap(firestore, expected)!;

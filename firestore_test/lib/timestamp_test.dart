@@ -4,14 +4,16 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 
 import 'firestore_test.dart';
 
-void timestampGroup(
-    {required FirestoreService service,
-    Firestore? firestore,
-    required FirestoreTestContext? testContext}) {
+void timestampGroup({
+  required FirestoreService service,
+  Firestore? firestore,
+  required FirestoreTestContext? testContext,
+}) {
   String timestampGetTestPath(String path) => url.join(
-      FirestoreTestContext.getRootCollectionPath(testContext),
-      'timestamp',
-      path);
+    FirestoreTestContext.getRootCollectionPath(testContext),
+    'timestamp',
+    path,
+  );
 
   group('timestamp_data', () {
     test('timestamp top level', () async {
@@ -27,22 +29,24 @@ void timestampGroup(
 
     test('timestamp in list', () async {
       // Assume initialized
-      var docRef =
-          firestore!.doc(timestampGetTestPath('timestamp/timestamp_in_list'));
+      var docRef = firestore!.doc(
+        timestampGetTestPath('timestamp/timestamp_in_list'),
+      );
       var t1 = Timestamp(1, 2000000);
       var map = {
-        't1s': [t1]
+        't1s': [t1],
       };
       await docRef.set(map);
       expect((await docRef.get()).data, map);
     });
     test('timestamp in map list', () async {
       // Assume initialized
-      var docRef = firestore!
-          .doc(timestampGetTestPath('timestamp/timestamp_in_map_list'));
+      var docRef = firestore!.doc(
+        timestampGetTestPath('timestamp/timestamp_in_map_list'),
+      );
       var t1 = Timestamp(1, 2000000);
       var map = {
-        't1': {'value': t1}
+        't1': {'value': t1},
       };
       await docRef.set(map);
       expect((await docRef.get()).data, map);

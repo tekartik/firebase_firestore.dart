@@ -4,22 +4,22 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 
 import 'firestore_test.dart';
 
-void vectorValueGroup(
-    {required Firestore firestore,
-    required FirestoreTestContext? testContext}) {
+void vectorValueGroup({
+  required Firestore firestore,
+  required FirestoreTestContext? testContext,
+}) {
   String vectorValueGetTestPath(String path) => url.join(
-      FirestoreTestContext.getRootCollectionPath(testContext),
-      'vectorValue',
-      path);
+    FirestoreTestContext.getRootCollectionPath(testContext),
+    'vectorValue',
+    path,
+  );
 
   group('vectorValue_data', () {
     test('bad vector', () async {
       var docPath = vectorValueGetTestPath('vectorValue/vectorValue');
       var docRef = firestore.doc(docPath);
       try {
-        await docRef.set({
-          'foo': const VectorValue([]),
-        });
+        await docRef.set({'foo': const VectorValue([])});
         fail('Should have thrown an exception');
       } catch (e) {
         print(e);
@@ -32,9 +32,7 @@ void vectorValueGroup(
       }
       final maxPlusOneDimensions = List<double>.filled(2049, 1);
       try {
-        await docRef.set({
-          'foo': maxPlusOneDimensions,
-        });
+        await docRef.set({'foo': maxPlusOneDimensions});
         fail('Should have thrown an exception');
       } catch (e) {
         print(e);
@@ -48,7 +46,7 @@ void vectorValueGroup(
       try {
         await docRef.set({
           'foo': [
-            VectorValue([1])
+            VectorValue([1]),
           ],
         });
         fail('Should have thrown an exception');
@@ -71,14 +69,10 @@ void vectorValueGroup(
         [1, -1.0],
         List.filled(2048, 1),
         [3.14, 2.718],
-        [-42.0, -100.0]
+        [-42.0, -100.0],
       ]) {
-        await docRef.set({
-          'foo': vector,
-        });
-        expect((await docRef.get()).data, {
-          'foo': vector,
-        });
+        await docRef.set({'foo': vector});
+        expect((await docRef.get()).data, {'foo': vector});
       }
     });
     test('vectorValue top level set update', () async {
@@ -98,22 +92,24 @@ void vectorValueGroup(
 
     test('vectorValue in list', () async {
       // Assume initialized
-      var docRef = firestore
-          .doc(vectorValueGetTestPath('vectorValue/vectorValue_in_list'));
+      var docRef = firestore.doc(
+        vectorValueGetTestPath('vectorValue/vectorValue_in_list'),
+      );
       var t1 = VectorValue([1, 2000000]);
       var map = {
-        't1s': [t1]
+        't1s': [t1],
       };
       await docRef.set(map);
       expect((await docRef.get()).data, map);
     }, skip: 'not supported on firestore');
     test('vectorValue in map list', () async {
       // Assume initialized
-      var docRef = firestore
-          .doc(vectorValueGetTestPath('vectorValue/vectorValue_in_map_list'));
+      var docRef = firestore.doc(
+        vectorValueGetTestPath('vectorValue/vectorValue_in_map_list'),
+      );
       var t1 = VectorValue([1, 2000000]);
       var map = {
-        't1': {'value': t1}
+        't1': {'value': t1},
       };
       await docRef.set(map);
       expect((await docRef.get()).data, map);

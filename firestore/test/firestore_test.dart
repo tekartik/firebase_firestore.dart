@@ -23,31 +23,45 @@ void main() {
   group('jsonValue', () {
     test('dateTime', () {
       expect(
-          dateTimeToJsonValue(
-              DateTime.fromMillisecondsSinceEpoch(123456578901234)),
-          {r'$t': 'DateTime', r'$v': '5882-03-08T14:08:21.234Z'});
+        dateTimeToJsonValue(
+          DateTime.fromMillisecondsSinceEpoch(123456578901234),
+        ),
+        {r'$t': 'DateTime', r'$v': '5882-03-08T14:08:21.234Z'},
+      );
 
       expect(
-          jsonValueToDateTime(
-              {r'$t': 'DateTime', r'$v': '5882-03-08T14:08:21.234Z'}),
-          DateTime.fromMillisecondsSinceEpoch(123456578901234).toUtc());
+        jsonValueToDateTime({
+          r'$t': 'DateTime',
+          r'$v': '5882-03-08T14:08:21.234Z',
+        }),
+        DateTime.fromMillisecondsSinceEpoch(123456578901234).toUtc(),
+      );
     });
 
     test('timestamp', () {
-      expect(timestampToJsonValue(Timestamp(1234567890, 123456000)),
-          {r'$t': 'Timestamp', r'$v': '2009-02-13T23:31:30.123456Z'});
+      expect(timestampToJsonValue(Timestamp(1234567890, 123456000)), {
+        r'$t': 'Timestamp',
+        r'$v': '2009-02-13T23:31:30.123456Z',
+      });
 
       expect(
-          jsonValueToTimestamp(
-              {r'$t': 'DateTime', r'$v': '2009-02-13T23:31:30.123456Z'}),
-          Timestamp(1234567890, 123456000));
+        jsonValueToTimestamp({
+          r'$t': 'DateTime',
+          r'$v': '2009-02-13T23:31:30.123456Z',
+        }),
+        Timestamp(1234567890, 123456000),
+      );
     });
 
     test('fieldValue', () {
-      expect(fieldValueToJsonValue(FieldValue.delete),
-          {r'$t': 'FieldValue', r'$v': '~delete'});
-      expect(fieldValueToJsonValue(FieldValue.serverTimestamp),
-          {r'$t': 'FieldValue', r'$v': '~serverTimestamp'});
+      expect(fieldValueToJsonValue(FieldValue.delete), {
+        r'$t': 'FieldValue',
+        r'$v': '~delete',
+      });
+      expect(fieldValueToJsonValue(FieldValue.serverTimestamp), {
+        r'$t': 'FieldValue',
+        r'$v': '~serverTimestamp',
+      });
     });
   });
 
@@ -64,7 +78,7 @@ void main() {
       var data = DocumentData();
       data.setBlob('blob', Blob(Uint8List(0)));
       expect(documentDataToJsonMap(data), {
-        'blob': {r'$t': 'Blob', r'$v': ''}
+        'blob': {r'$t': 'Blob', r'$v': ''},
       });
 
       data.setNull('blob');
@@ -72,7 +86,7 @@ void main() {
 
       data.setBlob('blob', Blob(Uint8List.fromList([1, 2, 3])));
       expect(documentDataToJsonMap(data), {
-        'blob': {r'$t': 'Blob', r'$v': 'AQID'}
+        'blob': {r'$t': 'Blob', r'$v': 'AQID'},
       });
       data = documentDataFromJsonMap(firestore, documentDataToJsonMap(data))!;
       var blob = data.getBlob('blob')!;
@@ -85,8 +99,8 @@ void main() {
       expect(documentDataToJsonMap(data), {
         'geo': {
           r'$t': 'GeoPoint',
-          r'$v': {'latitude': 3.5, 'longitude': 4.0}
-        }
+          r'$v': {'latitude': 3.5, 'longitude': 4.0},
+        },
       });
 
       data.setNull('geo');
@@ -105,7 +119,7 @@ void main() {
       data.setTimestamp('timestamp', Timestamp(12345678901, 123456000));
       var map = documentDataToJsonMap(data);
       expect(map, {
-        'timestamp': {r'$t': 'Timestamp', r'$v': '2361-03-21T19:15:01.123456Z'}
+        'timestamp': {r'$t': 'Timestamp', r'$v': '2361-03-21T19:15:01.123456Z'},
       });
 
       // As timestamp
@@ -140,7 +154,7 @@ void main() {
       var data = DocumentData();
       data.setDocumentReference('ref', firestore.doc('tests/doc'));
       expect(documentDataToJsonMap(data), {
-        'ref': {r'$t': 'DocumentReference', r'$v': 'tests/doc'}
+        'ref': {r'$t': 'DocumentReference', r'$v': 'tests/doc'},
       });
       expect(data.getDocumentReference('ref')!.path, 'tests/doc');
       data.setNull('ref');
@@ -158,7 +172,7 @@ void main() {
       documentData.setList('list', [
         1,
         DateTime.fromMillisecondsSinceEpoch(1234567890123),
-        FieldValue.serverTimestamp
+        FieldValue.serverTimestamp,
       ]);
       documentData.setFieldValue('delete', FieldValue.delete);
       documentData.setData('nested', nested);
@@ -167,12 +181,12 @@ void main() {
         'list': [
           1,
           {r'$t': 'DateTime', r'$v': '2009-02-13T23:31:30.123Z'},
-          {r'$t': 'FieldValue', r'$v': '~serverTimestamp'}
+          {r'$t': 'FieldValue', r'$v': '~serverTimestamp'},
         ],
         'delete': {r'$t': 'FieldValue', r'$v': '~delete'},
         'nested': {
-          'delete': {r'$t': 'FieldValue', r'$v': '~delete'}
-        }
+          'delete': {r'$t': 'FieldValue', r'$v': '~delete'},
+        },
       });
     });
 
@@ -185,11 +199,12 @@ void main() {
         'blob': Blob.fromList([1, 2, 3]),
         'ref': firestore.doc('test/1'),
         'geoPoint': const GeoPoint(1, 2),
-        'timestamp': Timestamp(1, 2)
+        'timestamp': Timestamp(1, 2),
       };
       expect(
-          documentDataMapFromJsonMap(firestore, documentDataMapToJsonMap(map)),
-          map);
+        documentDataMapFromJsonMap(firestore, documentDataMapToJsonMap(map)),
+        map,
+      );
     });
 
     test('all types to/from json no firestore', () {
@@ -201,12 +216,14 @@ void main() {
         'blob': Blob.fromList([1, 2, 3]),
         //  'ref': firestore.doc('test/1'), ref not supported
         'geoPoint': const GeoPoint(1, 2),
-        'timestamp': Timestamp(1, 2)
+        'timestamp': Timestamp(1, 2),
       };
       expect(
-          documentDataFromJsonMapNoFirestore(documentDataMapToJsonMap(map))!
-              .asMap(),
-          map);
+        documentDataFromJsonMapNoFirestore(
+          documentDataMapToJsonMap(map),
+        )!.asMap(),
+        map,
+      );
     });
 
     test('fromJsonMap', () {
@@ -215,15 +232,17 @@ void main() {
           'list': [
             'test',
             null,
-            {r'$t': 'Timestamp', r'$v': '5882-03-08T14:08:21.234Z'}
+            {r'$t': 'Timestamp', r'$v': '5882-03-08T14:08:21.234Z'},
           ],
           'int': 1,
           'delete': {r'$t': 'FieldValue', r'$v': '~delete'},
-          'ref': {r'$t': 'DocumentReference', r'$v': 'tests/doc'}
-        }
+          'ref': {r'$t': 'DocumentReference', r'$v': 'tests/doc'},
+        },
       };
       expect(
-          documentDataToJsonMap(documentDataFromJsonMap(firestore, map)), map);
+        documentDataToJsonMap(documentDataFromJsonMap(firestore, map)),
+        map,
+      );
     });
 
     group('DocumentData', () {

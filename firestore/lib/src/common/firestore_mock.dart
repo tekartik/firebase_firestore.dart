@@ -22,7 +22,7 @@ class FirestoreMock
 
   /// Constructor
   FirestoreMock({FirestoreServiceMock? service})
-      : service = service ?? FirestoreServiceMock();
+    : service = service ?? FirestoreServiceMock();
 
   @override
   WriteBatch batch() {
@@ -43,7 +43,8 @@ class FirestoreMock
 
   @override
   Future<T> runTransaction<T>(
-      FutureOr<T> Function(Transaction transaction) updateFunction) {
+    FutureOr<T> Function(Transaction transaction) updateFunction,
+  ) {
     throw UnimplementedError();
   }
 

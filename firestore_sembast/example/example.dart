@@ -5,6 +5,7 @@ Future<void> main(List<String> args) async {
   var firestore = newFirestoreMemory(); // .debugQuickLoggerWrapper();
   await mainMenu(args, () {
     firestoreMainMenu(
-        context: FirestoreMainMenuContext(doc: firestore.doc('test/1')));
+      context: FirestoreMainMenuContext(doc: firestore.doc('test/1')),
+    );
   });
 }

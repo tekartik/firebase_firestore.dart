@@ -30,7 +30,6 @@ mixin FirestoreServiceDefaultMixin implements FirestoreService {
   bool get supportsAggregateQueries => false;
 
   @override
-
   /// false to start, should become true soon
   bool get supportsVectorValue => false;
 }

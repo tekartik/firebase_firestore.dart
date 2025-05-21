@@ -12,7 +12,8 @@ import 'firestore_idb_test.dart';
 
 void main() async {
   final idbFactory = getIdbFactorySembastIo(
-      join('.dart_tool', 'tekartik_firebase_firestore_idb', 'test'));
+    join('.dart_tool', 'tekartik_firebase_firestore_idb', 'test'),
+  );
   var firestoreService = getFirestoreService(idbFactory);
   var firebase = FirebaseLocal();
   idbTestInit();
@@ -20,9 +21,6 @@ void main() async {
     test('factory', () {
       expect(firestoreService.supportsQuerySelect, isTrue);
     });
-    runFirestoreTests(
-      firebase: firebase,
-      firestoreService: firestoreService,
-    );
+    runFirestoreTests(firebase: firebase, firestoreService: firestoreService);
   });
 }

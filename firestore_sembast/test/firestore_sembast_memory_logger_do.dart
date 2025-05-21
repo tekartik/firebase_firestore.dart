@@ -15,11 +15,14 @@ void main() {
   test('set', () async {
     var firestore = newFirestoreMemory();
     firestore = FirestoreLogger(
-        firestore: firestore,
-        options: FirestoreLoggerOptions.all(log: (event) {
+      firestore: firestore,
+      options: FirestoreLoggerOptions.all(
+        log: (event) {
           // ignore: avoid_print
           print(event);
-        }));
+        },
+      ),
+    );
     var ref = firestore.doc('test/1');
     await ref.set({});
     await firestore.runTransaction((transaction) {
@@ -27,11 +30,15 @@ void main() {
     });
   });
   runFirestoreTests(
-      firebase: firebase,
-      firestoreService: FirestoreServiceLogger(
-          firestoreService: newFirestoreServiceMemory(),
-          options: FirestoreLoggerOptions.all(log: (event) {
-            // ignore: avoid_print
-            print(event);
-          })));
+    firebase: firebase,
+    firestoreService: FirestoreServiceLogger(
+      firestoreService: newFirestoreServiceMemory(),
+      options: FirestoreLoggerOptions.all(
+        log: (event) {
+          // ignore: avoid_print
+          print(event);
+        },
+      ),
+    ),
+  );
 }

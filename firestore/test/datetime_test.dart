@@ -19,10 +19,11 @@ void main() {
       // Browser 2018-10-20T05:13:45.985Z
       // Node 2018-10-20T05:13:45.985Z
       expect(
-          dateTime!.toIso8601String(),
-          dateTimeSupportsMicroseconds
-              ? '2018-10-20T05:13:45.985343Z'
-              : '2018-10-20T05:13:45.985Z');
+        dateTime!.toIso8601String(),
+        dateTimeSupportsMicroseconds
+            ? '2018-10-20T05:13:45.985343Z'
+            : '2018-10-20T05:13:45.985Z',
+      );
       // print(dateTime.toIso8601String());
 
       text = '2018-10-20T05:13:45.985Z';

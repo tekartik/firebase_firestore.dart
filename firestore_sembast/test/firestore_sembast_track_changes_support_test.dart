@@ -20,9 +20,10 @@ void groupTrackChangesSembastSupport({required Firestore firestore}) {
   }
 
   runFirestoreTrackChangesSupportTests(
-      firestoreService: firestore.service,
-      firestore: firestore,
-      testContext: null);
+    firestoreService: firestore.service,
+    firestore: firestore,
+    testContext: null,
+  );
   group('diff', () {
     /// Should fail if no support
     Future<void> testOneOnSnapshotSupport() async {
@@ -30,12 +31,14 @@ void groupTrackChangesSembastSupport({required Firestore firestore}) {
       var docRef = testsRef.doc('diff_one_onSnapshotSupport');
       await docRef.delete();
       var pullOptions = TrackChangesSupportOptions(
-          refreshDelay: const Duration(milliseconds: 10000));
+        refreshDelay: const Duration(milliseconds: 10000),
+      );
 
       var completer = Completer<void>();
 
-      var subscription =
-          docRef.onSnapshotSupport(options: pullOptions).listen((event) {
+      var subscription = docRef.onSnapshotSupport(options: pullOptions).listen((
+        event,
+      ) {
         if (event.exists) {
           completer.complete();
         }
@@ -68,8 +71,9 @@ void groupTrackChangesSembastSupport({required Firestore firestore}) {
 
       var completer = Completer<void>();
 
-      var subscription =
-          docRef.onSnapshotSupport(options: controller).listen((event) {
+      var subscription = docRef.onSnapshotSupport(options: controller).listen((
+        event,
+      ) {
         if (event.exists) {
           completer.complete();
         }

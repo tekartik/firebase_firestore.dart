@@ -1,12 +1,7 @@
 import 'package:tekartik_firebase_firestore/src/common/import_firestore_mixin.dart';
 
 // don't export it yet
-enum FieldValueType {
-  serverTimestamp,
-  delete,
-  arrayUnion,
-  arrayRemove,
-}
+enum FieldValueType { serverTimestamp, delete, arrayUnion, arrayRemove }
 
 DateTime? toLocaleTime(DateTime? value) {
   if (value == null || !value.isUtc) {
@@ -53,8 +48,11 @@ dynamic valueToDocumentValue(dynamic value) {
         .map((key, value) => MapEntry(key, valueToDocumentValue(value)))
         .cast<String, Object?>();
   } else {
-    throw ArgumentError.value(value, '${value.runtimeType}',
-        'Unsupported value for fieldValueFromJsonValue');
+    throw ArgumentError.value(
+      value,
+      '${value.runtimeType}',
+      'Unsupported value for fieldValueFromJsonValue',
+    );
   }
 }
 
@@ -143,10 +141,7 @@ class DocumentDataMap implements DocumentData {
   }
 
   @override
-  void setData(
-    String key,
-    DocumentData? value,
-  ) =>
+  void setData(String key, DocumentData? value) =>
       setValue(key, (value as DocumentDataMap).map);
 
   @override
@@ -207,10 +202,7 @@ class DocumentDataMap implements DocumentData {
   String toString() => asMap().toString();
 }
 
-enum FieldValueMapValue {
-  delete,
-  serverTimestamp,
-}
+enum FieldValueMapValue { delete, serverTimestamp }
 
 /// Special name field representing the document id (for sort order)
 const String firestoreNameFieldPath = '__name__';
@@ -221,13 +213,14 @@ class FirestoreSettings {
   @Deprecated('No longer needed')
   final bool? timestampsInSnapshots;
 
-// ignore: deprecated_member_use_from_same_package
-  FirestoreSettings(
-      {@Deprecated('No longer needed') this.timestampsInSnapshots});
+  // ignore: deprecated_member_use_from_same_package
+  FirestoreSettings({
+    @Deprecated('No longer needed') this.timestampsInSnapshots,
+  });
 
   @override
   String toString() {
-// ignore: deprecated_member_use_from_same_package
+    // ignore: deprecated_member_use_from_same_package
     var map = {'timestampsInSnapshots': timestampsInSnapshots};
     return map.toString();
   }

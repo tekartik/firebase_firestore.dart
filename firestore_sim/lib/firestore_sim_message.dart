@@ -184,7 +184,7 @@ class DocumentChangeData extends BaseData {
       'id': id,
       'type': type,
       'newIndex': newIndex,
-      'oldIndex': oldIndex
+      'oldIndex': oldIndex,
     };
     if (data != null) {
       map['data'] = data;
@@ -205,13 +205,17 @@ class FirestoreQuerySnapshotData extends BaseData {
     super.fromMap(map);
     list = [];
     for (var item in map['list'] as List) {
-      list.add(DocumentSnapshotData.fromMessageMap(
-          (item as Map).cast<String, dynamic>()));
+      list.add(
+        DocumentSnapshotData.fromMessageMap(
+          (item as Map).cast<String, dynamic>(),
+        ),
+      );
     }
     changes = [];
     for (var item in map['changes'] as List) {
       changes!.add(
-          DocumentChangeData()..fromMap((item as Map).cast<String, dynamic>()));
+        DocumentChangeData()..fromMap((item as Map).cast<String, dynamic>()),
+      );
     }
     streamId = map['streamId'] as int?;
   }
@@ -308,9 +312,7 @@ class FirebaseInitializeAppResponseData extends BaseData {
 
   @override
   Map<String, Object?> toMap() {
-    var map = {
-      'appId': appId,
-    };
+    var map = {'appId': appId};
     return map;
   }
 }
@@ -325,9 +327,7 @@ class FirestoreTransactionResponseData extends BaseData {
 
   @override
   Map<String, Object?> toMap() {
-    var map = {
-      'transactionId': transactionId,
-    };
+    var map = {'transactionId': transactionId};
     return map;
   }
 }
@@ -337,8 +337,10 @@ class FirestoreQueryData extends FirestorePathData {
 
   void firestoreFromMap(Firestore firestore, Map<String, Object?> map) {
     super.fromMap(map);
-    queryInfo =
-        queryInfoFromJsonMap(firestore, map['query'] as Map<String, Object?>);
+    queryInfo = queryInfoFromJsonMap(
+      firestore,
+      map['query'] as Map<String, Object?>,
+    );
   }
 
   @override
@@ -503,9 +505,7 @@ abstract class FirestoreQueryStreamIdBase extends BaseData {
 
   @override
   Map<String, Object?> toMap() {
-    var map = {
-      'streamId': streamId,
-    };
+    var map = {'streamId': streamId};
     return map;
   }
 }

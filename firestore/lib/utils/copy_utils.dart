@@ -3,10 +3,17 @@ import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
 extension TekartikFirestoreCopyUtils on DocumentReference {
   /// Copy documents nested too.
-  Future<int> recursiveCopyTo(Firestore dstFirestore, DocumentReference dstRef,
-      {int? batchSize}) async {
-    return await _recursiveCopyDocument(this, dstFirestore, dstRef,
-        batchSize: batchSize);
+  Future<int> recursiveCopyTo(
+    Firestore dstFirestore,
+    DocumentReference dstRef, {
+    int? batchSize,
+  }) async {
+    return await _recursiveCopyDocument(
+      this,
+      dstFirestore,
+      dstRef,
+      batchSize: batchSize,
+    );
   }
 
   /// Nested deleted
@@ -14,8 +21,9 @@ extension TekartikFirestoreCopyUtils on DocumentReference {
     return await _recursiveDocDelete(firestore, this, batchSize: batchSize);
   }
 
-  Future<List<DocumentReference>> recursiveListDocuments(
-      {int? pageSize}) async {
+  Future<List<DocumentReference>> recursiveListDocuments({
+    int? pageSize,
+  }) async {
     var list = <DocumentReference>[];
     if ((await get()).exists) {
       list.add(this);
@@ -28,10 +36,16 @@ extension TekartikFirestoreCopyUtils on DocumentReference {
 extension TekartikFirestoreCollectionReferenceCopyUtils on CollectionReference {
   /// Copy a document to another document
   Future<int> recursiveCopyTo(
-      Firestore dstFirestore, CollectionReference dstRef,
-      {int? batchSize}) async {
-    return await _recursiveCopyCollection(this, dstFirestore, dstRef,
-        batchSize: batchSize);
+    Firestore dstFirestore,
+    CollectionReference dstRef, {
+    int? batchSize,
+  }) async {
+    return await _recursiveCopyCollection(
+      this,
+      dstFirestore,
+      dstRef,
+      batchSize: batchSize,
+    );
   }
 
   Future<List<DocumentReference>> recursiveListDocuments() async {
@@ -45,9 +59,13 @@ extension TekartikFirestoreCollectionReferenceCopyUtils on CollectionReference {
 }
 
 /// Ouch!
-Future<int> recursiveCopyPath(Firestore srcFirestore, String srcPath,
-    Firestore dstFirestore, String dstPath,
-    {int? batchSize}) async {
+Future<int> recursiveCopyPath(
+  Firestore srcFirestore,
+  String srcPath,
+  Firestore dstFirestore,
+  String dstPath, {
+  int? batchSize,
+}) async {
   var count = 0;
   var isSrcDocument = isDocumentReferencePath(srcPath);
   if (isSrcDocument) {
@@ -58,9 +76,12 @@ Future<int> recursiveCopyPath(Firestore srcFirestore, String srcPath,
   return count;
 }
 
-Future<int> _recursiveCopyCollection(CollectionReference srcRef,
-    Firestore dstFirestore, CollectionReference dstRef,
-    {int? batchSize}) async {
+Future<int> _recursiveCopyCollection(
+  CollectionReference srcRef,
+  Firestore dstFirestore,
+  CollectionReference dstRef, {
+  int? batchSize,
+}) async {
   var count = 0;
   var query = srcRef.orderBy(firestoreNameFieldPath);
   batchSize ??= 10;
@@ -78,8 +99,11 @@ Future<int> _recursiveCopyCollection(CollectionReference srcRef,
     // Delete documents in a batch
     for (var doc in snapshot.docs) {
       count += await _recursiveCopyDocument(
-          doc.ref, dstFirestore, dstRef.doc(doc.ref.id),
-          batchSize: batchSize);
+        doc.ref,
+        dstFirestore,
+        dstRef.doc(doc.ref.id),
+        batchSize: batchSize,
+      );
     }
 
     query = query.startAfter(values: [snapshot.docs.last.ref.id]);
@@ -88,8 +112,9 @@ Future<int> _recursiveCopyCollection(CollectionReference srcRef,
 }
 
 Future<List<DocumentReference>> _recursiveCollListDocuments(
-    CollectionReference srcRef,
-    {int? pageSize}) async {
+  CollectionReference srcRef, {
+  int? pageSize,
+}) async {
   var list = <DocumentReference>[];
 
   var query = srcRef.orderBy(firestoreNameFieldPath);
@@ -109,7 +134,8 @@ Future<List<DocumentReference>> _recursiveCollListDocuments(
     for (var doc in snapshot.docs) {
       list.add(doc.ref);
       list.addAll(
-          await _recursiveDocListDocuments(doc.ref, pageSize: pageSize));
+        await _recursiveDocListDocuments(doc.ref, pageSize: pageSize),
+      );
     }
 
     query = query.startAfter(values: [snapshot.docs.last.ref.id]);
@@ -117,8 +143,11 @@ Future<List<DocumentReference>> _recursiveCollListDocuments(
   return list;
 }
 
-Future<int> _recursiveCollDelete(Firestore firestore, CollectionReference ref,
-    {int? batchSize}) async {
+Future<int> _recursiveCollDelete(
+  Firestore firestore,
+  CollectionReference ref, {
+  int? batchSize,
+}) async {
   var count = 0;
   var query = ref.orderBy(firestoreNameFieldPath);
   batchSize ??= 10;
@@ -135,8 +164,11 @@ Future<int> _recursiveCollDelete(Firestore firestore, CollectionReference ref,
 
     // Delete documents in a batch
     for (var doc in snapshot.docs) {
-      count +=
-          await _recursiveDocDelete(firestore, doc.ref, batchSize: batchSize);
+      count += await _recursiveDocDelete(
+        firestore,
+        doc.ref,
+        batchSize: batchSize,
+      );
     }
 
     query = query.startAfter(values: [snapshot.docs.last.ref.id]);
@@ -145,27 +177,43 @@ Future<int> _recursiveCollDelete(Firestore firestore, CollectionReference ref,
 }
 
 Future<int> _recursiveCopyDocument(
-    DocumentReference srcRef, Firestore dstFirestore, DocumentReference dstRef,
-    {int? batchSize}) async {
+  DocumentReference srcRef,
+  Firestore dstFirestore,
+  DocumentReference dstRef, {
+  int? batchSize,
+}) async {
   var count = 0;
   var collections = await srcRef.listCollections();
   for (var collection in collections) {
     count += await _recursiveCopyCollection(
-        collection, dstFirestore, dstRef.collection(collection.id),
-        batchSize: batchSize);
+      collection,
+      dstFirestore,
+      dstRef.collection(collection.id),
+      batchSize: batchSize,
+    );
   }
-  count +=
-      await _copyDocument(srcRef, dstFirestore, dstRef, batchSize: batchSize);
+  count += await _copyDocument(
+    srcRef,
+    dstFirestore,
+    dstRef,
+    batchSize: batchSize,
+  );
   return count;
 }
 
-Future<int> _recursiveDocDelete(Firestore firestore, DocumentReference ref,
-    {int? batchSize}) async {
+Future<int> _recursiveDocDelete(
+  Firestore firestore,
+  DocumentReference ref, {
+  int? batchSize,
+}) async {
   var count = 0;
   var collections = await ref.listCollections();
   for (var collection in collections) {
-    count +=
-        await _recursiveCollDelete(firestore, collection, batchSize: batchSize);
+    count += await _recursiveCollDelete(
+      firestore,
+      collection,
+      batchSize: batchSize,
+    );
   }
 
   count += await _deleteDocument(firestore, ref, batchSize: batchSize);
@@ -180,15 +228,19 @@ Future<List<DocumentReference>> _recursiveDocListDocuments(
   var list = <DocumentReference>[];
   for (var collection in collections) {
     list.addAll(
-        await _recursiveCollListDocuments(collection, pageSize: pageSize));
+      await _recursiveCollListDocuments(collection, pageSize: pageSize),
+    );
   }
 
   return list;
 }
 
 Future<int> _copyDocument(
-    DocumentReference srcRef, Firestore dstFirestore, DocumentReference dstRef,
-    {int? batchSize}) async {
+  DocumentReference srcRef,
+  Firestore dstFirestore,
+  DocumentReference dstRef, {
+  int? batchSize,
+}) async {
   var count = 0;
   var snapshot = await srcRef.get();
   if (snapshot.exists) {
@@ -198,8 +250,11 @@ Future<int> _copyDocument(
   return count;
 }
 
-Future<int> _deleteDocument(Firestore firestore, DocumentReference ref,
-    {int? batchSize}) async {
+Future<int> _deleteDocument(
+  Firestore firestore,
+  DocumentReference ref, {
+  int? batchSize,
+}) async {
   var count = 0;
   var snapshot = await ref.get();
   if (snapshot.exists) {

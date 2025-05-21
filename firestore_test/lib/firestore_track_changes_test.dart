@@ -6,10 +6,11 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 
 import 'firestore_test.dart';
 
-void runFirestoreTrackChangesTests(
-    {required FirestoreService firestoreService,
-    required Firestore firestore,
-    required FirestoreTestContext? testContext}) {
+void runFirestoreTrackChangesTests({
+  required FirestoreService firestoreService,
+  required Firestore firestore,
+  required FirestoreTestContext? testContext,
+}) {
   var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
 
   group('track_changes', () {

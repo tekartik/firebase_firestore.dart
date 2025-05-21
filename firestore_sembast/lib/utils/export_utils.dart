@@ -12,9 +12,10 @@ export 'package:sembast/utils/sembast_import_export.dart'
 
 extension TekartikSembastUtils on Firestore {
   /// Export the database as a list of json encodable lines
-  Future<List<Object>> exportLines(
-      {List<CollectionReference>? collections,
-      List<DocumentReference>? documents}) async {
+  Future<List<Object>> exportLines({
+    List<CollectionReference>? collections,
+    List<DocumentReference>? documents,
+  }) async {
     if (this is! FirestoreSembast) {
       if (!service.supportsListCollections) {
         throw UnsupportedError('Cannot list collections');
@@ -24,7 +25,9 @@ extension TekartikSembastUtils on Firestore {
         collections ??= await firestore.listCollections();
         for (var collection in collections) {
           await collection.recursiveCopyTo(
-              firestore, firestore.collection(collection.path));
+            firestore,
+            firestore.collection(collection.path),
+          );
         }
       }
       if (documents != null) {
@@ -33,9 +36,10 @@ extension TekartikSembastUtils on Firestore {
         }
       }
       return firestore.exportLines(
-          collections:
-              collections?.map((e) => firestore.collection(e.path)).toList(),
-          documents: documents?.map((e) => firestore.doc(e.path)).toList());
+        collections:
+            collections?.map((e) => firestore.collection(e.path)).toList(),
+        documents: documents?.map((e) => firestore.doc(e.path)).toList(),
+      );
     }
     return exportDatabaseLines(await sembastDatabase);
   }

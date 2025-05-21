@@ -3,9 +3,10 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/auto_id_generator.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 
-void utilsAutoIdTest(
-    {required Firestore firestore,
-    required FirestoreTestContext? testContext}) {
+void utilsAutoIdTest({
+  required Firestore firestore,
+  required FirestoreTestContext? testContext,
+}) {
   var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
   CollectionReference getTestsRef() {
     return firestore.collection(testsRefPath);

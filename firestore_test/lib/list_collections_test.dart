@@ -8,9 +8,10 @@ import 'package:tekartik_firebase_firestore/utils/copy_utils.dart';
 
 import 'firestore_test.dart';
 
-void runListCollectionsTest(
-    {required Firestore firestore,
-    required FirestoreTestContext? testContext}) {
+void runListCollectionsTest({
+  required Firestore firestore,
+  required FirestoreTestContext? testContext,
+}) {
   var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
   group('list collections', () {
     // firestore = firestore.debugQuickLoggerWrapper();
@@ -20,21 +21,26 @@ void runListCollectionsTest(
       var collections = await firestore.listCollections();
       await doc.set({});
       expect(
-          (await firestore.collection(collectionId).recursiveListDocuments())
-              .map((e) => e.path),
-          [doc.path]);
+        (await firestore.collection(collectionId).recursiveListDocuments()).map(
+          (e) => e.path,
+        ),
+        [doc.path],
+      );
       collections = await firestore.listCollections();
-      var collection =
-          collections.firstWhere((element) => element.id == collectionId);
+      var collection = collections.firstWhere(
+        (element) => element.id == collectionId,
+      );
       expect(collection.path, collectionId);
       await doc.delete();
       collections = await firestore.listCollections();
       expect(collections.map((e) => e.id), isNot(contains(collectionId)));
 
       expect(
-          (await firestore.collection(collectionId).recursiveListDocuments())
-              .map((e) => e.path),
-          isEmpty);
+        (await firestore.collection(collectionId).recursiveListDocuments()).map(
+          (e) => e.path,
+        ),
+        isEmpty,
+      );
     }, skip: !firestore.service.supportsListCollections);
 
     test('list doc collections', () async {
@@ -44,15 +50,18 @@ void runListCollectionsTest(
       var doc = collection.doc('doc');
       var collections = await firestore.doc(parent).listCollections();
       await doc.set({});
-      expect((await collection.recursiveListDocuments()).map((e) => e.path),
-          [doc.path]);
+      expect((await collection.recursiveListDocuments()).map((e) => e.path), [
+        doc.path,
+      ]);
       collections = await firestore.doc(parent).listCollections();
       expect(collections.map((e) => e.id), contains(collectionId));
       await doc.delete();
       collections = await firestore.listCollections();
       expect(collections.map((e) => e.id), isNot(contains(collectionId)));
-      expect((await collection.recursiveListDocuments()).map((e) => e.path),
-          isEmpty);
+      expect(
+        (await collection.recursiveListDocuments()).map((e) => e.path),
+        isEmpty,
+      );
     }, skip: !firestore.service.supportsListCollections);
   });
 }

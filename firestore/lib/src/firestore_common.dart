@@ -38,8 +38,8 @@ Map<String, Object?> vectorToJsonValue(VectorValue vector) =>
     typeValueToJson(typeVector, vector.toArray());
 
 Map<String, Object?> documentReferenceToJsonValue(
-        DocumentReference documentReference) =>
-    typeValueToJson(typeDocumentReference, documentReference.path);
+  DocumentReference documentReference,
+) => typeValueToJson(typeDocumentReference, documentReference.path);
 
 Map<String, Object?> blobToJsonValue(Blob blob) =>
     typeValueToJson(typeBlob, base64.encode(blob.data));
@@ -50,8 +50,11 @@ Map<String, Object?> fieldValueToJsonValue(FieldValue fieldValue) {
   } else if (fieldValue == FieldValue.serverTimestamp) {
     return typeValueToJson(typeFieldValue, valueFieldValueServerTimestamp);
   }
-  throw ArgumentError.value(fieldValue, '${fieldValue.runtimeType}',
-      'Unsupported value for fieldValueToJsonValue');
+  throw ArgumentError.value(
+    fieldValue,
+    '${fieldValue.runtimeType}',
+    'Unsupported value for fieldValueToJsonValue',
+  );
 }
 
 FieldValue fieldValueFromJsonValue(dynamic value) {
@@ -60,8 +63,11 @@ FieldValue fieldValueFromJsonValue(dynamic value) {
   } else if (value == valueFieldValueServerTimestamp) {
     return FieldValue.serverTimestamp;
   }
-  throw ArgumentError.value(value, '${value.runtimeType}',
-      'Unsupported value for fieldValueFromJsonValue');
+  throw ArgumentError.value(
+    value,
+    '${value.runtimeType}',
+    'Unsupported value for fieldValueFromJsonValue',
+  );
 }
 
 DateTime? jsonValueToDateTime(Map map) {
@@ -70,8 +76,9 @@ DateTime? jsonValueToDateTime(Map map) {
 }
 
 Timestamp? jsonValueToTimestamp(Map map) {
-  assert(map[jsonTypeField] == typeDateTime ||
-      map[jsonTypeField] == typeTimestamp);
+  assert(
+    map[jsonTypeField] == typeDateTime || map[jsonTypeField] == typeTimestamp,
+  );
   return parseTimestamp(map[jsonValueField]);
 }
 
@@ -92,16 +99,19 @@ Blob jsonValueToBlob(Map map) {
 
 VectorValue jsonValueToVector(Map map) {
   assert(map[jsonTypeField] == typeVector);
-  var array = (map[jsonValueField] as List)
-      .cast<num>()
-      .map((e) => e.toDouble())
-      .toList();
+  var array =
+      (map[jsonValueField] as List)
+          .cast<num>()
+          .map((e) => e.toDouble())
+          .toList();
   return VectorValue(array);
 }
 
 Map<String, Object?> geoPointToJsonValue(GeoPoint geoPoint) {
-  return typeValueToJson(typeGeoPoint,
-      {'latitude': geoPoint.latitude, 'longitude': geoPoint.longitude});
+  return typeValueToJson(typeGeoPoint, {
+    'latitude': geoPoint.latitude,
+    'longitude': geoPoint.longitude,
+  });
 }
 
 GeoPoint jsonValueToGeoPoint(Map map) {
@@ -123,7 +133,8 @@ bool _isCommonValue(dynamic value) {
 /// Root document data to json map.
 Map<String, Object?> documentDataMapToJsonMap(Map documentDataMap) {
   return documentDataMap.map<String, Object?>(
-      (key, value) => MapEntry(key as String, documentDataValueToJson(value)));
+    (key, value) => MapEntry(key as String, documentDataValueToJson(value)),
+  );
 }
 
 /// Handle any document data source (map, DocumentData)
@@ -151,8 +162,11 @@ Object? documentDataValueToJson(Object? value) {
   } else if (value is GeoPoint) {
     return geoPointToJsonValue(value);
   } else {
-    throw ArgumentError.value(value, '${value.runtimeType}',
-        'Unsupported value for documentDataValueToJson');
+    throw ArgumentError.value(
+      value,
+      '${value.runtimeType}',
+      'Unsupported value for documentDataValueToJson',
+    );
   }
 }
 
@@ -207,18 +221,25 @@ Object? jsonToDocumentDataValue(Firestore firestore, Object? value) {
           throw UnsupportedError('value $value');
       }
     } else {
-      return value.map<String, Object?>((key, value) =>
-          MapEntry(key as String, jsonToDocumentDataValue(firestore, value)));
+      return value.map<String, Object?>(
+        (key, value) =>
+            MapEntry(key as String, jsonToDocumentDataValue(firestore, value)),
+      );
     }
   } else {
-    throw ArgumentError.value(value, '${value.runtimeType}',
-        'Unsupported value for jsonToDocumentDataValue');
+    throw ArgumentError.value(
+      value,
+      '${value.runtimeType}',
+      'Unsupported value for jsonToDocumentDataValue',
+    );
   }
 }
 
 // remove createTime and updateTime
 DocumentData? documentDataFromSnapshotJsonMap(
-    Firestore firestore, Map<String, Object?> map) {
+  Firestore firestore,
+  Map<String, Object?> map,
+) {
   map.remove(createTimeKey);
   map.remove(updateTimeKey);
   return documentDataFromJsonMap(firestore, map);
@@ -226,12 +247,15 @@ DocumentData? documentDataFromSnapshotJsonMap(
 
 /// Read a document data from a json map
 DocumentData? documentDataFromJsonMap(
-    Firestore firestore, Map<String, Object?>? map) {
+  Firestore firestore,
+  Map<String, Object?>? map,
+) {
   if (map == null) {
     return null;
   }
   return DocumentDataMap(
-      map: jsonToDocumentDataValue(firestore, map) as Map<String, Object?>?);
+    map: jsonToDocumentDataValue(firestore, map) as Map<String, Object?>?,
+  );
 }
 
 /// Read a document data from a json map without firestore (used only for references=
@@ -244,7 +268,9 @@ DocumentData? documentDataFromJsonMapNoFirestore(Map<String, Object?>? map) {
 
 /// Json map to firestore document data map.
 Map<String, Object?> documentDataMapFromJsonMap(
-    Firestore firestore, Map<String, Object?> map) {
+  Firestore firestore,
+  Map<String, Object?> map,
+) {
   return documentDataFromJsonMap(firestore, map)!.asMap();
 }
 
@@ -322,23 +348,30 @@ class WhereInfo {
     this.isNull,
   }) {
     assert(
-        isEqualTo != null ||
-            isLessThan != null ||
-            isLessThanOrEqualTo != null ||
-            isGreaterThan != null ||
-            isGreaterThanOrEqualTo != null ||
-            arrayContains != null ||
-            arrayContainsAny != null ||
-            whereIn != null ||
-            notIn != null ||
-            isNull != null,
-        'Empty where');
-    assert(arrayContainsAny == null || arrayContainsAny!.isNotEmpty,
-        'Invalid Query. A non-empty array is required for \'array-contains-any\' filters.');
-    assert(whereIn == null || whereIn!.isNotEmpty,
-        'Invalid Query. A non-empty array is required for \'in\' filters.');
-    assert(notIn == null || notIn!.isNotEmpty,
-        'Invalid Query. A non-empty array is required for \'in\' filters.');
+      isEqualTo != null ||
+          isLessThan != null ||
+          isLessThanOrEqualTo != null ||
+          isGreaterThan != null ||
+          isGreaterThanOrEqualTo != null ||
+          arrayContains != null ||
+          arrayContainsAny != null ||
+          whereIn != null ||
+          notIn != null ||
+          isNull != null,
+      'Empty where',
+    );
+    assert(
+      arrayContainsAny == null || arrayContainsAny!.isNotEmpty,
+      'Invalid Query. A non-empty array is required for \'array-contains-any\' filters.',
+    );
+    assert(
+      whereIn == null || whereIn!.isNotEmpty,
+      'Invalid Query. A non-empty array is required for \'in\' filters.',
+    );
+    assert(
+      notIn == null || notIn!.isNotEmpty,
+      'Invalid Query. A non-empty array is required for \'in\' filters.',
+    );
   }
 
   dynamic isEqualTo;
@@ -403,28 +436,32 @@ class QueryInfo {
   }
 
   void startAt({DocumentSnapshot? snapshot, List? values}) =>
-      startLimit = (LimitInfo()
-        ..documentId = snapshot?.ref.id
-        ..values = values
-        ..inclusive = true);
+      startLimit =
+          (LimitInfo()
+            ..documentId = snapshot?.ref.id
+            ..values = values
+            ..inclusive = true);
 
   void startAfter({DocumentSnapshot? snapshot, List? values}) =>
-      startLimit = (LimitInfo()
-        ..documentId = snapshot?.ref.id
-        ..values = values
-        ..inclusive = false);
+      startLimit =
+          (LimitInfo()
+            ..documentId = snapshot?.ref.id
+            ..values = values
+            ..inclusive = false);
 
   void endAt({DocumentSnapshot? snapshot, List? values}) =>
-      endLimit = (LimitInfo()
-        ..documentId = snapshot?.ref.id
-        ..values = values
-        ..inclusive = true);
+      endLimit =
+          (LimitInfo()
+            ..documentId = snapshot?.ref.id
+            ..values = values
+            ..inclusive = true);
 
   void endBefore({DocumentSnapshot? snapshot, List? values}) =>
-      endLimit = (LimitInfo()
-        ..documentId = snapshot?.ref.id
-        ..values = values
-        ..inclusive = false);
+      endLimit =
+          (LimitInfo()
+            ..documentId = snapshot?.ref.id
+            ..values = values
+            ..inclusive = false);
 
   void addWhere(WhereInfo where) {
     wheres.add(where);
@@ -453,9 +490,10 @@ WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
     isGreaterThanOrEqualTo:
         (operator == operatorGreaterThanOrEqual) ? value : null,
     arrayContains: (operator == operatorArrayContains) ? value : null,
-    arrayContainsAny: (operator == operatorArrayContainsAny)
-        ? (value as List).cast<Object>()
-        : null,
+    arrayContainsAny:
+        (operator == operatorArrayContainsAny)
+            ? (value as List).cast<Object>()
+            : null,
     whereIn: (operator == operatorIn) ? (value as List).cast<Object>() : null,
     notIn: (operator == operatorNotIn) ? (value as List).cast<Object>() : null,
   );
@@ -465,8 +503,9 @@ WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
 
 OrderByInfo orderByInfoFromJsonMap(Map<String, Object?> map) {
   var orderByInfo = OrderByInfo(
-      fieldPath: map['fieldPath'] as String?,
-      ascending: (map['direction'] as String?) != orderByDescending);
+    fieldPath: map['fieldPath'] as String?,
+    ascending: (map['direction'] as String?) != orderByDescending,
+  );
   return orderByInfo;
 }
 
@@ -512,7 +551,7 @@ Map<String, Object?> whereInfoToJsonMap(WhereInfo whereInfo) {
 Map<String, Object?> orderByInfoToJsonMap(OrderByInfo orderByInfo) {
   var map = <String, Object?>{
     'fieldPath': orderByInfo.fieldPath,
-    'direction': orderByInfo.ascending ? orderByAscending : orderByDescending
+    'direction': orderByInfo.ascending ? orderByAscending : orderByDescending,
   };
   return map;
 }
@@ -523,9 +562,10 @@ Map<String, Object?> limitInfoToJsonMap(LimitInfo limitInfo) {
     map['inclusive'] = true;
   }
   if (limitInfo.values != null) {
-    map['values'] = limitInfo.values!
-        .map((value) => documentDataValueToJson(value))
-        .toList();
+    map['values'] =
+        limitInfo.values!
+            .map((value) => documentDataValueToJson(value))
+            .toList();
   }
   if (limitInfo.documentId != null) {
     map['documentId'] = limitInfo.documentId;
@@ -539,9 +579,10 @@ LimitInfo limitInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   limitInfo.inclusive = map['inclusive'] == true;
 
   if (map.containsKey('values')) {
-    limitInfo.values = (map['values'] as List)
-        .map((value) => jsonToDocumentDataValue(firestore, value))
-        .toList();
+    limitInfo.values =
+        (map['values'] as List)
+            .map((value) => jsonToDocumentDataValue(firestore, value))
+            .toList();
   } else if (map.containsKey('documentId')) {
     limitInfo.documentId = map['documentId'] as String?;
   }
@@ -557,14 +598,16 @@ Map<String, Object?> queryInfoToJsonMap(QueryInfo queryInfo) {
     map['offset'] = queryInfo.offset;
   }
   if (queryInfo.wheres.isNotEmpty) {
-    map['wheres'] = queryInfo.wheres
-        .map((whereInfo) => whereInfoToJsonMap(whereInfo))
-        .toList();
+    map['wheres'] =
+        queryInfo.wheres
+            .map((whereInfo) => whereInfoToJsonMap(whereInfo))
+            .toList();
   }
   if (queryInfo.orderBys.isNotEmpty) {
-    map['orderBys'] = queryInfo.orderBys
-        .map((orderBy) => orderByInfoToJsonMap(orderBy))
-        .toList();
+    map['orderBys'] =
+        queryInfo.orderBys
+            .map((orderBy) => orderByInfoToJsonMap(orderBy))
+            .toList();
   }
   if (queryInfo.selectKeyPaths != null) {
     map['selectKeyPaths'] = queryInfo.selectKeyPaths;
@@ -587,27 +630,36 @@ QueryInfo queryInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
     queryInfo.offset = map['offset'] as int?;
   }
   if (map.containsKey('wheres')) {
-    queryInfo.wheres = (map['wheres'] as List)
-        .map<WhereInfo>((map) =>
-            whereInfoFromJsonMap(firestore, map as Map<String, Object?>))
-        .toList();
+    queryInfo.wheres =
+        (map['wheres'] as List)
+            .map<WhereInfo>(
+              (map) =>
+                  whereInfoFromJsonMap(firestore, map as Map<String, Object?>),
+            )
+            .toList();
   }
   if (map.containsKey('orderBys')) {
-    queryInfo.orderBys = (map['orderBys'] as List)
-        .map<OrderByInfo>(
-            (map) => orderByInfoFromJsonMap(map as Map<String, Object?>))
-        .toList();
+    queryInfo.orderBys =
+        (map['orderBys'] as List)
+            .map<OrderByInfo>(
+              (map) => orderByInfoFromJsonMap(map as Map<String, Object?>),
+            )
+            .toList();
   }
   if (map.containsKey('selectKeyPaths')) {
     queryInfo.selectKeyPaths = (map['selectKeyPaths'] as List).cast<String>();
   }
   if (map.containsKey('startLimit')) {
     queryInfo.startLimit = limitInfoFromJsonMap(
-        firestore, map['startLimit'] as Map<String, Object?>);
+      firestore,
+      map['startLimit'] as Map<String, Object?>,
+    );
   }
   if (map.containsKey('endLimit')) {
     queryInfo.endLimit = limitInfoFromJsonMap(
-        firestore, map['endLimit'] as Map<String, Object?>);
+      firestore,
+      map['endLimit'] as Map<String, Object?>,
+    );
   }
   return queryInfo;
 }
@@ -664,10 +716,14 @@ abstract class WriteBatchBase implements WriteBatch {
       operations.add(WriteBatchOperationDelete(documentRef));
 
   @override
-  void set(DocumentReference documentRef, Map<String, Object?> data,
-      [SetOptions? options]) {
-    operations
-        .add(WriteBatchOperationSet(documentRef, DocumentData(data), options));
+  void set(
+    DocumentReference documentRef,
+    Map<String, Object?> data, [
+    SetOptions? options,
+  ]) {
+    operations.add(
+      WriteBatchOperationSet(documentRef, DocumentData(data), options),
+    );
   }
 
   @override
@@ -696,7 +752,10 @@ class WriteBatchOperationSet extends WriteBatchOperationBase {
   final SetOptions? options;
 
   WriteBatchOperationSet(
-      DocumentReference super.docRef, this.documentData, this.options);
+    DocumentReference super.docRef,
+    this.documentData,
+    this.options,
+  );
 }
 
 class WriteBatchOperationUpdate extends WriteBatchOperationBase {

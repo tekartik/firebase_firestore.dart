@@ -7,8 +7,10 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 
 import 'firestore_test.dart';
 
-void runFirestoreDocumentTests(
-    {required Firestore firestore, FirestoreTestContext? testContext}) {
+void runFirestoreDocumentTests({
+  required Firestore firestore,
+  FirestoreTestContext? testContext,
+}) {
   var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
   group('document', () {
     test('all types', () async {
@@ -20,7 +22,7 @@ void runFirestoreDocumentTests(
         'blob': Blob.fromList([1, 2, 3]),
         'ref': firestore.doc('test/4'),
         'geoPoint': GeoPoint(5, 6),
-        'timestamp': Timestamp(7, 8000)
+        'timestamp': Timestamp(7, 8000),
       };
       var doc = firestore.doc(url.join(testsRefPath, 'doc_all_types'));
       await doc.set(map);
@@ -29,11 +31,13 @@ void runFirestoreDocumentTests(
     test('special chars', () async {
       var map = {'some|key': 1, 'other@key': 2};
       var doc = firestore.doc(
-          url.join(testsRefPath, 'special_chars', 'some|coll', 'some|doc'));
+        url.join(testsRefPath, 'special_chars', 'some|coll', 'some|doc'),
+      );
       await doc.set(map);
       expect((await doc.get()).data, map);
       doc = firestore.doc(
-          url.join(testsRefPath, 'special_chars', 'some@coll', 'some@doc'));
+        url.join(testsRefPath, 'special_chars', 'some@coll', 'some@doc'),
+      );
       await doc.set(map);
       expect((await doc.get()).data, map);
     });

@@ -6,16 +6,18 @@ import 'package:tekartik_firebase_firestore/utils/collection.dart';
 
 import 'firestore_test.dart';
 
-void runUtilsCollectionTests(
-    {required FirestoreService firestoreService,
-    required Firestore firestore,
-    required FirestoreTestContext? testContext}) {
+void runUtilsCollectionTests({
+  required FirestoreService firestoreService,
+  required Firestore firestore,
+  required FirestoreTestContext? testContext,
+}) {
   group('utils_collection', () {
     var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
 
     test('deleteCollection one', () async {
-      var ref = firestore
-          .collection(url.join(testsRefPath, 'utils_collection', 'delete_one'));
+      var ref = firestore.collection(
+        url.join(testsRefPath, 'utils_collection', 'delete_one'),
+      );
       await deleteCollection(firestore, ref);
       var itemDoc = ref.doc('item');
       // create an item
@@ -47,8 +49,9 @@ void runUtilsCollectionTests(
     });
 
     test('deleteCollection two', () async {
-      var ref = firestore
-          .collection(url.join(testsRefPath, 'utils_collection', 'delete_two'));
+      var ref = firestore.collection(
+        url.join(testsRefPath, 'utils_collection', 'delete_two'),
+      );
       await deleteCollection(firestore, ref);
       var itemDoc = ref.doc('item1');
       var itemDoc2 = ref.doc('item2');
@@ -101,10 +104,12 @@ void runUtilsCollectionTests(
     });
 
     test('copyCollection one', () async {
-      var srcRef = firestore
-          .collection(url.join(testsRefPath, 'utils_collection', 'copy_src'));
-      var dstRef = firestore
-          .collection(url.join(testsRefPath, 'utils_collection', 'copy_dst'));
+      var srcRef = firestore.collection(
+        url.join(testsRefPath, 'utils_collection', 'copy_src'),
+      );
+      var dstRef = firestore.collection(
+        url.join(testsRefPath, 'utils_collection', 'copy_dst'),
+      );
 
       await deleteCollection(firestore, srcRef);
       await deleteCollection(firestore, dstRef);

@@ -5,17 +5,20 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/query.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 
-void runUtilsQueryTest(
-    {required FirestoreService firestoreService,
-    required Firestore firestore,
-    required FirestoreTestContext? testContext}) {
+void runUtilsQueryTest({
+  required FirestoreService firestoreService,
+  required Firestore firestore,
+  required FirestoreTestContext? testContext,
+}) {
   group('utils_query', () {
-    var testsRefPath =
-        url.join(FirestoreTestContext.getRootCollectionPath(testContext));
+    var testsRefPath = url.join(
+      FirestoreTestContext.getRootCollectionPath(testContext),
+    );
 
     test('deleteQuery one', () async {
-      var ref = firestore
-          .collection(url.join(testsRefPath, 'utils_query', 'delete_one'));
+      var ref = firestore.collection(
+        url.join(testsRefPath, 'utils_query', 'delete_one'),
+      );
       var query = ref;
       await deleteQuery(firestore, query);
       var itemDoc = ref.doc('item');
@@ -39,8 +42,9 @@ void runUtilsQueryTest(
     });
 
     test('deleteQuery two', () async {
-      var ref = firestore
-          .collection(url.join(testsRefPath, 'utils_query', 'delete_two'));
+      var ref = firestore.collection(
+        url.join(testsRefPath, 'utils_query', 'delete_two'),
+      );
       await deleteQuery(firestore, ref);
       var itemDoc = ref.doc('item1');
       var itemDoc2 = ref.doc('item2');

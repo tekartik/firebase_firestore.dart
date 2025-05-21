@@ -18,8 +18,12 @@ void main() {
   group('firestore_sembast', () {
     group('v1', () {
       test('read', () async {
-        var dst = join('.dart_tool', 'tekartik_firebase_local', 'default_v1',
-            'firestore.db');
+        var dst = join(
+          '.dart_tool',
+          'tekartik_firebase_local',
+          'default_v1',
+          'firestore.db',
+        );
         await File(dst).create(recursive: true);
         await File(join('test', 'data', 'default_v1.db')).copy(dst);
 
@@ -28,7 +32,9 @@ void main() {
         expect(ioFirestore.dbPath, dst);
         var snapshot = await ioFirestore.doc('all_fields/doc').get();
         expect(
-            snapshot.updateTime!.toIso8601String(), '2018-10-23T00:00:00.000Z');
+          snapshot.updateTime!.toIso8601String(),
+          '2018-10-23T00:00:00.000Z',
+        );
       });
     });
 
@@ -36,23 +42,33 @@ void main() {
       var app = firebase.initializeApp(name: 'test');
       var ioFirestore = service.firestore(app) as FirestoreSembast;
       expect(
-          ioFirestore.dbPath,
-          join(
-              '.dart_tool', 'tekartik_firebase_local', 'test', 'firestore.db'));
+        ioFirestore.dbPath,
+        join('.dart_tool', 'tekartik_firebase_local', 'test', 'firestore.db'),
+      );
 
       app = firebase.initializeApp(name: '');
       ioFirestore = service.firestore(app) as FirestoreSembast;
       expect(
-          ioFirestore.dbPath,
-          join('.dart_tool', 'tekartik_firebase_local', '_default',
-              'firestore.db'));
+        ioFirestore.dbPath,
+        join(
+          '.dart_tool',
+          'tekartik_firebase_local',
+          '_default',
+          'firestore.db',
+        ),
+      );
 
       app = firebase.initializeApp();
       ioFirestore = service.firestore(app) as FirestoreSembast;
       expect(
-          ioFirestore.dbPath,
-          join('.dart_tool', 'tekartik_firebase_local', '_default',
-              'firestore.db'));
+        ioFirestore.dbPath,
+        join(
+          '.dart_tool',
+          'tekartik_firebase_local',
+          '_default',
+          'firestore.db',
+        ),
+      );
 
       app = firebase.initializeApp(name: join('.', 'test'));
       ioFirestore = service.firestore(app) as FirestoreSembast;
@@ -65,10 +81,11 @@ void main() {
       await firestore.doc('doc/path').delete();
       await firestore.doc('doc/path').set({'test': 1});
       var db = (firestore as FirestoreSembast).db!;
-      var map = (await sembast.stringMapStoreFactory
-          .store('doc')
-          .record('doc/path')
-          .get(db))!;
+      var map =
+          (await sembast.stringMapStoreFactory
+              .store('doc')
+              .record('doc/path')
+              .get(db))!;
       expect(map['test'], 1);
       expect(map[r'$rev'], 1);
       expect(Timestamp.tryParse(map[r'$createTime'] as String), isNotNull);
@@ -78,10 +95,14 @@ void main() {
 
     group('DocumentData', () {
       test('valueToUpdateValue', () {
-        expect(firestoreValueToSembastUpdateValue(FieldValue.delete),
-            sembast.FieldValue.delete);
-        expect(firestoreValueToSembastUpdateValue({'test': FieldValue.delete}),
-            {'test': sembast.FieldValue.delete});
+        expect(
+          firestoreValueToSembastUpdateValue(FieldValue.delete),
+          sembast.FieldValue.delete,
+        );
+        expect(
+          firestoreValueToSembastUpdateValue({'test': FieldValue.delete}),
+          {'test': sembast.FieldValue.delete},
+        );
         //var union = FieldValue.arrayUnion([1]);
         //expect(valueToUpdateValue({'test': union}), {'test': union});
       });

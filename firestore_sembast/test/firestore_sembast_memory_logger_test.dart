@@ -16,10 +16,13 @@ void main() {
     var firestore = newFirestoreMemory();
     var events = <FirestoreLoggerEvent>[];
     firestore = FirestoreLogger(
-        firestore: firestore,
-        options: FirestoreLoggerOptions.all(log: (event) {
+      firestore: firestore,
+      options: FirestoreLoggerOptions.all(
+        log: (event) {
           events.add(event);
-        }));
+        },
+      ),
+    );
     var ref = firestore.doc('test/1');
     await ref.set({});
     expect(events.length, 1);
@@ -31,8 +34,10 @@ void main() {
     expect(events.length, 1);
   });
   runFirestoreTests(
-      firebase: firebase,
-      firestoreService: FirestoreServiceLogger(
-          firestoreService: newFirestoreServiceMemory(),
-          options: FirestoreLoggerOptions.all(log: (_) {})));
+    firebase: firebase,
+    firestoreService: FirestoreServiceLogger(
+      firestoreService: newFirestoreServiceMemory(),
+      options: FirestoreLoggerOptions.all(log: (_) {}),
+    ),
+  );
 }

@@ -33,32 +33,33 @@ void main() {
 
     test('expandUpdateData', () {
       expect(
-          expandUpdateData({
-            //'a.added': 2,
-            'a.b.added': 3,
-            'a.b.c.replaced': 4,
-          }),
-          {
-            'a': {
-              'b': {
-                'added': 3,
-                'c': {'replaced': 4}
-              }
-            }
-          });
+        expandUpdateData({
+          //'a.added': 2,
+          'a.b.added': 3,
+          'a.b.c.replaced': 4,
+        }),
+        {
+          'a': {
+            'b': {
+              'added': 3,
+              'c': {'replaced': 4},
+            },
+          },
+        },
+      );
       expect(expandUpdateData({'some.data': 1}), {
-        'some': {'data': 1}
+        'some': {'data': 1},
       });
       expect(expandUpdateData({'some.sub.data': 1}), {
         'some': {
-          'sub': {'data': 1}
-        }
+          'sub': {'data': 1},
+        },
       });
       expect(expandUpdateData({'sub.test': 1, 'sub.sub.test': 2}), {
         'sub': {
           'test': 1,
-          'sub': {'test': 2}
-        }
+          'sub': {'test': 2},
+        },
       });
     });
 
@@ -69,9 +70,9 @@ void main() {
           'sub': 2,
           'list': [
             {'n': 1},
-            2
-          ]
-        }
+            2,
+          ],
+        },
       };
       var cloned = cloneValue(existing);
       expect(cloned, existing);
@@ -85,9 +86,9 @@ void main() {
           'sub': 4,
           'list': [
             {'n': 5},
-            2
-          ]
-        }
+            2,
+          ],
+        },
       });
       expect(cloned, {
         'test': 1,
@@ -95,63 +96,77 @@ void main() {
           'sub': 2,
           'list': [
             {'n': 1},
-            2
-          ]
-        }
+            2,
+          ],
+        },
       });
     });
     test('mergeInnerMap', () {
       expect(
-          mergeSanitizedMap({
-            't1': {'s1': 1}
-          }, {
-            't1': {'s2': 2}
-          }),
-          {
-            't1': {'s1': 1, 's2': 2}
-          });
-      expect(
-          mergeSanitizedMap({
-            't1': {'s1': 1}
-          }, {
-            't1.s2': 2
-          }),
+        mergeSanitizedMap(
           {
             't1': {'s1': 1},
-            't1.s2': 2
-          });
+          },
+          {
+            't1': {'s2': 2},
+          },
+        ),
+        {
+          't1': {'s1': 1, 's2': 2},
+        },
+      );
+      expect(
+        mergeSanitizedMap(
+          {
+            't1': {'s1': 1},
+          },
+          {'t1.s2': 2},
+        ),
+        {
+          't1': {'s1': 1},
+          't1.s2': 2,
+        },
+      );
     });
     test('mergeSubInnerMap', () {
       expect(
-          mergeSanitizedMap({
-            't1': {
-              's1': {'u1': 1}
-            }
-          }, {
-            't1': {'s2': 2}
-          }),
+        mergeSanitizedMap(
           {
             't1': {
               's1': {'u1': 1},
-              's2': 2
-            }
-          });
-      expect(
-          mergeSanitizedMap({
-            't1': {
-              's1': {'u1': 1}
             },
-            's2': 2
-          }, {
-            't1.s1': {'u2': 3}
-          }),
+          },
+          {
+            't1': {'s2': 2},
+          },
+        ),
+        {
+          't1': {
+            's1': {'u1': 1},
+            's2': 2,
+          },
+        },
+      );
+      expect(
+        mergeSanitizedMap(
           {
             't1': {
-              's1': {'u1': 1}
+              's1': {'u1': 1},
             },
             's2': 2,
-            't1.s1': {'u2': 3}
-          });
+          },
+          {
+            't1.s1': {'u2': 3},
+          },
+        ),
+        {
+          't1': {
+            's1': {'u1': 1},
+          },
+          's2': 2,
+          't1.s1': {'u2': 3},
+        },
+      );
     });
 
     test('mergeValue', () {
@@ -164,102 +179,125 @@ void main() {
 
       expect(mergeSanitizedMap({'t': 1}, {'t': 2}), {'t': 2});
       expect(mergeSanitizedMap({'t': 1}, {'u': 2}), {'t': 1, 'u': 2});
-      expect(mergeSanitizedMap({'t': 1}, {'u': 2, 't': null}),
-          {'t': null, 'u': 2});
-      expect(mergeSanitizedMap({'t': 1}, {'u': 2, 't': FieldValue.delete}),
-          {'u': 2, 't': FieldValue.delete});
+      expect(mergeSanitizedMap({'t': 1}, {'u': 2, 't': null}), {
+        't': null,
+        'u': 2,
+      });
+      expect(mergeSanitizedMap({'t': 1}, {'u': 2, 't': FieldValue.delete}), {
+        'u': 2,
+        't': FieldValue.delete,
+      });
       expect(
-          mergeSanitizedMap({
-            'sub': {'t': 1}
-          }, {
-            'sub': {'u': 2}
-          }),
-          {
-            'sub': {'t': 1, 'u': 2}
-          });
-
-      expect(
-          mergeSanitizedMap({
-            'sub': {'t': 1, 'u': 2}
-          }, {
-            'sub.t': FieldValue.delete
-          }),
-          {
-            'sub': {'t': 1, 'u': 2},
-            'sub.t': FieldValue.delete
-          });
-      expect(
-          mergeSanitizedMap({
-            'sub': {'t': 1, 'u': 2}
-          }, {
-            'sub.dummy': FieldValue.delete
-          }),
-          {
-            'sub': {'t': 1, 'u': 2},
-            'sub.dummy': FieldValue.delete
-          });
-      expect(
-          mergeSanitizedMap({
-            'sub': {
-              't': 1,
-              'nested': {'t': 1, 'u': 2}
-            }
-          }, {
-            'sub.nested.t': FieldValue.delete
-          }),
-          {
-            'sub': {
-              't': 1,
-              'nested': {'t': 1, 'u': 2}
-            },
-            'sub.nested.t': FieldValue.delete
-          });
-      expect(
-          mergeSanitizedMap({
-            'sub': {'t': 1}
-          }, {
-            'sub.u': 2
-          }),
+        mergeSanitizedMap(
           {
             'sub': {'t': 1},
-            'sub.u': 2
-          });
+          },
+          {
+            'sub': {'u': 2},
+          },
+        ),
+        {
+          'sub': {'t': 1, 'u': 2},
+        },
+      );
+
       expect(
-          mergeSanitizedMap({
-            'sub': {
-              't': 1,
-              'nested': {'t': 1, 'u': 2}
-            }
-          }, {
-            'sub.nested.u': 3,
-            'sub.nested.v.w': 4
-          }),
+        mergeSanitizedMap(
+          {
+            'sub': {'t': 1, 'u': 2},
+          },
+          {'sub.t': FieldValue.delete},
+        ),
+        {
+          'sub': {'t': 1, 'u': 2},
+          'sub.t': FieldValue.delete,
+        },
+      );
+      expect(
+        mergeSanitizedMap(
+          {
+            'sub': {'t': 1, 'u': 2},
+          },
+          {'sub.dummy': FieldValue.delete},
+        ),
+        {
+          'sub': {'t': 1, 'u': 2},
+          'sub.dummy': FieldValue.delete,
+        },
+      );
+      expect(
+        mergeSanitizedMap(
           {
             'sub': {
               't': 1,
-              'nested': {'t': 1, 'u': 2}
+              'nested': {'t': 1, 'u': 2},
             },
-            'sub.nested.u': 3,
-            'sub.nested.v.w': 4
-          });
+          },
+          {'sub.nested.t': FieldValue.delete},
+        ),
+        {
+          'sub': {
+            't': 1,
+            'nested': {'t': 1, 'u': 2},
+          },
+          'sub.nested.t': FieldValue.delete,
+        },
+      );
+      expect(
+        mergeSanitizedMap(
+          {
+            'sub': {'t': 1},
+          },
+          {'sub.u': 2},
+        ),
+        {
+          'sub': {'t': 1},
+          'sub.u': 2,
+        },
+      );
+      expect(
+        mergeSanitizedMap(
+          {
+            'sub': {
+              't': 1,
+              'nested': {'t': 1, 'u': 2},
+            },
+          },
+          {'sub.nested.u': 3, 'sub.nested.v.w': 4},
+        ),
+        {
+          'sub': {
+            't': 1,
+            'nested': {'t': 1, 'u': 2},
+          },
+          'sub.nested.u': 3,
+          'sub.nested.v.w': 4,
+        },
+      );
     });
   });
 
   test('sanitizeInputEntry', () {
     expect(sanitizeInputEntry({'a.b': 1}), {
-      'a': {'b': 1}
+      'a': {'b': 1},
     });
   });
 
   test('compare bool', () {
     expect(
-        FirestoreComparable(null, false)
-            .compareTo(FirestoreComparable(null, true)),
-        -1);
+      FirestoreComparable(
+        null,
+        false,
+      ).compareTo(FirestoreComparable(null, true)),
+      -1,
+    );
     expect(
-        FirestoreComparable(null, true)
-            .compareTo(FirestoreComparable(null, false)),
-        1);
+      FirestoreComparable(
+        null,
+        true,
+      ).compareTo(FirestoreComparable(null, false)),
+      1,
+    );
   });
   test('FirestoreComparable', () {
     expect(FirestoreComparable(1).compareTo(FirestoreComparable(2)), -1);
@@ -268,39 +306,56 @@ void main() {
     expect(FirestoreComparable(1).compareTo(FirestoreComparable(1)), 0);
     expect(FirestoreComparable(1).compareTo(FirestoreComparable(4)), -1);
     expect(
-        FirestoreComparable(1).compareTo(FirestoreComparable(null, true)), 1);
+      FirestoreComparable(1).compareTo(FirestoreComparable(null, true)),
+      1,
+    );
     expect(
-        FirestoreComparable(null, true).compareTo(FirestoreComparable(1)), -1);
+      FirestoreComparable(null, true).compareTo(FirestoreComparable(1)),
+      -1,
+    );
     expect(
-        FirestoreComparable(null, true)
-            .compareTo(FirestoreComparable(null, true)),
-        0);
+      FirestoreComparable(
+        null,
+        true,
+      ).compareTo(FirestoreComparable(null, true)),
+      0,
+    );
   });
   test('mapWhere', () {
     var documentData = DocumentDataMap(map: {'value': true});
     expect(mapWhere(documentData, WhereInfo('value', isEqualTo: true)), true);
     expect(
-        mapWhere(
-            documentData, WhereInfo('value', isGreaterThanOrEqualTo: true)),
-        false);
+      mapWhere(documentData, WhereInfo('value', isGreaterThanOrEqualTo: true)),
+      false,
+    );
     expect(
-        mapWhere(documentData, WhereInfo('value', isLessThanOrEqualTo: true)),
-        false);
+      mapWhere(documentData, WhereInfo('value', isLessThanOrEqualTo: true)),
+      false,
+    );
 
     documentData = DocumentDataMap(map: {'value': 1});
     expect(mapWhere(documentData, WhereInfo('value', isEqualTo: 1)), true);
     expect(
-        mapWhere(documentData, WhereInfo('value', isGreaterThanOrEqualTo: 1)),
-        true);
-    expect(mapWhere(documentData, WhereInfo('value', isLessThanOrEqualTo: 1)),
-        true);
-    documentData = DocumentDataMap(map: {
-      'value': [true, 1]
-    });
+      mapWhere(documentData, WhereInfo('value', isGreaterThanOrEqualTo: 1)),
+      true,
+    );
     expect(
-        mapWhere(documentData, WhereInfo('value', arrayContains: true)), true);
+      mapWhere(documentData, WhereInfo('value', isLessThanOrEqualTo: 1)),
+      true,
+    );
+    documentData = DocumentDataMap(
+      map: {
+        'value': [true, 1],
+      },
+    );
+    expect(
+      mapWhere(documentData, WhereInfo('value', arrayContains: true)),
+      true,
+    );
     expect(mapWhere(documentData, WhereInfo('value', arrayContains: 1)), true);
-    expect(mapWhere(documentData, WhereInfo('value', arrayContains: false)),
-        false);
+    expect(
+      mapWhere(documentData, WhereInfo('value', arrayContains: false)),
+      false,
+    );
   });
 }

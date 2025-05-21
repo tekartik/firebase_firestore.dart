@@ -9,9 +9,11 @@ import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 import 'example_io_client.dart';
 
 Future<void> main(List<String> args) async {
-  var firebaseSimServer = await firebaseSimServe(FirebaseLocal(),
-      webSocketChannelServerFactory: webSocketChannelServerFactoryIo,
-      port: urlKvPort,
-      plugins: [FirestoreSimPlugin(firestoreServiceMemory)]);
+  var firebaseSimServer = await firebaseSimServe(
+    FirebaseLocal(),
+    webSocketChannelServerFactory: webSocketChannelServerFactoryIo,
+    port: urlKvPort,
+    plugins: [FirestoreSimPlugin(firestoreServiceMemory)],
+  );
   print('url ${firebaseSimServer.url}');
 }

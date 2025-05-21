@@ -28,7 +28,9 @@ String firestorePathReplaceId(String path, String id) {
 }
 
 /// Get a parent as a generic path, replacing id by *
-String firestorePathGetGenericPath(String path) => url.joinAll(url
-    .split(path)
-    .indexed
-    .map<String>((item) => ((item.$1 % 2 == 0) ? item.$2 : '*')));
+String firestorePathGetGenericPath(String path) => url.joinAll(
+  url
+      .split(path)
+      .indexed
+      .map<String>((item) => ((item.$1 % 2 == 0) ? item.$2 : '*')),
+);

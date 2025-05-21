@@ -14,10 +14,11 @@ Future _sleep([int ms = 0]) {
   return Future<void>.delayed(Duration(milliseconds: ms));
 }
 
-void runFirestoreTrackChangesSupportTests(
-    {required FirestoreService firestoreService,
-    required Firestore firestore,
-    required FirestoreTestContext? testContext}) {
+void runFirestoreTrackChangesSupportTests({
+  required FirestoreService firestoreService,
+  required Firestore firestore,
+  required FirestoreTestContext? testContext,
+}) {
   var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
 
   group('track_changes_support', () {
@@ -33,12 +34,12 @@ void runFirestoreTrackChangesSupportTests(
       expect((await docRef.onSnapshotSupport().first).data, {'test': 1});
 
       expect(
-          (await docRef
-                  .onSnapshotSupport(
-                      options: TrackChangesSupportOptions.first())
-                  .first)
-              .data,
-          {'test': 1});
+        (await docRef
+                .onSnapshotSupport(options: TrackChangesSupportOptions.first())
+                .first)
+            .data,
+        {'test': 1},
+      );
     });
 
     test('simplePullOnSnapshotSupport', () async {
@@ -49,23 +50,24 @@ void runFirestoreTrackChangesSupportTests(
 
       var docRef = collRef.doc('one_record');
 
-      var pullOptions1 =
-          TrackChangesSupportOptions(refreshDelay: Duration(milliseconds: 200));
+      var pullOptions1 = TrackChangesSupportOptions(
+        refreshDelay: Duration(milliseconds: 200),
+      );
 
       var future = Future.wait([
         () async {
           expect(
-              (await docRef
-                      .onSnapshotSupport(options: pullOptions1)
-                      .firstWhere((snapshot) => snapshot.exists))
-                  .data,
-              {'test': 1});
+            (await docRef
+                .onSnapshotSupport(options: pullOptions1)
+                .firstWhere((snapshot) => snapshot.exists)).data,
+            {'test': 1},
+          );
         }(),
         () async {
           await collRef
               .onSnapshotSupport(options: pullOptions1)
               .firstWhere((snapshots) => snapshots.ids.contains(docRef.id));
-        }()
+        }(),
       ]);
       await docRef.set({'test': 1});
       await future;
@@ -85,17 +87,17 @@ void runFirestoreTrackChangesSupportTests(
       var future = Future.wait([
         () async {
           expect(
-              (await docRef
-                      .onSnapshotSupport(options: controller1)
-                      .firstWhere((snapshot) => snapshot.exists))
-                  .data,
-              {'test': 1});
+            (await docRef
+                .onSnapshotSupport(options: controller1)
+                .firstWhere((snapshot) => snapshot.exists)).data,
+            {'test': 1},
+          );
         }(),
         () async {
           await collRef
               .onSnapshotSupport(options: controller2)
               .firstWhere((snapshots) => snapshots.ids.contains(docRef.id));
-        }()
+        }(),
       ]);
       await docRef.set({'test': 1});
       controller1.trigger();
@@ -109,23 +111,26 @@ void runFirestoreTrackChangesSupportTests(
       var testsRef = getTestsRef();
       var docRef = testsRef.doc('two_onSnapshotSupport');
       await docRef.delete();
-      var pullOptions1 =
-          TrackChangesSupportOptions(refreshDelay: Duration(milliseconds: 200));
+      var pullOptions1 = TrackChangesSupportOptions(
+        refreshDelay: Duration(milliseconds: 200),
+      );
 
       var completer1 = Completer<void>();
       var completer2 = Completer<void>();
-      var subscription1 =
-          docRef.onSnapshotSupport(options: pullOptions1).listen((event) {
-        if (event.exists) {
-          completer1.complete();
-        }
-      });
-      var subscription2 =
-          docRef.onSnapshotSupport(options: pullOptions1).listen((event) {
-        if (event.exists) {
-          completer2.complete();
-        }
-      });
+      var subscription1 = docRef
+          .onSnapshotSupport(options: pullOptions1)
+          .listen((event) {
+            if (event.exists) {
+              completer1.complete();
+            }
+          });
+      var subscription2 = docRef
+          .onSnapshotSupport(options: pullOptions1)
+          .listen((event) {
+            if (event.exists) {
+              completer2.complete();
+            }
+          });
       await docRef.set({'test': 1});
       await completer1.future;
       await completer2.future;
@@ -137,18 +142,21 @@ void runFirestoreTrackChangesSupportTests(
       var testsRef = getTestsRef();
       var docRef = testsRef.doc('simple_updatesOnSnapshotSupport');
       await docRef.delete();
-      var pullOptions1 =
-          TrackChangesSupportOptions(refreshDelay: Duration(milliseconds: 200));
+      var pullOptions1 = TrackChangesSupportOptions(
+        refreshDelay: Duration(milliseconds: 200),
+      );
       var pullOptions2 = TrackChangesSupportOptions.first();
 
       var eventList1 = <DocumentSnapshot>[];
       var eventList2 = <DocumentSnapshot>[];
-      var sub1 =
-          docRef.onSnapshotSupport(options: pullOptions1).listen((event) {
+      var sub1 = docRef.onSnapshotSupport(options: pullOptions1).listen((
+        event,
+      ) {
         eventList1.add(event);
       });
-      var sub2 =
-          docRef.onSnapshotSupport(options: pullOptions2).listen((event) {
+      var sub2 = docRef.onSnapshotSupport(options: pullOptions2).listen((
+        event,
+      ) {
         eventList2.add(event);
       });
 

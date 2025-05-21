@@ -16,9 +16,10 @@ Future main() async {
   var firebase = testContext.firebase;
   var app = firebase.initializeApp();
   runFirestoreAppTests(
-      app: app,
-      firestoreService: firestoreServiceSim,
-      testContext: FirestoreTestContext());
+    app: app,
+    firestoreService: firestoreServiceSim,
+    testContext: FirestoreTestContext(),
+  );
 
   test('projectId', () {
     expect(app.options.projectId, 'sim');

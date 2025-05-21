@@ -37,42 +37,52 @@ class _DocumentSnapshots implements DocumentSnapshots {
 
 /// Retrieve a list of documents by references
 Stream<DocumentSnapshots> onDocumentSnapshots(
-    List<DocumentReference> references) {
+  List<DocumentReference> references,
+) {
   List<StreamSubscription?>? subscriptions;
   late StreamController<DocumentSnapshots> controller;
-  controller = StreamController<DocumentSnapshots>(onListen: () {
-    var count = references.length;
-    final docs = List<DocumentSnapshot?>.generate(count, (index) => null);
-    subscriptions = List<StreamSubscription?>.generate(count, (index) => null);
-    // remainings before the first full get
-    var remainings = Set<DocumentReference>.from(references);
+  controller = StreamController<DocumentSnapshots>(
+    onListen: () {
+      var count = references.length;
+      final docs = List<DocumentSnapshot?>.generate(count, (index) => null);
+      subscriptions = List<StreamSubscription?>.generate(
+        count,
+        (index) => null,
+      );
+      // remainings before the first full get
+      var remainings = Set<DocumentReference>.from(references);
 
-    void notify() {
-      if (remainings.isEmpty && !controller.isClosed && !controller.isPaused) {
-        /// We know the array has no nullable snapshot at this point
-        controller
-            .add(_DocumentSnapshots(references, docs.cast<DocumentSnapshot>()));
+      void notify() {
+        if (remainings.isEmpty &&
+            !controller.isClosed &&
+            !controller.isPaused) {
+          /// We know the array has no nullable snapshot at this point
+          controller.add(
+            _DocumentSnapshots(references, docs.cast<DocumentSnapshot>()),
+          );
+        }
       }
-    }
 
-    for (var i = 0; i < references.length; i++) {
-      final index = i;
-      final reference = references[index];
-      // ignore: cancel_subscriptions
-      var subscription = reference.onSnapshot().listen((snapshot) {
-        docs[index] = snapshot;
-        remainings.remove(reference);
-        notify();
-      });
-      subscriptions![index] = subscription;
-    }
-  }, onCancel: () {
-    if (subscriptions != null) {
-      for (var subscription in subscriptions!) {
-        subscription!.cancel();
+      for (var i = 0; i < references.length; i++) {
+        final index = i;
+        final reference = references[index];
+        // ignore: cancel_subscriptions
+        var subscription = reference.onSnapshot().listen((snapshot) {
+          docs[index] = snapshot;
+          remainings.remove(reference);
+          notify();
+        });
+        subscriptions![index] = subscription;
       }
-    }
-  });
+    },
+    onCancel: () {
+      if (subscriptions != null) {
+        for (var subscription in subscriptions!) {
+          subscription!.cancel();
+        }
+      }
+    },
+  );
 
   return controller.stream;
 }

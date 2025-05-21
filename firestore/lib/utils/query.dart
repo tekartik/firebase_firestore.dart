@@ -7,20 +7,14 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 /// Query extension
 extension TekartikFirestoreQueryExt on Query {
   /// Delete all items in a query, return the count deleted
-  Future<int> queryDelete({
-    int? batchSize,
-    Iterable<String>? keepIds,
-  }) async {
+  Future<int> queryDelete({int? batchSize, Iterable<String>? keepIds}) async {
     return await _delete(batchSize: batchSize, keepIds: keepIds);
   }
 
   /// Delete all item in a query, return the count deleted
   /// Batch size default to 10
   /// Keep doc with paths in keepPaths
-  Future<int> _delete({
-    int? batchSize,
-    Iterable<String>? keepIds,
-  }) async {
+  Future<int> _delete({int? batchSize, Iterable<String>? keepIds}) async {
     batchSize ??= 10;
     var count = 0;
     var deletedIds = <String>{};
@@ -59,19 +53,20 @@ extension TekartikFirestoreQueryExt on Query {
   }
 
   /// Copy all items to a collection, return the count copied
-  Future<int> queryCopyTo(CollectionReference dstCollectionRef,
-      {int? batchSize}) async {
-    return await _copyTo(
-      dstCollectionRef,
-      batchSize: batchSize,
-    );
+  Future<int> queryCopyTo(
+    CollectionReference dstCollectionRef, {
+    int? batchSize,
+  }) async {
+    return await _copyTo(dstCollectionRef, batchSize: batchSize);
   }
 
   /// Prefer extension
   /// Copy all items to a collection, return the count copied
   /// [clearExisting] means the destination collection will be cleared first
-  Future<int> _copyTo(CollectionReference dstCollectionRef,
-      {int? batchSize}) async {
+  Future<int> _copyTo(
+    CollectionReference dstCollectionRef, {
+    int? batchSize,
+  }) async {
     var query = orderBy(firestoreNameFieldPath);
     batchSize ??= 10;
     var count = 0;
@@ -108,9 +103,14 @@ extension TekartikFirestoreQueryExt on Query {
 /// Delete all item in a query, return the count deleted
 /// Batch size default to 10
 /// Keep doc with paths in keepPaths
-Future<int> deleteQuery(Firestore firestore, Query query,
-    {int? batchSize, Iterable<String>? keepPaths}) async {
+Future<int> deleteQuery(
+  Firestore firestore,
+  Query query, {
+  int? batchSize,
+  Iterable<String>? keepPaths,
+}) async {
   return await query.queryDelete(
-      batchSize: batchSize,
-      keepIds: keepPaths?.map((path) => firestorePathGetId(path)));
+    batchSize: batchSize,
+    keepIds: keepPaths?.map((path) => firestorePathGetId(path)),
+  );
 }

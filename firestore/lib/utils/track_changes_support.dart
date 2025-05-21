@@ -59,9 +59,9 @@ typedef TrackChangesPullOptions = TrackChangesSupportOptions;
 /// Track changes simulation.
 abstract class TrackChangesSupportOptions {
   /// Refresh delay.
-  factory TrackChangesSupportOptions(
-          {Duration refreshDelay = _defaultLongDelay}) =>
-      _TrackChangesPullOptionsWithDelay(refreshDelay: refreshDelay);
+  factory TrackChangesSupportOptions({
+    Duration refreshDelay = _defaultLongDelay,
+  }) => _TrackChangesPullOptionsWithDelay(refreshDelay: refreshDelay);
 
   /// Get first change only.
   factory TrackChangesSupportOptions.first() => _TrackChangesPullOptionsFirst();
@@ -79,9 +79,10 @@ class _TrackChangesPullOptionsWithDelay implements TrackChangesSupportOptions {
 extension DocumentReferenceSnapshotSupportExtension on DocumentReference {
   /// Add on snapshot support for services without track changes support.
   /// ignored otherwise
-  Stream<DocumentSnapshot> onSnapshotSupport(
-      {bool includeMetadataChanges = false,
-      TrackChangesSupportOptions? options}) {
+  Stream<DocumentSnapshot> onSnapshotSupport({
+    bool includeMetadataChanges = false,
+    TrackChangesSupportOptions? options,
+  }) {
     Future<DocumentSnapshot> getSnapshot() async {
       return get();
     }
@@ -122,9 +123,10 @@ extension DocumentReferenceSnapshotSupportExtension on DocumentReference {
               return;
             }
 
-            var lazyRunner = refreshDelay == null
-                ? LazyRunner(action: read)
-                : LazyRunner.periodic(duration: refreshDelay, action: read);
+            var lazyRunner =
+                refreshDelay == null
+                    ? LazyRunner(action: read)
+                    : LazyRunner.periodic(duration: refreshDelay, action: read);
             controller.lazyRunnerOrNull = lazyRunner;
             lazyRunner.trigger();
             return;
@@ -161,7 +163,6 @@ extension DocumentReferenceSnapshotSupportExtension on DocumentReference {
   }
 
   @Deprecated('to move')
-
   /// Get a child collection.
   CollectionReference operator [](String path) => collection(path);
 }
@@ -169,9 +170,10 @@ extension DocumentReferenceSnapshotSupportExtension on DocumentReference {
 /// Helper for query snapshot support
 extension QuerySnapshotSupportExtension on Query {
   /// Default is to delay to 1h when onSnapshot is not supported
-  Stream<QuerySnapshot> onSnapshotSupport(
-      {bool includeMetadataChanges = false,
-      TrackChangesSupportOptions? options}) {
+  Stream<QuerySnapshot> onSnapshotSupport({
+    bool includeMetadataChanges = false,
+    TrackChangesSupportOptions? options,
+  }) {
     Future<QuerySnapshot> getSnapshot() async {
       return get();
     }
@@ -185,43 +187,47 @@ extension QuerySnapshotSupportExtension on Query {
         createdController = options.wrapInController();
       }
       late StreamController<QuerySnapshot> snapshotController;
-      snapshotController = StreamController<QuerySnapshot>(onListen: () async {
-        var controller = createdController;
-        if (options is _TrackChangesSupportOptionsController) {
-          controller = options;
-        }
-        if (controller is _TrackChangesSupportOptionsController) {
-          var refreshDelay = controller.refreshDelay;
-          Future<void> read(int count) async {
-            if (snapshotController.isClosed) {
-              return Future.value();
+      snapshotController = StreamController<QuerySnapshot>(
+        onListen: () async {
+          var controller = createdController;
+          if (options is _TrackChangesSupportOptionsController) {
+            controller = options;
+          }
+          if (controller is _TrackChangesSupportOptionsController) {
+            var refreshDelay = controller.refreshDelay;
+            Future<void> read(int count) async {
+              if (snapshotController.isClosed) {
+                return Future.value();
+              }
+              var snapshot = await getSnapshot();
+              if (snapshotController.isClosed) {
+                return;
+              }
+              snapshotController.add(snapshot);
             }
-            var snapshot = await getSnapshot();
-            if (snapshotController.isClosed) {
+
+            /// Once only
+            if (options is _TrackChangesPullOptionsFirst) {
+              await read(0);
+              // Do nothing
+              snapshotController.close().unawait();
               return;
             }
-            snapshotController.add(snapshot);
-          }
 
-          /// Once only
-          if (options is _TrackChangesPullOptionsFirst) {
-            await read(0);
-            // Do nothing
-            snapshotController.close().unawait();
+            var lazyRunner =
+                refreshDelay == null
+                    ? LazyRunner(action: read)
+                    : LazyRunner.periodic(duration: refreshDelay, action: read);
+            controller.lazyRunnerOrNull = lazyRunner;
+            lazyRunner.trigger();
             return;
           }
-
-          var lazyRunner = refreshDelay == null
-              ? LazyRunner(action: read)
-              : LazyRunner.periodic(duration: refreshDelay, action: read);
-          controller.lazyRunnerOrNull = lazyRunner;
-          lazyRunner.trigger();
-          return;
-        }
-      }, onCancel: () {
-        createdController?.dispose();
-        snapshotController.close();
-      });
+        },
+        onCancel: () {
+          createdController?.dispose();
+          snapshotController.close();
+        },
+      );
       return snapshotController.stream;
     }
   }

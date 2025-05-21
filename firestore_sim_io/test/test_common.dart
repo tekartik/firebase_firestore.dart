@@ -15,12 +15,15 @@ class TestContext {
 // using real websocker
 Future<TestContext> initTestContextSimIo() async {
   var testContext = TestContext();
-  testContext.simServer = await firebaseSimServe(FirebaseLocal(),
-      webSocketChannelServerFactory: webSocketChannelServerFactoryIo,
-      plugins: [FirestoreSimPlugin(firestoreServiceMemory)]);
+  testContext.simServer = await firebaseSimServe(
+    FirebaseLocal(),
+    webSocketChannelServerFactory: webSocketChannelServerFactoryIo,
+    plugins: [FirestoreSimPlugin(firestoreServiceMemory)],
+  );
   testContext.firebase = sim.getFirebaseSim(
-      clientFactory: webSocketChannelClientFactoryIo,
-      uri: testContext.simServer.uri);
+    clientFactory: webSocketChannelClientFactoryIo,
+    uri: testContext.simServer.uri,
+  );
 
   return testContext;
 }

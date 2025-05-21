@@ -101,7 +101,8 @@ abstract class Firestore implements FirebaseAppProduct<Firestore> {
   /// with an error. If [updateFunction] throws then returned Future completes
   /// with the same error.
   Future<T> runTransaction<T>(
-      FutureOr<T> Function(Transaction transaction) action);
+    FutureOr<T> Function(Transaction transaction) action,
+  );
 
   /// Specifies custom settings to be used to configure the `Firestore`
   /// instance.
@@ -236,8 +237,9 @@ class FieldValue {
   final FieldValueType type;
 
   /// Set the field as the current timestamp value.
-  static final FieldValue serverTimestamp =
-      FieldValue(FieldValueType.serverTimestamp);
+  static final FieldValue serverTimestamp = FieldValue(
+    FieldValueType.serverTimestamp,
+  );
 
   /// Delete the field.
   static final FieldValue delete = FieldValue(FieldValueType.delete);
@@ -386,8 +388,11 @@ abstract class WriteBatch {
   void delete(DocumentReference ref);
 
   /// Writes to the document referred to by the provided [DocumentReference].
-  void set(DocumentReference ref, Map<String, Object?> data,
-      [SetOptions? options]);
+  void set(
+    DocumentReference ref,
+    Map<String, Object?> data, [
+    SetOptions? options,
+  ]);
 
   /// Updates fields in the document referred to by the provided [DocumentReference].
   void update(DocumentReference ref, Map<String, Object?> data);
@@ -470,8 +475,11 @@ abstract class Transaction {
   /// Pass [: {merge: true} :] to only replace the values specified in the
   /// data argument. Fields omitted will remain untouched.
   /// Value must not be null.
-  void set(DocumentReference documentRef, Map<String, Object?> data,
-      [SetOptions? options]);
+  void set(
+    DocumentReference documentRef,
+    Map<String, Object?> data, [
+    SetOptions? options,
+  ]);
 
   /// Updates fields in the document referred to by this [DocumentReference].
   /// The update will fail if applied to a document that does not exist.

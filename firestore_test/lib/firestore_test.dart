@@ -34,28 +34,32 @@ List<DocumentReference?> docsKeys(List<DocumentSnapshot> snashots) =>
 
 // @Deprecated('Use runFirestoreTests')
 @Deprecated('Use runFirestoreTests')
-void run(
-    {required Firebase firebase,
-    required FirestoreService firestoreService,
-    AppOptions? options,
-    FirestoreTestContext? testContext}) {
+void run({
+  required Firebase firebase,
+  required FirestoreService firestoreService,
+  AppOptions? options,
+  FirestoreTestContext? testContext,
+}) {
   _runFirestoreTests(
-      firebase: firebase,
-      firestoreService: firestoreService,
-      options: options,
-      testContext: testContext);
+    firebase: firebase,
+    firestoreService: firestoreService,
+    options: options,
+    testContext: testContext,
+  );
 }
 
-void runFirestoreTests(
-    {required Firebase firebase,
-    required FirestoreService firestoreService,
-    AppOptions? options,
-    FirestoreTestContext? testContext}) {
+void runFirestoreTests({
+  required Firebase firebase,
+  required FirestoreService firestoreService,
+  AppOptions? options,
+  FirestoreTestContext? testContext,
+}) {
   _runFirestoreTests(
-      firebase: firebase,
-      firestoreService: firestoreService,
-      options: options,
-      testContext: testContext);
+    firebase: firebase,
+    firestoreService: firestoreService,
+    options: options,
+    testContext: testContext,
+  );
 }
 
 class FirestoreTestContext {
@@ -72,10 +76,11 @@ class FirestoreTestContext {
   String get rootCollectionPath =>
       _rootCollectionPath ?? defaultRootCollectionPath;
 
-  FirestoreTestContext(
-      {String? rootCollectionPath, String? noAuthRootCollectionPath})
-      : _rootCollectionPath = rootCollectionPath,
-        _noAuthRootCollectionPath = noAuthRootCollectionPath;
+  FirestoreTestContext({
+    String? rootCollectionPath,
+    String? noAuthRootCollectionPath,
+  }) : _rootCollectionPath = rootCollectionPath,
+       _noAuthRootCollectionPath = noAuthRootCollectionPath;
 
   /// can be set later
   int? allowedDelayInReadMs;
@@ -87,7 +92,8 @@ class FirestoreTestContext {
   }
 
   Future<void> runTestAndIfNeededAllowDelay(
-      Future<void> Function() action) async {
+    Future<void> Function() action,
+  ) async {
     try {
       await action();
     } catch (_) {
@@ -102,7 +108,9 @@ class FirestoreTestContext {
 }
 
 Future<void> runTestAndIfNeededAllowDelay(
-    FirestoreTestContext? testContext, Future<void> Function() action) async {
+  FirestoreTestContext? testContext,
+  Future<void> Function() action,
+) async {
   if (testContext != null) {
     await testContext.runTestAndIfNeededAllowDelay(action);
   } else {
@@ -110,83 +118,96 @@ Future<void> runTestAndIfNeededAllowDelay(
   }
 }
 
-void _runFirestoreTests(
-    {required Firebase firebase,
-    required FirestoreService firestoreService,
-    AppOptions? options,
-    FirestoreTestContext? testContext}) {
+void _runFirestoreTests({
+  required Firebase firebase,
+  required FirestoreService firestoreService,
+  AppOptions? options,
+  FirestoreTestContext? testContext,
+}) {
   final app = firebase.initializeApp(options: options);
   runFirestoreAppTests(
-      app: app,
-      firestoreService: firestoreService,
-      options: options,
-      testContext: testContext ?? FirestoreTestContext());
+    app: app,
+    firestoreService: firestoreService,
+    options: options,
+    testContext: testContext ?? FirestoreTestContext(),
+  );
   tearDownAll(() {
     return app.delete();
   });
 }
 
-void runFirestoreAppTests(
-    {required FirebaseApp app,
-    required FirestoreService firestoreService,
-    AppOptions? options,
-    required FirestoreTestContext testContext}) {
+void runFirestoreAppTests({
+  required FirebaseApp app,
+  required FirestoreService firestoreService,
+  AppOptions? options,
+  required FirestoreTestContext testContext,
+}) {
   var firestore = firestoreService.firestore(app);
   test('app', () {
     expect(firestore.app, app);
     expect(firestore.service, firestoreService);
   });
   runFirestoreCommonTests(
-      firestoreService: firestoreService,
-      firestore: firestore,
-      testContext: testContext);
+    firestoreService: firestoreService,
+    firestore: firestore,
+    testContext: testContext,
+  );
   runUtilsCollectionTests(
-      firestoreService: firestoreService,
-      firestore: firestore,
-      testContext: testContext);
+    firestoreService: firestoreService,
+    firestore: firestore,
+    testContext: testContext,
+  );
   runUtilsQueryTest(
-      firestoreService: firestoreService,
-      firestore: firestore,
-      testContext: testContext);
+    firestoreService: firestoreService,
+    firestore: firestore,
+    testContext: testContext,
+  );
   runFirestoreTrackChangesSupportTests(
-      firestoreService: firestoreService,
-      firestore: firestore,
-      testContext: testContext);
+    firestoreService: firestoreService,
+    firestore: firestore,
+    testContext: testContext,
+  );
   runFirestoreTrackChangesTests(
-      firestoreService: firestoreService,
-      firestore: firestore,
-      testContext: testContext);
+    firestoreService: firestoreService,
+    firestore: firestore,
+    testContext: testContext,
+  );
   runFirestoreQueryTests(firestore: firestore, testContext: testContext);
   runListCollectionsTest(firestore: firestore, testContext: testContext);
   runAggregateQueryTest(firestore: firestore, testContext: testContext);
   runFirestoreDocumentTests(firestore: firestore, testContext: testContext);
 
   utilsTest(
-      firestoreService: firestoreService,
-      firestore: firestore,
-      testContext: testContext);
+    firestoreService: firestoreService,
+    firestore: firestore,
+    testContext: testContext,
+  );
   utilsAutoIdTest(firestore: firestore, testContext: testContext);
   runCopyUtilsTest(firestore: firestore, testContext: testContext);
   firestoreMulticlientTest(
-      firestore1: firestore,
-      firestore2: firestore,
-      docTopPath: '${testContext.rootCollectionPath}/multi_client');
+    firestore1: firestore,
+    firestore2: firestore,
+    docTopPath: '${testContext.rootCollectionPath}/multi_client',
+  );
 }
 
 @Deprecated('User runFirestoreCommonTests')
-void runApp(
-    {required FirestoreService firestoreService,
-    required Firestore firestore}) {
+void runApp({
+  required FirestoreService firestoreService,
+  required Firestore firestore,
+}) {
   runFirestoreCommonTests(
-      firestoreService: firestoreService,
-      firestore: firestore,
-      testContext: null);
+    firestoreService: firestoreService,
+    firestore: firestore,
+    testContext: null,
+  );
 }
 
-void runFirestoreCommonTests(
-    {required FirestoreService firestoreService,
-    required Firestore firestore,
-    required FirestoreTestContext? testContext}) {
+void runFirestoreCommonTests({
+  required FirestoreService firestoreService,
+  required Firestore firestore,
+  required FirestoreTestContext? testContext,
+}) {
   var testsRefPath = FirestoreTestContext.getRootCollectionPath(testContext);
   setUpAll(() async {
     if (firestoreService.supportsTimestampsInSnapshots) {
@@ -197,9 +218,10 @@ void runFirestoreCommonTests(
   group('firestore', () {
     vectorValueGroup(firestore: firestore, testContext: testContext);
     timestampGroup(
-        service: firestoreService,
-        firestore: firestore,
-        testContext: testContext);
+      service: firestoreService,
+      firestore: firestore,
+      testContext: testContext,
+    );
     CollectionReference getTestsRef() {
       return firestore.collection(testsRefPath);
     }
@@ -223,8 +245,10 @@ void runFirestoreCommonTests(
         var docRef = await testsRef.add({});
         // Check firestore
         if (testsRef is FirestorePathReference) {
-          expect((docRef as FirestorePathReference).firestore,
-              (testsRef as FirestorePathReference).firestore);
+          expect(
+            (docRef as FirestorePathReference).firestore,
+            (testsRef as FirestorePathReference).firestore,
+          );
         }
         await docRef.delete();
       });
@@ -247,8 +271,10 @@ void runFirestoreCommonTests(
         expect(snapshot.ref, isNotNull);
         // Check firestore
         if (testsRef is FirestorePathReference) {
-          expect((docRef as FirestorePathReference).firestore,
-              (snapshot.ref as FirestorePathReference).firestore);
+          expect(
+            (docRef as FirestorePathReference).firestore,
+            (snapshot.ref as FirestorePathReference).firestore,
+          );
         }
         expect(snapshot.exists, isFalse);
         expect(snapshot.dataOrNull, isNull);
@@ -273,8 +299,10 @@ void runFirestoreCommonTests(
 
         // Check firestore
         if (testsRef is FirestorePathReference) {
-          expect((testsRef as FirestorePathReference).firestore,
-              (snapshots[0].ref as FirestorePathReference).firestore);
+          expect(
+            (testsRef as FirestorePathReference).firestore,
+            (snapshots[0].ref as FirestorePathReference).firestore,
+          );
         }
         // expect(snapshots[1].data, isNull); currently node returns {}
       });
@@ -309,8 +337,9 @@ void runFirestoreCommonTests(
       });
 
       test('doc is as mail', () async {
-        var collRef =
-            firestore.collection(url.join(testsRefPath, 'email', 'emails'));
+        var collRef = firestore.collection(
+          url.join(testsRefPath, 'email', 'emails'),
+        );
         var docRef = collRef.doc('some+1@email.com');
         await docRef.set({'test': 1});
         /*
@@ -360,8 +389,10 @@ void runFirestoreCommonTests(
 
         if (firestoreService.supportsDocumentSnapshotTime) {
           /// Allow some difference
-          expect(snapshot.updateTime!.seconds - now.seconds,
-              greaterThanOrEqualTo(0));
+          expect(
+            snapshot.updateTime!.seconds - now.seconds,
+            greaterThanOrEqualTo(0),
+          );
           expect(snapshot.createTime, snapshot.updateTime);
         } else {
           expect(snapshot.createTime, isNull);
@@ -374,10 +405,12 @@ void runFirestoreCommonTests(
         void check() {
           expect(snapshot.data, {'test': 2});
           if (firestoreService.supportsDocumentSnapshotTime) {
-            expect(snapshot.updateTime!.compareTo(snapshot.createTime),
-                greaterThanOrEqualTo(0),
-                reason:
-                    'createTime ${snapshot.createTime} updateTime ${snapshot.updateTime}');
+            expect(
+              snapshot.updateTime!.compareTo(snapshot.createTime),
+              greaterThanOrEqualTo(0),
+              reason:
+                  'createTime ${snapshot.createTime} updateTime ${snapshot.updateTime}',
+            );
           } else {
             expect(snapshot.createTime, isNull);
             expect(snapshot.updateTime, isNull);
@@ -397,11 +430,13 @@ void runFirestoreCommonTests(
           check();
 
           // Try using col stream
-          snapshot = (await testsRef.onSnapshot().first)
-              .docs
-              .where((DocumentSnapshot snapshot) =>
-                  snapshot.ref.path == docRef.path)
-              .first;
+          snapshot =
+              (await testsRef.onSnapshot().first).docs
+                  .where(
+                    (DocumentSnapshot snapshot) =>
+                        snapshot.ref.path == docRef.path,
+                  )
+                  .first;
           check();
         }
       });
@@ -429,8 +464,10 @@ void runFirestoreCommonTests(
       test('allFields', () async {
         var testsRef = getTestsRef();
         var localDateTime = DateTime.fromMillisecondsSinceEpoch(1234567890);
-        var utcDateTime =
-            DateTime.fromMillisecondsSinceEpoch(1234567890, isUtc: true);
+        var utcDateTime = DateTime.fromMillisecondsSinceEpoch(
+          1234567890,
+          isUtc: true,
+        );
         var timestamp = Timestamp(123456789, 123456000);
         var docRef = testsRef.doc('all_fields');
         var documentData = DocumentData();
@@ -448,7 +485,9 @@ void runFirestoreCommonTests(
         documentData.setGeoPoint('geoPoint', GeoPoint(1.2, 4));
 
         documentData.setFieldValue(
-            'serverTimestamp', FieldValue.serverTimestamp);
+          'serverTimestamp',
+          FieldValue.serverTimestamp,
+        );
         documentData.setNull('null');
 
         var subData = DocumentData();
@@ -470,17 +509,18 @@ void runFirestoreCommonTests(
         expect(documentData.getDateTime('localDateTime'), localDateTime);
         expect(documentData.getDateTime('utcDateTime'), utcDateTime.toLocal());
         // Might only get milliseconds in the browser
-        expect(documentData.getTimestamp('timestamp'),
-            timestampAdaptPrecision(firestoreService, timestamp));
+        expect(
+          documentData.getTimestamp('timestamp'),
+          timestampAdaptPrecision(firestoreService, timestamp),
+        );
         expect(documentData.getDocumentReference('docRef')!.path, 'tests/doc');
         expect(documentData.getBlob('blob')!.data, [1, 2, 3]);
         expect(documentData.getGeoPoint('geoPoint'), GeoPoint(1.2, 4));
         expect(
-            documentData
-                    .getDateTime('serverTimestamp')!
-                    .millisecondsSinceEpoch >
-                0,
-            isTrue);
+          documentData.getDateTime('serverTimestamp')!.millisecondsSinceEpoch >
+              0,
+          isTrue,
+        );
         expect(documentData.has('null'), isTrue);
         final list = documentData.getList<int>('intList');
         expect(list, [4, 3]);
@@ -512,15 +552,15 @@ void runFirestoreCommonTests(
         var docRef = testsRef.doc('list');
         await docRef.set({
           'some_key': [
-            {'sub_key': 'some_value'}
-          ]
+            {'sub_key': 'some_value'},
+          ],
         });
         var snapshot = await docRef.get();
         var documentData = DocumentData(snapshot.data);
         expect(snapshot.data, {
           'some_key': [
-            {'sub_key': 'some_value'}
-          ]
+            {'sub_key': 'some_value'},
+          ],
         });
         var list = documentData.getList<Map<String, Object?>>('some_key')!;
         final sub = DocumentData(list[0]);
@@ -535,32 +575,35 @@ void runFirestoreCommonTests(
             DateTime.fromMillisecondsSinceEpoch(1234567890).toLocal();
         var utcDateTime =
             DateTime.fromMillisecondsSinceEpoch(12345678901).toUtc();
-        await docRef
-            .set({'some_date': localDateTime, 'some_utc_date': utcDateTime});
+        await docRef.set({
+          'some_date': localDateTime,
+          'some_utc_date': utcDateTime,
+        });
 
         void check(Map? data) {
           if (firestoreService.supportsTimestampsInSnapshots) {
             //devPrint(data['some_date'].runtimeType);
             expect(data, {
               'some_date': Timestamp.fromDateTime(localDateTime),
-              'some_utc_date': Timestamp.fromDateTime(utcDateTime.toLocal())
+              'some_utc_date': Timestamp.fromDateTime(utcDateTime.toLocal()),
             });
           } else {
             expect(data, {
               'some_date': localDateTime,
-              'some_utc_date': utcDateTime.toLocal()
+              'some_utc_date': utcDateTime.toLocal(),
             });
           }
         }
 
         check((await docRef.get()).data);
 
-        var snapshot = (await testsRef
-                .where('some_date', isEqualTo: localDateTime)
-                .where('some_utc_date', isEqualTo: utcDateTime)
-                .get())
-            .docs
-            .first;
+        var snapshot =
+            (await testsRef
+                    .where('some_date', isEqualTo: localDateTime)
+                    .where('some_utc_date', isEqualTo: utcDateTime)
+                    .get())
+                .docs
+                .first;
 
         check(snapshot.data);
         await docRef.delete();
@@ -576,16 +619,13 @@ void runFirestoreCommonTests(
 
         if (firestoreService.supportsTimestampsInSnapshots) {
           expect(
-              data,
-              {
-                'some_timestamp': timestamp,
-              },
-              reason:
-                  'nanos: ${timestamp.nanoseconds} vs ${(data['some_timestamp'] as Timestamp).nanoseconds}');
+            data,
+            {'some_timestamp': timestamp},
+            reason:
+                'nanos: ${timestamp.nanoseconds} vs ${(data['some_timestamp'] as Timestamp).nanoseconds}',
+          );
         } else {
-          expect(data, {
-            'some_timestamp': timestamp.toDateTime(),
-          });
+          expect(data, {'some_timestamp': timestamp.toDateTime()});
         }
         await docRef.delete();
       }, skip: true);
@@ -598,16 +638,13 @@ void runFirestoreCommonTests(
         void check(Map<String, Object?>? data) {
           if (firestoreService.supportsTimestampsInSnapshots) {
             expect(
-                data,
-                {
-                  'some_timestamp': timestamp,
-                },
-                reason:
-                    'nanos: ${timestamp.nanoseconds} vs ${(data!['some_timestamp'] as Timestamp).nanoseconds}');
+              data,
+              {'some_timestamp': timestamp},
+              reason:
+                  'nanos: ${timestamp.nanoseconds} vs ${(data!['some_timestamp'] as Timestamp).nanoseconds}',
+            );
           } else {
-            expect(data, {
-              'some_timestamp': timestamp.toDateTime(),
-            });
+            expect(data, {'some_timestamp': timestamp.toDateTime()});
           }
         }
 
@@ -619,11 +656,12 @@ void runFirestoreCommonTests(
         check(snapshot.data);
 
         // Try compare
-        snapshot = (await testsRef
-                .where('some_timestamp', isGreaterThanOrEqualTo: timestamp)
-                .get())
-            .docs
-            .first;
+        snapshot =
+            (await testsRef
+                    .where('some_timestamp', isGreaterThanOrEqualTo: timestamp)
+                    .get())
+                .docs
+                .first;
         check(snapshot.data);
 
         await docRef.delete();
@@ -653,9 +691,7 @@ void runFirestoreCommonTests(
         await docRef.set({'value': 1});
         await doc2Ref.set({'value': null});
         void check(Map<String, Object?>? data) {
-          expect(data, {
-            'value': null,
-          });
+          expect(data, {'value': null});
         }
 
         check((await doc2Ref.get()).data);
@@ -673,9 +709,7 @@ void runFirestoreCommonTests(
         await docRef.set({'value': null});
         await doc2Ref.set({'value': true});
         void check(Map<String, Object?>? data) {
-          expect(data, {
-            'value': true,
-          });
+          expect(data, {'value': true});
         }
 
         check((await doc2Ref.get()).data);
@@ -690,8 +724,10 @@ void runFirestoreCommonTests(
       test('allFields', () async {
         var testsRef = getTestsRef();
         var localDateTime = DateTime.fromMillisecondsSinceEpoch(1234567890);
-        var utcDateTime =
-            DateTime.fromMillisecondsSinceEpoch(1234567890, isUtc: true);
+        var utcDateTime = DateTime.fromMillisecondsSinceEpoch(
+          1234567890,
+          isUtc: true,
+        );
         var timestamp = Timestamp(1234567890, 123000);
         var docRef = testsRef.doc('all_fields');
         var data = <String, Object?>{
@@ -709,8 +745,8 @@ void runFirestoreCommonTests(
           'serverTimestamp': FieldValue.serverTimestamp,
           'subData': {
             'localDateTime': localDateTime,
-            'inner': {'int': 1234}
-          }
+            'inner': {'int': 1234},
+          },
         };
 
         await docRef.set(data);
@@ -729,24 +765,28 @@ void runFirestoreCommonTests(
           'int': 12345678901,
           'num': 3.1416,
           'bool': true,
-          'localDateTime': firestoreService.supportsTimestampsInSnapshots
-              ? Timestamp.fromDateTime(localDateTime)
-              : localDateTime,
-          'utcDateTime': firestoreService.supportsTimestampsInSnapshots
-              ? Timestamp.fromDateTime(utcDateTime)
-              : utcDateTime.toLocal(),
-          'timestamp': firestoreService.supportsTimestampsInSnapshots
-              ? timestampAdaptPrecision(firestoreService, timestamp)
-              : timestamp.toDateTime(),
+          'localDateTime':
+              firestoreService.supportsTimestampsInSnapshots
+                  ? Timestamp.fromDateTime(localDateTime)
+                  : localDateTime,
+          'utcDateTime':
+              firestoreService.supportsTimestampsInSnapshots
+                  ? Timestamp.fromDateTime(utcDateTime)
+                  : utcDateTime.toLocal(),
+          'timestamp':
+              firestoreService.supportsTimestampsInSnapshots
+                  ? timestampAdaptPrecision(firestoreService, timestamp)
+                  : timestamp.toDateTime(),
           'intList': <int>[4, 3],
           'blob': Blob(Uint8List.fromList([1, 2, 3])),
           'geoPoint': GeoPoint(1.2, 4),
           'subData': {
-            'localDateTime': firestoreService.supportsTimestampsInSnapshots
-                ? Timestamp.fromDateTime(localDateTime)
-                : localDateTime,
-            'inner': {'int': 1234}
-          }
+            'localDateTime':
+                firestoreService.supportsTimestampsInSnapshots
+                    ? Timestamp.fromDateTime(localDateTime)
+                    : localDateTime,
+            'inner': {'int': 1234},
+          },
         });
       });
 
@@ -755,7 +795,7 @@ void runFirestoreCommonTests(
         var docRef = testsRef.doc('delete_field');
         var data = <String, Object?>{
           'some_key': 'some_value',
-          'other_key': 'other_value'
+          'other_key': 'other_value',
         };
         await docRef.set(data);
         data = (await docRef.get()).data;
@@ -773,39 +813,34 @@ void runFirestoreCommonTests(
           'some_key': 'some_value',
           'sub': <String, Object?>{
             'sub_key': 'sub_value',
-            'other': 'other_value'
-          }
+            'other': 'other_value',
+          },
         };
         await docRef.set(data);
         data = (await docRef.get()).data;
         expect(data, {
           'some_key': 'some_value',
-          'sub': {'sub_key': 'sub_value', 'other': 'other_value'}
+          'sub': {'sub_key': 'sub_value', 'other': 'other_value'},
         });
 
         data = {
-          'sub': {'sub_key': FieldValue.delete}
+          'sub': {'sub_key': FieldValue.delete},
         };
         await docRef.set(data, SetOptions(merge: true));
         data = (await docRef.get()).data;
         expect(data, {
           'some_key': 'some_value',
-          'sub': {'other': 'other_value'}
+          'sub': {'other': 'other_value'},
         });
       });
       test('simple merge', () async {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('simple_merge');
-        await docRef.set({
-          'field1': 1,
-        });
+        await docRef.set({'field1': 1});
         await docRef.set({'field2': 2}, SetOptions(merge: true));
 
         var snapshot = await docRef.get();
-        expect(snapshot.data, {
-          'field1': 1,
-          'field2': 2,
-        });
+        expect(snapshot.data, {'field1': 1, 'field2': 2});
         print(snapshot.data);
       });
       test('merge', () async {
@@ -814,14 +849,14 @@ void runFirestoreCommonTests(
         await docRef.set({
           'field1': 'value1',
           'field2': {
-            'sub2': {'sub3': 'value3'}
-          }
+            'sub2': {'sub3': 'value3'},
+          },
         });
         await docRef.set({
           'field2': {
-            'sub2': {'4321': 'value4', '5sub': 'value5', 'sub6': 'value6'}
+            'sub2': {'4321': 'value4', '5sub': 'value5', 'sub6': 'value6'},
             // Use a key that looks like a number on purpose here
-          }
+          },
         }, SetOptions(merge: true));
 
         var snapshot = await docRef.get();
@@ -832,9 +867,9 @@ void runFirestoreCommonTests(
               'sub3': 'value3',
               '4321': 'value4',
               '5sub': 'value5',
-              'sub6': 'value6'
-            }
-          }
+              'sub6': 'value6',
+            },
+          },
         });
         print(snapshot.data);
       });
@@ -853,7 +888,7 @@ void runFirestoreCommonTests(
           data = (await docRef.get()).data;
           expect(data, {
             'some_array': [1],
-            'not_array': 2
+            'not_array': 2,
           });
 
           // Test update arrayUnion and overriding a non array field
@@ -879,14 +914,14 @@ void runFirestoreCommonTests(
           expect(data, {
             'some_array': [3],
             'not_array': [5],
-            'not_existing': []
+            'not_existing': [],
           });
 
           // Test update using set with merge
           data = <String, Object?>{
             'some_array': FieldValue.arrayUnion([8]),
             'not_array': FieldValue.arrayRemove([5]),
-            'merged_not_existing': FieldValue.arrayRemove([9])
+            'merged_not_existing': FieldValue.arrayRemove([9]),
           };
           await docRef.set(data, SetOptions(merge: true));
           data = (await docRef.get()).data;
@@ -906,7 +941,7 @@ void runFirestoreCommonTests(
           data = (await docRef.get()).data;
           expect(data, {
             'some_array': [3, 6],
-            'no_merge_not_existing': []
+            'no_merge_not_existing': [],
           });
         } else {
           print('supportsFieldValueArray false');
@@ -923,9 +958,9 @@ void runFirestoreCommonTests(
         ref2 = firestore.doc('test/doc2');
         expect(ref1, isNot(ref2));
         expect(
-            ref1.hashCode,
-            isNot(ref2
-                .hashCode)); // This could be wrong though but at least ensure it could be true also!
+          ref1.hashCode,
+          isNot(ref2.hashCode),
+        ); // This could be wrong though but at least ensure it could be true also!
       });
       test('attributes', () {
         var testsRef = getTestsRef();
@@ -956,7 +991,7 @@ void runFirestoreCommonTests(
           'created': 1,
           'modified': 22,
           'added': 3,
-          'sub': {'field': 4}
+          'sub': {'field': 4},
         });
       });
 
@@ -965,24 +1000,24 @@ void runFirestoreCommonTests(
         var docRef = testsRef.doc('update_nested_sub_field');
         await docRef.set({
           'a': {
-            'b': {'c': 1}
-          }
+            'b': {'c': 1},
+          },
         });
         await docRef.update({
           'a.added': 2,
           'a.b.added': 3,
           'a.b.c.replaced': 4,
-          'x': {'sub.replace': 5}
+          'x': {'sub.replace': 5},
         });
         expect((await docRef.get()).data, {
           'a': {
             'added': 2,
             'b': {
               'added': 3,
-              'c': {'replaced': 4}
-            }
+              'c': {'replaced': 4},
+            },
           },
-          'x': {'sub.replace': 5}
+          'x': {'sub.replace': 5},
         });
       });
 
@@ -1003,13 +1038,13 @@ void runFirestoreCommonTests(
         await docRef.update({
           'modified': 22,
           'added': 3,
-          'sub': {'field': 4}
+          'sub': {'field': 4},
         });
         expect((await docRef.get()).data, {
           'created': 1,
           'modified': 22,
           'added': 3,
-          'sub': {'field': 4}
+          'sub': {'field': 4},
         });
       });
 
@@ -1031,11 +1066,14 @@ void runFirestoreCommonTests(
 
         if (firestoreService.supportsTrackChanges) {
           var stepCount = 4;
-          var completers =
-              List.generate(stepCount, (_) => Completer<DocumentSnapshot>());
+          var completers = List.generate(
+            stepCount,
+            (_) => Completer<DocumentSnapshot>(),
+          );
           var count = 0;
-          var subscription =
-              docRef.onSnapshot().listen((DocumentSnapshot documentSnapshot) {
+          var subscription = docRef.onSnapshot().listen((
+            DocumentSnapshot documentSnapshot,
+          ) {
             if (count < stepCount) {
               completers[count++].complete(documentSnapshot);
             }
@@ -1095,9 +1133,9 @@ void runFirestoreCommonTests(
         ref2 = firestore.collection('test2');
         expect(ref1, isNot(ref2));
         expect(
-            ref1.hashCode,
-            isNot(ref2
-                .hashCode)); // This could be wrong though but at least ensure it could be true also!
+          ref1.hashCode,
+          isNot(ref2.hashCode),
+        ); // This could be wrong though but at least ensure it could be true also!
       });
       test('bad path', () async {
         var testsRef = getTestsRef();
@@ -1220,7 +1258,7 @@ void runFirestoreCommonTests(
           expect((await doc1Ref.get()).data, {'value': 1});
           expect((await doc2Ref.get()).data, {
             'value': 2,
-            'other': {'value': 2}
+            'other': {'value': 2},
           });
           expect((await doc3Ref.get()).data, {'value': 3});
           expect((await doc4Ref.get()).exists, isFalse);
@@ -1232,8 +1270,9 @@ void runFirestoreCommonTests(
       group('Transaction', () {
         test('concurrent_get_update', () async {
           var testsRef = getTestsRef();
-          var collRef =
-              testsRef.doc('transaction_test').collection('get_update');
+          var collRef = testsRef
+              .doc('transaction_test')
+              .collection('get_update');
           var ref = collRef.doc('item');
           await ref.set({'value': 1});
 
@@ -1259,8 +1298,9 @@ void runFirestoreCommonTests(
 
         test('get_update', () async {
           var testsRef = getTestsRef();
-          var collRef =
-              testsRef.doc('transaction_test').collection('get_update');
+          var collRef = testsRef
+              .doc('transaction_test')
+              .collection('get_update');
           var ref = collRef.doc('item');
           await ref.set({'value': 1});
 
@@ -1269,8 +1309,10 @@ void runFirestoreCommonTests(
 
             var data = snapshot.data;
             if (testsRef is FirestorePathReference) {
-              expect((snapshot.ref as FirestorePathReference).firestore,
-                  (testsRef as FirestorePathReference).firestore);
+              expect(
+                (snapshot.ref as FirestorePathReference).firestore,
+                (testsRef as FirestorePathReference).firestore,
+              );
             }
 
             var map = <String, Object?>{};
@@ -1327,8 +1369,9 @@ void runFirestoreCommonTests(
         // make sure that after the transaction we're still fine
         test('post_transaction_set', () async {
           var testsRef = getTestsRef();
-          var collRef =
-              testsRef.doc('transaction_test').collection('get_update');
+          var collRef = testsRef
+              .doc('transaction_test')
+              .collection('get_update');
           var ref = collRef.doc('item');
           await ref.set({'value': 1});
         });
@@ -1349,12 +1392,10 @@ void runFirestoreCommonTests(
 }
 
 @Deprecated('use TestContext')
-
 /// Test root path to override
 String? testRootPath;
 
 @Deprecated('use TestContext')
-
 /// To get a safe path if specified in setup
 String getTestPath(String path) {
   if (testRootPath == null) {
@@ -1367,12 +1408,16 @@ String getTestPath(String path) {
 /// Adapt expected precision, removing micros if timestamps precision is not
 /// supported
 Timestamp timestampAdaptPrecision(
-    FirestoreService service, Timestamp timestamp) {
+  FirestoreService service,
+  Timestamp timestamp,
+) {
   if (service.supportsTimestamps) {
     return timestamp;
   } else {
     return Timestamp(
-        timestamp.seconds, (timestamp.nanoseconds ~/ 1000000) * 1000000);
+      timestamp.seconds,
+      (timestamp.nanoseconds ~/ 1000000) * 1000000,
+    );
   }
 }
 
