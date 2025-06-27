@@ -25,8 +25,9 @@ extension on TrackChangesSupportOptions {
       return this as TrackChangesSupportOptionsController;
     }
     var self = this;
-    var refreshDelay =
-        self is _TrackChangesPullOptionsWithDelay ? self.refreshDelay : null;
+    var refreshDelay = self is _TrackChangesPullOptionsWithDelay
+        ? self.refreshDelay
+        : null;
 
     return TrackChangesSupportOptionsController(refreshDelay: refreshDelay);
   }
@@ -123,10 +124,9 @@ extension DocumentReferenceSnapshotSupportExtension on DocumentReference {
               return;
             }
 
-            var lazyRunner =
-                refreshDelay == null
-                    ? LazyRunner(action: read)
-                    : LazyRunner.periodic(duration: refreshDelay, action: read);
+            var lazyRunner = refreshDelay == null
+                ? LazyRunner(action: read)
+                : LazyRunner.periodic(duration: refreshDelay, action: read);
             controller.lazyRunnerOrNull = lazyRunner;
             lazyRunner.trigger();
             return;
@@ -214,10 +214,9 @@ extension QuerySnapshotSupportExtension on Query {
               return;
             }
 
-            var lazyRunner =
-                refreshDelay == null
-                    ? LazyRunner(action: read)
-                    : LazyRunner.periodic(duration: refreshDelay, action: read);
+            var lazyRunner = refreshDelay == null
+                ? LazyRunner(action: read)
+                : LazyRunner.periodic(duration: refreshDelay, action: read);
             controller.lazyRunnerOrNull = lazyRunner;
             lazyRunner.trigger();
             return;

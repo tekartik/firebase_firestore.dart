@@ -161,14 +161,13 @@ class FirestoreSembast extends Object
   FirestoreSembast(this.firestoreService, this.app);
 
   /// App local path
-  String get appLocalPath =>
-      ((app is AppLocal)
-          ? (app as AppLocal).localPath
-          : join(
-            '.dart_tool',
-            'tekartik_firebase_firestore_local',
-            AppLocal.appPathPart(app.name),
-          ));
+  String get appLocalPath => ((app is AppLocal)
+      ? (app as AppLocal).localPath
+      : join(
+          '.dart_tool',
+          'tekartik_firebase_firestore_local',
+          AppLocal.appPathPart(app.name),
+        ));
 
   /// Close
   Future close() async {
@@ -287,8 +286,8 @@ class FirestoreSembast extends Object
 
     // set update Time
     var now = Timestamp.now();
-    recordMap[createTimeKey] =
-        (result.previousSnapshot?.createTime ?? now).toIso8601String();
+    recordMap[createTimeKey] = (result.previousSnapshot?.createTime ?? now)
+        .toIso8601String();
     recordMap[updateTimeKey] = now.toIso8601String();
 
     result.newSnapshot = documentFromRecordMap(ref, recordMap);
@@ -317,8 +316,8 @@ class FirestoreSembast extends Object
     var updateMap = <String, Object?>{};
     updateMap[revKey] = rev;
     var now = Timestamp.now();
-    updateMap[createTimeKey] =
-        (result.previousSnapshot?.createTime ?? now).toIso8601String();
+    updateMap[createTimeKey] = (result.previousSnapshot?.createTime ?? now)
+        .toIso8601String();
     updateMap[updateTimeKey] = now.toIso8601String();
 
     var recordMap = await docStore

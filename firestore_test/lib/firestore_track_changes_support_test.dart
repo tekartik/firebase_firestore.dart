@@ -58,8 +58,9 @@ void runFirestoreTrackChangesSupportTests({
         () async {
           expect(
             (await docRef
-                .onSnapshotSupport(options: pullOptions1)
-                .firstWhere((snapshot) => snapshot.exists)).data,
+                    .onSnapshotSupport(options: pullOptions1)
+                    .firstWhere((snapshot) => snapshot.exists))
+                .data,
             {'test': 1},
           );
         }(),
@@ -88,8 +89,9 @@ void runFirestoreTrackChangesSupportTests({
         () async {
           expect(
             (await docRef
-                .onSnapshotSupport(options: controller1)
-                .firstWhere((snapshot) => snapshot.exists)).data,
+                    .onSnapshotSupport(options: controller1)
+                    .firstWhere((snapshot) => snapshot.exists))
+                .data,
             {'test': 1},
           );
         }(),

@@ -46,22 +46,21 @@ mixin QueryMixin implements Query {
     List<Object>? arrayContainsAny,
     List<Object>? whereIn,
     bool? isNull,
-  }) =>
-      clone()
-        ..queryInfo.addWhere(
-          WhereInfo(
-            fieldPath,
-            isEqualTo: isEqualTo,
-            isLessThan: isLessThan,
-            isLessThanOrEqualTo: isLessThanOrEqualTo,
-            isGreaterThan: isGreaterThan,
-            isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
-            arrayContains: arrayContains,
-            arrayContainsAny: arrayContainsAny,
-            whereIn: whereIn,
-            isNull: isNull,
-          ),
-        );
+  }) => clone()
+    ..queryInfo.addWhere(
+      WhereInfo(
+        fieldPath,
+        isEqualTo: isEqualTo,
+        isLessThan: isLessThan,
+        isLessThanOrEqualTo: isLessThanOrEqualTo,
+        isGreaterThan: isGreaterThan,
+        isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
+        arrayContains: arrayContains,
+        arrayContainsAny: arrayContainsAny,
+        whereIn: whereIn,
+        isNull: isNull,
+      ),
+    );
 
   /// Add order by
   void addOrderBy(String key, String directionStr) {
@@ -97,11 +96,11 @@ mixin QueryMixin implements Query {
   Query limit(int limit) => clone()..queryInfo.limit = limit;
 
   @override
-  Query orderBy(String key, {bool? descending}) =>
-      clone()..addOrderBy(
-        key,
-        descending == true ? orderByDescending : orderByAscending,
-      );
+  Query orderBy(String key, {bool? descending}) => clone()
+    ..addOrderBy(
+      key,
+      descending == true ? orderByDescending : orderByAscending,
+    );
 }
 
 /// Apply query info to query/collection synchroneously, after/at/before snapshot is not supported.
@@ -191,11 +190,10 @@ Future<Query> applyQueryInfo(
       // get it
       DocumentSnapshot? snapshot;
       if (queryInfo.startLimit!.documentId != null) {
-        snapshot =
-            await firestore
-                .collection(path)
-                .doc(queryInfo.startLimit!.documentId!)
-                .get();
+        snapshot = await firestore
+            .collection(path)
+            .doc(queryInfo.startLimit!.documentId!)
+            .get();
       }
       if (queryInfo.startLimit!.inclusive) {
         query = query.startAt(
@@ -213,11 +211,10 @@ Future<Query> applyQueryInfo(
       // get it
       DocumentSnapshot? snapshot;
       if (queryInfo.endLimit!.documentId != null) {
-        snapshot =
-            await firestore
-                .collection(path)
-                .doc(queryInfo.endLimit!.documentId!)
-                .get();
+        snapshot = await firestore
+            .collection(path)
+            .doc(queryInfo.endLimit!.documentId!)
+            .get();
       }
       if (queryInfo.endLimit!.inclusive) {
         query = query.endAt(

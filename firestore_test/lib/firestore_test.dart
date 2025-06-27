@@ -430,13 +430,11 @@ void runFirestoreCommonTests({
           check();
 
           // Try using col stream
-          snapshot =
-              (await testsRef.onSnapshot().first).docs
-                  .where(
-                    (DocumentSnapshot snapshot) =>
-                        snapshot.ref.path == docRef.path,
-                  )
-                  .first;
+          snapshot = (await testsRef.onSnapshot().first).docs
+              .where(
+                (DocumentSnapshot snapshot) => snapshot.ref.path == docRef.path,
+              )
+              .first;
           check();
         }
       });
@@ -571,10 +569,12 @@ void runFirestoreCommonTests({
       test('date', () async {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('date');
-        var localDateTime =
-            DateTime.fromMillisecondsSinceEpoch(1234567890).toLocal();
-        var utcDateTime =
-            DateTime.fromMillisecondsSinceEpoch(12345678901).toUtc();
+        var localDateTime = DateTime.fromMillisecondsSinceEpoch(
+          1234567890,
+        ).toLocal();
+        var utcDateTime = DateTime.fromMillisecondsSinceEpoch(
+          12345678901,
+        ).toUtc();
         await docRef.set({
           'some_date': localDateTime,
           'some_utc_date': utcDateTime,
@@ -765,26 +765,22 @@ void runFirestoreCommonTests({
           'int': 12345678901,
           'num': 3.1416,
           'bool': true,
-          'localDateTime':
-              firestoreService.supportsTimestampsInSnapshots
-                  ? Timestamp.fromDateTime(localDateTime)
-                  : localDateTime,
-          'utcDateTime':
-              firestoreService.supportsTimestampsInSnapshots
-                  ? Timestamp.fromDateTime(utcDateTime)
-                  : utcDateTime.toLocal(),
-          'timestamp':
-              firestoreService.supportsTimestampsInSnapshots
-                  ? timestampAdaptPrecision(firestoreService, timestamp)
-                  : timestamp.toDateTime(),
+          'localDateTime': firestoreService.supportsTimestampsInSnapshots
+              ? Timestamp.fromDateTime(localDateTime)
+              : localDateTime,
+          'utcDateTime': firestoreService.supportsTimestampsInSnapshots
+              ? Timestamp.fromDateTime(utcDateTime)
+              : utcDateTime.toLocal(),
+          'timestamp': firestoreService.supportsTimestampsInSnapshots
+              ? timestampAdaptPrecision(firestoreService, timestamp)
+              : timestamp.toDateTime(),
           'intList': <int>[4, 3],
           'blob': Blob(Uint8List.fromList([1, 2, 3])),
           'geoPoint': GeoPoint(1.2, 4),
           'subData': {
-            'localDateTime':
-                firestoreService.supportsTimestampsInSnapshots
-                    ? Timestamp.fromDateTime(localDateTime)
-                    : localDateTime,
+            'localDateTime': firestoreService.supportsTimestampsInSnapshots
+                ? Timestamp.fromDateTime(localDateTime)
+                : localDateTime,
             'inner': {'int': 1234},
           },
         });

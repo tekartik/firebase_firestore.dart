@@ -36,8 +36,9 @@ extension TekartikSembastUtils on Firestore {
         }
       }
       return firestore.exportLines(
-        collections:
-            collections?.map((e) => firestore.collection(e.path)).toList(),
+        collections: collections
+            ?.map((e) => firestore.collection(e.path))
+            .toList(),
         documents: documents?.map((e) => firestore.doc(e.path)).toList(),
       );
     }

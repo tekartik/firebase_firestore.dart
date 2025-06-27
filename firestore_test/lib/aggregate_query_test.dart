@@ -22,19 +22,19 @@ void runAggregateQueryTest({
       await deleteCollection(firestore, collection);
       expect(await collection.count(), 0);
 
-      var snapshot =
-          await collection.aggregate([
-            AggregateField.count(),
-            //AggregateField.average('value'),
-            AggregateField.sum('value'),
-          ]).get();
+      var snapshot = await collection.aggregate([
+        AggregateField.count(),
+        //AggregateField.average('value'),
+        AggregateField.sum('value'),
+      ]).get();
       expect(snapshot.count, 0);
       expect(snapshot.getAverage('value'), isNull);
       expect(snapshot.getSum('value'), closeTo(0, 0.01));
 
       try {
-        snapshot =
-            await collection.aggregate([AggregateField.average('value')]).get();
+        snapshot = await collection.aggregate([
+          AggregateField.average('value'),
+        ]).get();
         expect(snapshot.getAverage('value'), isNull);
       } catch (e) {
         print('Failing OK for flutter here: $e');
@@ -49,12 +49,11 @@ void runAggregateQueryTest({
 
       await doc.set({'value': 2});
       expect(await collection.count(), 1);
-      var snapshot =
-          await collection.aggregate([
-            AggregateField.count(),
-            AggregateField.average('value'),
-            AggregateField.sum('value'),
-          ]).get();
+      var snapshot = await collection.aggregate([
+        AggregateField.count(),
+        AggregateField.average('value'),
+        AggregateField.sum('value'),
+      ]).get();
       expect(snapshot.count, 1);
       expect(snapshot.getAverage('value'), closeTo(2, 0.01));
       expect(snapshot.getSum('value'), closeTo(2, 0.01));

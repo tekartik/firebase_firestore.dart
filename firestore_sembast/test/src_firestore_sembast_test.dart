@@ -81,11 +81,10 @@ void main() {
       await firestore.doc('doc/path').delete();
       await firestore.doc('doc/path').set({'test': 1});
       var db = (firestore as FirestoreSembast).db!;
-      var map =
-          (await sembast.stringMapStoreFactory
-              .store('doc')
-              .record('doc/path')
-              .get(db))!;
+      var map = (await sembast.stringMapStoreFactory
+          .store('doc')
+          .record('doc/path')
+          .get(db))!;
       expect(map['test'], 1);
       expect(map[r'$rev'], 1);
       expect(Timestamp.tryParse(map[r'$createTime'] as String), isNotNull);

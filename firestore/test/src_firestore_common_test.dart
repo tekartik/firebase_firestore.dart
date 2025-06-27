@@ -161,11 +161,10 @@ void main() {
         'dateTime': {r'$t': 'DateTime', r'$v': '5882-03-08T14:08:21.234Z'},
       });
 
-      documentData =
-          documentDataFromRecordMap(
-            firestore,
-            documentData.toJsonRecordValueMap(),
-          )!;
+      documentData = documentDataFromRecordMap(
+        firestore,
+        documentData.toJsonRecordValueMap(),
+      )!;
       // this is local time
       expect(documentData.getDateTime('utcDateTime'), utcDate.toLocal());
       expect(documentData.getDateTime('dateTime'), localDate);
@@ -194,10 +193,9 @@ void main() {
         'sub': {'test': 1234},
       });
 
-      documentData =
-          documentDataFromRecordMap(firestore, {
-            'sub': {'test': 1234},
-          })!;
+      documentData = documentDataFromRecordMap(firestore, {
+        'sub': {'test': 1234},
+      })!;
       subData = documentData.getData('sub')!;
       expect(subData.getInt('test'), 1234);
     });
@@ -221,12 +219,11 @@ void main() {
         },
       });
 
-      documentData =
-          documentDataFromRecordMap(firestore, {
-            'sub': {
-              'subsub': {'test': 1234},
-            },
-          })!;
+      documentData = documentDataFromRecordMap(firestore, {
+        'sub': {
+          'subsub': {'test': 1234},
+        },
+      })!;
       subData = documentData.getData('sub')!;
       subSubData = subData.getData('subsub')!;
       expect(subSubData.getInt('test'), 1234);
@@ -243,10 +240,9 @@ void main() {
         'sub': {'test': 1234},
       });
 
-      documentData =
-          documentDataFromRecordMap(firestore, {
-            'sub': {'test': 1234},
-          })!;
+      documentData = documentDataFromRecordMap(firestore, {
+        'sub': {'test': 1234},
+      })!;
       subData = documentData.getData('sub')!;
       expect(subData.getInt('test'), 1234);
     });
@@ -258,10 +254,9 @@ void main() {
         'test': [1, 2],
       });
 
-      documentData =
-          documentDataFromRecordMap(firestore, {
-            'test': [1, 2],
-          })!;
+      documentData = documentDataFromRecordMap(firestore, {
+        'test': [1, 2],
+      })!;
       expect(documentData.getList<int>('test'), [1, 2]);
     });
 

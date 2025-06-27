@@ -39,10 +39,9 @@ Map<String, Object?>? recordMapUpdate(
   if (documentData == null) {
     return existing;
   }
-  final recordMap =
-      (existing != null)
-          ? cloneMap(existing).cast<String, Object?>()
-          : <String, Object?>{};
+  final recordMap = (existing != null)
+      ? cloneMap(existing).cast<String, Object?>()
+      : <String, Object?>{};
 
   var map = expandUpdateData(documentDataMap(documentData)!.map)!;
   map.forEach((String key, value) {
@@ -191,10 +190,9 @@ Map<String, Object?>? documentDataToRecordMap(
   if (documentData == null && recordMap == null) {
     return null;
   }
-  recordMap =
-      (recordMap != null)
-          ? cloneMap(recordMap).cast<String, Object?>()
-          : <String, Object?>{};
+  recordMap = (recordMap != null)
+      ? cloneMap(recordMap).cast<String, Object?>()
+      : <String, Object?>{};
   if (documentData == null) {
     return recordMap;
   }

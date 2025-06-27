@@ -17,7 +17,8 @@ extension TekartikFirestoreSembastExt on Firestore {
 extension TekartikFirestoreServiceSembastExt on FirestoreService {
   /// Only for FirestoreServiceSembast
   set sembastSupportsTrackChanges(bool value) {
-    TekartikFirestoreServiceSembastPrvExt(this as FirestoreServiceSembast)
-        .supportsTrackChanges = value;
+    TekartikFirestoreServiceSembastPrvExt(
+      this as FirestoreServiceSembast,
+    ).supportsTrackChanges = value;
   }
 }

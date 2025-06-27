@@ -24,15 +24,14 @@ class FirestoreSimService extends FirebaseSimServiceBase {
   ) async {
     try {
       var simServerChannel = firebaseSimServerExpando[channel]!;
-      var firestoreSimPluginServer =
-          _expando[channel] ??= () {
-            var app = simServerChannel.app!;
-            var firestore = firestoreSimPlugin.firestoreService.firestore(app);
-            //.debugQuickLoggerWrapper();
-            // One transaction lock per server
-            //firestoreSimPlugin._locks[firestore] ??= Lock();
-            return _FirestoreSimPluginServer(firestoreSimPlugin, firestore);
-          }();
+      var firestoreSimPluginServer = _expando[channel] ??= () {
+        var app = simServerChannel.app!;
+        var firestore = firestoreSimPlugin.firestoreService.firestore(app);
+        //.debugQuickLoggerWrapper();
+        // One transaction lock per server
+        //firestoreSimPlugin._locks[firestore] ??= Lock();
+        return _FirestoreSimPluginServer(firestoreSimPlugin, firestore);
+      }();
       var parameters = methodCall.arguments;
       switch (methodCall.method) {
         case methodFirestoreSet:
@@ -316,8 +315,9 @@ class _FirestoreSimPluginServer {
     if (event == null || event.done) {
       map[paramDone] = true;
     } else {
-      map[paramSnapshot] =
-          DocumentSnapshotData.fromSnapshot(event.data!).toMap();
+      map[paramSnapshot] = DocumentSnapshotData.fromSnapshot(
+        event.data!,
+      ).toMap();
     }
     return map;
   }
@@ -380,12 +380,11 @@ class _FirestoreSimPluginServer {
       // Changes
       data.changes = <DocumentChangeData>[];
       for (var change in querySnapshot.documentChanges) {
-        var documentChangeData =
-            DocumentChangeData()
-              ..id = change.document.ref.id
-              ..type = documentChangeTypeToString(change.type)
-              ..newIndex = change.newIndex
-              ..oldIndex = change.oldIndex;
+        var documentChangeData = DocumentChangeData()
+          ..id = change.document.ref.id
+          ..type = documentChangeTypeToString(change.type)
+          ..newIndex = change.newIndex
+          ..oldIndex = change.oldIndex;
         // need data?
         var path = change.document.ref.path;
 
@@ -453,8 +452,8 @@ class _FirestoreSimPluginServer {
 
   // Transaction
   Future handleFirestoreTransaction(Map<String, Object?>? params) async {
-    var responseData =
-        FirestoreTransactionResponseData()..transactionId = ++lastTransactionId;
+    var responseData = FirestoreTransactionResponseData()
+      ..transactionId = ++lastTransactionId;
 
     // start locking but don't wait
     unawaited(

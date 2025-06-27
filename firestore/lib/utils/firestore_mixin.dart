@@ -157,8 +157,9 @@ mixin FirestoreDocumentsMixin on Firestore {
     DocumentReference ref,
     Map<String, Object?>? recordMap,
   ) {
-    var meta =
-        recordMap == null ? null : RecordMetaData.fromRecordMap(recordMap);
+    var meta = recordMap == null
+        ? null
+        : RecordMetaData.fromRecordMap(recordMap);
     return newSnapshot(ref, meta, documentDataFromRecordMap(this, recordMap));
   }
 }
@@ -262,8 +263,8 @@ mixin FirestoreSubscriptionMixin on Firestore {
         added
             ? DocumentChangeType.added
             : (removed
-                ? DocumentChangeType.removed
-                : DocumentChangeType.modified),
+                  ? DocumentChangeType.removed
+                  : DocumentChangeType.modified),
         removed
             ? cloneSnapshot(previousSnapshot!)
             : cloneSnapshot(newSnapshot!),
@@ -840,11 +841,11 @@ mixin FirestoreQueryMixin implements Query {
   Query limit(int limit) => clone()..queryInfo!.limit = limit;
 
   @override
-  Query orderBy(String key, {bool? descending}) =>
-      clone()..addOrderBy(
-        key,
-        descending == true ? orderByDescending : orderByAscending,
-      );
+  Query orderBy(String key, {bool? descending}) => clone()
+    ..addOrderBy(
+      key,
+      descending == true ? orderByDescending : orderByAscending,
+    );
 
   FirestoreQueryMixin clone();
 
@@ -860,22 +861,21 @@ mixin FirestoreQueryMixin implements Query {
     List<Object>? arrayContainsAny,
     List<Object>? whereIn,
     bool? isNull,
-  }) =>
-      clone()
-        ..queryInfo!.addWhere(
-          WhereInfo(
-            fieldPath,
-            isEqualTo: isEqualTo,
-            isLessThan: isLessThan,
-            isLessThanOrEqualTo: isLessThanOrEqualTo,
-            isGreaterThan: isGreaterThan,
-            isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
-            arrayContains: arrayContains,
-            arrayContainsAny: arrayContainsAny,
-            whereIn: whereIn,
-            isNull: isNull,
-          ),
-        );
+  }) => clone()
+    ..queryInfo!.addWhere(
+      WhereInfo(
+        fieldPath,
+        isEqualTo: isEqualTo,
+        isLessThan: isLessThan,
+        isLessThanOrEqualTo: isLessThanOrEqualTo,
+        isGreaterThan: isGreaterThan,
+        isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
+        arrayContains: arrayContains,
+        arrayContainsAny: arrayContainsAny,
+        whereIn: whereIn,
+        isNull: isNull,
+      ),
+    );
 
   void addOrderBy(String key, String directionStr) {
     var orderBy = OrderByInfo(

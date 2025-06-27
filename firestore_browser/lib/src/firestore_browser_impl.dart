@@ -404,12 +404,13 @@ class DocumentReferenceBrowser
   @override
   Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     var transformer = StreamTransformer.fromHandlers(
-      handleData: (
-        native.DocumentSnapshot nativeDocumentSnapshot,
-        EventSink<DocumentSnapshot> sink,
-      ) {
-        sink.add(_wrapDocumentSnapshot(firestore, nativeDocumentSnapshot));
-      },
+      handleData:
+          (
+            native.DocumentSnapshot nativeDocumentSnapshot,
+            EventSink<DocumentSnapshot> sink,
+          ) {
+            sink.add(_wrapDocumentSnapshot(firestore, nativeDocumentSnapshot));
+          },
     );
     return nativeInstance.onSnapshot.transform(transformer);
   }
@@ -439,10 +440,9 @@ DocumentSnapshotBrowser _wrapDocumentSnapshot(
 
 native.DocumentSnapshot? _unwrapDocumentSnapshot(
   DocumentSnapshot? documentSnapshot,
-) =>
-    documentSnapshot != null
-        ? (documentSnapshot as DocumentSnapshotBrowser)._native
-        : null;
+) => documentSnapshot != null
+    ? (documentSnapshot as DocumentSnapshotBrowser)._native
+    : null;
 
 class QuerySnapshotBrowser implements QuerySnapshot {
   final Firestore firestore;
@@ -639,12 +639,13 @@ class QueryBrowser
   @override
   Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     var transformer = StreamTransformer.fromHandlers(
-      handleData: (
-        native.QuerySnapshot nativeQuerySnapshot,
-        EventSink<QuerySnapshot> sink,
-      ) {
-        sink.add(_wrapQuerySnapshot(firestore, nativeQuerySnapshot));
-      },
+      handleData:
+          (
+            native.QuerySnapshot nativeQuerySnapshot,
+            EventSink<QuerySnapshot> sink,
+          ) {
+            sink.add(_wrapQuerySnapshot(firestore, nativeQuerySnapshot));
+          },
     );
     //new StreamController<QuerySnapshot>();
     return _native.onSnapshot.transform(transformer);

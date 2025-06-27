@@ -99,11 +99,10 @@ Blob jsonValueToBlob(Map map) {
 
 VectorValue jsonValueToVector(Map map) {
   assert(map[jsonTypeField] == typeVector);
-  var array =
-      (map[jsonValueField] as List)
-          .cast<num>()
-          .map((e) => e.toDouble())
-          .toList();
+  var array = (map[jsonValueField] as List)
+      .cast<num>()
+      .map((e) => e.toDouble())
+      .toList();
   return VectorValue(array);
 }
 
@@ -436,32 +435,28 @@ class QueryInfo {
   }
 
   void startAt({DocumentSnapshot? snapshot, List? values}) =>
-      startLimit =
-          (LimitInfo()
-            ..documentId = snapshot?.ref.id
-            ..values = values
-            ..inclusive = true);
+      startLimit = (LimitInfo()
+        ..documentId = snapshot?.ref.id
+        ..values = values
+        ..inclusive = true);
 
   void startAfter({DocumentSnapshot? snapshot, List? values}) =>
-      startLimit =
-          (LimitInfo()
-            ..documentId = snapshot?.ref.id
-            ..values = values
-            ..inclusive = false);
+      startLimit = (LimitInfo()
+        ..documentId = snapshot?.ref.id
+        ..values = values
+        ..inclusive = false);
 
   void endAt({DocumentSnapshot? snapshot, List? values}) =>
-      endLimit =
-          (LimitInfo()
-            ..documentId = snapshot?.ref.id
-            ..values = values
-            ..inclusive = true);
+      endLimit = (LimitInfo()
+        ..documentId = snapshot?.ref.id
+        ..values = values
+        ..inclusive = true);
 
   void endBefore({DocumentSnapshot? snapshot, List? values}) =>
-      endLimit =
-          (LimitInfo()
-            ..documentId = snapshot?.ref.id
-            ..values = values
-            ..inclusive = false);
+      endLimit = (LimitInfo()
+        ..documentId = snapshot?.ref.id
+        ..values = values
+        ..inclusive = false);
 
   void addWhere(WhereInfo where) {
     wheres.add(where);
@@ -487,13 +482,13 @@ WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
     isLessThan: (operator == operatorLessThan) ? value : null,
     isLessThanOrEqualTo: (operator == operatorLessThanOrEqual) ? value : null,
     isGreaterThan: (operator == operatorGreaterThan) ? value : null,
-    isGreaterThanOrEqualTo:
-        (operator == operatorGreaterThanOrEqual) ? value : null,
+    isGreaterThanOrEqualTo: (operator == operatorGreaterThanOrEqual)
+        ? value
+        : null,
     arrayContains: (operator == operatorArrayContains) ? value : null,
-    arrayContainsAny:
-        (operator == operatorArrayContainsAny)
-            ? (value as List).cast<Object>()
-            : null,
+    arrayContainsAny: (operator == operatorArrayContainsAny)
+        ? (value as List).cast<Object>()
+        : null,
     whereIn: (operator == operatorIn) ? (value as List).cast<Object>() : null,
     notIn: (operator == operatorNotIn) ? (value as List).cast<Object>() : null,
   );
@@ -562,10 +557,9 @@ Map<String, Object?> limitInfoToJsonMap(LimitInfo limitInfo) {
     map['inclusive'] = true;
   }
   if (limitInfo.values != null) {
-    map['values'] =
-        limitInfo.values!
-            .map((value) => documentDataValueToJson(value))
-            .toList();
+    map['values'] = limitInfo.values!
+        .map((value) => documentDataValueToJson(value))
+        .toList();
   }
   if (limitInfo.documentId != null) {
     map['documentId'] = limitInfo.documentId;
@@ -579,10 +573,9 @@ LimitInfo limitInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   limitInfo.inclusive = map['inclusive'] == true;
 
   if (map.containsKey('values')) {
-    limitInfo.values =
-        (map['values'] as List)
-            .map((value) => jsonToDocumentDataValue(firestore, value))
-            .toList();
+    limitInfo.values = (map['values'] as List)
+        .map((value) => jsonToDocumentDataValue(firestore, value))
+        .toList();
   } else if (map.containsKey('documentId')) {
     limitInfo.documentId = map['documentId'] as String?;
   }
@@ -598,16 +591,14 @@ Map<String, Object?> queryInfoToJsonMap(QueryInfo queryInfo) {
     map['offset'] = queryInfo.offset;
   }
   if (queryInfo.wheres.isNotEmpty) {
-    map['wheres'] =
-        queryInfo.wheres
-            .map((whereInfo) => whereInfoToJsonMap(whereInfo))
-            .toList();
+    map['wheres'] = queryInfo.wheres
+        .map((whereInfo) => whereInfoToJsonMap(whereInfo))
+        .toList();
   }
   if (queryInfo.orderBys.isNotEmpty) {
-    map['orderBys'] =
-        queryInfo.orderBys
-            .map((orderBy) => orderByInfoToJsonMap(orderBy))
-            .toList();
+    map['orderBys'] = queryInfo.orderBys
+        .map((orderBy) => orderByInfoToJsonMap(orderBy))
+        .toList();
   }
   if (queryInfo.selectKeyPaths != null) {
     map['selectKeyPaths'] = queryInfo.selectKeyPaths;
@@ -630,21 +621,18 @@ QueryInfo queryInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
     queryInfo.offset = map['offset'] as int?;
   }
   if (map.containsKey('wheres')) {
-    queryInfo.wheres =
-        (map['wheres'] as List)
-            .map<WhereInfo>(
-              (map) =>
-                  whereInfoFromJsonMap(firestore, map as Map<String, Object?>),
-            )
-            .toList();
+    queryInfo.wheres = (map['wheres'] as List)
+        .map<WhereInfo>(
+          (map) => whereInfoFromJsonMap(firestore, map as Map<String, Object?>),
+        )
+        .toList();
   }
   if (map.containsKey('orderBys')) {
-    queryInfo.orderBys =
-        (map['orderBys'] as List)
-            .map<OrderByInfo>(
-              (map) => orderByInfoFromJsonMap(map as Map<String, Object?>),
-            )
-            .toList();
+    queryInfo.orderBys = (map['orderBys'] as List)
+        .map<OrderByInfo>(
+          (map) => orderByInfoFromJsonMap(map as Map<String, Object?>),
+        )
+        .toList();
   }
   if (map.containsKey('selectKeyPaths')) {
     queryInfo.selectKeyPaths = (map['selectKeyPaths'] as List).cast<String>();

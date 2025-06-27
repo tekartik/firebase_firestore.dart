@@ -544,16 +544,14 @@ class QuerySnapshotLogger implements QuerySnapshot {
   QuerySnapshotLogger(this.snapshot, this.firestoreLogger);
 
   @override
-  List<DocumentSnapshot> get docs =>
-      snapshot.docs
-          .map((doc) => DocumentSnapshotLogger(doc, firestoreLogger))
-          .toList();
+  List<DocumentSnapshot> get docs => snapshot.docs
+      .map((doc) => DocumentSnapshotLogger(doc, firestoreLogger))
+      .toList();
 
   @override
-  List<DocumentChange> get documentChanges =>
-      snapshot.documentChanges
-          .map((docChange) => DocumentChangeLogger(docChange, firestoreLogger))
-          .toList();
+  List<DocumentChange> get documentChanges => snapshot.documentChanges
+      .map((docChange) => DocumentChangeLogger(docChange, firestoreLogger))
+      .toList();
 }
 
 class DocumentChangeLogger implements DocumentChange {

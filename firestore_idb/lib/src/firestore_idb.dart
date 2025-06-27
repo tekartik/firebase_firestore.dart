@@ -248,8 +248,8 @@ class FirestoreIdb extends Object
 
       // set update Time
       var now = Timestamp.now();
-      recordMap[createTimeKey] =
-          (result.previousSnapshot?.createTime ?? now).toIso8601String();
+      recordMap[createTimeKey] = (result.previousSnapshot?.createTime ?? now)
+          .toIso8601String();
       recordMap[updateTimeKey] = now.toIso8601String();
 
       result.newSnapshot = documentFromRecordMap(documentRef, recordMap);

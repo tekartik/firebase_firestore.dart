@@ -24,10 +24,9 @@ void main() {
       );
     });
     test('query', () {
-      var queryInfo =
-          QueryInfo()
-            ..limit = 1
-            ..startLimit = LimitInfo(values: [1], inclusive: true);
+      var queryInfo = QueryInfo()
+        ..limit = 1
+        ..startLimit = LimitInfo(values: [1], inclusive: true);
       var query =
           (applyQueryInfoNoDocumentId(firestore, 'test', queryInfo))
               as QueryMock;

@@ -107,13 +107,12 @@ void main() {
         );
       }
 
-      var queryInfo =
-          QueryInfo()
-            ..orderBys = [
-              OrderByInfo(fieldPath: 'value', ascending: false),
-              OrderByInfo(fieldPath: firestoreNameFieldPath, ascending: true),
-            ]
-            ..startAt(values: [2, 'b']);
+      var queryInfo = QueryInfo()
+        ..orderBys = [
+          OrderByInfo(fieldPath: 'value', ascending: false),
+          OrderByInfo(fieldPath: firestoreNameFieldPath, ascending: true),
+        ]
+        ..startAt(values: [2, 'b']);
       expect(snapshotMapQueryInfo(newSnapshot('a', 1), queryInfo), isTrue);
       expect(snapshotMapQueryInfo(newSnapshot('c', 1), queryInfo), isTrue);
       expect(snapshotMapQueryInfo(newSnapshot('b', 2), queryInfo), isTrue);
