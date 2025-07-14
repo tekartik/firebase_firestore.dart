@@ -7,6 +7,7 @@ environment:
   sdk: ^3.8.0
 
 dependencies:
+  cv:
   tekartik_firebase_sim:
     git:
       url: https://github.com/tekartik/firebase.dart

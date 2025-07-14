@@ -7,6 +7,7 @@ import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignor
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_common.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_server.dart';
+import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
 
 import 'package:tekartik_firebase_sim/src/firebase_sim_client.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart'; // ignore: implementation_imports
@@ -19,7 +20,7 @@ class FirestoreServiceSim
   @override
   Firestore firestore(App app) {
     return getInstance(app, () {
-      assert(app is AppSim, 'app not compatible');
+      assert(app is FirebaseAppSim, 'app not compatible');
       return FirestoreSim(this, app as AppSim);
     });
   }
@@ -441,28 +442,6 @@ abstract mixin class QueryMixinSim implements Query {
   }
 }
 
-class ServerSubscriptionSim<T> {
-  // the streamId;
-  int? id;
-  final StreamController<T> _controller;
-
-  ServerSubscriptionSim(this._controller);
-
-  Stream<T> get stream => _controller.stream;
-
-  Future close() async {
-    await _controller.close();
-  }
-
-  void add(T snapshot) {
-    _controller.add(snapshot);
-  }
-
-  Completer doneCompleter = Completer();
-
-  Future get done => doneCompleter.future;
-}
-
 class DocumentChangeSim implements DocumentChange {
   @override
   final DocumentChangeType type;
@@ -591,12 +570,12 @@ class FirestoreSim extends Object
   FirestoreSettings? firestoreSettingsSim;
 
   // The key is the streamId from the server
-  final Map<int?, ServerSubscriptionSim> _subscriptions = {};
+  final Map<int, ServerSubscriptionSim> _subscriptions = {};
 
   Future<FirebaseSimClient> get simClient => appSim.simClient;
 
   void addSubscription(ServerSubscriptionSim subscription) {
-    _subscriptions[subscription.id] = subscription;
+    _subscriptions[subscription.id!] = subscription;
   }
 
   @override
