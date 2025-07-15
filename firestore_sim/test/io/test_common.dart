@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast_io.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_plugin.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
+import 'package:tekartik_firebase_sim/firebase_sim.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
-import 'package:tekartik_firebase_sim_io/firebase_sim_client_io.dart' as sim;
 import 'package:tekartik_web_socket_io/web_socket_io.dart';
 
 class TestContext {
@@ -20,7 +20,7 @@ Future<TestContext> initTestContextSimIo() async {
     webSocketChannelServerFactory: webSocketChannelServerFactoryIo,
     plugins: [FirestoreSimPlugin(firestoreServiceMemory)],
   );
-  testContext.firebase = sim.getFirebaseSim(
+  testContext.firebase = getFirebaseSim(
     clientFactory: webSocketChannelClientFactoryIo,
     uri: testContext.simServer.uri,
   );

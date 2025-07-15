@@ -1,7 +1,0 @@
-# tekartik analysis_options extension to pedantic
-include: package:tekartik_lints/package.yaml
-
-linter:
-  rules:
-    public_member_api_docs: false
-    # depend_on_referenced_packages: false

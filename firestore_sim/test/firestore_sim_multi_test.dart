@@ -5,7 +5,8 @@ import 'dart:async';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_multi_client_test.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
-import 'package:tekartik_firebase_sim_io/firebase_sim_client_io.dart' as sim;
+import 'package:tekartik_firebase_sim/firebase_sim.dart';
+
 import 'package:tekartik_web_socket_io/web_socket_io.dart';
 import 'package:test/test.dart';
 
@@ -16,7 +17,7 @@ Future main() async {
   skipConcurrentTransactionTests = true;
   var testContext = await initTestContextSim();
   var firebase = testContext.firebase;
-  var firebase2 = sim.getFirebaseSim(
+  var firebase2 = getFirebaseSim(
     clientFactory: webSocketChannelClientFactoryMemory,
     uri: testContext.simServer.uri,
   );
