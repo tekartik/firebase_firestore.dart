@@ -39,10 +39,13 @@ class AutoIdGenerator {
 /// Collection reference extension to generate unique id
 extension TekartikCollectionReferenceUniqueId on CollectionReference {
   /// Safe unique id generation
-  Future<String> txnGenerateUniqueId(Transaction txn) async {
+  Future<String> txnGenerateUniqueId(
+    Transaction txn, {
+    String Function()? customGenerator,
+  }) async {
     String uniqueId;
     while (true) {
-      uniqueId = AutoIdGenerator.autoId();
+      uniqueId = customGenerator?.call() ?? AutoIdGenerator.autoId();
       if (!(await txn.get(doc(uniqueId))).exists) {
         break;
       }

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dev_test/test.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/auto_id_generator.dart';
@@ -19,6 +21,17 @@ void utilsAutoIdTest({
         id = await getTestsRef().txnGenerateUniqueId(txn);
       });
       expect(id, isNotNull);
+    });
+
+    test('custom txnGenerateUniqueId', () async {
+      var alphabet = ['a', 'b', 'c', 'd', 'e'];
+      var genId = await firestore.runTransaction((txn) async {
+        return await getTestsRef().txnGenerateUniqueId(
+          txn,
+          customGenerator: () => alphabet[Random().nextInt(alphabet.length)],
+        );
+      });
+      expect(alphabet, contains(genId));
     });
   });
 }
