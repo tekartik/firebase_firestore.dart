@@ -4,7 +4,6 @@ environment:
   sdk: ^3.8.0
 workspace:
   - firestore
-  - firestore_browser
   - firestore_idb
   - firestore_sembast
   - firestore_sim
