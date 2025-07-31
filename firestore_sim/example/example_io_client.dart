@@ -1,8 +1,8 @@
 import 'package:tekartik_firebase_firestore_sim/firestore_sim.dart';
-import 'package:tekartik_firebase_firestore_test/menu/firebase_client_menu.dart';
+import 'package:tekartik_firebase_firestore_test/menu/firestore_client_menu.dart';
 import 'package:tekartik_firebase_sim/firebase_sim.dart';
 
-var urlKv = '4338987.url'.kvFromVar(
+var urlKv = 'firestore_sim_example.url'.kvFromVar(
   defaultValue: 'ws://localhost:${firebaseSimDefaultPort.toString()}',
 );
 
