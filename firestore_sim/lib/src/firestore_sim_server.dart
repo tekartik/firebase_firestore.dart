@@ -15,11 +15,11 @@ import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart';
 import 'firestore_sim_plugin.dart'; // ignore: implementation_imports
 // ignore: implementation_imports
 
-class FirestoreSimService extends FirebaseSimServiceBase {
+class FirestoreSimServerService extends FirebaseSimServerServiceBase {
   late FirestoreSimPlugin firestoreSimPlugin;
   final _expando = Expando<_FirestoreSimPluginServer>();
   static final serviceName = 'firebase_firestore';
-  FirestoreSimService() : super(serviceName);
+  FirestoreSimServerService() : super(serviceName);
 
   @override
   FutureOr<Object?> onCall(

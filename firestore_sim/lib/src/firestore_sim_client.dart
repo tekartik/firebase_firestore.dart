@@ -109,7 +109,7 @@ class DocumentReferenceSim
     var simClient = await firestoreSim.simClient;
     var firestoreDeleteData = FirestorePathData()..path = path;
     await simClient.sendRequest<void>(
-      FirestoreSimService.serviceName,
+      FirestoreSimServerService.serviceName,
       methodFirestoreDelete,
       firestoreDeleteData.toMap(),
     );
@@ -130,7 +130,7 @@ class DocumentReferenceSim
       ..data = jsonMap
       ..merge = options?.merge;
     await simClient.sendRequest<void>(
-      FirestoreSimService.serviceName,
+      FirestoreSimServerService.serviceName,
       methodFirestoreSet,
       firestoreSetData.toMap(),
     );
@@ -144,7 +144,7 @@ class DocumentReferenceSim
       ..path = path
       ..data = jsonMap;
     await simClient.sendRequest<void>(
-      FirestoreSimService.serviceName,
+      FirestoreSimServerService.serviceName,
       methodFirestoreUpdate,
       firestoreSetData.toMap(),
     );
@@ -166,7 +166,7 @@ class DocumentReferenceSim
       if (firestoreSim._subscriptions.containsKey(subscriptionId)) {
         var result = resultAsMap(
           await simClient!.sendRequest<Object?>(
-            FirestoreSimService.serviceName,
+            FirestoreSimServerService.serviceName,
             methodFirestoreGetStream,
             {paramSubscriptionId: subscriptionId},
           ),
@@ -198,7 +198,7 @@ class DocumentReferenceSim
         onCancel: () async {
           await firestoreSim.removeSubscription(subscription);
           await simClient!.sendRequest<void>(
-            FirestoreSimService.serviceName,
+            FirestoreSimServerService.serviceName,
             methodFirestoreGetCancel,
             {paramSubscriptionId: subscription.id},
           );
@@ -211,7 +211,7 @@ class DocumentReferenceSim
       simClient = await firestoreSim.simClient;
       var result = resultAsMap(
         await simClient!.sendRequest<Object>(
-          FirestoreSimService.serviceName,
+          FirestoreSimServerService.serviceName,
           methodFirestoreGetListen,
           {paramPath: path},
         ),
@@ -321,7 +321,7 @@ abstract mixin class QueryMixinSim implements Query {
       ..queryInfo = queryInfo;
     var result = resultAsMap(
       await simClient.sendRequest<Map>(
-        FirestoreSimService.serviceName,
+        FirestoreSimServerService.serviceName,
         methodFirestoreQuery,
         data.toMap(),
       ),
@@ -349,7 +349,7 @@ abstract mixin class QueryMixinSim implements Query {
       if (firestoreSim._subscriptions.containsKey(subscriptionId)) {
         var result = resultAsMap(
           await simClient!.sendRequest<Map>(
-            FirestoreSimService.serviceName,
+            FirestoreSimServerService.serviceName,
             methodFirestoreQueryStream,
             {paramSubscriptionId: subscriptionId},
           ),
@@ -408,7 +408,7 @@ abstract mixin class QueryMixinSim implements Query {
         onCancel: () async {
           await firestoreSim.removeSubscription(subscription);
           await simClient!.sendRequest<void>(
-            FirestoreSimService.serviceName,
+            FirestoreSimServerService.serviceName,
             methodFirestoreQueryCancel,
             {paramSubscriptionId: subscription.id},
           );
@@ -426,7 +426,7 @@ abstract mixin class QueryMixinSim implements Query {
 
       var result = resultAsMap(
         await simClient!.sendRequest<Map>(
-          FirestoreSimService.serviceName,
+          FirestoreSimServerService.serviceName,
           methodFirestoreQueryListen,
           data.toMap(),
         ),
@@ -520,7 +520,7 @@ class CollectionReferenceSim extends Object
       ..path = path
       ..data = jsonMap;
     var result = await simClient.sendRequest<Map>(
-      FirestoreSimService.serviceName,
+      FirestoreSimServerService.serviceName,
       methodFirestoreAdd,
       firestoreSetData.toMap(),
     );
@@ -653,7 +653,7 @@ class FirestoreSim extends Object
     var simClient = await this.simClient;
     var result = resultAsMap(
       await simClient.sendRequest<Map>(
-        FirestoreSimService.serviceName,
+        FirestoreSimServerService.serviceName,
         methodFirestoreTransaction,
         <String, Object?>{},
       ),
@@ -676,7 +676,7 @@ class FirestoreSim extends Object
     var simClient = await this.simClient;
     var result = resultAsMap(
       await simClient.sendRequest<Map>(
-        FirestoreSimService.serviceName,
+        FirestoreSimServerService.serviceName,
         methodFirestoreGet,
         requestData.toMap(),
       ),
@@ -727,7 +727,7 @@ class TransactionSim extends WriteBatchSim implements Transaction {
       ..transactionId = transactionId;
     var simClient = await firestore.simClient;
     await simClient.sendRequest<Map>(
-      FirestoreSimService.serviceName,
+      FirestoreSimServerService.serviceName,
       methodFirestoreTransactionCancel,
       requestData.toMap(),
     );
@@ -774,7 +774,7 @@ class WriteBatchSim extends WriteBatchBase {
     }
     var simClient = await firestore.simClient;
     await simClient.sendRequest<void>(
-      FirestoreSimService.serviceName,
+      FirestoreSimServerService.serviceName,
       method,
       batchData.toMap(),
     );

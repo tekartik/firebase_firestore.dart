@@ -4,13 +4,13 @@ import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 import 'firestore_sim_server.dart';
 
 class FirestoreSimPlugin implements FirebaseSimPlugin {
-  final firestoreSimService = FirestoreSimService();
+  final firestoreSimServerService = FirestoreSimServerService();
   final FirestoreService firestoreService;
 
   FirestoreSimPlugin(this.firestoreService) {
-    firestoreSimService.firestoreSimPlugin = this;
+    firestoreSimServerService.firestoreSimPlugin = this;
   }
 
   @override
-  FirebaseSimServiceBase get simService => firestoreSimService;
+  FirebaseSimServerService get simService => firestoreSimServerService;
 }
