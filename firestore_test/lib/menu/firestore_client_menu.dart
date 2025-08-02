@@ -23,8 +23,9 @@ void firestoreMainMenu({required FirestoreMainMenuContext context}) {
     item('register changes', () {
       subscription?.cancel();
       subscription = coll.onSnapshotSupport().listen((event) {
+        write('onItems: ${event.docs.length}');
         for (var item in event.docs) {
-          write('onItem: $item');
+          write('- $item');
         }
       });
     });

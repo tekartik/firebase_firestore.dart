@@ -13,7 +13,7 @@ Future<void> main(List<String> args) async {
     FirebaseLocal(),
     webSocketChannelServerFactory: webSocketChannelServerFactoryIo,
     port: urlKvPort,
-    plugins: [FirestoreSimPlugin(firestoreServiceMemory)],
+    plugins: [FirestoreSimPlugin(firestoreService: firestoreServiceMemory)],
   );
   print('url ${firebaseSimServer.url}');
 }

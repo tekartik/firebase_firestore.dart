@@ -16,7 +16,9 @@ class TestContext {
 // memory only
 Future<TestContext> initTestContextSim() async {
   var testContext = TestContext();
-  var firestoreSimPlugin = FirestoreSimPlugin(newFirestoreServiceMemory());
+  var firestoreSimPlugin = FirestoreSimPlugin(
+    firestoreService: newFirestoreServiceMemory(),
+  );
   // The server use firebase io
   var simServer = testContext.simServer = await firebaseSimServe(
     FirebaseLocal(),

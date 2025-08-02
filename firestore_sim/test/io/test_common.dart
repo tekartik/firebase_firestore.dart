@@ -18,7 +18,7 @@ Future<TestContext> initTestContextSimIo() async {
   testContext.simServer = await firebaseSimServe(
     FirebaseLocal(),
     webSocketChannelServerFactory: webSocketChannelServerFactoryIo,
-    plugins: [FirestoreSimPlugin(firestoreServiceMemory)],
+    plugins: [FirestoreSimPlugin(firestoreService: firestoreServiceMemory)],
   );
   testContext.firebase = getFirebaseSim(
     clientFactory: webSocketChannelClientFactoryIo,

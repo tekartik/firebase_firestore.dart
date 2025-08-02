@@ -10,7 +10,6 @@ import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 // ignore: implementation_imports
-import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart';
 
 import 'firestore_sim_plugin.dart'; // ignore: implementation_imports
 // ignore: implementation_imports

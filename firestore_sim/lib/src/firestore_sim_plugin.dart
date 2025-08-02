@@ -7,7 +7,7 @@ class FirestoreSimPlugin implements FirebaseSimPlugin {
   final firestoreSimServerService = FirestoreSimServerService();
   final FirestoreService firestoreService;
 
-  FirestoreSimPlugin(this.firestoreService) {
+  FirestoreSimPlugin({required this.firestoreService}) {
     firestoreSimServerService.firestoreSimPlugin = this;
   }
 
