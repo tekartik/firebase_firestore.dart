@@ -8,8 +8,8 @@ import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_common.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_server.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
-
 import 'package:tekartik_firebase_sim/src/firebase_sim_client.dart'; // ignore: implementation_imports
+
 // ignore: implementation_imports
 
 import 'import_firestore.dart'; // ignore: implementation_imports
@@ -191,9 +191,9 @@ class DocumentReferenceSim
 
   @override
   Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
-    late ServerSubscriptionSim<DocumentSnapshotSim> subscription;
+    late ServerSubscriptionSim<DocumentSnapshot> subscription;
     FirebaseSimClient? simClient;
-    subscription = ServerSubscriptionSim(
+    subscription = ServerSubscriptionSim<DocumentSnapshot>(
       StreamController(
         onCancel: () async {
           await firestoreSim.removeSubscription(subscription);
@@ -403,7 +403,7 @@ abstract mixin class QueryMixinSim implements Query {
   Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     FirebaseSimClient? simClient;
     late ServerSubscriptionSim<QuerySnapshot> subscription;
-    subscription = ServerSubscriptionSim(
+    subscription = ServerSubscriptionSim<QuerySnapshot>(
       StreamController(
         onCancel: () async {
           await firestoreSim.removeSubscription(subscription);
