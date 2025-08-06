@@ -37,6 +37,7 @@ void runAggregateQueryTest({
         ]).get();
         expect(snapshot.getAverage('value'), isNull);
       } catch (e) {
+        // ignore: avoid_print
         print('Failing OK for flutter here: $e');
       }
     });

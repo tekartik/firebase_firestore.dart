@@ -21,7 +21,7 @@ void runFirestoreDocumentTests({
         'map': {'test': 1},
         'blob': Blob.fromList([1, 2, 3]),
         'ref': firestore.doc('test/4'),
-        'geoPoint': GeoPoint(5, 6),
+        'geoPoint': const GeoPoint(5, 6),
         'timestamp': Timestamp(7, 8000),
       };
       var doc = firestore.doc(url.join(testsRefPath, 'doc_all_types'));

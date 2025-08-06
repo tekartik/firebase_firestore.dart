@@ -22,6 +22,7 @@ void vectorValueGroup({
         await docRef.set({'foo': const VectorValue([])});
         fail('Should have thrown an exception');
       } catch (e) {
+        // ignore: avoid_print
         print(e);
         /*
         expect(e, isA<FirebaseException>());
@@ -35,6 +36,7 @@ void vectorValueGroup({
         await docRef.set({'foo': maxPlusOneDimensions});
         fail('Should have thrown an exception');
       } catch (e) {
+        // ignore: avoid_print
         print(e);
         /*
         expect(e, isA<FirebaseException>());
@@ -46,11 +48,12 @@ void vectorValueGroup({
       try {
         await docRef.set({
           'foo': [
-            VectorValue([1]),
+            const VectorValue([1]),
           ],
         });
         fail('Should have thrown an exception');
       } catch (e) {
+        // ignore: avoid_print
         print(e);
         /*
         expect(e, isA<FirebaseException>());
@@ -80,11 +83,11 @@ void vectorValueGroup({
       var docPath = vectorValueGetTestPath('vectorValue/vectorValue');
       var docRef = firestore.doc(docPath);
 
-      var v1 = VectorValue([1, 2000000]);
+      var v1 = const VectorValue([1, 2000000]);
       var map = {'v1': v1};
       await docRef.set(map);
       expect((await docRef.get()).data, map);
-      v1 = VectorValue([-1.0]);
+      v1 = const VectorValue([-1.0]);
       map = {'v1': v1};
       await docRef.set(map);
       expect((await docRef.get()).data, map);
@@ -95,7 +98,7 @@ void vectorValueGroup({
       var docRef = firestore.doc(
         vectorValueGetTestPath('vectorValue/vectorValue_in_list'),
       );
-      var t1 = VectorValue([1, 2000000]);
+      var t1 = const VectorValue([1, 2000000]);
       var map = {
         't1s': [t1],
       };
@@ -107,7 +110,7 @@ void vectorValueGroup({
       var docRef = firestore.doc(
         vectorValueGetTestPath('vectorValue/vectorValue_in_map_list'),
       );
-      var t1 = VectorValue([1, 2000000]);
+      var t1 = const VectorValue([1, 2000000]);
       var map = {
         't1': {'value': t1},
       };

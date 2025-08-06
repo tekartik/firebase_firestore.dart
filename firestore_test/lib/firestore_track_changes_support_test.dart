@@ -51,7 +51,7 @@ void runFirestoreTrackChangesSupportTests({
       var docRef = collRef.doc('one_record');
 
       var pullOptions1 = TrackChangesSupportOptions(
-        refreshDelay: Duration(milliseconds: 200),
+        refreshDelay: const Duration(milliseconds: 200),
       );
 
       var future = Future.wait([
@@ -114,7 +114,7 @@ void runFirestoreTrackChangesSupportTests({
       var docRef = testsRef.doc('two_onSnapshotSupport');
       await docRef.delete();
       var pullOptions1 = TrackChangesSupportOptions(
-        refreshDelay: Duration(milliseconds: 200),
+        refreshDelay: const Duration(milliseconds: 200),
       );
 
       var completer1 = Completer<void>();
@@ -145,7 +145,7 @@ void runFirestoreTrackChangesSupportTests({
       var docRef = testsRef.doc('simple_updatesOnSnapshotSupport');
       await docRef.delete();
       var pullOptions1 = TrackChangesSupportOptions(
-        refreshDelay: Duration(milliseconds: 200),
+        refreshDelay: const Duration(milliseconds: 200),
       );
       var pullOptions2 = TrackChangesSupportOptions.first();
 

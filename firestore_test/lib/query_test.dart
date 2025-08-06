@@ -72,7 +72,7 @@ void runFirestoreQueryTests({
           'value': Blob.fromList([1, 2, 3]),
         });
         txn.set(collRef.doc('ref'), {'value': firestore.doc('test/1')});
-        txn.set(collRef.doc('geoPoint'), {'value': GeoPoint(1, 2)});
+        txn.set(collRef.doc('geoPoint'), {'value': const GeoPoint(1, 2)});
       });
 
       Future<void> check() async {
@@ -211,6 +211,7 @@ void runFirestoreQueryTests({
       } catch (e) {
         // Allow failure on node
         if (isNodePlatform()) {
+          // ignore: avoid_print
           print('failure $e on node');
         } else {
           rethrow;
@@ -422,6 +423,7 @@ void runFirestoreQueryTests({
         expect(list.length, 1);
         expect(list.first.ref.id, 'one');
       } catch (e) {
+        // ignore: avoid_print
         print('Allow rest failure: $e');
       }
 
@@ -500,6 +502,7 @@ void runFirestoreQueryTests({
         expect(list.length, 2);
         expect(list.first.ref.id, 'one');
       } catch (e) {
+        // ignore: avoid_print
         print('Allow REST failure for: $e');
       }
     });
@@ -634,7 +637,7 @@ void runFirestoreQueryTests({
       if (firestore.service.supportsTimestamps) {
         await testField('timestamp', timestamp1, timestamp2);
       }
-    }, timeout: Timeout(Duration(seconds: 120)));
+    }, timeout: const Timeout(Duration(seconds: 120)));
 
     test('nested_object_order', () async {
       var testsRef = getTestsRef();

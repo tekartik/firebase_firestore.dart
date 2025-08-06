@@ -480,7 +480,7 @@ void runFirestoreCommonTests({
         documentData.setList('intList', <int>[4, 3]);
         documentData.setDocumentReference('docRef', firestore.doc('tests/doc'));
         documentData.setBlob('blob', Blob(Uint8List.fromList([1, 2, 3])));
-        documentData.setGeoPoint('geoPoint', GeoPoint(1.2, 4));
+        documentData.setGeoPoint('geoPoint', const GeoPoint(1.2, 4));
 
         documentData.setFieldValue(
           'serverTimestamp',
@@ -513,7 +513,7 @@ void runFirestoreCommonTests({
         );
         expect(documentData.getDocumentReference('docRef')!.path, 'tests/doc');
         expect(documentData.getBlob('blob')!.data, [1, 2, 3]);
-        expect(documentData.getGeoPoint('geoPoint'), GeoPoint(1.2, 4));
+        expect(documentData.getGeoPoint('geoPoint'), const GeoPoint(1.2, 4));
         expect(
           documentData.getDateTime('serverTimestamp')!.millisecondsSinceEpoch >
               0,
@@ -741,7 +741,7 @@ void runFirestoreCommonTests({
           'intList': <int>[4, 3],
           'docRef': firestore.doc('tests/doc'),
           'blob': Blob(Uint8List.fromList([1, 2, 3])),
-          'geoPoint': GeoPoint(1.2, 4),
+          'geoPoint': const GeoPoint(1.2, 4),
           'serverTimestamp': FieldValue.serverTimestamp,
           'subData': {
             'localDateTime': localDateTime,
@@ -776,7 +776,7 @@ void runFirestoreCommonTests({
               : timestamp.toDateTime(),
           'intList': <int>[4, 3],
           'blob': Blob(Uint8List.fromList([1, 2, 3])),
-          'geoPoint': GeoPoint(1.2, 4),
+          'geoPoint': const GeoPoint(1.2, 4),
           'subData': {
             'localDateTime': firestoreService.supportsTimestampsInSnapshots
                 ? Timestamp.fromDateTime(localDateTime)
@@ -837,7 +837,6 @@ void runFirestoreCommonTests({
 
         var snapshot = await docRef.get();
         expect(snapshot.data, {'field1': 1, 'field2': 2});
-        print(snapshot.data);
       });
       test('merge', () async {
         var testsRef = getTestsRef();
@@ -867,7 +866,6 @@ void runFirestoreCommonTests({
             },
           },
         });
-        print(snapshot.data);
       });
       test('array', () async {
         if (firestoreService.supportsFieldValueArray) {
@@ -940,6 +938,7 @@ void runFirestoreCommonTests({
             'no_merge_not_existing': [],
           });
         } else {
+          // ignore: avoid_print
           print('supportsFieldValueArray false');
         }
       });
