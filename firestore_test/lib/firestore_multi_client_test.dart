@@ -17,7 +17,17 @@ void firestoreMulticlientTest({
       !firestore1.service.supportsTrackChanges ||
       !firestore2.service.supportsTrackChanges;
 
-  test('multi client', () async {
+  test('multi client get set', () async {
+    var doc1 = firestore1.doc('$docTopPath/record/record1');
+    var doc2 = firestore2.doc(doc1.path);
+    var map1 = {'test': 1};
+    var map2 = {'test': 2};
+    await doc1.set(map1);
+    expect((await doc2.get()).data, map1);
+    await doc2.set(map2);
+    expect((await doc1.get()).data, map2);
+  });
+  test('multi client track changes', () async {
     var doc1 = firestore1.doc('$docTopPath/record/record1');
     var doc2 = firestore2.doc(doc1.path);
     var map1 = {'test': 1};
@@ -42,5 +52,5 @@ void firestoreMulticlientTest({
     await doc2.set(map2);
     await completer2.future;
     await subscription1.cancel();
-  });
+  }, skip: skip);
 }
