@@ -4,10 +4,10 @@ version: 0.8.0
 publish_to: none
 
 environment:
-  sdk: ^3.8.0
+  sdk: ^3.9.0
 
 dependencies:
-  cv:
+  cv: ">=1.1.0+4"
   tekartik_firebase_sim:
     git:
       url: https://github.com/tekartik/firebase.dart

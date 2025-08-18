@@ -4,7 +4,7 @@ version: 0.8.2
 publish_to: none
 
 environment:
-  sdk: ^3.8.0
+  sdk: ^3.9.0
 
 dependencies:
   uuid: '>=1.0.0'
@@ -27,7 +27,7 @@ dependencies:
       url: https://github.com/tekartik/app_common_utils.dart
       ref: dart3a
       path: app_dev_menu
-  collection: ">=1.16.0"
+  collection: ">=1.18.0"
   tekartik_common_utils:
     git:
       url: https://github.com/tekartik/common_utils.dart
