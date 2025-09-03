@@ -461,6 +461,29 @@ class QueryInfo {
   void addWhere(WhereInfo where) {
     wheres.add(where);
   }
+
+  void debugCheck() {
+    if (orderBys.isNotEmpty) {
+      var orderByKeys = orderBys.map((e) => e.fieldPath).toSet();
+      var whereKeys = wheres.map((e) => e.fieldPath).toSet();
+      for (var whereKey in whereKeys) {
+        if (!orderByKeys.contains(whereKey)) {
+          throw StateError(
+            'Missing orderBy for where $whereKey in $orderByKeys',
+          );
+        }
+      }
+      for (var valuesList in [startLimit?.values, endLimit?.values]) {
+        if (valuesList != null) {
+          if (orderBys.length != valuesList.length) {
+            throw StateError(
+              'Value count in $valuesList not matching order list $orderByKeys',
+            );
+          }
+        }
+      }
+    }
+  }
 }
 
 WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {

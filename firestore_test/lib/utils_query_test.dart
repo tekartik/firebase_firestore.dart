@@ -94,5 +94,111 @@ void runUtilsQueryTest({
       expect(await findInCollection(), isFalse);
       expect(await find2InCollection(), isFalse);
     });
+
+    test('deleteQuery batchSize and limit', () async {
+      var collRef = firestore.collection(
+        url.join(testsRefPath, 'utils_query', 'delete_limit'),
+      );
+
+      Future<int> getCount() async {
+        return (await collRef.count());
+      }
+
+      await deleteQuery(firestore, collRef);
+      expect(await getCount(), 0);
+      await firestore.runTransaction((txn) {
+        for (var i = 0; i < 10; i++) {
+          var id = (i + 1).toString().padLeft(3, '0');
+          var timestamp = Timestamp.now();
+          txn.set(collRef.doc(id), {'timestamp': timestamp});
+        }
+      });
+      var query = collRef.orderBy('timestamp');
+      expect(await query.queryDelete(limit: 7, batchSize: 3), 7);
+      expect(await getCount(), 3);
+    });
+    test('actionQuery batchSize and limit', () async {
+      var collRef = firestore.collection(
+        url.join(testsRefPath, 'utils_query', 'action_query'),
+      );
+
+      Future<int> getCount() async {
+        return (await collRef.count());
+      }
+
+      await deleteQuery(firestore, collRef);
+      expect(await getCount(), 0);
+      await firestore.runTransaction((txn) {
+        for (var i = 0; i < 10; i++) {
+          var id = (i + 1).toString().padLeft(2, '0');
+          var timestamp = Timestamp.now();
+          txn.set(collRef.doc(id), {'text': id, 'timestamp': timestamp});
+        }
+      });
+
+      var query = collRef.where('text', isLessThanOrEqualTo: '03');
+      expect(await query.count(), 3);
+      query = collRef.where('text', isLessThanOrEqualTo: '03').orderBy('text');
+      expect(await query.count(), 3);
+      query = collRef.where('text', isLessThanOrEqualTo: '07').orderBy('text');
+      expect(
+        await query.queryAction(
+          limit: 9,
+          batchSize: 3,
+          orderByFields: ['text'],
+          actionFunction: (ids) async {
+            return ids.length;
+          },
+        ),
+        7,
+      );
+      query = collRef
+          .where('text', isGreaterThanOrEqualTo: '07')
+          .orderBy('text');
+      expect(
+        await query.queryAction(
+          limit: 9,
+          batchSize: 3,
+          orderByFields: ['text'],
+          actionFunction: (ids) async {
+            return ids.length;
+          },
+        ),
+        4,
+      );
+    });
+
+    test('invalid query', () async {
+      var ref = firestore.collection(
+        url.join(testsRefPath, 'utils_query', 'invalid_query'),
+      );
+      var query = ref
+          .where('text', isGreaterThanOrEqualTo: '07')
+          .orderBy(firestoreNameFieldPath);
+      try {
+        // node: invalid_query: caught [cloud_firestore/invalid-argument] Order by clause cannot contain more fields after the key text
+        await query.get();
+        fail('should fail');
+      } catch (e) {
+        // ignore: avoid_print
+        print('invalid_query: caught $e');
+        expect(e, isNot(isA<TestFailure>()));
+      }
+
+      query = ref
+          .where('text', isGreaterThanOrEqualTo: '07')
+          .orderBy('text')
+          .orderBy('text2')
+          .startAfter(values: ['a']);
+      try {
+        // node: INVALID_ARGUMENT: order by clause cannot contain more fields after the key
+        await query.get();
+        fail('should fail');
+      } catch (e) {
+        // ignore: avoid_print
+        print('invalid_query: caught $e');
+        expect(e, isNot(isA<TestFailure>()));
+      }
+    });
   });
 }

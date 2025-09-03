@@ -11,7 +11,7 @@ void main() {
   var firebase = FirebaseLocal();
   runFirestoreTests(
     firebase: firebase,
-    firestoreService: newFirestoreServiceMemory(),
+    firestoreService: newFirestoreServiceMemory(), //.debugQuickLoggerWrapper(),
   );
 
   test('newInMemory', () async {
