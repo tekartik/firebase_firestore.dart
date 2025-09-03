@@ -461,6 +461,20 @@ class QueryInfo {
   void addWhere(WhereInfo where) {
     wheres.add(where);
   }
+
+  void debugCheck() {
+    if (orderBys.isNotEmpty) {
+      var orderByKeys = orderBys.map((e) => e.fieldPath).toSet();
+      var whereKeys = wheres.map((e) => e.fieldPath).toSet();
+      for (var whereKey in whereKeys) {
+        if (!orderByKeys.contains(whereKey)) {
+          throw StateError(
+            'Missing orderBy for where $whereKey in $orderByKeys',
+          );
+        }
+      }
+    }
+  }
 }
 
 WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {

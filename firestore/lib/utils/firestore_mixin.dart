@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
+import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase_firestore/src/common/import_firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
@@ -717,6 +718,9 @@ mixin FirestoreQueryMixin implements Query {
   @override
   Future<QuerySnapshot> get() async {
     var queryInfo = this.queryInfo!;
+    if (isDebug) {
+      queryInfo.debugCheck();
+    }
     // Get and filter
     var docs = <DocumentSnapshot>[];
     var allDocs = await getCollectionDocuments();

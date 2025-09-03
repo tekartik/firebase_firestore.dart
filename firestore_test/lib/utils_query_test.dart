@@ -165,5 +165,23 @@ void runUtilsQueryTest({
         4,
       );
     });
+
+    test('invalid query', () async {
+      var ref = firestore.collection(
+        url.join(testsRefPath, 'utils_query', 'invalid_query'),
+      );
+      var query = ref
+          .where('text', isGreaterThanOrEqualTo: '07')
+          .orderBy(firestoreNameFieldPath);
+      try {
+        // node: invalid_query: caught [cloud_firestore/invalid-argument] Order by clause cannot contain more fields after the key text
+        await query.get();
+        fail('should fail');
+      } catch (e) {
+        // ignore: avoid_print
+        print('invalid_query: caught $e');
+        expect(e, isNot(isA<TestFailure>()));
+      }
+    });
   });
 }
