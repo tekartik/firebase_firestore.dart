@@ -94,5 +94,28 @@ void runUtilsQueryTest({
       expect(await findInCollection(), isFalse);
       expect(await find2InCollection(), isFalse);
     });
+
+    test('deleteQuery batchSize and limit', () async {
+      var collRef = firestore.collection(
+        url.join(testsRefPath, 'utils_query', 'delete_limit'),
+      );
+
+      Future<int> getCount() async {
+        return (await collRef.count());
+      }
+
+      await deleteQuery(firestore, collRef);
+      expect(await getCount(), 0);
+      await firestore.runTransaction((txn) {
+        for (var i = 0; i < 10; i++) {
+          var id = (i + 1).toString().padLeft(3, '0');
+          var timestamp = Timestamp.now();
+          txn.set(collRef.doc(id), {'timestamp': timestamp});
+        }
+      });
+      var query = collRef.orderBy('timestamp');
+      expect(await query.queryDelete(limit: 7, batchSize: 3), 7);
+      expect(await getCount(), 3);
+    });
   });
 }

@@ -1,29 +1,50 @@
 // Delete entire collection
 // <https://firebase.google.com/docs/firestore/manage-data/delete-data#collections>
 
+import 'dart:math';
+
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
 /// Query extension
 extension TekartikFirestoreQueryExt on Query {
   /// Delete all items in a query, return the count deleted
-  Future<int> queryDelete({int? batchSize, Iterable<String>? keepIds}) async {
-    return await _delete(batchSize: batchSize, keepIds: keepIds);
+  Future<int> queryDelete({
+    int? batchSize,
+    Iterable<String>? keepIds,
+
+    /// Needed
+    int? limit,
+  }) async {
+    return await _delete(batchSize: batchSize, keepIds: keepIds, limit: limit);
   }
 
   /// Delete all item in a query, return the count deleted
   /// Batch size default to 10
   /// Keep doc with paths in keepPaths
-  Future<int> _delete({int? batchSize, Iterable<String>? keepIds}) async {
-    batchSize ??= 10;
+  Future<int> _delete({
+    int? batchSize,
+    Iterable<String>? keepIds,
+    required int? limit,
+  }) async {
+    var stepSize = batchSize ?? 10;
     var count = 0;
+
+    var maxRemainingCount = limit;
+
     var deletedIds = <String>{};
     if (keepIds != null) {
       deletedIds.addAll(keepIds);
     }
     int snapshotSize;
     do {
-      var snapshot = await limit(batchSize).get();
+      if (maxRemainingCount != null) {
+        stepSize = min(stepSize, maxRemainingCount);
+        if (stepSize <= 0) {
+          break;
+        }
+      }
+      var snapshot = await this.limit(stepSize).get();
       snapshotSize = snapshot.docs.length;
 
       // When there are no documents left, we are done
@@ -46,8 +67,12 @@ extension TekartikFirestoreQueryExt on Query {
       }
 
       await batch.commit();
-      count += snapshot.docs.length;
-    } while (snapshotSize >= batchSize);
+      var docCount = snapshot.docs.length;
+      count += docCount;
+      if (maxRemainingCount != null) {
+        maxRemainingCount -= docCount;
+      }
+    } while (snapshotSize >= stepSize);
 
     return count;
   }
@@ -107,10 +132,15 @@ Future<int> deleteQuery(
   Firestore firestore,
   Query query, {
   int? batchSize,
+  int? limit, // Needed for now as existing limit is overriden
   Iterable<String>? keepPaths,
+  Iterable<String>? keepIds,
 }) async {
   return await query.queryDelete(
     batchSize: batchSize,
-    keepIds: keepPaths?.map((path) => firestorePathGetId(path)),
+    keepIds: (keepIds != null)
+        ? keepIds
+        : keepPaths?.map((path) => firestorePathGetId(path)),
+    limit: limit,
   );
 }
