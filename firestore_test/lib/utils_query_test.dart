@@ -136,9 +136,11 @@ void runUtilsQueryTest({
         }
       });
 
-      var query = collRef
-          .where('text', isLessThanOrEqualTo: '07')
-          .orderBy('text');
+      var query = collRef.where('text', isLessThanOrEqualTo: '03');
+      expect(await query.count(), 3);
+      query = collRef.where('text', isLessThanOrEqualTo: '03').orderBy('text');
+      expect(await query.count(), 3);
+      query = collRef.where('text', isLessThanOrEqualTo: '07').orderBy('text');
       expect(
         await query.queryAction(
           limit: 9,
