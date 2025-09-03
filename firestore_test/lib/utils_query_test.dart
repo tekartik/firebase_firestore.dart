@@ -145,6 +145,7 @@ void runUtilsQueryTest({
         await query.queryAction(
           limit: 9,
           batchSize: 3,
+          orderByFields: ['text'],
           actionFunction: (ids) async {
             return ids.length;
           },
@@ -158,6 +159,7 @@ void runUtilsQueryTest({
         await query.queryAction(
           limit: 9,
           batchSize: 3,
+          orderByFields: ['text'],
           actionFunction: (ids) async {
             return ids.length;
           },
@@ -175,6 +177,21 @@ void runUtilsQueryTest({
           .orderBy(firestoreNameFieldPath);
       try {
         // node: invalid_query: caught [cloud_firestore/invalid-argument] Order by clause cannot contain more fields after the key text
+        await query.get();
+        fail('should fail');
+      } catch (e) {
+        // ignore: avoid_print
+        print('invalid_query: caught $e');
+        expect(e, isNot(isA<TestFailure>()));
+      }
+
+      query = ref
+          .where('text', isGreaterThanOrEqualTo: '07')
+          .orderBy('text')
+          .orderBy('text2')
+          .startAfter(values: ['a']);
+      try {
+        // node: INVALID_ARGUMENT: order by clause cannot contain more fields after the key
         await query.get();
         fail('should fail');
       } catch (e) {

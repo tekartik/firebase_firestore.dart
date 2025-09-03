@@ -473,6 +473,15 @@ class QueryInfo {
           );
         }
       }
+      for (var valuesList in [startLimit?.values, endLimit?.values]) {
+        if (valuesList != null) {
+          if (orderBys.length != valuesList.length) {
+            throw StateError(
+              'Value count in $valuesList not matching order list $orderByKeys',
+            );
+          }
+        }
+      }
     }
   }
 }
