@@ -82,6 +82,9 @@ abstract class Firestore implements FirebaseAppProduct<Firestore> {
   /// Gets a [CollectionReference] for the specified Firestore path.
   CollectionReference collection(String path);
 
+  /// Gets a [Query] for the specified collection group.
+  Query collectionGroup(String collectionId);
+
   /// Gets a [DocumentReference] for the specified Firestore path.
   DocumentReference doc(String path);
 

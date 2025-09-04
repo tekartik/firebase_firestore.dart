@@ -16,6 +16,7 @@ import 'package:tekartik_firebase_firestore_test/utils_test.dart';
 import 'package:tekartik_firebase_firestore_test/vector_value_test.dart';
 
 import 'copy_utils_test.dart';
+import 'firestore_collection_group_test.dart';
 import 'firestore_document_test.dart';
 import 'firestore_track_changes_support_test.dart';
 import 'firestore_track_changes_test.dart';
@@ -176,6 +177,10 @@ void runFirestoreAppTests({
   runListCollectionsTest(firestore: firestore, testContext: testContext);
   runAggregateQueryTest(firestore: firestore, testContext: testContext);
   runFirestoreDocumentTests(firestore: firestore, testContext: testContext);
+  runFirestoreCollectionGroupTests(
+    firestore: firestore,
+    testContext: testContext,
+  );
 
   utilsTest(
     firestoreService: firestoreService,
