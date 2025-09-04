@@ -799,5 +799,40 @@ void runFirestoreQueryTests({
         expect(onCountResults, [0, 1, 1, 0]);
       }
     });
+    test('invalid query', () async {
+      var testsRef = getTestsRef();
+      var ref = testsRef.doc('query').collection('invalid_query');
+
+      await ref.where('text', isEqualTo: 'test').orderById().limit(10).get();
+      await ref.where('text', isGreaterThanOrEqualTo: '07').get();
+
+      var query = ref
+          .where('text', isGreaterThanOrEqualTo: '07')
+          .orderBy(firestoreNameFieldPath);
+      try {
+        // node: invalid_query: caught [cloud_firestore/invalid-argument] Order by clause cannot contain more fields after the key text
+        await query.get();
+        fail('should fail');
+      } catch (e) {
+        // ignore: avoid_print
+        print('invalid_query: caught $e');
+        expect(e, isNot(isA<TestFailure>()));
+      }
+
+      query = ref
+          .where('text', isGreaterThanOrEqualTo: '07')
+          .orderBy('text')
+          .orderBy('text2')
+          .startAfter(values: ['a']);
+      try {
+        // node: INVALID_ARGUMENT: order by clause cannot contain more fields after the key
+        await query.get();
+        fail('should fail');
+      } catch (e) {
+        // ignore: avoid_print
+        print('invalid_query: caught $e');
+        expect(e, isNot(isA<TestFailure>()));
+      }
+    });
   });
 }

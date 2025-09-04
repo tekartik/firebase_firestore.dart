@@ -465,7 +465,17 @@ class QueryInfo {
   void debugCheck() {
     if (orderBys.isNotEmpty) {
       var orderByKeys = orderBys.map((e) => e.fieldPath).toSet();
-      var whereKeys = wheres.map((e) => e.fieldPath).toSet();
+
+      var whereKeys = wheres
+          .where(
+            (e) =>
+                e.isGreaterThanOrEqualTo != null ||
+                e.isGreaterThan != null ||
+                e.isLessThan != null ||
+                e.isLessThanOrEqualTo != null,
+          )
+          .map((e) => e.fieldPath)
+          .toSet();
       for (var whereKey in whereKeys) {
         if (!orderByKeys.contains(whereKey)) {
           throw StateError(
