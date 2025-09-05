@@ -726,7 +726,7 @@ class TransactionSim extends WriteBatchSim implements Transaction {
     var requestData = FirestoreTransactionCancelRequestData()
       ..transactionId = transactionId;
     var simClient = await firestore.simClient;
-    await simClient.sendRequest<Map>(
+    await simClient.sendRequest<Object?>(
       FirestoreSimServerService.serviceName,
       methodFirestoreTransactionCancel,
       requestData.toMap(),

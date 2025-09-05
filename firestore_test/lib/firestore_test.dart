@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dev_test/test.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
+import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
@@ -1374,6 +1375,16 @@ void runFirestoreCommonTests({
               .collection('get_update');
           var ref = collRef.doc('item');
           await ref.set({'value': 1});
+        });
+        test('throw in transaction', () async {
+          if (!kDartIsWeb) {
+            await expectLater(
+              firestore.runTransaction((txn) async {
+                throw StateError('throwing');
+              }),
+              throwsA(isA<StateError>()),
+            );
+          }
         });
       });
       // TODO implement
