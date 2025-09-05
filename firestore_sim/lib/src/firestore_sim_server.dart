@@ -488,10 +488,9 @@ class _FirestoreSimPluginServer {
 
   Future handleFirestoreTransactionCancel(Map<String, Object?> params) async {
     var requestData = FirestoreTransactionCancelRequestData()..fromMap(params);
-
     if (requestData.transactionId == lastTransactionId) {
       // terminate transaction
-      transactionCompleter!.complete();
+      transactionCompleter?.safeComplete();
     }
   }
 }

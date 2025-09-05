@@ -456,7 +456,8 @@ class FirestoreBatchData extends BaseData {
 class FirestoreTransactionCancelRequestData extends BaseData {
   int? transactionId;
 
-  void firestoreFromMap(Map<String, Object?> map) {
+  @override
+  void fromMap(Map map) {
     super.fromMap(map);
     transactionId = map['transactionId'] as int?;
   }

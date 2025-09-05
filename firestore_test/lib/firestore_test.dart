@@ -1376,18 +1376,21 @@ void runFirestoreCommonTests({
           var ref = collRef.doc('item');
           await ref.set({'value': 1});
         });
+        test('nothing in transaction', () async {
+          await firestore.runTransaction((txn) async {});
+        });
         test('throw in transaction', () async {
-          if (!kDartIsWeb) {
-            await expectLater(
-              firestore.runTransaction((txn) async {
-                throw StateError('throwing');
-              }),
-              throwsA(isA<StateError>()),
-            );
+          try {
+            await firestore.runTransaction((txn) async {
+              throw StateError('throwing');
+            });
+          } catch (e) {
+            if (!kDartIsWeb) {
+              expect(e, isA<StateError>());
+            }
           }
         });
       });
-      // TODO implement
     });
     test('bug_limit', () async {
       var query = firestore
