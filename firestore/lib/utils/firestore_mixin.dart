@@ -118,7 +118,12 @@ bool firestoreTimestampsInSnapshots(Firestore firestore) {
 mixin FirestoreDefaultMixin implements Firestore {
   @override
   Future<List<CollectionReference>> listCollections() {
-    throw UnimplementedError();
+    throw UnimplementedError('listCollections not implemented');
+  }
+
+  @override
+  Query collectionGroup(String collectionId) {
+    throw UnimplementedError('collectionGroup not implemented');
   }
 }
 mixin FirestoreMixin implements Firestore {

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dev_test/test.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
+import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/reference_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
@@ -16,6 +17,7 @@ import 'package:tekartik_firebase_firestore_test/utils_test.dart';
 import 'package:tekartik_firebase_firestore_test/vector_value_test.dart';
 
 import 'copy_utils_test.dart';
+import 'firestore_collection_group_test.dart';
 import 'firestore_document_test.dart';
 import 'firestore_track_changes_support_test.dart';
 import 'firestore_track_changes_test.dart';
@@ -176,6 +178,10 @@ void runFirestoreAppTests({
   runListCollectionsTest(firestore: firestore, testContext: testContext);
   runAggregateQueryTest(firestore: firestore, testContext: testContext);
   runFirestoreDocumentTests(firestore: firestore, testContext: testContext);
+  runFirestoreCollectionGroupTests(
+    firestore: firestore,
+    testContext: testContext,
+  );
 
   utilsTest(
     firestoreService: firestoreService,
@@ -1370,8 +1376,21 @@ void runFirestoreCommonTests({
           var ref = collRef.doc('item');
           await ref.set({'value': 1});
         });
+        test('nothing in transaction', () async {
+          await firestore.runTransaction((txn) async {});
+        });
+        test('throw in transaction', () async {
+          try {
+            await firestore.runTransaction((txn) async {
+              throw StateError('throwing');
+            });
+          } catch (e) {
+            if (!kDartIsWeb) {
+              expect(e, isA<StateError>());
+            }
+          }
+        });
       });
-      // TODO implement
     });
     test('bug_limit', () async {
       var query = firestore

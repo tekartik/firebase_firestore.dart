@@ -661,15 +661,16 @@ class FirestoreSim extends Object
 
     var responseData = FirestoreTransactionResponseData()..fromMap(result);
     final transactionSim = TransactionSim(this, responseData.transactionId);
+    late T updateResult;
     try {
-      var result = await updateFunction(transactionSim);
-      await transactionSim.commit();
-      return result;
+      updateResult = await updateFunction(transactionSim);
     } catch (_) {
       // Make sure to clean up on cancel
       await transactionSim.cancel();
       rethrow;
     }
+    await transactionSim.commit();
+    return updateResult;
   }
 
   Future<DocumentSnapshot> get(FirestoreGetRequestData requestData) async {
@@ -726,7 +727,7 @@ class TransactionSim extends WriteBatchSim implements Transaction {
     var requestData = FirestoreTransactionCancelRequestData()
       ..transactionId = transactionId;
     var simClient = await firestore.simClient;
-    await simClient.sendRequest<Map>(
+    await simClient.sendRequest<void>(
       FirestoreSimServerService.serviceName,
       methodFirestoreTransactionCancel,
       requestData.toMap(),

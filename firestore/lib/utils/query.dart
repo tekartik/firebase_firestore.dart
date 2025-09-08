@@ -39,6 +39,7 @@ extension TekartikFirestoreQueryExt on Query {
     if (keepIds != null) {
       deletedIds.addAll(keepIds);
     }
+    var query = this;
     int snapshotSize;
     do {
       if (maxRemainingCount != null) {
@@ -47,7 +48,8 @@ extension TekartikFirestoreQueryExt on Query {
           break;
         }
       }
-      var snapshot = await this.limit(stepSize).get();
+
+      var snapshot = await query.limit(stepSize).get();
       snapshotSize = snapshot.docs.length;
 
       // When there are no documents left, we are done

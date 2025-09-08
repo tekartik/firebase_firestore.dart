@@ -18,11 +18,11 @@ void runUtilsCollectionTests({
       var ref = firestore.collection(
         url.join(testsRefPath, 'utils_collection', 'delete_one'),
       );
+
       await deleteCollection(firestore, ref);
       var itemDoc = ref.doc('item');
       // create an item
       await itemDoc.set({});
-
       Future<bool> findInCollection() async {
         var querySnapshot = await ref.get();
         for (var doc in querySnapshot.docs) {
