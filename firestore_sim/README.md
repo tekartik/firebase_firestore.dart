@@ -10,5 +10,4 @@ In `pubspec.yaml`:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore_sim
-      ref: dart3a
 ```

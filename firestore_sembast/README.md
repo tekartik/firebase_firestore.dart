@@ -10,6 +10,5 @@ In `pubspec.yaml`:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore_sembast
-      ref: dart3a
     version: '>=0.8.0'
 ```

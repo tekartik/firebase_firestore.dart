@@ -11,25 +11,21 @@ dependencies:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore
-      ref: dart3a
     version: '>=0.8.2'
   tekartik_firebase_local:
     git:
       url: https://github.com/tekartik/firebase.dart
       path: firebase_local
-      ref: dart3a
     version: '>=0.3.7'
   idb_shim: '>=1.8.0+2'
   uuid:
   tekartik_browser_utils:
     git:
       url: https://github.com/tekartik/browser_utils.dart
-      ref: dart3a
   path: ">=1.9.0"
   tekartik_firebase:
     git:
       url: https://github.com/tekartik/firebase.dart
-      ref: dart3a
       path: firebase
 dev_dependencies:
   test: ">=1.24.0"
@@ -44,7 +40,6 @@ dev_dependencies:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore_test
-      ref: dart3a
     version: '>=0.8.0'
 
 resolution: workspace
