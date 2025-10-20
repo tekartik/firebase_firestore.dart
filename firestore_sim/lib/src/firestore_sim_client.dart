@@ -4,12 +4,12 @@ import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_common.dart';
-import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_server.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
 import 'package:tekartik_firebase_sim/src/firebase_sim_client.dart'; // ignore: implementation_imports
 
+import 'firestore_sim_message.dart';
+import 'firestore_sim_server_service.dart';
 // ignore: implementation_imports
 
 import 'import_firestore.dart'; // ignore: implementation_imports

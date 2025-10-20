@@ -6,11 +6,11 @@ import 'package:tekartik_common_utils/stream/stream_poller.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore_sim/firestore_sim_message.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 // ignore: implementation_imports
 
+import 'firestore_sim_message.dart';
 import 'firestore_sim_plugin.dart'; // ignore: implementation_imports
 // ignore: implementation_imports
 
