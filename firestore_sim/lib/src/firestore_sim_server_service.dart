@@ -7,7 +7,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
-import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
+import 'package:tekartik_firebase_sim/firebase_sim_server_mixin.dart';
 // ignore: implementation_imports
 
 import 'firestore_sim_message.dart';
@@ -26,7 +26,7 @@ class FirestoreSimServerService extends FirebaseSimServerServiceBase {
     RpcMethodCall methodCall,
   ) async {
     try {
-      var simServerChannel = firebaseSimServerExpando[channel]!;
+      var simServerChannel = simServer.channel(channel);
       var firestoreSimPluginServer = _expando[channel] ??= () {
         var app = simServerChannel.app!;
         var firestore = firestoreSimPlugin.firestoreService.firestore(app);

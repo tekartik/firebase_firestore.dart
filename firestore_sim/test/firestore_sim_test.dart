@@ -4,8 +4,6 @@ import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 // ignore: unused_import
-import 'package:tekartik_firebase_sim/firebase_sim_client.dart';
-// ignore: unused_import
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 import 'package:test/test.dart';
 

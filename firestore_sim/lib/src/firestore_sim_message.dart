@@ -2,7 +2,7 @@ import 'package:cv/cv.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
-import 'package:tekartik_firebase_sim/firebase_sim_message.dart';
+import 'package:tekartik_firebase_sim/firebase_sim_server_mixin.dart';
 
 const paramPath = 'path';
 const paramSnapshot = 'snapshot'; // map

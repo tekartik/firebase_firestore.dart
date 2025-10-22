@@ -12,7 +12,7 @@ import 'test_common.dart';
 Future main() async {
   // debugSimServerMessage = true;
   skipConcurrentTransactionTests = true;
-  var testContext = await initTestContextSimIo();
+  var testContext = await initTestContextSimIo(port: 0);
   var firebase = testContext.firebase;
   runFirestoreTests(firebase: firebase, firestoreService: firestoreServiceSim);
 

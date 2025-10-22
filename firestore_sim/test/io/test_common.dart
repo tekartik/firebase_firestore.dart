@@ -13,12 +13,13 @@ class TestContext {
 }
 
 // using real websocker
-Future<TestContext> initTestContextSimIo() async {
+Future<TestContext> initTestContextSimIo({int? port}) async {
   var testContext = TestContext();
   testContext.simServer = await firebaseSimServe(
     FirebaseLocal(),
     webSocketChannelServerFactory: webSocketChannelServerFactoryIo,
     plugins: [FirestoreSimPlugin(firestoreService: firestoreServiceMemory)],
+    port: port,
   );
   testContext.firebase = getFirebaseSim(
     clientFactory: webSocketChannelClientFactoryIo,
