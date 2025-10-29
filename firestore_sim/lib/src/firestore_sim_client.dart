@@ -106,8 +106,8 @@ class DocumentReferenceSim
 
   @override
   Future delete() async {
-    var simClient = await firestoreSim.simClient;
-    var firestoreDeleteData = FirestorePathData()..path = path;
+    var simClient = await firestoreSim.simAppClient;
+    var firestoreDeleteData = CvFirestorePathData()..path.setValue(path);
     await simClient.sendRequest<void>(
       FirestoreSimServerService.serviceName,
       methodFirestoreDelete,
@@ -117,18 +117,18 @@ class DocumentReferenceSim
 
   @override
   Future<DocumentSnapshot> get() {
-    var requestData = FirestoreGetRequestData()..path = path;
+    var requestData = CvFirestoreGetRequestData()..path.setValue(path);
     return firestoreSim.get(requestData);
   }
 
   @override
   Future set(Map<String, Object?> data, [SetOptions? options]) async {
     var jsonMap = documentDataToJsonMap(DocumentData(data));
-    var simClient = await firestoreSim.simClient;
-    var firestoreSetData = FirestoreSetData()
-      ..path = path
-      ..data = jsonMap
-      ..merge = options?.merge;
+    var simClient = await firestoreSim.simAppClient;
+    var firestoreSetData = CvFirestoreSetData()
+      ..path.setValue(path)
+      ..data.setValue(jsonMap)
+      ..merge.setValue(options?.merge);
     await simClient.sendRequest<void>(
       FirestoreSimServerService.serviceName,
       methodFirestoreSet,
@@ -139,7 +139,7 @@ class DocumentReferenceSim
   @override
   Future update(Map<String, Object?> data) async {
     var jsonMap = documentDataToJsonMap(DocumentData(data));
-    var simClient = await firestoreSim.simClient;
+    var simClient = await firestoreSim.simAppClient;
     var firestoreSetData = FirestoreSetData()
       ..path = path
       ..data = jsonMap;
@@ -157,7 +157,7 @@ class DocumentReferenceSim
 
   // do until cancelled
   Future _getStream(
-    FirebaseSimClient? simClient,
+    FirebaseSimAppClient? simClient,
     String path,
     ServerSubscriptionSim subscription,
   ) async {
@@ -192,7 +192,7 @@ class DocumentReferenceSim
   @override
   Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
     late ServerSubscriptionSim<DocumentSnapshot> subscription;
-    FirebaseSimClient? simClient;
+    FirebaseSimAppClient? simClient;
     subscription = ServerSubscriptionSim<DocumentSnapshot>(
       StreamController(
         onCancel: () async {
@@ -208,7 +208,7 @@ class DocumentReferenceSim
     );
 
     () async {
-      simClient = await firestoreSim.simClient;
+      simClient = await firestoreSim.simAppClient;
       var result = resultAsMap(
         await simClient!.sendRequest<Object>(
           FirestoreSimServerService.serviceName,
@@ -315,7 +315,7 @@ abstract mixin class QueryMixinSim implements Query {
 
   @override
   Future<QuerySnapshot> get() async {
-    var simClient = await appSim.simClient;
+    var simClient = await appSim.simAppClient;
     var data = FirestoreQueryData()
       ..path = simCollectionReference.path
       ..queryInfo = queryInfo;
@@ -341,7 +341,7 @@ abstract mixin class QueryMixinSim implements Query {
 
   // do until cancelled
   Future _getStream(
-    FirebaseSimClient? simClient,
+    FirebaseSimAppClient? simClient,
     ServerSubscriptionSim subscription,
   ) async {
     var subscriptionId = subscription.id;
@@ -401,7 +401,7 @@ abstract mixin class QueryMixinSim implements Query {
 
   @override
   Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
-    FirebaseSimClient? simClient;
+    FirebaseSimAppClient? simClient;
     late ServerSubscriptionSim<QuerySnapshot> subscription;
     subscription = ServerSubscriptionSim<QuerySnapshot>(
       StreamController(
@@ -418,7 +418,7 @@ abstract mixin class QueryMixinSim implements Query {
     );
 
     () async {
-      simClient = await firestoreSim.simClient;
+      simClient = await firestoreSim.simAppClient;
 
       var data = FirestoreQueryData()
         ..path = simCollectionReference.path
@@ -515,7 +515,7 @@ class CollectionReferenceSim extends Object
   @override
   Future<DocumentReference> add(Map<String, Object?> data) async {
     var jsonMap = documentDataToJsonMap(DocumentData(data));
-    var simClient = await firestoreSim.simClient;
+    var simClient = await firestoreSim.simAppClient;
     var firestoreSetData = FirestoreSetData()
       ..path = path
       ..data = jsonMap;
@@ -572,7 +572,7 @@ class FirestoreSim extends Object
   // The key is the streamId from the server
   final Map<int, ServerSubscriptionSim> _subscriptions = {};
 
-  Future<FirebaseSimClient> get simClient => appSim.simClient;
+  Future<FirebaseSimAppClient> get simAppClient => appSim.simAppClient;
 
   void addSubscription(ServerSubscriptionSim subscription) {
     _subscriptions[subscription.id!] = subscription;
@@ -650,7 +650,7 @@ class FirestoreSim extends Object
   Future<T> runTransaction<T>(
     FutureOr<T> Function(Transaction transaction) updateFunction,
   ) async {
-    var simClient = await this.simClient;
+    var simClient = await simAppClient;
     var result = resultAsMap(
       await simClient.sendRequest<Map>(
         FirestoreSimServerService.serviceName,
@@ -673,8 +673,8 @@ class FirestoreSim extends Object
     return updateResult;
   }
 
-  Future<DocumentSnapshot> get(FirestoreGetRequestData requestData) async {
-    var simClient = await this.simClient;
+  Future<DocumentSnapshot> get(CvFirestoreGetRequestData requestData) async {
+    var simClient = await simAppClient;
     var result = resultAsMap(
       await simClient.sendRequest<Map>(
         FirestoreSimServerService.serviceName,
@@ -709,11 +709,13 @@ class TransactionSim extends WriteBatchSim implements Transaction {
 
   TransactionSim(super.firestore, this.transactionId);
 
+  int? get _appId => firestore.appSim.appServerId;
   @override
   Future<DocumentSnapshot> get(DocumentReference documentRef) {
-    var requestData = FirestoreGetRequestData()
-      ..path = documentRef.path
-      ..transactionId = transactionId;
+    var requestData = CvFirestoreGetRequestData()
+      ..appId.setValue(_appId)
+      ..path.setValue(documentRef.path)
+      ..transactionId.setValue(transactionId);
     return firestore.get(requestData);
   }
 
@@ -726,7 +728,7 @@ class TransactionSim extends WriteBatchSim implements Transaction {
   Future cancel() async {
     var requestData = FirestoreTransactionCancelRequestData()
       ..transactionId = transactionId;
-    var simClient = await firestore.simClient;
+    var simClient = await firestore.simAppClient;
     await simClient.sendRequest<void>(
       FirestoreSimServerService.serviceName,
       methodFirestoreTransactionCancel,
@@ -773,7 +775,7 @@ class WriteBatchSim extends WriteBatchBase {
         throw 'not supported $operation';
       }
     }
-    var simClient = await firestore.simClient;
+    var simClient = await firestore.simAppClient;
     await simClient.sendRequest<void>(
       FirestoreSimServerService.serviceName,
       method,

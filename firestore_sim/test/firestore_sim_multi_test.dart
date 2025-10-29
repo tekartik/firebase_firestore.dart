@@ -1,7 +1,5 @@
 library;
 
-import 'dart:async';
-
 import 'package:tekartik_firebase_firestore_sim/firestore_sim.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_multi_client_test.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
@@ -13,6 +11,8 @@ import 'package:test/test.dart';
 import 'test_common.dart';
 
 Future main() async {
+  //debugFirebaseSimClient = devTrue;
+  //debugFirebaseSimServer = devTrue;
   // debugSimServerMessage = true;
   skipConcurrentTransactionTests = true;
   var testContext = await initTestContextSim();

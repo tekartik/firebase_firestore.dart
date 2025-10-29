@@ -31,7 +31,15 @@ const methodFirestoreQueryStream =
     'firestore/query/stream'; // query from client and notification from server
 const methodFirestoreQueryCancel = 'firestore/query/cancel';
 
-class FirestorePathData extends BaseData {
+void firebaseSimFirestoreInitCvBuilders() {
+  cvAddConstructors([CvFirestoreAppBaseData.new]);
+}
+
+class CvFirestoreAppBaseData extends CvFirebaseSimAppBaseData {}
+
+class FirestoreAppBaseData extends BaseData {}
+
+class FirestorePathData extends FirestoreAppBaseData {
   late String path;
 
   @override
@@ -46,6 +54,13 @@ class FirestorePathData extends BaseData {
     map[paramPath] = path;
     return map;
   }
+}
+
+class CvFirestorePathData extends CvFirestoreAppBaseData {
+  final path = CvField<String>('path');
+
+  @override
+  CvFields get fields => [path, ...super.fields];
 }
 
 // get/getStream
@@ -138,7 +153,7 @@ class DocumentSnapshotData extends FirestorePathData
   }
 }
 
-class DocumentChangeData extends BaseData {
+class DocumentChangeData extends FirestoreAppBaseData {
   String? id;
   String? type; // added/modified/removed
   int? newIndex;
@@ -169,7 +184,7 @@ class DocumentChangeData extends BaseData {
   }
 }
 
-class FirestoreQuerySnapshotData extends BaseData {
+class FirestoreQuerySnapshotData extends FirestoreAppBaseData {
   late List<DocumentSnapshotData> list;
   List<DocumentChangeData>? changes;
 
@@ -242,6 +257,13 @@ class FirestoreSetData extends FirestorePathData {
   }
 }
 
+class CvFirestoreSetData extends CvFirestorePathData {
+  final data = CvField<Model>('data');
+  final merge = CvField<bool>('merge');
+  @override
+  CvFields get fields => [data, merge, ...super.fields];
+}
+
 class FirestoreGetRequestData extends FirestorePathData {
   int? transactionId;
 
@@ -261,39 +283,14 @@ class FirestoreGetRequestData extends FirestorePathData {
   }
 }
 
-class AdminInitializeAppData extends BaseData {
-  String? projectId;
-  String? name;
+class CvFirestoreGetRequestData extends CvFirestorePathData {
+  final transactionId = CvField<int>('transactionId');
 
   @override
-  void fromMap(Map map) {
-    projectId = map['projectId'] as String?;
-    name = map['name'] as String?;
-  }
-
-  @override
-  Map<String, Object?> toMap() {
-    var map = {'projectId': projectId, 'name': name};
-    return map;
-  }
+  CvFields get fields => [transactionId, ...super.fields];
 }
 
-class FirebaseInitializeAppResponseData extends BaseData {
-  int? appId;
-
-  @override
-  void fromMap(Map map) {
-    appId = map['appId'] as int?;
-  }
-
-  @override
-  Map<String, Object?> toMap() {
-    var map = {'appId': appId};
-    return map;
-  }
-}
-
-class FirestoreTransactionResponseData extends BaseData {
+class FirestoreTransactionResponseData extends FirestoreAppBaseData {
   int? transactionId;
 
   @override
@@ -378,7 +375,7 @@ class BatchOperationSetData extends BatchOperationData {
   }
 }
 
-abstract class BatchOperationData extends BaseData {
+abstract class BatchOperationData extends FirestoreAppBaseData {
   String? method;
   String? path;
 
@@ -399,7 +396,7 @@ abstract class BatchOperationData extends BaseData {
 }
 
 // for batch and transaction commit
-class FirestoreBatchData extends BaseData {
+class FirestoreBatchData extends FirestoreAppBaseData {
   int? transactionId;
   List<BatchOperationData> operations = [];
 
@@ -453,7 +450,7 @@ class FirestoreBatchData extends BaseData {
 }
 
 // for batch and transaction commit
-class FirestoreTransactionCancelRequestData extends BaseData {
+class FirestoreTransactionCancelRequestData extends FirestoreAppBaseData {
   int? transactionId;
 
   @override
@@ -472,7 +469,7 @@ class FirestoreTransactionCancelRequestData extends BaseData {
   }
 }
 
-abstract class FirestoreQueryStreamIdBase extends BaseData {
+abstract class FirestoreQueryStreamIdBase extends FirestoreAppBaseData {
   int? streamId;
 
   @override

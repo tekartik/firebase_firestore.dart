@@ -1,13 +1,13 @@
 import 'dart:core' hide Error;
 
 import 'package:tekartik_common_utils/common_utils_import.dart';
-import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_common_utils/stream/stream_poller.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/common/query_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
-import 'package:tekartik_firebase_sim/firebase_sim_server_mixin.dart';
+import 'package:tekartik_firebase_sim/firebase_sim_server_mixin.dart'
+    hide AdminInitializeAppData;
 // ignore: implementation_imports
 
 import 'firestore_sim_message.dart';
@@ -16,106 +16,103 @@ import 'firestore_sim_plugin.dart'; // ignore: implementation_imports
 
 class FirestoreSimServerService extends FirebaseSimServerServiceBase {
   late FirestoreSimPlugin firestoreSimPlugin;
-  final _expando = Expando<_FirestoreSimPluginServer>();
+
+  //final _expando = Expando<_FirestoreSimPluginServer>();
+  final _appServers =
+      <FirebaseSimServerProjectApp, _FirestoreSimPluginServer>{};
   static final serviceName = 'firebase_firestore';
-  FirestoreSimServerService() : super(serviceName);
+
+  FirestoreSimServerService() : super(serviceName) {
+    firebaseSimFirestoreInitCvBuilders();
+  }
 
   @override
-  FutureOr<Object?> onCall(
+  FutureOr<Object?> onAppCall(
+    FirebaseSimServerProjectApp projectApp,
     RpcServerChannel channel,
     RpcMethodCall methodCall,
   ) async {
-    try {
-      var simServerChannel = simServer.channel(channel);
-      var firestoreSimPluginServer = _expando[channel] ??= () {
-        var app = simServerChannel.app!;
-        var firestore = firestoreSimPlugin.firestoreService.firestore(app);
-        //.debugQuickLoggerWrapper();
-        // One transaction lock per server
-        //firestoreSimPlugin._locks[firestore] ??= Lock();
-        return _FirestoreSimPluginServer(firestoreSimPlugin, firestore);
-      }();
-      var parameters = methodCall.arguments;
-      switch (methodCall.method) {
-        case methodFirestoreSet:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer.handleFirestoreSetRequest(map);
+    var firestoreSimPluginServer = _appServers[projectApp] ??= () {
+      var app = projectApp.app!;
+      var firestore = firestoreSimPlugin.firestoreService.firestore(app);
+      //.debugQuickLoggerWrapper();
+      // One transaction lock per server
+      //firestoreSimPlugin._locks[firestore] ??= Lock();
+      return _FirestoreSimPluginServer(firestoreSimPlugin, firestore);
+    }();
 
-        case methodFirestoreDelete:
-          return await firestoreSimPluginServer.handleFirestoreDeleteRequest(
-            resultAsMap(parameters),
-          );
-        case methodFirestoreAdd:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer.handleFirestoreAddRequest(map);
+    var parameters = methodCall.arguments;
+    switch (methodCall.method) {
+      case methodFirestoreSet:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreSetRequest(map);
 
-        case methodFirestoreGet:
-          var map = resultAsMap(parameters);
+      case methodFirestoreDelete:
+        return await firestoreSimPluginServer.handleFirestoreDeleteRequest(
+          resultAsMap(parameters),
+        );
+      case methodFirestoreAdd:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreAddRequest(map);
 
-          return await firestoreSimPluginServer.handleFirestoreGetRequest(map);
+      case methodFirestoreGet:
+        var map = resultAsMap(parameters);
 
-        case methodFirestoreGetListen:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer.handleFirestoreGetListen(map);
+        return await firestoreSimPluginServer.handleFirestoreGetRequest(map);
 
-        case methodFirestoreGetStream:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer.handleFirestoreGetStream(map);
+      case methodFirestoreGetListen:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreGetListen(map);
 
-        case methodFirestoreGetCancel:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer.handleFirestoreGetCancel(map);
+      case methodFirestoreGetStream:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreGetStream(map);
 
-        case methodFirestoreQuery:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer.handleFirestoreQuery(map);
+      case methodFirestoreGetCancel:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreGetCancel(map);
 
-        case methodFirestoreQueryListen:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer.handleFirestoreQueryListen(map);
+      case methodFirestoreQuery:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreQuery(map);
 
-        case methodFirestoreQueryStream:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer.handleFirestoreQueryStream(map);
+      case methodFirestoreQueryListen:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreQueryListen(map);
 
-        case methodFirestoreQueryCancel:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer.handleFirestoreQueryCancel(map);
+      case methodFirestoreQueryStream:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreQueryStream(map);
 
-        case methodFirestoreUpdate:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer.handleFirestoreUpdateRequest(
-            map,
-          );
+      case methodFirestoreQueryCancel:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreQueryCancel(map);
 
-        case methodFirestoreBatch:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer.handleFirestoreBatch(map);
+      case methodFirestoreUpdate:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreUpdateRequest(map);
 
-        case methodFirestoreTransaction:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer.handleFirestoreTransaction(map);
+      case methodFirestoreBatch:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreBatch(map);
 
-        case methodFirestoreTransactionCancel:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer
-              .handleFirestoreTransactionCancel(map);
+      case methodFirestoreTransaction:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreTransaction(map);
 
-        case methodFirestoreTransactionCommit:
-          var map = resultAsMap(parameters);
-          return await firestoreSimPluginServer
-              .handleFirestoreTransactionCommit(map);
-      }
-      return super.onCall(channel, methodCall);
-    } catch (e, st) {
-      if (isDebug) {
-        // ignore: avoid_print
-        print('error $st');
-        // ignore: avoid_print
-        print(st);
-      }
-      rethrow;
+      case methodFirestoreTransactionCancel:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreTransactionCancel(
+          map,
+        );
+
+      case methodFirestoreTransactionCommit:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreTransactionCommit(
+          map,
+        );
     }
+    return super.onAppCall(projectApp, channel, methodCall);
   }
 }
 

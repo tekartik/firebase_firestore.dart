@@ -30,27 +30,28 @@ void firestoreMulticlientTest({
   test('multi client track changes', () async {
     var doc1 = firestore1.doc('$docTopPath/record/record1');
     var doc2 = firestore2.doc(doc1.path);
+    await doc1.delete();
     var map1 = {'test': 1};
     var map2 = {'test': 2};
 
     var completer1 = Completer<void>();
     var completer2 = Completer<void>();
     var subscription1 = doc1.onSnapshot().listen((snapshot) {
-      if (snapshot.exists && dataMatch(snapshot.data, map2)) {
-        completer1.complete();
+      if (snapshot.exists && dataMatch(snapshot.data, map1)) {
+        completer1.safeComplete();
       }
     });
     var subscription2 = doc2.onSnapshot().listen((snapshot) {
-      if (snapshot.exists && dataMatch(snapshot.data, map1)) {
-        completer2.complete();
+      if (snapshot.exists && dataMatch(snapshot.data, map2)) {
+        completer2.safeComplete();
       }
     });
     await doc1.set(map1);
-    await completer2.future;
-    await subscription2.cancel();
+    await completer1.future;
+    await subscription1.cancel();
 
     await doc2.set(map2);
     await completer2.future;
-    await subscription1.cancel();
+    await subscription2.cancel();
   }, skip: skip);
 }

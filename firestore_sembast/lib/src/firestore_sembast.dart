@@ -215,6 +215,10 @@ class FirestoreSembast extends Object
             }
           },
         );
+        if (isDebug) {
+          // ignore: avoid_print
+          print('opened[${openedDb.hashCode}] $openedDb');
+        }
         db = openedDb;
         return openedDb;
       } else {

@@ -1,6 +1,5 @@
 library;
 
-import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 // ignore: unused_import
@@ -10,8 +9,8 @@ import 'package:test/test.dart';
 import 'test_common.dart';
 
 Future main() async {
-  // debugFirebaseSimServer = devWarning(true);
-  // debugFirebaseSimClient = devWarning(true);
+  // debugFirebaseSimServer = devTrue;
+  // debugFirebaseSimClient = devTrue;
   // debugSimServerMessage = true;
   skipConcurrentTransactionTests = true;
   var testContext = await initTestContextSim();
