@@ -15,7 +15,7 @@ Future main() async {
   //debugFirebaseSimServer = devTrue;
   // debugSimServerMessage = true;
   skipConcurrentTransactionTests = true;
-  var testContext = await initTestContextSim();
+  var testContext = await initFirestoreTestContextSim();
   var firebase = testContext.firebase;
   var firebase2 = getFirebaseSim(
     clientFactory: webSocketChannelClientFactoryMemory,

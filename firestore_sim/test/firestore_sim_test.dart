@@ -13,7 +13,7 @@ Future main() async {
   // debugFirebaseSimClient = devTrue;
   // debugSimServerMessage = true;
   skipConcurrentTransactionTests = true;
-  var testContext = await initTestContextSim();
+  var testContext = await initFirestoreTestContextSim();
   var firebase = testContext.firebase;
   var app = firebase.initializeApp();
   runFirestoreAppTests(

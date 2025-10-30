@@ -12,10 +12,14 @@ export 'package:tekartik_common_utils/common_utils_import.dart';
 class TestContext {
   late FirebaseSimServer simServer;
   late Firebase firebase;
+
+  Future<void> close() async {
+    await simServer.close();
+  }
 }
 
 // memory only
-Future<TestContext> initTestContextSim() async {
+Future<TestContext> initFirestoreTestContextSim() async {
   var testContext = TestContext();
   var firestoreSimPlugin = FirestoreSimPlugin(
     firestoreService: newFirestoreServiceMemory(),
