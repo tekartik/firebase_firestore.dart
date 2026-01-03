@@ -166,6 +166,21 @@ void runUtilsQueryTest({
         ),
         4,
       );
+      // cancel
+      query = collRef
+          .where('text', isGreaterThanOrEqualTo: '07')
+          .orderBy('text');
+      expect(
+        await query.queryAction(
+          limit: 9,
+          batchSize: 3,
+          orderByFields: ['text'],
+          actionFunction: (ids) async {
+            return -1;
+          },
+        ),
+        0,
+      );
     });
   });
 }

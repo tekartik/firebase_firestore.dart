@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
+/// Returns -1 to abort (existing count, 0 or more is returned)
 typedef TekartikFirestoreQueryActionFunction =
     Future<int> Function(List<String> ids);
 
@@ -191,6 +192,11 @@ extension TekartikFirestoreQueryExt on Query {
       }).toList();
 
       var processCount = await actionFunction(idsToProcess);
+      // Return -1 to abort
+      if (processCount < 0) {
+        // Abort
+        break;
+      }
       count += processCount;
       if (maxRemainingCount != null) {
         maxRemainingCount -= processCount;
