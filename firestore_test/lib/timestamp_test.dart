@@ -4,6 +4,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 
 import 'firestore_test.dart';
 
+/// Timestamp test group.
 void timestampGroup({
   required FirestoreService service,
   Firestore? firestore,

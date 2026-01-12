@@ -1,6 +1,8 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
+/// Query snapshot.
 abstract class QuerySnapshot {
+  /// Documents.
   List<DocumentSnapshot> get docs;
 
   /// An array of the documents that changed since the last snapshot. If this

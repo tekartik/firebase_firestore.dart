@@ -23,12 +23,14 @@ class FirestoreDocumentInfo {
     };
   }
 
+  /// from json map.
   FirestoreDocumentInfo.fromJsonMap(Map<String, Object?> map)
     : path = map[_pathKey] as String,
       data = DocumentData(
         jsonToDocumentDataValueNoFirestore(map[_dataKey] as Map)!,
       );
 
+  /// from document snapshot.
   FirestoreDocumentInfo.fromDocumentSnapshot(DocumentSnapshot snapshot)
     : path = snapshot.ref.path,
       data = DocumentData(snapshot.data);

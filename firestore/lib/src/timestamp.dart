@@ -8,7 +8,10 @@
 /// table is needed for interpretation. Possible timestamp values range from
 /// 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z.
 class Timestamp implements Comparable<Timestamp?> {
+  /// Seconds.
   final int seconds;
+
+  /// Nanoseconds.
   final int nanoseconds;
 
   /// [seconds] is the number of [seconds] of UTC time since Unix epoch

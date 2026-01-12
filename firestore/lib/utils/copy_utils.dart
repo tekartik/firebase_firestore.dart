@@ -1,6 +1,7 @@
 import 'package:tekartik_firebase_firestore/src/common/import_firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
+/// Copy utils extension.
 extension TekartikFirestoreCopyUtils on DocumentReference {
   /// Copy documents nested too.
   Future<int> recursiveCopyTo(
@@ -21,6 +22,7 @@ extension TekartikFirestoreCopyUtils on DocumentReference {
     return await _recursiveDocDelete(firestore, this, batchSize: batchSize);
   }
 
+  /// Recursive list documents.
   Future<List<DocumentReference>> recursiveListDocuments({
     int? pageSize,
   }) async {
@@ -33,6 +35,7 @@ extension TekartikFirestoreCopyUtils on DocumentReference {
   }
 }
 
+/// Collection copy utils extension.
 extension TekartikFirestoreCollectionReferenceCopyUtils on CollectionReference {
   /// Copy a document to another document
   Future<int> recursiveCopyTo(
@@ -48,6 +51,7 @@ extension TekartikFirestoreCollectionReferenceCopyUtils on CollectionReference {
     );
   }
 
+  /// Recursive list documents.
   Future<List<DocumentReference>> recursiveListDocuments() async {
     return await _recursiveCollListDocuments(this);
   }
@@ -59,6 +63,7 @@ extension TekartikFirestoreCollectionReferenceCopyUtils on CollectionReference {
 }
 
 /// Ouch!
+/// Recursive copy path.
 Future<int> recursiveCopyPath(
   Firestore srcFirestore,
   String srcPath,

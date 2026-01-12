@@ -40,6 +40,7 @@ export 'package:tekartik_firebase_firestore/src/record_data.dart'
         FieldValueArray,
         fieldArrayValueMergeValue;
 
+/// Query compare snapshot to limit.
 int queryCompareSnapshotToLimit(
   QueryInfo queryInfo,
   DocumentSnapshot snapshot,
@@ -106,6 +107,7 @@ int queryCompareSnapshotToLimit(
 }
 
 // might evolve to be always true
+/// Firestore timestamps in snapshots.
 bool firestoreTimestampsInSnapshots(Firestore firestore) {
   /*
   if (firestore is FirestoreMixin) {
@@ -115,6 +117,7 @@ bool firestoreTimestampsInSnapshots(Firestore firestore) {
   return true;
 }
 
+/// Firestore default mixin.
 mixin FirestoreDefaultMixin implements Firestore {
   @override
   Future<List<CollectionReference>> listCollections() {
@@ -126,7 +129,10 @@ mixin FirestoreDefaultMixin implements Firestore {
     throw UnimplementedError('collectionGroup not implemented');
   }
 }
+
+/// Firestore mixin.
 mixin FirestoreMixin implements Firestore {
+  /// Firestore settings.
   FirestoreSettings? firestoreSettings;
 
   @override
@@ -146,19 +152,22 @@ mixin FirestoreMixin implements Firestore {
   }
 }
 
+/// Firestore documents mixin.
 mixin FirestoreDocumentsMixin on Firestore {
+  /// New snapshot.
   DocumentSnapshot newSnapshot(
     DocumentReference ref,
     RecordMetaData? meta,
     DocumentData? data,
   );
 
+  /// New query snapshot.
   QuerySnapshot newQuerySnapshot(
     List<DocumentSnapshot> docs,
     List<DocumentChange> changes,
   );
 
-  // Remove meta keys
+  /// Document from record map.
   DocumentSnapshot documentFromRecordMap(
     DocumentReference ref,
     Map<String, Object?>? recordMap,
@@ -170,35 +179,48 @@ mixin FirestoreDocumentsMixin on Firestore {
   }
 }
 
+/// Collection subscription.
 class CollectionSubscription extends FirestoreSubscription<DocumentChange> {}
 
+/// Document subscription.
 class DocumentSubscription extends FirestoreSubscription<DocumentSnapshot> {}
 
+/// Firestore subscription.
 abstract class FirestoreSubscription<T> {
+  /// Path.
   String? path;
+
+  /// Count.
   int count = 0;
+
+  /// Stream controller.
   var streamController = StreamController<T>.broadcast();
 }
 
+/// Firestore subscription mixin.
 mixin FirestoreSubscriptionMixin on Firestore {
+  /// Close subscriptions.
   Future closeSubscriptions() async {
     for (var subscription in subscriptions.values.toList()) {
       await _clearSubscription(subscription);
     }
   }
 
-  // key is path
+  /// Subscriptions.
   final subscriptions = <String?, FirestoreSubscription>{};
 
+  /// Find subscription.
   FirestoreSubscription<T?>? findSubscription<T>(String? path) {
     return subscriptions[path] as FirestoreSubscription<T?>?;
   }
 
+  /// Add collection subscription.
   CollectionSubscription addCollectionSubscription(String path) {
     return _addSubscription(path, () => CollectionSubscription())
         as CollectionSubscription;
   }
 
+  /// Add document subscription.
   DocumentSubscription addDocumentSubscription(String? path) {
     return _addSubscription(path, () => DocumentSubscription())
         as DocumentSubscription;
@@ -217,7 +239,7 @@ mixin FirestoreSubscriptionMixin on Firestore {
     return subscription as FirestoreSubscription<T>;
   }
 
-  // ref counting
+  /// Remove subscription.
   Future removeSubscription(FirestoreSubscription subscription) async {
     if (--subscription.count == 0) {
       await _clearSubscription(subscription);
@@ -231,10 +253,13 @@ mixin FirestoreSubscriptionMixin on Firestore {
 
   // DocumentSnapshot snapshotFromReferenceRevAndData(DocumentReference documentReference, int rev, DocumentData documentData, {Timestamp updateTime, Timestamp createTime});
 
+  /// Clone snapshot.
   DocumentSnapshot cloneSnapshot(DocumentSnapshot documentSnapshot);
 
+  /// Deleted snapshot.
   DocumentSnapshot deletedSnapshot(DocumentReference documentReference);
 
+  /// Document change.
   DocumentChangeBase documentChange(
     DocumentChangeType type,
     DocumentSnapshot document,
@@ -242,6 +267,7 @@ mixin FirestoreSubscriptionMixin on Firestore {
     int oldIndex,
   );
 
+  /// Notify.
   void notify(WriteResultBase result) {
     if (!result.shouldNotify) {
       return;
@@ -281,6 +307,7 @@ mixin FirestoreSubscriptionMixin on Firestore {
     }
   }
 
+  /// On snapshot.
   Stream<DocumentSnapshot> onSnapshot(DocumentReference documentRef) {
     var subscription = addDocumentSubscription(documentRef.path);
     late StreamSubscription querySubscription;
@@ -307,6 +334,7 @@ mixin FirestoreSubscriptionMixin on Firestore {
   }
 }
 
+/// Map where condition.
 bool mapWhere(DocumentData? documentData, WhereInfo where) {
   // We always use Timestamp even for DateTime
   FirestoreComparable? makeComparableValue(dynamic value) {
@@ -387,6 +415,7 @@ bool mapWhere(DocumentData? documentData, WhereInfo where) {
   return false;
 }
 
+/// Safe get item.
 T? safeGetItem<T>(List<T>? list, int index) {
   if (list != null && list.length > index) {
     return list[index];
@@ -442,18 +471,26 @@ int _rawCompareType(Object object1, Object object2) {
   return typeOrderIndex1.compareTo(typeOrderIndex2);
 }
 
+/// Firestore comparable.
 class FirestoreComparable {
+  /// Comparable.
   final Comparable? comparable;
+
+  /// Non-comparable.
   final Object? nonComparable;
 
   int get _boolComparable =>
       (nonComparable as bool) ? 1 : 0; // if nonComparable is bool only
+  /// Any comparable.
   Object? get anyComparable => comparable ?? nonComparable;
 
+  /// Constructor.
   FirestoreComparable(this.comparable, [this.nonComparable]);
 
+  /// True if comparable.
   bool get isComparable => comparable != null;
 
+  /// Compare to.
   int compareTo(FirestoreComparable? other) {
     try {
       if (other == null) {
@@ -484,6 +521,7 @@ class FirestoreComparable {
     }
   }
 
+  /// Compare.
   static int compare(FirestoreComparable? a, FirestoreComparable? b) =>
       a?.compareTo(b) ?? -1;
 
@@ -512,9 +550,11 @@ FirestoreComparable? _getComparable(dynamic value) {
   return FirestoreComparable(null, value);
 }
 
+/// Comparable list.
 class ComparableList<E> with ListMixin<E> implements Comparable<List<E>?> {
   final List<E> _list;
 
+  /// Constructor.
   ComparableList(this._list);
 
   @override
@@ -548,11 +588,13 @@ class ComparableList<E> with ListMixin<E> implements Comparable<List<E>?> {
   }
 }
 
+/// Comparable map.
 class ComparableMap<K, V>
     with MapMixin<K, V>
     implements Comparable<Map<K, V>?> {
   final Map<K, V> _map;
 
+  /// Constructor.
   ComparableMap(this._map);
 
   @override
@@ -568,6 +610,7 @@ class ComparableMap<K, V>
     throw StateError('read-only');
   }
 
+  /// Keys.
   @override
   Iterable<K> get keys => _map.keys;
 
@@ -628,6 +671,7 @@ int _compareHandleNull(
   }
 }
 
+/// Snapshot map query info.
 bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
   var data = snapshot.documentData as DocumentDataMap?;
 
@@ -690,27 +734,35 @@ bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
   return true;
 }
 
+/// Firestore reference base.
 abstract class FirestoreReferenceBase
     with PathReferenceImplMixin, PathReferenceMixin {
+  /// Constructor.
   FirestoreReferenceBase(Firestore firestore, String path) {
     init(firestore, path);
   }
 }
 
+/// Firestore query mixin.
 mixin FirestoreQueryMixin implements Query {
   @override
   Firestore get firestore;
 
+  /// Path.
   String get path;
 
+  /// Documents mixin.
   FirestoreDocumentsMixin get documentsMixin =>
       firestore as FirestoreDocumentsMixin;
 
+  /// Subscription mixin.
   FirestoreSubscriptionMixin get subscriptionMixin =>
       firestore as FirestoreSubscriptionMixin;
 
+  /// Query info.
   QueryInfo? get queryInfo;
 
+  /// Get collection documents.
   Future<List<DocumentSnapshot>> getCollectionDocuments();
 
   /*
@@ -856,6 +908,7 @@ mixin FirestoreQueryMixin implements Query {
       descending == true ? orderByDescending : orderByAscending,
     );
 
+  /// Clone.
   FirestoreQueryMixin clone();
 
   @override
@@ -886,6 +939,7 @@ mixin FirestoreQueryMixin implements Query {
       ),
     );
 
+  /// Add order by.
   void addOrderBy(String key, String directionStr) {
     var orderBy = OrderByInfo(
       fieldPath: key,
@@ -965,17 +1019,23 @@ mixin FirestoreQueryMixin implements Query {
   }
 }
 
+/// Reference attributes.
 abstract class ReferenceAttributes {
+  /// Parent path.
   String? get parentPath;
 
+  /// Id.
   String get id;
 
+  /// Get child path.
   String getChildPath(String path);
 }
 
+/// Attributes mixin.
 abstract mixin class AttributesMixin implements ReferenceAttributes {
   // FirestoreReferenceBase get baseRef;
 
+  /// Path.
   String get path;
 
   @override

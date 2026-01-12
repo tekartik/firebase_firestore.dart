@@ -1,8 +1,22 @@
 import 'package:tekartik_firebase_firestore/src/common/import_firestore_mixin.dart';
 
 // don't export it yet
-enum FieldValueType { serverTimestamp, delete, arrayUnion, arrayRemove }
+/// Field value type.
+enum FieldValueType {
+  /// Server timestamp.
+  serverTimestamp,
 
+  /// Delete.
+  delete,
+
+  /// Array union.
+  arrayUnion,
+
+  /// Array remove.
+  arrayRemove,
+}
+
+/// To locale time.
 DateTime? toLocaleTime(DateTime? value) {
   if (value == null || !value.isUtc) {
     return value;
@@ -33,6 +47,7 @@ Timestamp? parseTimestamp(dynamic value) {
 }
 
 /// Convert a dynamic value to a document value
+/// Convert a dynamic value to a document value.
 dynamic valueToDocumentValue(dynamic value) {
   if (value == null ||
       value is num ||
@@ -56,12 +71,14 @@ dynamic valueToDocumentValue(dynamic value) {
   }
 }
 
-/// IMplementation of [DocumentData] using a map
+/// Implementation of [DocumentData] using a map.
 class DocumentDataMap implements DocumentData {
+  /// Map data.
   Map<String, Object?> get map => _map;
   late Map<String, Object?> _map;
 
   // use the given map as the data holder (so will be modified)
+  /// Constructor.
   DocumentDataMap({Map<String, Object?>? map}) {
     _map = map ?? {};
   }
@@ -76,8 +93,10 @@ class DocumentDataMap implements DocumentData {
   @override
   void setNull(String key) => setValue(key, null);
 
+  /// Set value.
   void setValue(String key, dynamic value) => map[key] = value;
 
+  /// Value at field path.
   Object? valueAtFieldPath(String fieldPath) {
     final parts = fieldPath.split('.');
     Map parent = map;
@@ -95,6 +114,7 @@ class DocumentDataMap implements DocumentData {
     return value;
   }
 
+  /// Get value.
   dynamic getValue(String key) => map[key];
 
   @override
@@ -202,17 +222,26 @@ class DocumentDataMap implements DocumentData {
   String toString() => asMap().toString();
 }
 
-enum FieldValueMapValue { delete, serverTimestamp }
+/// Field value map value.
+enum FieldValueMapValue {
+  /// Delete.
+  delete,
+
+  /// Server timestamp.
+  serverTimestamp,
+}
 
 /// Special name field representing the document id (for sort order)
 const String firestoreNameFieldPath = '__name__';
 
+/// Firestore settings.
 class FirestoreSettings {
   /// Enables the use of `Timestamp`s for timestamp fields in
   /// `DocumentSnapshot`s.
   @Deprecated('No longer needed')
   final bool? timestampsInSnapshots;
 
+  /// Constructor.
   // ignore: deprecated_member_use_from_same_package
   FirestoreSettings({
     @Deprecated('No longer needed') this.timestampsInSnapshots,

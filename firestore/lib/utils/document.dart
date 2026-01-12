@@ -1,6 +1,7 @@
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
+/// Document snapshots.
 abstract class DocumentSnapshots {
   /// The input references
   List<DocumentReference> get refs;
@@ -8,6 +9,7 @@ abstract class DocumentSnapshots {
   /// The snapshots reference in the same order
   List<DocumentSnapshot> get docs;
 
+  /// Get document.
   DocumentSnapshot? getDocument(DocumentReference reference);
 }
 

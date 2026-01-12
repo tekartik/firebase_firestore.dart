@@ -4,6 +4,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 
 import 'firestore_test.dart';
 
+/// Vector value test group.
 void vectorValueGroup({
   required Firestore firestore,
   required FirestoreTestContext? testContext,

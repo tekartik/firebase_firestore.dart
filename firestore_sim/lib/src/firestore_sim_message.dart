@@ -4,42 +4,74 @@ import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/utils/json_utils.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server_mixin.dart';
 
+/// Path parameter.
 const paramPath = 'path';
+
+/// Snapshot parameter.
 const paramSnapshot = 'snapshot'; // map
 
+/// Set method.
 const methodFirestoreSet = 'firestore/set';
+
+/// Update method.
 const methodFirestoreUpdate = 'firestore/update';
+
+/// Add method.
 const methodFirestoreAdd = 'firestore/add';
+
+/// Get method.
 const methodFirestoreGet = 'firestore/get';
+
+/// Get listen method.
 const methodFirestoreGetListen =
     'firestore/get/listen'; // first query then next
+/// Get stream method.
 const methodFirestoreGetStream =
     'firestore/get/stream'; // first query then next
+/// Get cancel method.
 const methodFirestoreGetCancel =
     'firestore/get/cancel'; // query and notification
+/// Delete method.
 const methodFirestoreDelete = 'firestore/delete';
+
+/// Query method.
 const methodFirestoreQuery = 'firestore/query';
+
+/// Batch method.
 const methodFirestoreBatch = 'firestore/batch';
+
+/// Transaction method.
 const methodFirestoreTransaction = 'firestore/transaction';
+
+/// Transaction commit method.
 const methodFirestoreTransactionCommit =
     'firestore/transaction/commit'; // batch data
+/// Transaction cancel method.
 const methodFirestoreTransactionCancel =
     'firestore/transaction/cancel'; // transactionId
+/// Query listen method.
 const methodFirestoreQueryListen =
     'firestore/query/listen'; // query from client and notification from server
+/// Query stream method.
 const methodFirestoreQueryStream =
     'firestore/query/stream'; // query from client and notification from server
+/// Query cancel method.
 const methodFirestoreQueryCancel = 'firestore/query/cancel';
 
+/// Init CV builders.
 void firebaseSimFirestoreInitCvBuilders() {
   cvAddConstructors([CvFirestoreAppBaseData.new]);
 }
 
+/// App data for CV.
 class CvFirestoreAppBaseData extends CvFirebaseSimAppBaseData {}
 
+/// App data base.
 class FirestoreAppBaseData extends BaseData {}
 
+/// Path data.
 class FirestorePathData extends FirestoreAppBaseData {
+  /// Path.
   late String path;
 
   @override
@@ -56,7 +88,9 @@ class FirestorePathData extends FirestoreAppBaseData {
   }
 }
 
+/// Path data for CV.
 class CvFirestorePathData extends CvFirestoreAppBaseData {
+  /// Path.
   final path = CvField<String>('path');
 
   @override
@@ -64,8 +98,10 @@ class CvFirestorePathData extends CvFirestoreAppBaseData {
 }
 
 // get/getStream
+/// Get data.
 class FirestoreGetData extends FirestorePathData {}
 
+/// Document snapshot data implementation.
 class FirestoreDocumentSnapshotDataImpl extends FirestoreSetData
     implements FirestoreDocumentSnapshotData {
   @override
@@ -81,20 +117,28 @@ class FirestoreDocumentSnapshotDataImpl extends FirestoreSetData
   }
 }
 
+/// Document snapshot data.
 abstract class FirestoreDocumentSnapshotData {
+  /// Path.
   String get path;
 
+  /// Data.
   Map<String, Object?>? get data;
 
+  /// Create time.
   Timestamp? get createTime;
 
+  /// Update time.
   Timestamp? get updateTime;
 }
 
+/// Document get snapshot data.
 class DocumentGetSnapshotData extends DocumentSnapshotData {
+  /// Constructor from snapshot.
   DocumentGetSnapshotData.fromSnapshot(super.snapshot) : super.fromSnapshot();
 
   // optional for stream only
+  /// Stream id.
   int? streamId;
 
   @override
@@ -114,6 +158,7 @@ class DocumentGetSnapshotData extends DocumentSnapshotData {
 }
 
 // sub date
+/// Document snapshot data.
 class DocumentSnapshotData extends FirestorePathData
     implements FirestoreDocumentSnapshotData {
   @override
@@ -124,6 +169,7 @@ class DocumentSnapshotData extends FirestorePathData
   @override
   Timestamp? updateTime;
 
+  /// Constructor from snapshot.
   DocumentSnapshotData.fromSnapshot(DocumentSnapshot snapshot) {
     path = snapshot.ref.path;
     data = snapshotDataToJsonMap(snapshot);
@@ -131,6 +177,7 @@ class DocumentSnapshotData extends FirestorePathData
     updateTime = snapshot.updateTime;
   }
 
+  /// Constructor from message map.
   DocumentSnapshotData.fromMessageMap(Map<String, Object?> map) {
     fromMap(map);
   }
@@ -153,11 +200,20 @@ class DocumentSnapshotData extends FirestorePathData
   }
 }
 
+/// Document change data.
 class DocumentChangeData extends FirestoreAppBaseData {
+  /// Id.
   String? id;
+
+  /// Type.
   String? type; // added/modified/removed
+  /// New index.
   int? newIndex;
+
+  /// Old index.
   int? oldIndex;
+
+  /// Data.
   Map<String, Object?>? data; // only present for deleted
 
   @override
@@ -184,11 +240,16 @@ class DocumentChangeData extends FirestoreAppBaseData {
   }
 }
 
+/// Firestore query snapshot data.
 class FirestoreQuerySnapshotData extends FirestoreAppBaseData {
+  /// List of snapshots.
   late List<DocumentSnapshotData> list;
+
+  /// List of changes.
   List<DocumentChangeData>? changes;
 
   // optional for stream only
+  /// Stream id.
   int? streamId;
 
   @override
@@ -235,8 +296,12 @@ class FirestoreQuerySnapshotData extends FirestoreAppBaseData {
   }
 }
 
+/// Firestore set data.
 class FirestoreSetData extends FirestorePathData {
+  /// Data.
   Map<String, Object?>? data;
+
+  /// Merge.
   bool? merge;
 
   @override
@@ -257,14 +322,20 @@ class FirestoreSetData extends FirestorePathData {
   }
 }
 
+/// Firestore set data for CV.
 class CvFirestoreSetData extends CvFirestorePathData {
+  /// Data.
   final data = CvField<Model>('data');
+
+  /// Merge.
   final merge = CvField<bool>('merge');
   @override
   CvFields get fields => [data, merge, ...super.fields];
 }
 
+/// Firestore get request data.
 class FirestoreGetRequestData extends FirestorePathData {
+  /// Transaction id.
   int? transactionId;
 
   @override
@@ -283,14 +354,18 @@ class FirestoreGetRequestData extends FirestorePathData {
   }
 }
 
+/// Firestore get request data for CV.
 class CvFirestoreGetRequestData extends CvFirestorePathData {
+  /// Transaction id.
   final transactionId = CvField<int>('transactionId');
 
   @override
   CvFields get fields => [transactionId, ...super.fields];
 }
 
+/// Firestore transaction response data.
 class FirestoreTransactionResponseData extends FirestoreAppBaseData {
+  /// Transaction id.
   int? transactionId;
 
   @override
@@ -305,9 +380,12 @@ class FirestoreTransactionResponseData extends FirestoreAppBaseData {
   }
 }
 
+/// Firestore query data.
 class FirestoreQueryData extends FirestorePathData {
+  /// Query info.
   QueryInfo? queryInfo;
 
+  /// Internal from map.
   void firestoreFromMap(Firestore firestore, Map<String, Object?> map) {
     super.fromMap(map);
     queryInfo = queryInfoFromJsonMap(
@@ -334,9 +412,12 @@ class FirestoreQueryData extends FirestorePathData {
   }
 }
 
+/// Batch operation delete data.
 class BatchOperationDeleteData extends BatchOperationData {}
 
+/// Batch operation update data.
 class BatchOperationUpdateData extends BatchOperationData {
+  /// Data.
   Map<String, Object?>? data;
 
   @override
@@ -353,8 +434,12 @@ class BatchOperationUpdateData extends BatchOperationData {
   }
 }
 
+/// Batch operation set data.
 class BatchOperationSetData extends BatchOperationData {
+  /// Data.
   Map<String, Object?>? data;
+
+  /// Merge.
   bool? merge;
 
   @override
@@ -375,8 +460,12 @@ class BatchOperationSetData extends BatchOperationData {
   }
 }
 
+/// Batch operation data.
 abstract class BatchOperationData extends FirestoreAppBaseData {
+  /// Method.
   String? method;
+
+  /// Path.
   String? path;
 
   @override
@@ -396,10 +485,15 @@ abstract class BatchOperationData extends FirestoreAppBaseData {
 }
 
 // for batch and transaction commit
+/// Firestore batch data.
 class FirestoreBatchData extends FirestoreAppBaseData {
+  /// Transaction id.
   int? transactionId;
+
+  /// Operations.
   List<BatchOperationData> operations = [];
 
+  /// Internal from map.
   void firestoreFromMap(Firestore firestore, Map<String, Object?> map) {
     super.fromMap(map);
     var list = map['list'] as List;
@@ -450,7 +544,9 @@ class FirestoreBatchData extends FirestoreAppBaseData {
 }
 
 // for batch and transaction commit
+/// Firestore transaction cancel request data.
 class FirestoreTransactionCancelRequestData extends FirestoreAppBaseData {
+  /// Transaction id.
   int? transactionId;
 
   @override
@@ -469,7 +565,9 @@ class FirestoreTransactionCancelRequestData extends FirestoreAppBaseData {
   }
 }
 
+/// Firestore query stream id base.
 abstract class FirestoreQueryStreamIdBase extends FirestoreAppBaseData {
+  /// Stream id.
   int? streamId;
 
   @override
@@ -484,8 +582,11 @@ abstract class FirestoreQueryStreamIdBase extends FirestoreAppBaseData {
   }
 }
 
+/// Firestore query stream cancel data.
 class FirestoreQueryStreamCancelData extends FirestoreQueryStreamIdBase {}
 
+/// Firestore query stream response.
 class FirestoreQueryStreamResponse extends FirestoreQueryStreamIdBase {}
 
+/// Firestore get stream response.
 class FirestoreGetStreamResponse extends FirestoreQueryStreamResponse {}

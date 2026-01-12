@@ -7,6 +7,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 
 import 'firestore_test.dart';
 
+/// Run firestore document tests.
 void runFirestoreDocumentTests({
   required Firestore firestore,
   FirestoreTestContext? testContext,

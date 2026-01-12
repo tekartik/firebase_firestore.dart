@@ -29,13 +29,17 @@ import 'utils_auto_id_test.dart';
 @Deprecated('Use FirestoreTestContext')
 var testsRefPath = _testsRefPathDefault;
 var _testsRefPathDefault = 'tests/tekartik_firestore/tests';
+
+/// Skip concurrent transaction tests.
 bool skipConcurrentTransactionTests = false;
 
+/// Get document keys.
 List<DocumentReference?> docsKeys(List<DocumentSnapshot> snashots) =>
     snashots.map((e) => e.ref).toList();
 
 // @Deprecated('Use runFirestoreTests')
 @Deprecated('Use runFirestoreTests')
+/// Deprecated run.
 void run({
   required Firebase firebase,
   required FirestoreService firestoreService,
@@ -50,6 +54,7 @@ void run({
   );
 }
 
+/// Run firestore tests.
 void runFirestoreTests({
   required Firebase firebase,
   required FirestoreService firestoreService,
@@ -64,6 +69,7 @@ void runFirestoreTests({
   );
 }
 
+/// Firestore test context.
 class FirestoreTestContext {
   /// Default
   static final defaultRootCollectionPath = _testsRefPathDefault;
@@ -72,12 +78,15 @@ class FirestoreTestContext {
   // ignore: unused_field
   final String? _noAuthRootCollectionPath;
 
+  /// Get root collection path.
   static String getRootCollectionPath(FirestoreTestContext? testContext) =>
       testContext?.rootCollectionPath ?? defaultRootCollectionPath;
 
+  /// Root collection path.
   String get rootCollectionPath =>
       _rootCollectionPath ?? defaultRootCollectionPath;
 
+  /// Constructor.
   FirestoreTestContext({
     String? rootCollectionPath,
     String? noAuthRootCollectionPath,
@@ -87,12 +96,14 @@ class FirestoreTestContext {
   /// can be set later
   int? allowedDelayInReadMs;
 
+  /// Sleep read delay.
   Future<void> sleepReadDelay() async {
     if (allowedDelayInReadMs != null) {
       await Future<void>.delayed(Duration(milliseconds: allowedDelayInReadMs!));
     }
   }
 
+  /// Run test and if needed allow delay.
   Future<void> runTestAndIfNeededAllowDelay(
     Future<void> Function() action,
   ) async {
@@ -109,6 +120,7 @@ class FirestoreTestContext {
   }
 }
 
+/// Run test and if needed allow delay.
 Future<void> runTestAndIfNeededAllowDelay(
   FirestoreTestContext? testContext,
   Future<void> Function() action,
@@ -138,6 +150,7 @@ void _runFirestoreTests({
   });
 }
 
+/// Run firestore app tests.
 void runFirestoreAppTests({
   required FirebaseApp app,
   required FirestoreService firestoreService,
@@ -200,6 +213,7 @@ void runFirestoreAppTests({
 }
 
 @Deprecated('User runFirestoreCommonTests')
+/// Deprecated runApp.
 void runApp({
   required FirestoreService firestoreService,
   required Firestore firestore,
@@ -211,6 +225,7 @@ void runApp({
   );
 }
 
+/// Run firestore common tests.
 void runFirestoreCommonTests({
   required FirestoreService firestoreService,
   required Firestore firestore,
@@ -1413,6 +1428,7 @@ String? testRootPath;
 
 @Deprecated('use TestContext')
 /// To get a safe path if specified in setup
+/// Get test path.
 String getTestPath(String path) {
   if (testRootPath == null) {
     return path;
@@ -1437,6 +1453,7 @@ Timestamp timestampAdaptPrecision(
   }
 }
 
+/// Get query snapshot doc ids.
 List<String> querySnapshotDocIds(QuerySnapshot querySnapshot) {
   return querySnapshot.docs.map((snapshot) => snapshot.ref.id).toList();
 }

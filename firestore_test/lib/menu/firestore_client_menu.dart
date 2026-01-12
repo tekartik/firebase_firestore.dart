@@ -10,12 +10,17 @@ export 'package:tekartik_firebase_firestore/firestore.dart';
 
 /// Top doc context
 class FirestoreMainMenuContext {
+  /// Document reference.
   final DocumentReference doc;
 
+  /// Firestore instance.
   Firestore get firestore => doc.firestore;
+
+  /// Constructor.
   FirestoreMainMenuContext({required this.doc});
 }
 
+/// Firestore main menu.
 void firestoreMainMenu({required FirestoreMainMenuContext context}) {
   menu('collection', () {
     StreamSubscription? subscription;

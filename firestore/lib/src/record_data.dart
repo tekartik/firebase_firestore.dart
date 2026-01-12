@@ -8,17 +8,21 @@ import 'package:tekartik_firebase_firestore/src/firestore.dart';
 
 import 'firestore_common.dart';
 
+/// Revision key.
 const revKey = r'$rev';
 
+/// Record map revision.
 int? recordMapRev(Map<String, Object?> recordMap) => recordMap[revKey] as int?;
 
+/// Record map update time.
 Timestamp? recordMapUpdateTime(Map<String, Object?> recordMap) =>
     mapUpdateTime(recordMap);
 
+/// Record map create time.
 Timestamp? recordMapCreateTime(Map<String, Object?> recordMap) =>
     mapCreateTime(recordMap);
 
-/// Merge documentData onto existing recordMap
+/// Merge documentData onto existing recordMap.
 Map<String, Object?>? recordMapMerge(
   Map<String, Object?>? existing,
   DocumentData? documentData,
@@ -31,7 +35,7 @@ Map<String, Object?>? recordMapMerge(
   return newDocumentData.asMap();
 }
 
-/// Generic record update using documentData
+/// Generic record update using documentData.
 Map<String, Object?>? recordMapUpdate(
   Map<String, Object?>? existing,
   DocumentData? documentData,
@@ -59,6 +63,7 @@ Map<String, Object?>? recordMapUpdate(
   return recordMap;
 }
 
+/// Document data from record map.
 DocumentDataMap? documentDataFromRecordMap(
   Firestore firestore,
   Map<String, Object?>? recordMap, [
@@ -92,6 +97,7 @@ DocumentDataMap? documentDataFromRecordMap(
   return documentData as DocumentDataMap;
 }
 
+/// Record value to value.
 dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
   if (recordValue == null ||
       recordValue is num ||
@@ -123,13 +129,15 @@ dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
   throw 'recordValueToValue not supported $recordValue ${recordValue.runtimeType}';
 }
 
-/// TODO make non nullable
+/// Document data map.
 DocumentDataMap? documentDataMap(DocumentData? documentData) =>
     documentData as DocumentDataMap?;
 
+/// Document data map or null.
 DocumentDataMap? documentDataMapOrNull(DocumentData? documentData) =>
     documentData as DocumentDataMap?;
 
+/// Document data extension.
 extension DocumentDataExt on DocumentData {
   /// Map
   Map<String, Object?> asMap() {
@@ -179,7 +187,7 @@ extension DocumentDataExt on DocumentData {
   }
 }
 
-// merge with existing record map if any
+/// Document data to record map.
 @Deprecated('Use DocumentData, merge if needed and toJsonRecordValueMap')
 Map<String, Object?>? documentDataToRecordMap(
   DocumentData? documentData, [
@@ -222,17 +230,19 @@ Map<String, Object?>? documentDataToRecordMap(
   return recordMap;
 }
 
-/// To handle arrayUnion and ArrayDelete
+/// To handle arrayUnion and ArrayDelete.
 class FieldValueArray extends FieldValue {
   @override
   final List<Object?> data;
 
+  /// Constructor.
   FieldValueArray(super.type, this.data);
 
   @override
   String toString() => 'FieldValueArray($type, $data)';
 }
 
+/// Field array value merge value.
 List fieldArrayValueMergeValue(
   FieldValueArray fieldValueArray,
   Object? existing,
@@ -267,6 +277,7 @@ List<Object?> fieldArrayValueToRecordMapNoMerge(
   }
 }
 
+/// Value to record value.
 @Deprecated('Use valueToJsonRecordValue')
 dynamic valueToRecordValue(
   dynamic value, [
@@ -275,7 +286,7 @@ dynamic valueToRecordValue(
   return valueToJsonRecordValue(value, chainConverter);
 }
 
-/// Convert to real value for saving
+/// Convert to real value for saving.
 Model mapValueToJsonRecordMapValue(
   Map map, [
   dynamic Function(dynamic value)? chainConverter,
@@ -285,7 +296,7 @@ Model mapValueToJsonRecordMapValue(
   );
 }
 
-/// Convert to real value for saving
+/// Convert to real value for saving.
 List listValueToJsonRecordListValue(
   List list, [
   dynamic Function(dynamic value)? chainConverter,
@@ -293,9 +304,8 @@ List listValueToJsonRecordListValue(
   return list.map((subValue) => chainConverter!(subValue)).toList();
 }
 
-//@Deprecated('Use documentDataValueToJson')
-/// Convert to real value for saving
-/// Cannot be FieldValue
+/// Convert to real value for saving.
+/// Cannot be FieldValue.
 dynamic valueToJsonRecordValue(
   dynamic value, [
   dynamic Function(dynamic value)? chainConverter,
@@ -334,30 +344,44 @@ dynamic valueToJsonRecordValue(
   throw 'not supported $value ${value.runtimeType}';
 }
 
-// Stored as timestamp
+/// DateTime to record value.
 Map<String, Object?> dateTimeToRecordValue(DateTime dateTime) =>
     timestampToRecordValue(Timestamp.fromDateTime(dateTime));
-// For now it is still a date
+
+/// Timestamp to record value.
 Map<String, Object?> timestampToRecordValue(Timestamp timestamp) =>
     timestampToJsonValue(timestamp);
+
+/// Vector to record value.
 Map<String, Object?> vectorToRecordValue(VectorValue vector) =>
     vectorToJsonValue(vector);
+
+/// Document reference to record value.
 Map<String, Object?> documentReferenceToRecordValue(
   DocumentReference documentReference,
 ) => documentReferenceToJsonValue(documentReference);
 
+/// Record value to DateTime.
 DateTime? recordValueToDateTime(Map map) => jsonValueToDateTime(map)?.toLocal();
 
+/// Record value to document reference.
 DocumentReference recordValueToDocumentReference(
   Firestore firestore,
   Map map,
 ) => jsonValueToDocumentReference(firestore, map);
 
+/// Record meta data.
 class RecordMetaData {
+  /// Revision.
   int? rev;
+
+  /// Create time.
   Timestamp? createTime;
+
+  /// Update time.
   Timestamp? updateTime;
 
+  /// Constructor.
   RecordMetaData.fromRecordMap(Map<String, Object?> recordMap) {
     rev = recordMapRev(recordMap);
     createTime = recordMapCreateTime(recordMap);

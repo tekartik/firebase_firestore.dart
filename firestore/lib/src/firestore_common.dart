@@ -12,38 +12,66 @@ import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'common/firestore_mock.dart';
 import 'common/reference_mixin.dart';
 
+/// Json type field.
 const String jsonTypeField = r'$t';
+
+/// Json value field.
 const String jsonValueField = r'$v';
+
+/// DateTime type.
 const String typeDateTime = 'DateTime';
+
+/// Timestamp type.
 const String typeTimestamp = 'Timestamp';
+
+/// Vector type.
 const String typeVector = 'Vector';
+
+/// FieldValue type.
 const String typeFieldValue = 'FieldValue';
+
+/// DocumentReference type.
 const String typeDocumentReference = 'DocumentReference';
+
+/// GeoPoint type.
 const String typeGeoPoint = 'GeoPoint';
+
+/// Blob type.
 const String typeBlob = 'Blob';
+
+/// FieldValue delete value.
 const String valueFieldValueDelete = '~delete';
+
+/// FieldValue server timestamp value.
 const String valueFieldValueServerTimestamp = '~serverTimestamp';
 
+/// Type value to json.
 Map<String, Object?> typeValueToJson(String type, dynamic value) {
   return <String, Object?>{jsonTypeField: type, jsonValueField: value};
 }
 
+/// DateTime to json value.
 Map<String, Object?> dateTimeToJsonValue(DateTime dateTime) =>
     typeValueToJson(typeDateTime, dateTimeToString(dateTime));
 
+/// Timestamp to json value.
 Map<String, Object?> timestampToJsonValue(Timestamp timestamp) =>
     typeValueToJson(typeTimestamp, timestamp.toIso8601String());
 
+/// Vector to json value.
 Map<String, Object?> vectorToJsonValue(VectorValue vector) =>
     typeValueToJson(typeVector, vector.toArray());
 
+/// DocumentReference to json value.
 Map<String, Object?> documentReferenceToJsonValue(
   DocumentReference documentReference,
 ) => typeValueToJson(typeDocumentReference, documentReference.path);
 
+/// Blob to json value.
 Map<String, Object?> blobToJsonValue(Blob blob) =>
     typeValueToJson(typeBlob, base64.encode(blob.data));
 
+/// FieldValue to json value.
 Map<String, Object?> fieldValueToJsonValue(FieldValue fieldValue) {
   if (fieldValue == FieldValue.delete) {
     return typeValueToJson(typeFieldValue, valueFieldValueDelete);
@@ -57,6 +85,7 @@ Map<String, Object?> fieldValueToJsonValue(FieldValue fieldValue) {
   );
 }
 
+/// FieldValue from json value.
 FieldValue fieldValueFromJsonValue(dynamic value) {
   if (value == valueFieldValueDelete) {
     return FieldValue.delete;
@@ -70,11 +99,13 @@ FieldValue fieldValueFromJsonValue(dynamic value) {
   );
 }
 
+/// Json value to DateTime.
 DateTime? jsonValueToDateTime(Map map) {
   assert(map[jsonTypeField] == typeDateTime);
   return anyToDateTime(map[jsonValueField]);
 }
 
+/// Json value to Timestamp.
 Timestamp? jsonValueToTimestamp(Map map) {
   assert(
     map[jsonTypeField] == typeDateTime || map[jsonTypeField] == typeTimestamp,
@@ -82,11 +113,13 @@ Timestamp? jsonValueToTimestamp(Map map) {
   return parseTimestamp(map[jsonValueField]);
 }
 
+/// Json value to DocumentReference.
 DocumentReference jsonValueToDocumentReference(Firestore firestore, Map map) {
   assert(map[jsonTypeField] == typeDocumentReference);
   return firestore.doc(map[jsonValueField] as String);
 }
 
+/// Json value to Blob.
 Blob jsonValueToBlob(Map map) {
   assert(map[jsonTypeField] == typeBlob);
   var base64value = map[jsonValueField] as String?;
@@ -97,6 +130,7 @@ Blob jsonValueToBlob(Map map) {
   }
 }
 
+/// Json value to Vector.
 VectorValue jsonValueToVector(Map map) {
   assert(map[jsonTypeField] == typeVector);
   var array = (map[jsonValueField] as List)
@@ -106,6 +140,7 @@ VectorValue jsonValueToVector(Map map) {
   return VectorValue(array);
 }
 
+/// GeoPoint to json value.
 Map<String, Object?> geoPointToJsonValue(GeoPoint geoPoint) {
   return typeValueToJson(typeGeoPoint, {
     'latitude': geoPoint.latitude,
@@ -113,6 +148,7 @@ Map<String, Object?> geoPointToJsonValue(GeoPoint geoPoint) {
   });
 }
 
+/// Json value to GeoPoint.
 GeoPoint jsonValueToGeoPoint(Map map) {
   assert(map[jsonTypeField] == typeGeoPoint);
   var valueMap = map[jsonValueField] as Map;
@@ -235,6 +271,7 @@ Object? jsonToDocumentDataValue(Firestore firestore, Object? value) {
 }
 
 // remove createTime and updateTime
+/// Document data from snapshot json map.
 DocumentData? documentDataFromSnapshotJsonMap(
   Firestore firestore,
   Map<String, Object?> map,
@@ -278,9 +315,11 @@ DocumentData documentDataFromMap(Map<String, Object?> map) {
   return DocumentData(map);
 }
 
+/// Document data from snapshot.
 DocumentData? documentDataFromSnapshot(DocumentSnapshot snapshot) =>
     snapshot.exists ? DocumentData(snapshot.data) : null;
 
+/// Snapshot data to json map.
 Map<String, Object?>? snapshotDataToJsonMap(DocumentSnapshot snapshot) {
   if (snapshot.exists) {
     var map = documentDataToJsonMap(documentDataFromSnapshot(snapshot));
@@ -290,6 +329,7 @@ Map<String, Object?>? snapshotDataToJsonMap(DocumentSnapshot snapshot) {
   }
 }
 
+/// Document data to json map.
 Map<String, Object?>? documentDataToJsonMap(DocumentData? documentData) {
   if (documentData == null) {
     return null;
@@ -297,27 +337,39 @@ Map<String, Object?>? documentDataToJsonMap(DocumentData? documentData) {
   return documentData.toJsonRecordMap();
 }
 
+/// Order by info.
 class OrderByInfo {
+  /// Field path.
   String? fieldPath;
+
+  /// Ascending.
   bool ascending;
 
+  /// Constructor.
   OrderByInfo({required this.fieldPath, required this.ascending});
 
   @override
   String toString() => '$fieldPath ${ascending ? 'ASC' : 'DESC'}';
 }
 
+/// Limit info.
 class LimitInfo {
+  /// Document id.
   String? documentId;
-  List? values;
-  late bool inclusive; // true = At
 
+  /// Values.
+  List? values;
+
+  /// Inclusive.
+  late bool inclusive; // true = At
+  /// Constructor.
   LimitInfo({this.documentId, this.values, bool? inclusive}) {
     if (inclusive != null) {
       this.inclusive = inclusive;
     }
   }
 
+  /// Clone.
   LimitInfo clone() {
     return LimitInfo()
       ..documentId = documentId
@@ -330,9 +382,12 @@ class LimitInfo {
       '${documentId ?? values} ${inclusive ? '(inclusive)' : ''}';
 }
 
+/// Where info.
 class WhereInfo {
+  /// Field path.
   String fieldPath;
 
+  /// Constructor.
   WhereInfo(
     this.fieldPath, {
     this.isEqualTo,
@@ -373,15 +428,34 @@ class WhereInfo {
     );
   }
 
+  /// Is equal to.
   dynamic isEqualTo;
+
+  /// Is less than.
   dynamic isLessThan;
+
+  /// Is less than or equal to.
   dynamic isLessThanOrEqualTo;
+
+  /// Is greater than.
   dynamic isGreaterThan;
+
+  /// Is greater than or equal to.
   dynamic isGreaterThanOrEqualTo;
+
+  /// Array contains.
   dynamic arrayContains;
+
+  /// Array contains any.
   List<Object>? arrayContainsAny;
+
+  /// Where in.
   List<Object>? whereIn;
+
+  /// Not in.
   List<Object>? notIn;
+
+  /// Is null.
   bool? isNull;
 
   @override
@@ -412,17 +486,30 @@ class WhereInfo {
 }
 
 // Mutable, must be clone before
+/// Query info.
 class QueryInfo {
+  /// Select key paths.
   List<String>? selectKeyPaths;
+
+  /// Order bys.
   List<OrderByInfo> orderBys = [];
 
+  /// Start limit.
   LimitInfo? startLimit;
+
+  /// End limit.
   LimitInfo? endLimit;
 
+  /// Limit.
   int? limit;
+
+  /// Offset.
   int? offset;
+
+  /// Wheres.
   List<WhereInfo> wheres = [];
 
+  /// Clone.
   QueryInfo clone() {
     return QueryInfo()
       ..limit = limit
@@ -434,34 +521,40 @@ class QueryInfo {
       ..orderBys = List.from(orderBys);
   }
 
+  /// Start at.
   void startAt({DocumentSnapshot? snapshot, List? values}) =>
       startLimit = (LimitInfo()
         ..documentId = snapshot?.ref.id
         ..values = values
         ..inclusive = true);
 
+  /// Start after.
   void startAfter({DocumentSnapshot? snapshot, List? values}) =>
       startLimit = (LimitInfo()
         ..documentId = snapshot?.ref.id
         ..values = values
         ..inclusive = false);
 
+  /// End at.
   void endAt({DocumentSnapshot? snapshot, List? values}) =>
       endLimit = (LimitInfo()
         ..documentId = snapshot?.ref.id
         ..values = values
         ..inclusive = true);
 
+  /// End before.
   void endBefore({DocumentSnapshot? snapshot, List? values}) =>
       endLimit = (LimitInfo()
         ..documentId = snapshot?.ref.id
         ..values = values
         ..inclusive = false);
 
+  /// Add where.
   void addWhere(WhereInfo where) {
     wheres.add(where);
   }
 
+  /// Debug check.
   void debugCheck() {
     if (orderBys.isNotEmpty) {
       var orderByKeys = orderBys.map((e) => e.fieldPath).toSet();
@@ -496,6 +589,7 @@ class QueryInfo {
   }
 }
 
+/// Where info from json map.
 WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   bool? isNull;
   Object? isEqualTo;
@@ -529,6 +623,7 @@ WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   return whereInfo;
 }
 
+/// Order by info from json map.
 OrderByInfo orderByInfoFromJsonMap(Map<String, Object?> map) {
   var orderByInfo = OrderByInfo(
     fieldPath: map['fieldPath'] as String?,
@@ -540,6 +635,7 @@ OrderByInfo orderByInfoFromJsonMap(Map<String, Object?> map) {
 const _operatorKey = 'operator';
 const _valueKey = 'value';
 
+/// Where info to json map.
 Map<String, Object?> whereInfoToJsonMap(WhereInfo whereInfo) {
   var map = <String, Object?>{'fieldPath': whereInfo.fieldPath};
   if (whereInfo.isEqualTo != null) {
@@ -576,6 +672,7 @@ Map<String, Object?> whereInfoToJsonMap(WhereInfo whereInfo) {
   return map;
 }
 
+/// Order by info to json map.
 Map<String, Object?> orderByInfoToJsonMap(OrderByInfo orderByInfo) {
   var map = <String, Object?>{
     'fieldPath': orderByInfo.fieldPath,
@@ -584,6 +681,7 @@ Map<String, Object?> orderByInfoToJsonMap(OrderByInfo orderByInfo) {
   return map;
 }
 
+/// Limit info to json map.
 Map<String, Object?> limitInfoToJsonMap(LimitInfo limitInfo) {
   var map = <String, Object?>{};
   if (limitInfo.inclusive) {
@@ -600,6 +698,7 @@ Map<String, Object?> limitInfoToJsonMap(LimitInfo limitInfo) {
   return map;
 }
 
+/// Limit info from json map.
 LimitInfo limitInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   var limitInfo = LimitInfo();
 
@@ -615,6 +714,7 @@ LimitInfo limitInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   return limitInfo;
 }
 
+/// Query info to json map.
 Map<String, Object?> queryInfoToJsonMap(QueryInfo queryInfo) {
   var map = <String, Object?>{};
   if (queryInfo.limit != null) {
@@ -645,6 +745,7 @@ Map<String, Object?> queryInfoToJsonMap(QueryInfo queryInfo) {
   return map;
 }
 
+/// Query info from json map.
 QueryInfo queryInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   final queryInfo = QueryInfo();
   if (map.containsKey('limit')) {
@@ -685,10 +786,16 @@ QueryInfo queryInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   return queryInfo;
 }
 
+/// Change type added.
 const changeTypeAdded = 'added';
+
+/// Change type modified.
 const changeTypeModified = 'modified';
+
+/// Change type removed.
 const changeTypeRemoved = 'removed';
 
+/// Document change type from string.
 DocumentChangeType? documentChangeTypeFromString(String type) {
   // [:added:], [:removed:] or [:modified:]
   if (type == changeTypeAdded) {
@@ -701,6 +808,7 @@ DocumentChangeType? documentChangeTypeFromString(String type) {
   return null;
 }
 
+/// Document change type to string.
 String? documentChangeTypeToString(DocumentChangeType type) {
   switch (type) {
     case DocumentChangeType.added:
@@ -712,6 +820,7 @@ String? documentChangeTypeToString(DocumentChangeType type) {
   }
 }
 
+/// Sanitize reference path.
 String sanitizeReferencePath(String path) {
   if (path.startsWith('/')) {
     path = path.substring(1);
@@ -722,14 +831,18 @@ String sanitizeReferencePath(String path) {
   return path;
 }
 
+/// Is document reference path.
 bool isDocumentReferencePath(String path) {
   var count = localPathReferenceParts(path).length;
   return (count % 2) == 0;
 }
 
+/// Is collection reference path.
 bool isCollectionReferencePath(String path) => !isDocumentReferencePath(path);
 
+/// Write batch base.
 abstract class WriteBatchBase implements WriteBatch {
+  /// Operations.
   final List<WriteBatchOperation> operations = [];
 
   @override
@@ -753,25 +866,36 @@ abstract class WriteBatchBase implements WriteBatch {
   }
 }
 
+/// Write batch operation.
 abstract class WriteBatchOperation {}
 
+/// Write batch operation base.
 class WriteBatchOperationBase implements WriteBatchOperation {
+  /// Document reference.
   final DocumentReference? docRef;
 
+  /// Constructor.
   WriteBatchOperationBase(this.docRef);
 
   @override
   String toString() => '$runtimeType(${docRef!.path})';
 }
 
+/// Write batch operation delete.
 class WriteBatchOperationDelete extends WriteBatchOperationBase {
+  /// Constructor.
   WriteBatchOperationDelete(super.docRef);
 }
 
+/// Write batch operation set.
 class WriteBatchOperationSet extends WriteBatchOperationBase {
+  /// Document data.
   final DocumentData documentData;
+
+  /// Set options.
   final SetOptions? options;
 
+  /// Constructor.
   WriteBatchOperationSet(
     DocumentReference super.docRef,
     this.documentData,
@@ -779,13 +903,16 @@ class WriteBatchOperationSet extends WriteBatchOperationBase {
   );
 }
 
+/// Write batch operation update.
 class WriteBatchOperationUpdate extends WriteBatchOperationBase {
+  /// Document data.
   final DocumentData documentData;
 
+  /// Constructor.
   WriteBatchOperationUpdate(DocumentReference super.docRef, this.documentData);
 }
 
-/// Write result to prepare for notification
+/// Write result base.
 abstract class WriteResultBase {
   /// The path of the document
   final String path;
@@ -826,7 +953,9 @@ abstract class WriteResultBase {
   }
 }
 
+/// Document change base.
 class DocumentChangeBase implements DocumentChange {
+  /// Constructor.
   DocumentChangeBase(this.type, this.document, this.newIndex, this.oldIndex);
 
   // Change later once building the array
@@ -842,19 +971,23 @@ class DocumentChangeBase implements DocumentChange {
   @override
   final int oldIndex;
 
+  /// Document base.
   DocumentSnapshotBase get documentBase => document as DocumentSnapshotBase;
 
   @override
   String toString() => '${document.ref.path} $type $oldIndex $newIndex';
 }
 
+/// Document snapshot base.
 abstract class DocumentSnapshotBase
     with DocumentSnapshotMixin
     implements DocumentSnapshot {
+  /// Meta data.
   final RecordMetaData? meta;
   @override
   final DocumentReference ref;
 
+  /// Revision.
   int? get rev => meta?.rev;
 
   @override
@@ -862,6 +995,8 @@ abstract class DocumentSnapshotBase
 
   @override
   Timestamp? get createTime => meta?.createTime;
+
+  /// Document data.
   final DocumentData? documentData;
 
   late bool _exists;
@@ -869,6 +1004,7 @@ abstract class DocumentSnapshotBase
   @override
   bool get exists => _exists;
 
+  /// Constructor.
   DocumentSnapshotBase(this.ref, this.meta, this.documentData, {bool? exists}) {
     _exists = exists ?? (documentData != null);
   }
@@ -880,13 +1016,16 @@ abstract class DocumentSnapshotBase
   SnapshotMetadata get metadata => _snapshotMetadataSembast;
 }
 
+/// Document snapshot base extension.
 extension DocumentSnapshotBaseExtension on DocumentSnapshotBase {
+  /// Value at field path.
   Object? valueAtFieldPath(String fieldPath) {
     return (documentData as DocumentDataMap).valueAtFieldPath(fieldPath);
   }
 }
 
 /// Meta data always ok.
+/// Snapshot metadata sembast.
 class SnapshotMetadataSembast
     with SnapshotMetadataMixin
     implements SnapshotMetadata {
@@ -900,7 +1039,9 @@ class SnapshotMetadataSembast
 /// Re-use it!
 final _snapshotMetadataSembast = SnapshotMetadataSembast();
 
+/// Query snapshot base.
 class QuerySnapshotBase implements QuerySnapshot {
+  /// Constructor.
   QuerySnapshotBase(this.docs, this.documentChanges);
 
   @override
@@ -909,6 +1050,7 @@ class QuerySnapshotBase implements QuerySnapshot {
   @override
   final List<DocumentChange> documentChanges;
 
+  /// Check if it contains a document.
   bool contains(DocumentSnapshotBase document) {
     for (var doc in docs) {
       if (doc.ref.path == document.ref.path) {
@@ -924,6 +1066,7 @@ class QuerySnapshotBase implements QuerySnapshot {
 }
 
 // TODO handle sub field name
+/// To selected map.
 Map<String, Object?> toSelectedMap(Map map, List<String> fields) {
   var selectedMap = <String, Object?>{};
   for (var key in fields) {

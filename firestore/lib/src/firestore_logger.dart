@@ -10,11 +10,13 @@ import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'common/firestore_service_mixin.dart';
 import 'common/query_mixin.dart';
 
+/// Firestore logger event.
 abstract class FirestoreLoggerEvent {
   /// Set on failure
   Object? get exception;
 }
 
+/// Firestore logger event impl.
 abstract class FirestoreLoggerEventImpl implements FirestoreLoggerEvent {
   /// Set on failure
   @override
@@ -24,6 +26,7 @@ abstract class FirestoreLoggerEventImpl implements FirestoreLoggerEvent {
   String toString() => eventToString(this);
 }
 
+/// Event to string.
 String eventToString(FirestoreLoggerEvent event) {
   late String type;
   if (event is FirestoreLoggerSetEvent) {
@@ -90,11 +93,13 @@ String eventToString(FirestoreLoggerEvent event) {
   return sb.toString();
 }
 
+/// Firestore logger delete event.
 class FirestoreLoggerDeleteEvent extends FirestoreLoggerEventImpl
     with
         FirestoreLoggerEventWithDocumentRefMixin,
         FirestoreLoggerEventWithTagMixin
     implements FirestoreLoggerEvent {
+  /// Constructor.
   FirestoreLoggerDeleteEvent(
     DocumentReferenceLogger ref, {
     Object? exception,
@@ -106,14 +111,17 @@ class FirestoreLoggerDeleteEvent extends FirestoreLoggerEventImpl
   }
 }
 
+/// Firestore logger set event.
 class FirestoreLoggerSetEvent extends FirestoreLoggerEventImpl
     with
         FirestoreLoggerEventWithDocumentRefMixin,
         FirestoreLoggerEventWithDocumentDataMixin,
         FirestoreLoggerEventWithTagMixin
     implements FirestoreLoggerEvent {
+  /// Options.
   final SetOptions? options;
 
+  /// Constructor.
   FirestoreLoggerSetEvent(
     DocumentReferenceLogger ref,
     Map<String, Object?> data, {
@@ -128,12 +136,14 @@ class FirestoreLoggerSetEvent extends FirestoreLoggerEventImpl
   }
 }
 
+/// Firestore logger update event.
 class FirestoreLoggerUpdateEvent extends FirestoreLoggerEventImpl
     with
         FirestoreLoggerEventWithDocumentRefMixin,
         FirestoreLoggerEventWithDocumentDataMixin,
         FirestoreLoggerEventWithTagMixin
     implements FirestoreLoggerEvent {
+  /// Constructor.
   FirestoreLoggerUpdateEvent(
     DocumentReferenceLogger ref,
     Map<String, Object?> data, {
@@ -147,6 +157,7 @@ class FirestoreLoggerUpdateEvent extends FirestoreLoggerEventImpl
   }
 }
 
+/// Firestore logger add event.
 class FirestoreLoggerAddEvent extends FirestoreLoggerEventImpl
     with
         FirestoreLoggerEventWithDocumentDataMixin,
@@ -155,6 +166,7 @@ class FirestoreLoggerAddEvent extends FirestoreLoggerEventImpl
   /// Added id on success.
   final String? id;
 
+  /// Constructor.
   FirestoreLoggerAddEvent(
     CollectionReferenceLogger ref,
     Map<String, Object?> data, {
@@ -167,21 +179,25 @@ class FirestoreLoggerAddEvent extends FirestoreLoggerEventImpl
   }
 }
 
+/// Firestore logger on snapshot event.
 class FirestoreLoggerOnSnapshotEvent extends FirestoreLoggerEventImpl
     with FirestoreLoggerEventWithDocumentRefMixin
     implements FirestoreLoggerEvent {
   /// Data read on success (even if it does not exist)
   final DocumentSnapshotLogger snapshot;
 
+  /// Constructor.
   FirestoreLoggerOnSnapshotEvent(this.snapshot, {Object? exception}) {
     ref = snapshot.ref;
     this.exception = exception;
   }
 }
 
+/// Firestore logger on snapshot trigger event.
 class FirestoreLoggerOnSnapshotTriggerEvent extends FirestoreLoggerEventImpl
     with FirestoreLoggerEventWithDocumentRefMixin
     implements FirestoreLoggerEvent {
+  /// Constructor.
   FirestoreLoggerOnSnapshotTriggerEvent(
     DocumentReferenceLogger ref, {
     Object? exception,
@@ -191,6 +207,7 @@ class FirestoreLoggerOnSnapshotTriggerEvent extends FirestoreLoggerEventImpl
   }
 }
 
+/// Firestore logger get event.
 class FirestoreLoggerGetEvent extends FirestoreLoggerEventImpl
     with
         FirestoreLoggerEventWithDocumentRefMixin,
@@ -199,6 +216,7 @@ class FirestoreLoggerGetEvent extends FirestoreLoggerEventImpl
   /// Data read on success (even if it does not exist)
   final DocumentSnapshotLogger? snapshot;
 
+  /// Constructor.
   FirestoreLoggerGetEvent(
     DocumentReferenceLogger ref, {
     Object? exception,
@@ -211,6 +229,7 @@ class FirestoreLoggerGetEvent extends FirestoreLoggerEventImpl
   }
 }
 
+/// Firestore logger query get event.
 class FirestoreLoggerQueryGetEvent extends FirestoreLoggerEventImpl
     with
         FirestoreLoggerEventWithQueryMixin,
@@ -220,6 +239,7 @@ class FirestoreLoggerQueryGetEvent extends FirestoreLoggerEventImpl
   /// Data read on success (even if it does not exist)
   final QuerySnapshotLogger? snapshot;
 
+  /// Constructor.
   FirestoreLoggerQueryGetEvent(
     QueryLoggerBase query, {
     Object? exception,
@@ -233,6 +253,7 @@ class FirestoreLoggerQueryGetEvent extends FirestoreLoggerEventImpl
   }
 }
 
+/// Firestore logger query on snapshot event.
 class FirestoreLoggerQueryOnSnapshotEvent extends FirestoreLoggerEventImpl
     with
         FirestoreLoggerEventWithQueryMixin,
@@ -241,6 +262,7 @@ class FirestoreLoggerQueryOnSnapshotEvent extends FirestoreLoggerEventImpl
   /// Data read on success (even if it does not exist)
   final QuerySnapshotLogger snapshot;
 
+  /// Constructor.
   FirestoreLoggerQueryOnSnapshotEvent(
     QueryLoggerBase query,
     this.snapshot, {
@@ -252,24 +274,36 @@ class FirestoreLoggerQueryOnSnapshotEvent extends FirestoreLoggerEventImpl
   }
 }
 
+/// Event with document ref.
 mixin FirestoreLoggerEventWithDocumentRefMixin implements FirestoreLoggerEvent {
+  /// Document reference.
   late DocumentReferenceLogger ref;
 }
 
-/// Batch and transaction
+/// Batch and transaction.
+/// Event with tag.
 mixin FirestoreLoggerEventWithTagMixin implements FirestoreLoggerEvent {
+  /// Tag.
   late String? tag;
 }
+
+/// Event with collection ref.
 mixin FirestoreLoggerEventWithCollectionRefMixin
     implements FirestoreLoggerEvent {
+  /// Collection reference.
   late CollectionReferenceLogger ref;
 }
+
+/// Event with query.
 mixin FirestoreLoggerEventWithQueryMixin implements FirestoreLoggerEvent {
+  /// Query.
   late QueryLoggerBase query;
 }
 
+/// Event with document data.
 mixin FirestoreLoggerEventWithDocumentDataMixin
     implements FirestoreLoggerEvent {
+  /// Data.
   late Map<String, Object?> data;
 }
 
@@ -278,13 +312,21 @@ void _logDefault(FirestoreLoggerEvent event) {
   print(event);
 }
 
+/// Firestore logger options.
 class FirestoreLoggerOptions {
-  /// True if write should be logged
+  /// True if write should be logged.
   final bool write;
+
+  /// True if read should be logged.
   final bool read;
+
+  /// True if list should be logged.
   final bool list;
+
+  /// Log function.
   late final void Function(FirestoreLoggerEvent event) log;
 
+  /// Constructor.
   FirestoreLoggerOptions.all({
     void Function(FirestoreLoggerEvent event)? log,
     this.write = true,
@@ -295,13 +337,20 @@ class FirestoreLoggerOptions {
   }
 }
 
+/// Firestore logger batch.
 class FirestoreLoggerBatch implements WriteBatch {
   static var _id = 0;
+
+  /// Firestore logger.
   final FirestoreLogger firestoreLogger;
+
+  /// Write batch.
   final WriteBatch writeBatch;
 
+  /// Options.
   FirestoreLoggerOptions get options => firestoreLogger.options;
 
+  /// Constructor.
   FirestoreLoggerBatch(this.writeBatch, this.firestoreLogger) {
     ++_id;
   }
@@ -383,16 +432,23 @@ class FirestoreLoggerBatch implements WriteBatch {
   }
 }
 
+/// Query logger base.
 abstract class QueryLoggerBase
     with QueryDefaultMixin, FirestoreQueryExecutorMixin
     implements Query {
+  /// Query.
   final Query query;
 
+  /// Firestore logger.
   FirestoreLogger get firestoreLogger => refLogger.firestoreLogger;
+
+  /// Reference logger.
   late final CollectionReferenceLogger refLogger;
 
+  /// Options.
   FirestoreLoggerOptions get options => firestoreLogger.options;
 
+  /// Constructor.
   QueryLoggerBase(this.query) {
     assert(query is! QueryLoggerBase, 'You cannot reference a logger');
   }
@@ -507,12 +563,17 @@ abstract class QueryLoggerBase
   }
 }
 
+/// Document snapshot logger.
 class DocumentSnapshotLogger
     with DocumentSnapshotMixin
     implements DocumentSnapshot {
+  /// Snapshot.
   final DocumentSnapshot snapshot;
+
+  /// Firestore logger.
   final FirestoreLogger firestoreLogger;
 
+  /// Constructor.
   DocumentSnapshotLogger(this.snapshot, this.firestoreLogger) {
     assert(
       snapshot is! DocumentSnapshotLogger,
@@ -537,10 +598,15 @@ class DocumentSnapshotLogger
   Timestamp? get updateTime => snapshot.updateTime;
 }
 
+/// Query snapshot logger.
 class QuerySnapshotLogger implements QuerySnapshot {
+  /// Snapshot.
   final QuerySnapshot snapshot;
+
+  /// Firestore logger.
   final FirestoreLogger firestoreLogger;
 
+  /// Constructor.
   QuerySnapshotLogger(this.snapshot, this.firestoreLogger);
 
   @override
@@ -554,10 +620,15 @@ class QuerySnapshotLogger implements QuerySnapshot {
       .toList();
 }
 
+/// Document change logger.
 class DocumentChangeLogger implements DocumentChange {
+  /// Document change.
   final DocumentChange documentChange;
+
+  /// Firestore logger.
   final FirestoreLogger firestoreLogger;
 
+  /// Constructor.
   DocumentChangeLogger(this.documentChange, this.firestoreLogger) {
     assert(
       documentChange is! DocumentChangeLogger,
@@ -579,23 +650,28 @@ class DocumentChangeLogger implements DocumentChange {
   DocumentChangeType get type => documentChange.type;
 }
 
+/// Query logger.
 class QueryLogger extends QueryLoggerBase implements Query {
   @override
   Firestore get firestore => firestoreLogger;
 
+  /// Constructor.
   QueryLogger(super.query, CollectionReferenceLogger refLogger) {
     this.refLogger = refLogger;
   }
 }
 
+/// Collection reference logger.
 class CollectionReferenceLogger extends QueryLoggerBase
     with CollectionReferenceMixin, PathReferenceMixin
     implements CollectionReference, FirestorePathReference {
   @override
   final FirestoreLogger firestoreLogger;
 
+  /// Reference.
   CollectionReference get ref => query as CollectionReference;
 
+  /// Constructor.
   CollectionReferenceLogger(CollectionReference ref, this.firestoreLogger)
     : super(ref) {
     assert(ref is! CollectionReferenceLogger, 'You cannot reference a logger');
@@ -633,17 +709,23 @@ class CollectionReferenceLogger extends QueryLoggerBase
   String get path => ref.path;
 }
 
+/// Document reference logger.
 class DocumentReferenceLogger
     with
         DocumentReferenceDefaultMixin,
         DocumentReferenceMixin,
         PathReferenceMixin
     implements DocumentReference, FirestorePathReference {
+  /// Reference.
   final DocumentReference ref;
+
+  /// Firestore logger.
   final FirestoreLogger firestoreLogger;
 
+  /// Options.
   FirestoreLoggerOptions get options => firestoreLogger.options;
 
+  /// Constructor.
   DocumentReferenceLogger(this.ref, this.firestoreLogger) {
     assert(ref is! DocumentReferenceLogger, 'You cannot reference a logger');
   }
@@ -748,16 +830,22 @@ class DocumentReferenceLogger
   Future<List<CollectionReference>> listCollections() => ref.listCollections();
 }
 
+/// Transaction logger.
 class TransactionLogger with TransactionMixin implements Transaction {
+  /// Transaction.
   final Transaction transaction;
+
+  /// Firestore logger.
   final FirestoreLogger firestoreLogger;
 
+  /// Options.
   FirestoreLoggerOptions get options => firestoreLogger.options;
-  static var _id = 0;
 
+  /// Constructor.
   TransactionLogger(this.transaction, this.firestoreLogger) {
     ++_id;
   }
+  static var _id = 0;
 
   String get _tag => 'T$_id';
 
@@ -862,16 +950,23 @@ class TransactionLogger with TransactionMixin implements Transaction {
   }
 }
 
+/// Firestore logger.
 class FirestoreLogger
     with
         FirebaseAppProductMixin<Firestore>,
         FirestoreDefaultMixin,
         FirestoreMixin
     implements Firestore {
+  /// Service logger.
   late final FirestoreServiceLogger serviceLogger;
+
+  /// Options.
   final FirestoreLoggerOptions options;
+
+  /// Firestore instance.
   final Firestore firestore;
 
+  /// Constructor.
   FirestoreLogger({
     FirestoreServiceLogger? serviceLogger,
     required this.firestore,
@@ -917,12 +1012,17 @@ class FirestoreLogger
   FirebaseApp get app => firestore.app;
 }
 
+/// Firestore service logger.
 class FirestoreServiceLogger
     with FirebaseProductServiceMixin<Firestore>, FirestoreServiceDefaultMixin
     implements FirestoreService {
+  /// Options.
   final FirestoreLoggerOptions options;
+
+  /// Firestore service.
   final FirestoreService firestoreService;
 
+  /// Constructor.
   FirestoreServiceLogger({
     required this.firestoreService,
     required this.options,

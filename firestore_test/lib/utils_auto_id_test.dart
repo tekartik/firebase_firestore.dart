@@ -5,6 +5,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/auto_id_generator.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 
+/// Run auto id generator tests.
 void utilsAutoIdTest({
   required Firestore firestore,
   required FirestoreTestContext? testContext,

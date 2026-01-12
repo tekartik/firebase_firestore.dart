@@ -25,6 +25,7 @@ abstract class Query {
   /// Check [FirestoreService.supportsQueryCount] before use
   Stream<int> onCount();
 
+  /// On snapshot.
   Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false});
 
   /// Creates and returns a new Query that's additionally limited to only return up

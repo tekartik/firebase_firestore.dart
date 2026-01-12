@@ -6,6 +6,7 @@ import 'package:tekartik_firebase_firestore/utils/collection.dart';
 
 import 'firestore_test.dart';
 
+/// Run utils collection tests.
 void runUtilsCollectionTests({
   required FirestoreService firestoreService,
   required Firestore firestore,

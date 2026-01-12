@@ -8,6 +8,7 @@ import 'package:tekartik_firebase_firestore/utils/collection.dart';
 
 import 'firestore_test.dart';
 
+/// Run aggregate query tests.
 void runAggregateQueryTest({
   required Firestore firestore,
   required FirestoreTestContext? testContext,

@@ -7,6 +7,7 @@ import 'package:tekartik_firebase_firestore/utils/copy_utils.dart';
 
 import 'firestore_test.dart';
 
+/// Run copy utils tests.
 void runCopyUtilsTest({
   required Firestore firestore,
   required FirestoreTestContext? testContext,

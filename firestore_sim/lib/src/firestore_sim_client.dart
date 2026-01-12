@@ -14,6 +14,7 @@ import 'firestore_sim_server_service.dart';
 
 import 'import_firestore.dart'; // ignore: implementation_imports
 
+/// Firestore service simulator.
 class FirestoreServiceSim
     with FirebaseProductServiceMixin<Firestore>, FirestoreServiceDefaultMixin
     implements FirestoreService {
@@ -38,6 +39,7 @@ class FirestoreServiceSim
   bool get supportsTimestamps => true;
 
   //TODO
+  /// Delete the app.
   Future deleteApp(App app) async {}
 
   @override
@@ -52,11 +54,14 @@ class FirestoreServiceSim
 
 FirestoreServiceSim? _firestoreServiceSim;
 
+/// Firestore simulator service.
 FirestoreServiceSim get firestoreServiceSim =>
     _firestoreServiceSim ?? FirestoreServiceSim();
 
+/// Document data simulator.
 class DocumentDataSim extends DocumentDataMap {}
 
+/// Document snapshot simulator.
 class DocumentSnapshotSim
     with DocumentSnapshotMixin
     implements DocumentSnapshot {
@@ -66,8 +71,10 @@ class DocumentSnapshotSim
   @override
   final bool exists;
 
+  /// Document data.
   final DocumentData? documentData;
 
+  /// Constructor.
   DocumentSnapshotSim(
     this.ref,
     this.exists,
@@ -86,6 +93,7 @@ class DocumentSnapshotSim
   final Timestamp? createTime;
 }
 
+/// Document reference simulator.
 class DocumentReferenceSim
     with
         DocumentReferenceDefaultMixin,
@@ -93,8 +101,10 @@ class DocumentReferenceSim
         PathReferenceImplMixin,
         PathReferenceMixin
     implements DocumentReference {
+  /// Firestore simulator.
   FirestoreSim get firestoreSim => firestore as FirestoreSim;
 
+  /// Constructor.
   DocumentReferenceSim(Firestore firestore, String path) {
     init(firestore, path);
     checkDocumentReferencePath(this.path);
@@ -150,6 +160,7 @@ class DocumentReferenceSim
     );
   }
 
+  /// Documentation for document snapshot.
   DocumentSnapshotSim documentSnapshotFromDataMap(
     String path,
     Map<String, Object?> map,
@@ -227,15 +238,21 @@ class DocumentReferenceSim
   }
 }
 
+/// Query mixin simulator.
 abstract mixin class QueryMixinSim implements Query {
+  /// App simulator.
   AppSim get appSim => firestoreSim.appSim;
 
+  /// Query info.
   QueryInfo? get queryInfo;
 
+  /// Simulation collection reference.
   CollectionReferenceSim get simCollectionReference;
 
+  /// Firestore simulator.
   FirestoreSim get firestoreSim => simCollectionReference.firestoreSim;
 
+  /// Clone the query.
   QuerySim clone() {
     return QuerySim(simCollectionReference)..queryInfo = queryInfo?.clone();
   }
@@ -268,6 +285,7 @@ abstract mixin class QueryMixinSim implements Query {
       ),
     );
 
+  /// Add order by.
   void addOrderBy(String key, String directionStr) {
     var orderBy = OrderByInfo(
       fieldPath: key,
@@ -307,6 +325,7 @@ abstract mixin class QueryMixinSim implements Query {
       descending == true ? orderByDescending : orderByAscending,
     );
 
+  /// Internal document snapshot from data.
   DocumentSnapshotSim documentSnapshotFromData(
     DocumentSnapshotData documentSnapshotData,
   ) {
@@ -442,6 +461,7 @@ abstract mixin class QueryMixinSim implements Query {
   }
 }
 
+/// Document change simulator.
 class DocumentChangeSim implements DocumentChange {
   @override
   final DocumentChangeType type;
@@ -455,13 +475,19 @@ class DocumentChangeSim implements DocumentChange {
   @override
   final int oldIndex;
 
+  /// Constructor.
   DocumentChangeSim(this.type, this.document, this.newIndex, this.oldIndex);
 }
 
+/// Query snapshot simulator.
 class QuerySnapshotSim implements QuerySnapshot {
+  /// Simulation documents.
   final List<DocumentSnapshotSim> simDocs;
+
+  /// Simulation document changes.
   final List<DocumentChangeSim> simDocChanges;
 
+  /// Constructor.
   QuerySnapshotSim(this.simDocs, this.simDocChanges);
 
   @override
@@ -472,6 +498,7 @@ class QuerySnapshotSim implements QuerySnapshot {
   List<DocumentChange> get documentChanges => simDocChanges;
 }
 
+/// Query simulator.
 class QuerySim extends Object
     with QueryDefaultMixin, QueryMixinSim, FirestoreQueryExecutorMixin
     implements Query {
@@ -483,12 +510,14 @@ class QuerySim extends Object
   @override
   QueryInfo? queryInfo;
 
+  /// Constructor.
   QuerySim(this.simCollectionReference);
 
   @override
   Firestore get firestore => firestoreSim;
 }
 
+/// Collection reference simulator.
 class CollectionReferenceSim extends Object
     with
         QueryDefaultMixin,
@@ -508,6 +537,7 @@ class CollectionReferenceSim extends Object
   @override
   final String path;
 
+  /// Constructor.
   CollectionReferenceSim(this.firestoreSim, this.path) {
     checkCollectionReferencePath(path);
   }
@@ -554,26 +584,34 @@ class CollectionReferenceSim extends Object
   Firestore get firestore => firestoreSim;
 }
 
+/// Firestore simulator.
 class FirestoreSim extends Object
     with
         FirebaseAppProductMixin<Firestore>,
         FirestoreDefaultMixin,
         FirestoreMixin
     implements Firestore {
+  /// Constructor.
   FirestoreSim(this.firestoreServiceSim, this.appSim);
 
+  /// Firestore simulator service.
   final FirestoreServiceSim firestoreServiceSim;
+
+  /// App simulator.
   final AppSim appSim;
 
   //final transactionLock = Lock();
 
+  /// Firestore settings simulator.
   FirestoreSettings? firestoreSettingsSim;
 
   // The key is the streamId from the server
   final Map<int, ServerSubscriptionSim> _subscriptions = {};
 
+  /// Simulator app client.
   Future<FirebaseSimAppClient> get simAppClient => appSim.simAppClient;
 
+  /// Add a subscription.
   void addSubscription(ServerSubscriptionSim subscription) {
     _subscriptions[subscription.id!] = subscription;
   }
@@ -585,11 +623,13 @@ class FirestoreSim extends Object
   @override
   DocumentReference doc(String path) => DocumentReferenceSim(this, path);
 
+  /// Remove a subscription.
   Future removeSubscription(ServerSubscriptionSim subscription) async {
     _subscriptions.remove(subscription.id);
     await subscription.close();
   }
 
+  /// Close the simulator.
   Future close() async {
     var subscriptions = _subscriptions.values.toList();
     for (var subscription in subscriptions) {
@@ -597,6 +637,7 @@ class FirestoreSim extends Object
     }
   }
 
+  /// Internal document snapshot from data.
   DocumentSnapshotSim documentSnapshotFromData(
     FirestoreDocumentSnapshotData documentSnapshotData,
   ) {
@@ -615,6 +656,7 @@ class FirestoreSim extends Object
   }
 
   // warning no createTime and update time here
+  /// Documentation for document snapshot.
   DocumentSnapshotSim documentSnapshotFromDataMap(
     String path,
     Map<String, Object?>? map,
@@ -628,6 +670,7 @@ class FirestoreSim extends Object
     );
   }
 
+  /// Documentation for document snapshot.
   DocumentSnapshotSim documentSnapshotFromMessageMap(
     String path,
     Map<String, Object?> map,
@@ -673,6 +716,7 @@ class FirestoreSim extends Object
     return updateResult;
   }
 
+  /// Get a document.
   Future<DocumentSnapshot> get(CvFirestoreGetRequestData requestData) async {
     var simClient = await simAppClient;
     var result = resultAsMap(
@@ -704,9 +748,12 @@ class FirestoreSim extends Object
   FirebaseApp get app => appSim;
 }
 
+/// Transaction simulator.
 class TransactionSim extends WriteBatchSim implements Transaction {
+  /// Transaction id.
   final int? transactionId;
 
+  /// Constructor.
   TransactionSim(super.firestore, this.transactionId);
 
   int? get _appId => firestore.appSim.appServerId;
@@ -725,6 +772,7 @@ class TransactionSim extends WriteBatchSim implements Transaction {
     await batchCommit(methodFirestoreTransactionCommit, batchData);
   }
 
+  /// Cancel the transaction.
   Future cancel() async {
     var requestData = FirestoreTransactionCancelRequestData()
       ..transactionId = transactionId;
@@ -737,9 +785,12 @@ class TransactionSim extends WriteBatchSim implements Transaction {
   }
 }
 
+/// Write batch simulator.
 class WriteBatchSim extends WriteBatchBase {
+  /// Firestore simulator.
   final FirestoreSim firestore;
 
+  /// Constructor.
   WriteBatchSim(this.firestore);
 
   @override
@@ -748,6 +799,7 @@ class WriteBatchSim extends WriteBatchBase {
     await batchCommit(methodFirestoreBatch, batchData);
   }
 
+  /// Commit the batch.
   Future batchCommit(String method, FirestoreBatchData batchData) async {
     for (var operation in operations) {
       if (operation is WriteBatchOperationDelete) {

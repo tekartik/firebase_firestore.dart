@@ -14,6 +14,7 @@ Future _sleep([int ms = 0]) {
   return Future<void>.delayed(Duration(milliseconds: ms));
 }
 
+/// Run firestore track changes support tests.
 void runFirestoreTrackChangesSupportTests({
   required FirestoreService firestoreService,
   required Firestore firestore,

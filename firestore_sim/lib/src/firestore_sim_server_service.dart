@@ -14,14 +14,19 @@ import 'firestore_sim_message.dart';
 import 'firestore_sim_plugin.dart'; // ignore: implementation_imports
 // ignore: implementation_imports
 
+/// Firestore simulator server service.
 class FirestoreSimServerService extends FirebaseSimServerServiceBase {
+  /// Firestore simulator plugin.
   late FirestoreSimPlugin firestoreSimPlugin;
 
   //final _expando = Expando<_FirestoreSimPluginServer>();
   final _appServers =
       <FirebaseSimServerProjectApp, _FirestoreSimPluginServer>{};
+
+  /// Service name.
   static final serviceName = 'firebase_firestore';
 
+  /// Constructor.
   FirestoreSimServerService() : super(serviceName) {
     firebaseSimFirestoreInitCvBuilders();
   }
@@ -116,39 +121,55 @@ class FirestoreSimServerService extends FirebaseSimServerServiceBase {
   }
 }
 
+/// Simulator subscription.
 class SimSubscription<T> {
   late StreamPoller<T> _poller;
 
+  /// Get next event.
   Future<StreamPollerEvent<T?>> getNext() => _poller.getNext();
 
+  /// Constructor.
   SimSubscription(Stream<T> stream) {
     _poller = StreamPoller<T>(stream);
   }
 
   // Make sure to cancel the pending completer
+  /// Cancel the subscription.
   Future cancel() => _poller.cancel();
 }
 
 /// One per client/app
 class _FirestoreSimPluginServer {
+  /// Firestore simulator server.
   final FirestoreSimPlugin firestoreSimServer;
+
+  /// Firestore instance.
   final Firestore firestore;
+
+  /// Last transaction id.
   int lastTransactionId = 0;
+
+  /// Last subscription id.
   int lastSubscriptionId = 0;
 
   //Lock? get transactionLock => firestoreSimServer.transactionLock(firestore);
+  /// Transaction lock.
   final transactionLock = Lock();
   //final rpc.Server rpcServer;
+  /// Subscriptions.
   final Map<int, SimSubscription> subscriptions = <int, SimSubscription>{};
 
+  /// New subscription id.
   int get newSubscriptionId => ++lastSubscriptionId;
 
+  /// Handle document reference request.
   DocumentReference requestDocumentReference(Map<String, Object?> params) {
     var firestorePathData = FirestorePathData()..fromMap(params);
     var ref = firestore.doc(firestorePathData.path);
     return ref;
   }
 
+  /// Constructor.
   _FirestoreSimPluginServer(this.firestoreSimServer, this.firestore) {
     // One transaction lock per server
     /*
@@ -212,6 +233,7 @@ class _FirestoreSimPluginServer {
     });*/
   }
 
+  /// Handle firestore add request.
   Future handleFirestoreAddRequest(Map<String, Object?> params) async {
     var firestoreSetData = FirestoreSetData()..fromMap(params);
     var documentData = documentDataFromJsonMap(
@@ -228,6 +250,7 @@ class _FirestoreSimPluginServer {
     });
   }
 
+  /// Handle firestore get request.
   Future handleFirestoreGetRequest(Map<String, Object?> params) async {
     var firestoreGetRequesthData = FirestoreGetRequestData()..fromMap(params);
     var ref = requestDocumentReference(params);
@@ -247,6 +270,7 @@ class _FirestoreSimPluginServer {
     return snapshotData.toMap();
   }
 
+  /// Handle firestore set request.
   Future handleFirestoreSetRequest(Map<String, Object?> params) async {
     var firestoreSetData = FirestoreSetData()..fromMap(params);
     var documentData = documentDataFromJsonMap(
@@ -265,6 +289,7 @@ class _FirestoreSimPluginServer {
     });
   }
 
+  /// Handle firestore update request.
   Future handleFirestoreUpdateRequest(Map<String, Object?> params) async {
     var firestoreSetData = FirestoreSetData()..fromMap(params);
     var documentData = documentDataFromJsonMap(
@@ -277,6 +302,7 @@ class _FirestoreSimPluginServer {
     });
   }
 
+  /// Handle firestore delete request.
   Future handleFirestoreDeleteRequest(Map<String, Object?> params) async {
     var firestoreDeleteData = FirestorePathData()..fromMap(params);
 
@@ -285,6 +311,7 @@ class _FirestoreSimPluginServer {
     });
   }
 
+  /// Handle firestore get listen.
   Future handleFirestoreGetListen(Map<String, Object?> params) async {
     var subscriptionId = newSubscriptionId;
     final path = params[paramPath] as String?;
@@ -298,6 +325,7 @@ class _FirestoreSimPluginServer {
     });
   }
 
+  /// Handle firestore get cancel.
   Future handleFirestoreGetCancel(Map<String, Object?> params) async {
     var subscriptionId = params[paramSubscriptionId] as int?;
     var subscription = subscriptions[subscriptionId!]!;
@@ -305,6 +333,7 @@ class _FirestoreSimPluginServer {
     await subscription.cancel();
   }
 
+  /// Handle firestore get stream.
   Future handleFirestoreGetStream(Map<String, Object?> params) async {
     // New stream?
     var subscriptionId = params[paramSubscriptionId] as int?;
@@ -322,6 +351,7 @@ class _FirestoreSimPluginServer {
     return map;
   }
 
+  /// Handle firestore query.
   Future handleFirestoreQuery(Map<String, Object?> params) async {
     var queryData = FirestoreQueryData()..firestoreFromMap(firestore, params);
     final query = await getQuery(queryData);
@@ -338,6 +368,7 @@ class _FirestoreSimPluginServer {
     });
   }
 
+  /// Handle firestore query listen.
   Future handleFirestoreQueryListen(Map<String, Object?> params) async {
     var subscriptionId = newSubscriptionId;
     var queryData = FirestoreQueryData()..firestoreFromMap(firestore, params);
@@ -352,6 +383,7 @@ class _FirestoreSimPluginServer {
     });
   }
 
+  /// Handle firestore query cancel.
   Future handleFirestoreQueryCancel(Map<String, Object?> params) async {
     var subscriptionId = params[paramSubscriptionId] as int?;
     var subscription = subscriptions[subscriptionId!]!;
@@ -359,6 +391,7 @@ class _FirestoreSimPluginServer {
     await subscription.cancel();
   }
 
+  /// Handle firestore query stream.
   Future handleFirestoreQueryStream(Map<String, Object?> params) async {
     // New stream?
     var subscriptionId = params[paramSubscriptionId] as int?;
@@ -409,6 +442,7 @@ class _FirestoreSimPluginServer {
     } catch (_) {}
   }
 
+  /// Handle firestore query.
   Future<Query> getQuery(FirestoreQueryData queryData) async {
     var collectionPath = queryData.path;
     // Handle param
@@ -417,6 +451,7 @@ class _FirestoreSimPluginServer {
   }
 
   // Batch
+  /// Handle firestore batch.
   Future handleFirestoreBatch(Map<String, Object?> params) async {
     var batchData = FirestoreBatchData()..firestoreFromMap(firestore, params);
 
@@ -425,6 +460,7 @@ class _FirestoreSimPluginServer {
     });
   }
 
+  /// Internal handle firestore batch.
   Future _handleFirestoreBatch(FirestoreBatchData batchData) async {
     var batch = firestore.batch();
     for (var item in batchData.operations) {
@@ -448,9 +484,11 @@ class _FirestoreSimPluginServer {
     await batch.commit();
   }
 
+  /// Transaction completer.
   Completer? transactionCompleter;
 
   // Transaction
+  /// Handle firestore transaction.
   Future handleFirestoreTransaction(Map<String, Object?>? params) async {
     var responseData = FirestoreTransactionResponseData()
       ..transactionId = ++lastTransactionId;
@@ -466,6 +504,7 @@ class _FirestoreSimPluginServer {
     return responseData.toMap();
   }
 
+  /// Handle firestore transaction commit.
   Future handleFirestoreTransactionCommit(Map<String, Object?> params) async {
     var batchData = FirestoreBatchData()..firestoreFromMap(firestore, params);
 
@@ -483,6 +522,7 @@ class _FirestoreSimPluginServer {
     }
   }
 
+  /// Handle firestore transaction cancel.
   Future handleFirestoreTransactionCancel(Map<String, Object?> params) async {
     var requestData = FirestoreTransactionCancelRequestData()..fromMap(params);
 

@@ -3,10 +3,12 @@ import 'package:dev_test/test.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
+/// Check if two data maps match.
 bool dataMatch(Map<String, dynamic> data1, Map<String, dynamic> data2) {
   return const DeepCollectionEquality().equals(data1, data2);
 }
 
+/// Run firestore multi-client tests.
 void firestoreMulticlientTest({
   required Firestore firestore1,
   required Firestore firestore2,

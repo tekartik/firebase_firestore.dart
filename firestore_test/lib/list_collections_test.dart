@@ -8,6 +8,7 @@ import 'package:tekartik_firebase_firestore/utils/copy_utils.dart';
 
 import 'firestore_test.dart';
 
+/// Run list collections tests.
 void runListCollectionsTest({
   required Firestore firestore,
   required FirestoreTestContext? testContext,

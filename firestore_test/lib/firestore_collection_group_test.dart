@@ -7,6 +7,7 @@ import 'package:tekartik_firebase_firestore/utils/collection.dart';
 
 import 'firestore_test.dart';
 
+/// Run firestore collection group tests.
 void runFirestoreCollectionGroupTests({
   required Firestore firestore,
   FirestoreTestContext? testContext,
