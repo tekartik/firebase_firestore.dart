@@ -40,39 +40,46 @@ export 'src/query_snapshot.dart' show QuerySnapshotExtension, QuerySnapshot;
 export 'src/snapshot_meta_data.dart' show SnapshotMetadata;
 export 'src/vector_value.dart' show VectorValue;
 
-/// Firestore service
+/// The entry point for accessing a Firestore.
+///
+/// You can get an instance by calling [Firestore.instance].
 abstract class FirestoreService implements FirebaseAppProductService {
-  /// True if query supporting selecting a set of fields
+  /// Returns `true` if the implementation supports query select.
+  ///
+  /// When `false`, `select` is ignored.
   bool get supportsQuerySelect;
 
-  /// Temporary flag
+  /// Returns `true` if the implementation supports [FieldValue.arrayUnion] and
+  /// [FieldValue.arrayRemove].
   bool get supportsFieldValueArray;
 
-  /// True if startAt/startAfter/endAt/endAfter can be used with snapshot
+  /// Returns `true` if the implementation supports `startAtDocument`,
+  /// `startAfterDocument`, `endAtDocument`, and `endBeforeDocument`.
   bool get supportsQuerySnapshotCursor;
 
-  /// True if support document snapshot time
+  /// Returns `true` if the implementation supports [DocumentSnapshot.updateTime] and
+  /// [DocumentSnapshot.createTime].
   bool get supportsDocumentSnapshotTime;
 
-  /// Where it supports timestamp precision on date and time values in document data
+  /// Returns `true` if the implementation supports [Timestamp] in documents.
   bool get supportsTimestamps;
 
-  /// True if timestamps is supported (should be true)
+  /// Returns `true` if the implementation supports [Timestamp] in snapshots.
   bool get supportsTimestampsInSnapshots;
 
-  /// True if VectorValue is supported (should be true)
+  /// Returns `true` if the implementation supports [VectorValue].
   bool get supportsVectorValue;
 
-  /// Return true if it supports tracking changes
+  /// Returns `true` if the implementation supports tracking changes.
   bool get supportsTrackChanges;
 
-  /// True if it supports listing collections.
+  /// Returns `true` if the implementation supports [Firestore.listCollections].
   bool get supportsListCollections;
 
-  /// True if it supports aggregate queries
+  /// Returns `true` if the implementation supports aggregate queries.
   bool get supportsAggregateQueries;
 
-  /// Firestore instance of the app
+  /// Returns a [Firestore] instance for the given [App].
   Firestore firestore(App app);
 }
 
@@ -119,132 +126,134 @@ abstract class Firestore implements FirebaseAppProduct<Firestore> {
   /// If supported list all root collections
   Future<List<CollectionReference>> listCollections();
 
-  /// Service access
+  /// The [FirestoreService] for this instance.
   FirestoreService get service;
 
-  /// Default Firestore instance.
+  /// The default [Firestore] instance.
   static Firestore get instance =>
       (FirebaseApp.instance as FirebaseAppMixin).getProduct<Firestore>()!;
 }
 
 /// Represents firestore document data.
 abstract class DocumentData {
-  /// Create a new instance of [DocumentData].
+  /// Creates a new [DocumentData] object.
   factory DocumentData([Map<String, Object?>? map]) =>
       DocumentDataMap(map: map);
 
-  /// Set a string value
+  /// Sets the value for the given [key] to a [String].
   void setString(String key, String value);
 
-  /// Get a string value
+  /// Returns the value for the given [key] as a [String].
   String? getString(String key);
 
-  /// Set null value
+  /// Sets the value for the given [key] to `null`.
   void setNull(String key);
 
-  /// Set a field value
+  /// Sets the value for the given [key] to a [FieldValue].
   void setFieldValue(String key, FieldValue value);
 
-  /// set int value
+  /// Sets the value for the given [key] to an [int].
   void setInt(String key, int value);
 
-  /// get int value
+  /// Returns the value for the given [key] as an [int].
   int? getInt(String key);
 
-  /// Set a num value
+  /// Sets the value for the given [key] to a [num].
   void setNum(String key, num value);
 
-  /// Set a bool value
+  /// Sets the value for the given [key] to a [bool].
   void setBool(String key, bool value);
 
-  /// Get a num value
+  /// Returns the value for the given [key] as a [num].
   num? getNum(String key);
 
-  /// Get a bool value
+  /// Returns the value for the given [key] as a [bool].
   bool? getBool(String key);
 
-  /// Set a date time value
+  /// Sets the value for the given [key] to a [DateTime].
   void setDateTime(String key, DateTime value);
 
-  /// Get a date time value
+  /// Returns the value for the given [key] as a [DateTime].
   DateTime? getDateTime(String key);
 
-  /// Set a timestamp value
+  /// Sets the value for the given [key] to a [Timestamp].
   void setTimestamp(String key, Timestamp value);
 
-  /// Get a timestamp value
+  /// Returns the value for the given [key] as a [Timestamp].
   Timestamp? getTimestamp(String key);
 
-  /// Set a list value
+  /// Sets the value for the given [key] to a [List].
   void setList<T>(String key, List<T> list);
 
-  /// Get a list value
+  /// Returns the value for the given [key] as a [List].
   List<T>? getList<T>(String key);
 
-  /// Get a document data value
+  /// Returns the value for the given [key] as a [DocumentData].
   DocumentData? getData(String key);
 
-  /// Set a document data value
+  /// Sets the value for the given [key] to a [DocumentData].
   void setData(String key, DocumentData value);
 
-  /// Return the native property
+  /// Returns the native property for the given [key].
   dynamic getProperty(String key);
 
-  /// Set the native property
+  /// Sets the native property for the given [key].
   void setProperty(String key, dynamic value);
 
-  /// Check the native property
+  /// Returns `true` if the document contains the given [key].
   bool has(String key);
 
-  /// Return the key list
+  /// Returns an `Iterable` of all keys in the document.
   Iterable<String> get keys;
 
-  /// Return the map
+  /// Returns the document as a `Map<String, Object?>`.
   Map<String, Object?> asMap();
 
   /// use hasProperty
   @Deprecated('Use hasProperty')
   bool containsKey(String key);
 
-  /// Document reference
+  /// Sets the value for the given [key] to a [DocumentReference].
   void setDocumentReference(String key, DocumentReference doc);
 
-  /// Document reference
+  /// Returns the value for the given [key] as a [DocumentReference].
   DocumentReference? getDocumentReference(String key);
 
-  /// blob
+  /// Sets the value for the given [key] to a [Blob].
   void setBlob(String key, Blob blob);
 
-  /// blob
+  /// Returns the value for the given [key] as a [Blob].
   Blob? getBlob(String key);
 
-  /// geo point
+  /// Sets the value for the given [key] to a [GeoPoint].
   void setGeoPoint(String key, GeoPoint geoPoint);
 
-  /// geo point
+  /// Returns the value for the given [key] as a [GeoPoint].
   GeoPoint? getGeoPoint(String key);
 }
 
-/// Helper on document snapshot
+/// An extension on [DocumentSnapshot] to provide helper methods.
 extension DocumentSnapshotExt on DocumentSnapshot {
-  /// Null if the document does not exists
+  /// Returns the document's data as a `Map<String, Object?>`, or `null` if the
+  /// document does not exist.
   Map<String, Object?>? get dataOrNull => exists ? data : null;
 }
 
-/// Sentinel values for update/set
+/// Sentinel values that can be used when writing document fields with `set` or
+/// `update`.
 class FieldValue {
-  /// Data
+  /// The data associated with the `FieldValue`.
   Object? get data => null;
 
-  /// Type
+  /// The type of the `FieldValue`.
   final FieldValueType type;
 
-  /// Set the field as the current timestamp value.
+  /// Returns a sentinel that resolves to the server's timestamp.
   static final FieldValue serverTimestamp = FieldValue(
     FieldValueType.serverTimestamp,
   );
 
-  /// Delete the field.
+  /// Returns a sentinel for use with update() to mark a field for deletion.
   static final FieldValue delete = FieldValue(FieldValueType.delete);
 
   /// Returns a sentinel value that can be used with set(merge: true) or update()
@@ -267,7 +276,7 @@ class FieldValue {
     return FieldValueArray(FieldValueType.arrayRemove, data);
   }
 
-  /// Create a new instance of [FieldValue].
+  /// Creates a new [FieldValue].
   FieldValue(this.type);
 
   @override
@@ -276,20 +285,20 @@ class FieldValue {
   }
 }
 
-/// Use UInt8Array as much as possible
+/// A blob of bytes.
 class Blob {
   final Uint8List _data;
 
-  /// Create a new instance of [Blob].
+  /// Creates a new [Blob] from a `List<int>`.
   Blob.fromList(List<int> data) : _data = asUint8List(data);
 
-  /// Compat with cloud_firestore.
+  /// The bytes of the blob.
   Uint8List get bytes => _data;
 
-  /// data bytes
+  /// The bytes of the blob.
   Uint8List get data => _data;
 
-  /// Create a new instance of [Blob].
+  /// Creates a new [Blob] from a `Uint8List`.
   Blob(this._data);
 
   @override
@@ -309,15 +318,15 @@ class Blob {
   }
 }
 
-/// Geo point
+/// A geographical point represented by latitude and longitude.
 class GeoPoint {
-  /// Latitude
+  /// The latitude of this `GeoPoint`.
   final num latitude;
 
-  /// Longitude
+  /// The longitude of this `GeoPoint`.
   final num longitude;
 
-  /// Create a new instance of [GeoPoint].
+  /// Creates a new [GeoPoint] with the given [latitude] and [longitude].
   const GeoPoint(this.latitude, this.longitude);
 
   @override
@@ -338,66 +347,78 @@ class GeoPoint {
   String toString() => '[$latitude° N, $longitude° E]';
 }
 
-/// Set options
+/// An options object that configures the behavior of `set()` calls.
 class SetOptions {
-  /// Set to true to replace only the values from the new data.
-  /// Fields omitted will remain untouched.
+  /// Changes the behavior of a `set()` call to only replace the values specified
+  /// in the data argument.
+  ///
+  /// Fields omitted from the data argument remain untouched.
   bool? merge;
 
-  /// Create a new instance of [SetOptions].
+  /// Creates a new [SetOptions] object.
   SetOptions({this.merge});
 }
 
-/// Operator equals
+/// The relational operator for query comparisons.
 const String operatorEqual = '=';
 
-/// Operator less than
+/// The relational operator for query comparisons.
 const String operatorLessThan = '<';
 
-/// Operator greater than
+/// The relational operator for query comparisons.
 const String operatorGreaterThan = '>';
 
-/// Operator less than or equal
+/// The relational operator for query comparisons.
 const String operatorLessThanOrEqual = '<=';
 
-/// Operator greater than or equal
+/// The relational operator for query comparisons.
 const String operatorGreaterThanOrEqual = '>=';
 
-/// Operator array contains
+/// The relational operator for query comparisons.
 const String operatorArrayContains = 'array-contains';
 
-/// Operator array contains any
+/// The relational operator for query comparisons.
 const String operatorArrayContainsAny = 'array-contains-any';
 
-/// Operator in
+/// The relational operator for query comparisons.
 const String operatorIn = 'in';
 
-/// Operator not in
+/// The relational operator for query comparisons.
 const String operatorNotIn = 'not-in';
 
 /// compat 2019-10-24, fix mistake
 @Deprecated('Typo use operatorArrayContains')
 const String opeatorArrayContains = operatorArrayContains;
 
-/// Order by ascending
+/// The direction of a query's sort order.
 const orderByAscending = 'asc';
 
-/// Order by descending
+/// The direction of a query's sort order.
 const orderByDescending = 'desc';
 
-/// Write batch
+/// A write batch, used to perform multiple writes as a single atomic unit.
+///
+/// A [WriteBatch] object can be acquired by calling [Firestore.batch]. It
+/// provides methods for adding writes to the write batch. None of the writes
+/// will be committed (or visible locally) until [WriteBatch.commit] is called.
 abstract class WriteBatch {
   /// Deletes the document referred to by the provided [DocumentReference].
   void delete(DocumentReference ref);
 
   /// Writes to the document referred to by the provided [DocumentReference].
+  ///
+  /// If the document does not yet exist, it will be created. If you pass
+  /// [SetOptions], the provided data can be merged into an existing document.
   void set(
     DocumentReference ref,
     Map<String, Object?> data, [
     SetOptions? options,
   ]);
 
-  /// Updates fields in the document referred to by the provided [DocumentReference].
+  /// Updates fields in the document referred to by the provided
+  /// [DocumentReference].
+  ///
+  /// The update will fail if applied to a document that does not exist.
   void update(DocumentReference ref, Map<String, Object?> data);
 
   /// Commits all of the writes in this write batch as a single atomic unit.
@@ -418,26 +439,24 @@ enum DocumentChangeType {
   removed,
 }
 
-/// A DocumentChange represents a change to the documents matching a query.
+/// A `DocumentChange` represents a change to the documents matching a query.
 ///
 /// It contains the document affected and the type of change that occurred
 /// (added, modified, or removed).
 abstract class DocumentChange {
   /// The type of change that occurred (added, modified, or removed).
-  ///
-  /// Can be `null` if this document change was returned from [DocumentQuery.get].
   DocumentChangeType get type;
 
   /// The index of the changed document in the result set immediately prior to
-  /// this [DocumentChange] (i.e. supposing that all prior DocumentChange objects
+  /// this `DocumentChange` (i.e. supposing that all prior `DocumentChange` objects
   /// have been applied).
   ///
   /// -1 for [DocumentChangeType.added] events.
   int get oldIndex;
 
   /// The index of the changed document in the result set immediately after this
-  /// DocumentChange (i.e. supposing that all prior [DocumentChange] objects
-  /// and the current [DocumentChange] object have been applied).
+  /// `DocumentChange` (i.e. supposing that all prior `DocumentChange` objects
+  /// and the current `DocumentChange` object have been applied).
   ///
   /// -1 for [DocumentChangeType.removed] events.
   int get newIndex;
@@ -446,38 +465,21 @@ abstract class DocumentChange {
   DocumentSnapshot get document;
 }
 
-/// Firestore transaction.
-/// get must be done first
+/// A transaction, used for atomic multi-document writes.
+///
+/// A [Transaction] object can be used to read and write multiple documents
+/// atomically.
 abstract class Transaction {
   /// Deletes the document referred to by the provided [DocumentReference].
-  ///
-  /// The [DocumentReference] parameter is a reference to the document to be
-  /// deleted. Value must not be null.
   void delete(DocumentReference documentRef);
 
   /// Reads the document referenced by the provided [DocumentReference].
-  ///
-  /// The [DocumentReference] parameter is a reference to the document to be
-  /// retrieved. Value must not be null.
-  ///
-  /// Returns non-null [Future] of the read data in a [DocumentSnapshot].
   Future<DocumentSnapshot> get(DocumentReference documentRef);
 
   /// Writes to the document referred to by the provided [DocumentReference].
-  /// If the document does not exist yet, it will be created.
-  /// If you pass [options], the provided data can be merged into the existing
-  /// document.
   ///
-  /// The [DocumentReference] parameter is a reference to the document to be
-  /// created. Value must not be null.
-  ///
-  /// The [data] paramater is object of the fields and values for
-  /// the document. Value must not be null.
-  ///
-  /// The optional [SetOptions] is an object to configure the set behavior.
-  /// Pass [: {merge: true} :] to only replace the values specified in the
-  /// data argument. Fields omitted will remain untouched.
-  /// Value must not be null.
+  /// If the document does not exist yet, it will be created. If you pass
+  /// [SetOptions], the provided data can be merged into an existing document.
   void set(
     DocumentReference documentRef,
     Map<String, Object?> data, [
@@ -485,16 +487,7 @@ abstract class Transaction {
   ]);
 
   /// Updates fields in the document referred to by this [DocumentReference].
+  ///
   /// The update will fail if applied to a document that does not exist.
-  /// The value must not be null.
-  ///
-  /// Nested fields can be updated by providing dot-separated field path strings
-  /// or by providing [FieldPath] objects.
-  ///
-  /// The [data] param is the object containing all of the fields and values
-  /// to update.
-  ///
-  /// The [fieldsAndValues] param is the List alternating between fields
-  /// (as String or [FieldPath] objects) and values.
   void update(DocumentReference documentRef, Map<String, Object?> data);
 }
