@@ -25,7 +25,11 @@ export 'package:tekartik_firebase_firestore/src/firestore_path.dart'
         firestorePathReplaceId,
         firestorePathGetId;
 export 'package:tekartik_firebase_firestore/src/timestamp.dart'
-    show Timestamp, TekartikFirestoreTimestampExt;
+    show
+        Timestamp,
+        FirestoreTimestamp,
+        TekartikFirestoreTimestamp,
+        TekartikFirestoreTimestampExt;
 
 export 'src/aggregate_field.dart' show AggregateField;
 export 'src/aggregate_query.dart' show AggregateQuery;

@@ -1,3 +1,9 @@
+/// Explicit naming when Timestamp is already taken
+typedef FirestoreTimestamp = Timestamp;
+
+/// Explicit naming when Timestamp is already taken
+typedef TekartikFirestoreTimestamp = Timestamp;
+
 /// A Timestamp represents a point in time independent of any time zone or
 /// calendar, represented as seconds and fractions of seconds at nanosecond
 /// resolution in UTC Epoch time.
