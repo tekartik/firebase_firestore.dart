@@ -21,7 +21,7 @@ void main() {
         var dst = join(
           '.dart_tool',
           'tekartik_firebase_local',
-          'default_v1',
+          'local',
           'firestore.db',
         );
         await File(dst).create(recursive: true);
@@ -43,36 +43,22 @@ void main() {
       var ioFirestore = service.firestore(app) as FirestoreSembast;
       expect(
         ioFirestore.dbPath,
-        join('.dart_tool', 'tekartik_firebase_local', 'test', 'firestore.db'),
+        join('.dart_tool', 'tekartik_firebase_local', 'local', 'firestore.db'),
       );
 
       app = firebase.initializeApp(name: '');
       ioFirestore = service.firestore(app) as FirestoreSembast;
       expect(
         ioFirestore.dbPath,
-        join(
-          '.dart_tool',
-          'tekartik_firebase_local',
-          '_default',
-          'firestore.db',
-        ),
+        join('.dart_tool', 'tekartik_firebase_local', 'local', 'firestore.db'),
       );
 
       app = firebase.initializeApp();
       ioFirestore = service.firestore(app) as FirestoreSembast;
       expect(
         ioFirestore.dbPath,
-        join(
-          '.dart_tool',
-          'tekartik_firebase_local',
-          '_default',
-          'firestore.db',
-        ),
+        join('.dart_tool', 'tekartik_firebase_local', 'local', 'firestore.db'),
       );
-
-      app = firebase.initializeApp(name: join('.', 'test'));
-      ioFirestore = service.firestore(app) as FirestoreSembast;
-      expect(ioFirestore.dbPath, join('.', 'test', 'firestore.db'));
     });
 
     test('db_format', () async {

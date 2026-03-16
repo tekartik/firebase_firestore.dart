@@ -3,5 +3,5 @@ include: package:tekartik_lints/package.yaml
 
 linter:
   rules:
-    depend_on_referenced_packages: false
+    # depend_on_referenced_packages: false
     # public_member_api_docs: false

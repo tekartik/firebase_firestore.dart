@@ -22,7 +22,30 @@ dependencies:
   logging: any
   path: ">=1.9.0"
   json_rpc_2:
+  tekartik_firebase_local:
+    git:
+      url: https://github.com/tekartik/firebase.dart
+      path: firebase_local
+
+  tekartik_firebase_firestore_sembast:
+    git:
+      url: https://github.com/tekartik/firebase_firestore.dart
+      path: firestore_sembast
+  tekartik_common_utils:
+    git: https://github.com/tekartik/common_utils.dart
+  tekartik_firebase:
+    git:
+      url: https://github.com/tekartik/firebase.dart
+      path: firebase
+  tekartik_web_socket_io:
+    git:
+      url: https://github.com/tekartik/web_socket.dart
+      path: web_socket_io
 dev_dependencies:
+  tekartik_firebase_firestore_test:
+    git:
+      url: https://github.com/tekartik/firebase_firestore.dart
+      path: firestore_test
   test: ">=1.24.0"
   dev_build: ">=1.1.2"
   build_runner: ">=2.4.13"

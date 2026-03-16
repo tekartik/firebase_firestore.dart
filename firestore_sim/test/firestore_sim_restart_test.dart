@@ -1,13 +1,15 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim.dart';
+import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
+import 'package:tekartik_firebase_sim/firebase_sim_server_mixin.dart';
 import 'package:test/test.dart';
 
 import 'test_common.dart';
 
 void main() {
   // debugRpcServer = devTrue;
-  // debugFirebaseSimServer = devTrue;
-  // debugFirebaseSimClient = devTrue;
+  debugFirebaseSimServer = devTrue;
+  debugFirebaseSimClient = devTrue;
   group('restart', () {
     var docTopPath = 'test/firestore_sim_restart';
     late FirebaseApp app;
