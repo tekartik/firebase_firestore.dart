@@ -100,7 +100,7 @@ void main() {
   var firebase = FirebaseLocal();
   var service = newFirestoreServiceMemory();
   service.sembastSupportsTrackChanges = true;
-  var app = firebase.app();
+  var app = firebase.initializeApp();
   var firestore = service.firestore(app);
   groupTrackChangesSembastSupport(firestore: firestore);
 }
