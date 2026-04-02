@@ -20,7 +20,7 @@ FirestoreService newFirestoreServiceMemory() =>
 
 /// Quick firestore test helper
 Firestore newFirestoreMemory() =>
-    newFirestoreServiceMemory().firestore(newFirebaseAppLocal());
+    newFirestoreServiceMemory().firestore(newFirebaseAppMemory());
 
 /// New sembast service
 FirestoreService newFirestoreServiceSembast({
