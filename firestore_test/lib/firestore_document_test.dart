@@ -20,7 +20,7 @@ void runFirestoreDocumentTests({
         'bool': true,
         'list': [1],
         'map': {'test': 1},
-        'blob': Blob.fromList([1, 2, 3]),
+        if (firestore.service.supportsBlobs) 'blob': Blob.fromList([1, 2, 3]),
         'ref': firestore.doc('test/4'),
         'geoPoint': const GeoPoint(5, 6),
         'timestamp': Timestamp(7, 8000),

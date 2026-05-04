@@ -50,6 +50,9 @@ class FirestoreServiceIdb
 
   @override
   bool get supportsVectorValue => true;
+
+  @override
+  bool get supportsBlobs => true;
 }
 
 FirestoreService getFirestoreService(idb.IdbFactory idbFactory) =>

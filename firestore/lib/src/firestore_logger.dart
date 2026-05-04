@@ -1064,6 +1064,9 @@ class FirestoreServiceLogger
   @override
   bool get supportsAggregateQueries =>
       firestoreService.supportsAggregateQueries;
+
+  @override
+  bool get supportsBlobs => firestoreService.supportsBlobs;
 }
 
 /// Debug extension for Logger.

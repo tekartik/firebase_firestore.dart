@@ -68,6 +68,9 @@ abstract class FirestoreService implements FirebaseAppProductService {
   /// Returns `true` if the implementation supports [Timestamp] in documents.
   bool get supportsTimestamps;
 
+  /// Returns `true` if the implementation supports [Blob] in documents.
+  bool get supportsBlobs;
+
   /// Returns `true` if the implementation supports [Timestamp] in snapshots.
   bool get supportsTimestampsInSnapshots;
 

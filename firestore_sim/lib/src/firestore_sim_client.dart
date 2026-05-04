@@ -50,6 +50,9 @@ class FirestoreServiceSim
 
   @override
   bool get supportsTrackChanges => true;
+
+  @override
+  bool get supportsBlobs => true;
 }
 
 FirestoreServiceSim? _firestoreServiceSim;

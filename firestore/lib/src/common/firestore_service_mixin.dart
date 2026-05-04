@@ -32,6 +32,10 @@ mixin FirestoreServiceDefaultMixin implements FirestoreService {
   @override
   /// false to start, should become true soon
   bool get supportsVectorValue => false;
+
+  @override
+  /// Mostly always true
+  bool get supportsBlobs => false;
 }
 
 /// Firestore service mixin

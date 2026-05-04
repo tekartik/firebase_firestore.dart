@@ -21,6 +21,7 @@ void main() async {
       expect(firestoreService.supportsQuerySelect, isTrue);
       expect(firestoreService.supportsTimestamps, isTrue);
       expect(firestoreService.supportsTrackChanges, isFalse);
+      expect(firestoreService.supportsBlobs, isTrue);
     });
     runFirestoreTests(firebase: firebase, firestoreService: firestoreService);
   });

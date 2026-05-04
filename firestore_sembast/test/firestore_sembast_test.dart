@@ -14,6 +14,7 @@ void main() {
   );
   test('supports', () {
     expect(firestoreService.supportsVectorValue, isTrue);
+    expect(firestoreService.supportsBlobs, isTrue);
   });
   runFirestoreTests(firebase: firebase, firestoreService: firestoreService);
 }

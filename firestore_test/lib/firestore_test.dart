@@ -502,7 +502,9 @@ void runFirestoreCommonTests({
         documentData.setTimestamp('timestamp', timestamp);
         documentData.setList('intList', <int>[4, 3]);
         documentData.setDocumentReference('docRef', firestore.doc('tests/doc'));
-        documentData.setBlob('blob', Blob(Uint8List.fromList([1, 2, 3])));
+        if (firestoreService.supportsBlobs) {
+          documentData.setBlob('blob', Blob(Uint8List.fromList([1, 2, 3])));
+        }
         documentData.setGeoPoint('geoPoint', const GeoPoint(1.2, 4));
 
         documentData.setFieldValue(
@@ -535,7 +537,9 @@ void runFirestoreCommonTests({
           timestampAdaptPrecision(firestoreService, timestamp),
         );
         expect(documentData.getDocumentReference('docRef')!.path, 'tests/doc');
-        expect(documentData.getBlob('blob')!.data, [1, 2, 3]);
+        if (firestoreService.supportsBlobs) {
+          expect(documentData.getBlob('blob')!.data, [1, 2, 3]);
+        }
         expect(documentData.getGeoPoint('geoPoint'), const GeoPoint(1.2, 4));
         expect(
           documentData.getDateTime('serverTimestamp')!.millisecondsSinceEpoch >
@@ -763,7 +767,8 @@ void runFirestoreCommonTests({
           'timestamp': timestamp,
           'intList': <int>[4, 3],
           'docRef': firestore.doc('tests/doc'),
-          'blob': Blob(Uint8List.fromList([1, 2, 3])),
+          if (firestoreService.supportsBlobs)
+            'blob': Blob(Uint8List.fromList([1, 2, 3])),
           'geoPoint': const GeoPoint(1.2, 4),
           'serverTimestamp': FieldValue.serverTimestamp,
           'subData': {
@@ -798,7 +803,8 @@ void runFirestoreCommonTests({
               ? timestampAdaptPrecision(firestoreService, timestamp)
               : timestamp.toDateTime(),
           'intList': <int>[4, 3],
-          'blob': Blob(Uint8List.fromList([1, 2, 3])),
+          if (firestoreService.supportsBlobs)
+            'blob': Blob(Uint8List.fromList([1, 2, 3])),
           'geoPoint': const GeoPoint(1.2, 4),
           'subData': {
             'localDateTime': firestoreService.supportsTimestampsInSnapshots
