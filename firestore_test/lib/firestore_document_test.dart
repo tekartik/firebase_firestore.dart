@@ -29,6 +29,20 @@ void runFirestoreDocumentTests({
       await doc.set(map);
       expect((await doc.get()).data, map);
     });
+    test('empty doc', () async {
+      var map = <String, Object?>{};
+      var doc = firestore.doc(url.join(testsRefPath, 'doc_empty'));
+      await doc.set(map);
+      expect((await doc.get()).data, map);
+      var query = firestore
+          .collection(testsRefPath)
+          .orderBy(firestoreNameFieldPath)
+          .startAt(values: [doc.id])
+          .limit(1);
+      var snapshots = await query.get();
+      var data = snapshots.docs.first.data;
+      expect(data, map);
+    });
     test('special chars', () async {
       var map = {'some|key': 1, 'other@key': 2};
       var doc = firestore.doc(
