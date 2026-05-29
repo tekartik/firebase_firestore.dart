@@ -397,7 +397,7 @@ class FirestoreQueryData extends FirestorePathData {
   @override
   @Deprecated('Use firestoreFromMap')
   void fromMap(Map map) {
-    throw 'need firestore';
+    throw UnsupportedError('need firestore');
     /*
     super.fromMap(map);
     queryInfo = queryInfoFromJsonMap(map['query'] as Map<String, Object?>);
@@ -513,7 +513,7 @@ class FirestoreBatchData extends FirestoreAppBaseData {
           operations.add(BatchOperationUpdateData()..fromMap(itemMap));
           break;
         default:
-          throw 'method $method not supported';
+          throw UnsupportedError('method $method not supported');
       }
     }
   }
@@ -521,7 +521,7 @@ class FirestoreBatchData extends FirestoreAppBaseData {
   @override
   @Deprecated('Use firestoreFromMap')
   void fromMap(Map map) {
-    throw 'need firestore';
+    throw UnsupportedError('need firestore');
     /*
     super.fromMap(map);
     queryInfo = queryInfoFromJsonMap(map['query'] as Map<String, Object?>);

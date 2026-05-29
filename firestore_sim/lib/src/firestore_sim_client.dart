@@ -827,7 +827,7 @@ class WriteBatchSim extends WriteBatchBase {
             ..data = documentDataToJsonMap(operation.documentData),
         );
       } else {
-        throw 'not supported $operation';
+        throw UnsupportedError('not supported $operation');
       }
     }
     var simClient = await firestore.simAppClient;

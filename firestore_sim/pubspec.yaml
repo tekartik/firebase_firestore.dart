@@ -4,7 +4,7 @@ version: 0.8.0
 publish_to: none
 
 environment:
-  sdk: ^3.9.0
+  sdk: ^3.12.0
 
 dependencies:
   cv: ">=1.1.0+4"
@@ -17,10 +17,10 @@ dependencies:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore
     version: '>=0.8.0'
-  meta: ">=1.15.0"
+  meta: ">=1.18.0"
   synchronized: '>=1.5.0-dev.2'
   logging: any
-  path: ">=1.9.0"
+  path: ">=1.9.1"
   json_rpc_2:
   tekartik_firebase_local:
     git:
@@ -46,10 +46,10 @@ dev_dependencies:
     git:
       url: https://github.com/tekartik/firebase_firestore.dart
       path: firestore_test
-  test: ">=1.24.0"
-  dev_build: ">=1.1.2"
-  build_runner: ">=2.4.13"
-  build_web_compilers: ">=4.0.11"
+  test: ">=1.31.0"
+  dev_build: ">=1.1.7+3"
+  build_runner: ">=2.15.0"
+  build_web_compilers: ">=4.4.19"
   build_test: ">=0.10.3"
   process_run: ">=1.2.1+1"
 

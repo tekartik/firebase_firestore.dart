@@ -454,7 +454,7 @@ class WriteBatchSembast extends WriteBatchBase implements WriteBatch {
           ),
         );
       } else {
-        throw 'not supported $operation';
+        throw UnsupportedError('not supported $operation');
       }
     }
     return results;

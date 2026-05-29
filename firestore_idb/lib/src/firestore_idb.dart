@@ -396,7 +396,7 @@ class TransactionIdb extends WriteBatchIdb implements Transaction {
 @Deprecated('Unused')
 dynamic valueToUpdateValue(dynamic value) {
   if (value == FieldValue.delete) {
-    throw 'TODO';
+    throw UnimplementedError('TODO');
     // return sembast.FieldValue.delete;
   }
   return valueToRecordValue(value, valueToUpdateValue);
@@ -615,7 +615,7 @@ class WriteBatchIdb extends WriteBatchBase implements WriteBatch {
           ),
         );
       } else {
-        throw 'not supported $operation';
+        throw UnsupportedError('not supported $operation');
       }
     }
     return results;

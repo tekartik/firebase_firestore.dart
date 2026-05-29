@@ -88,10 +88,9 @@ class FirestoreTestContext {
 
   /// Constructor.
   FirestoreTestContext({
-    String? rootCollectionPath,
-    String? noAuthRootCollectionPath,
-  }) : _rootCollectionPath = rootCollectionPath,
-       _noAuthRootCollectionPath = noAuthRootCollectionPath;
+    this._rootCollectionPath,
+    this._noAuthRootCollectionPath,
+  });
 
   /// can be set later
   int? allowedDelayInReadMs;

@@ -478,7 +478,7 @@ class _FirestoreSimPluginServer {
           documentDataFromJsonMap(firestore, item.data)!.asMap(),
         );
       } else {
-        throw 'not supported $item';
+        throw UnsupportedError('not supported $item');
       }
     }
     await batch.commit();

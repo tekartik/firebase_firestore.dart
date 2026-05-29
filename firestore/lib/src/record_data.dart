@@ -126,7 +126,9 @@ dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
       return recordValue.data;
     }
   }
-  throw 'recordValueToValue not supported $recordValue ${recordValue.runtimeType}';
+  throw ArgumentError(
+    'recordValueToValue not supported $recordValue ${recordValue.runtimeType}',
+  );
 }
 
 /// Document data map.
@@ -341,7 +343,7 @@ dynamic valueToJsonRecordValue(
   } else if (value is VectorValue) {
     return vectorToRecordValue(value);
   }
-  throw 'not supported $value ${value.runtimeType}';
+  throw ArgumentError('not supported $value ${value.runtimeType}');
 }
 
 /// DateTime to record value.
