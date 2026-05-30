@@ -65,60 +65,41 @@ void runFirestoreQueryTests({
         txn.set(collRef.doc('text'), {'value': 'text'});
         txn.set(collRef.doc('timestamp2'), {'value': Timestamp(2, 2000)});
         txn.set(collRef.doc('timestamp1'), {'value': Timestamp(1, 2000)});
-        txn.set(collRef.doc('bytes'), {
-          'value': Blob.fromList([1, 2, 3]),
-        });
+        if (firestore.service.supportsBlobs) {
+          txn.set(collRef.doc('bytes'), {
+            'value': Blob.fromList([1, 2, 3]),
+          });
+        }
         txn.set(collRef.doc('list'), {
           'value': [1],
         });
         txn.set(collRef.doc('map'), {
           'value': {'test': 1},
         });
-        txn.set(collRef.doc('bytes'), {
-          'value': Blob.fromList([1, 2, 3]),
-        });
+
         txn.set(collRef.doc('ref'), {'value': firestore.doc('test/1')});
         txn.set(collRef.doc('geoPoint'), {'value': const GeoPoint(1, 2)});
       });
 
       Future<void> check() async {
         var querySnapshot = await collRef.orderBy('value').get();
-        if (firestore.service.supportsBlobs) {
-          expect(querySnapshot.ids, [
-            'false',
-            'true',
-            '-1',
-            '0',
-            '0.5',
-            '1',
-            'timestamp1',
-            'timestamp2',
-            'text',
-            'bytes',
-            'ref',
-            'geoPoint',
-            'list',
-            'map',
-          ]);
-        } else {
-          // admin_sdk only temp result
-          expect(querySnapshot.ids, [
-            'false',
-            'true',
-            '-1',
-            '0',
-            '0.5',
-            '1',
-            'timestamp1',
-            'timestamp2',
-            'text',
-            'ref',
-            'geoPoint',
-            'list',
-            'bytes',
-            'map',
-          ]); // !!
-        }
+
+        expect(querySnapshot.ids, [
+          'false',
+          'true',
+          '-1',
+          '0',
+          '0.5',
+          '1',
+          'timestamp1',
+          'timestamp2',
+          'text',
+          if (firestore.service.supportsBlobs) 'bytes',
+          'ref',
+          'geoPoint',
+          'list',
+          'map',
+        ]);
       }
 
       await testContext.runTestAndIfNeededAllowDelay(check);
