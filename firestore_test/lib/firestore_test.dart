@@ -571,6 +571,18 @@ void runFirestoreCommonTests({
         await docRef.delete();
       });
 
+      test('blob', () async {
+        var testsRef = getTestsRef();
+
+        var docRef = testsRef.doc('blob');
+        await docRef.set({
+          'some_key': Blob.fromList([1, 2, 3]),
+        });
+        expect((await docRef.get()).data, {
+          'some_key': Blob.fromList([1, 2, 3]),
+        });
+      }, skip: !firestoreService.supportsBlobs);
+
       test('list<data>', () async {
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('list');
