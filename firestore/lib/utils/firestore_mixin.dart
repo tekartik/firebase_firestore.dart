@@ -688,6 +688,7 @@ bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
       return _getComparable(snapshot.ref.id);
     }
   }
+
   //var data = documentData.map;
   // if (data != null) {
   //bool add = true;
