@@ -15,9 +15,10 @@ void main() {
   );
 
   test('newInMemory', () async {
+    var app = newFirebaseAppLocal();
     var firestoreService1 = newFirestoreServiceMemory();
     var firestoreService2 = newFirestoreServiceMemory();
-    var app = firebase.app();
+
     var firestore1 = firestoreService1.firestore(app);
     var firestore2 = firestoreService2.firestore(app);
     var docPath = 'tests/doc';
@@ -27,6 +28,7 @@ void main() {
     await doc2Ref.set({'test': 2});
     expect((await doc1Ref.get()).data, {'test': 1});
     expect((await doc2Ref.get()).data, {'test': 2});
+    await app.delete();
   });
 
   test('newFirestoreMemory', () async {
@@ -39,5 +41,6 @@ void main() {
     await doc2Ref.set({'test': 2});
     expect((await doc1Ref.get()).data, {'test': 1});
     expect((await doc2Ref.get()).data, {'test': 2});
+    await firestore1.app.delete();
   });
 }
