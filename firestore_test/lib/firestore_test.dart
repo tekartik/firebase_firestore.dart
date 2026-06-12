@@ -33,6 +33,9 @@ var _testsRefPathDefault = 'tests/tekartik_firestore/tests';
 /// Skip concurrent transaction tests.
 bool skipConcurrentTransactionTests = false;
 
+/// Skip transactions tests
+bool skipFirestoreTransactionTests = false;
+
 /// Get document keys.
 List<DocumentReference?> docsKeys(List<DocumentSnapshot> snashots) =>
     snashots.map((e) => e.ref).toList();
@@ -1307,7 +1310,7 @@ void runFirestoreCommonTests({
           var testsRef = getTestsRef();
           var collRef = testsRef
               .doc('transaction_test')
-              .collection('get_update');
+              .collection('concurrent_get_update');
           var ref = collRef.doc('item');
           await ref.set({'value': 1});
 
@@ -1424,7 +1427,7 @@ void runFirestoreCommonTests({
             }
           }
         });
-      });
+      }, skip: skipFirestoreTransactionTests);
     });
     test('bug_limit', () async {
       var query = firestore
