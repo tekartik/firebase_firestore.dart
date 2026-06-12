@@ -135,20 +135,22 @@ Future<void> runTestAndIfNeededAllowDelay(
 }
 
 void _runFirestoreTests({
+  FirebaseApp? app,
   required Firebase firebase,
   required FirestoreService firestoreService,
   AppOptions? options,
   FirestoreTestContext? testContext,
 }) {
-  final app = firebase.initializeApp(options: options);
+  var localApp =
+      app ?? firebase.initializeApp(options: options, name: 'firestore_tests');
   runFirestoreAppTests(
-    app: app,
+    app: localApp,
     firestoreService: firestoreService,
     options: options,
     testContext: testContext ?? FirestoreTestContext(),
   );
   tearDownAll(() {
-    return app.delete();
+    return app?.delete();
   });
 }
 
