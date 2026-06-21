@@ -1381,14 +1381,14 @@ void runFirestoreCommonTests({
           var collRef = testsRef.doc('transaction_test').collection('get_set');
           var ref = collRef.doc('item');
           await ref.set({'value': 1});
-
+          Map? readData;
           await firestore.runTransaction((txn) async {
-            var data = (await txn.get(ref)).data;
-            expect(data, {'value': 1});
-            data['value'] = (data['value'] as int) + 1;
-
+            readData = (await txn.get(ref)).data as Map?;
+            var value = readData?['value'] as int?;
+            var data = {'value': (value ?? 0) + 1};
             txn.set(ref, data);
           });
+          expect(readData, {'value': 1});
 
           Future<void> check() async {
             expect((await ref.get()).data, {'value': 2});
