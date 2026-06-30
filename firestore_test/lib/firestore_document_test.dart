@@ -29,6 +29,24 @@ void runFirestoreDocumentTests({
       await doc.set(map);
       expect((await doc.get()).data, map);
     });
+    test('add all types', () async {
+      var map = {
+        'int': 1,
+        'bool': true,
+        'list': [1],
+        'map': {'test': 1},
+        if (firestore.service.supportsBlobs) 'blob': Blob.fromList([1, 2, 3]),
+        'ref': firestore.doc('test/4'),
+        'geoPoint': const GeoPoint(5, 6),
+        'timestamp': Timestamp(7, 8000),
+      };
+      var coll = firestore.collection(testsRefPath);
+      var docRef = await coll.add(map);
+      var data = await docRef.get();
+      await docRef.delete();
+      expect(data.data, map);
+    });
+
     test('empty doc', () async {
       var map = <String, Object?>{};
       var doc = firestore.doc(url.join(testsRefPath, 'doc_empty'));
