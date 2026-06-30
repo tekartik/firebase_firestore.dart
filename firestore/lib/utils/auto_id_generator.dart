@@ -43,10 +43,11 @@ extension TekartikCollectionReferenceUniqueId on CollectionReference {
     Transaction txn, {
     String Function()? customGenerator,
   }) async {
-    String uniqueId;
+    late String uniqueId;
     while (true) {
       uniqueId = customGenerator?.call() ?? AutoIdGenerator.autoId();
-      if (!(await txn.get(doc(uniqueId))).exists) {
+      var docSnapshot = await txn.get(doc(uniqueId));
+      if (!docSnapshot.exists) {
         break;
       }
     }

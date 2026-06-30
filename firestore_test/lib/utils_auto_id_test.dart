@@ -22,7 +22,7 @@ void utilsAutoIdTest({
         id = await getTestsRef().txnGenerateUniqueId(txn);
       });
       expect(id, isNotNull);
-    });
+    }, skip: skipFirestoreTransactionTests);
 
     test('custom txnGenerateUniqueId', () async {
       var alphabet = ['a', 'b', 'c', 'd', 'e'];
@@ -33,6 +33,6 @@ void utilsAutoIdTest({
         );
       });
       expect(alphabet, contains(genId));
-    });
+    }, skip: skipFirestoreTransactionTests);
   });
 }
