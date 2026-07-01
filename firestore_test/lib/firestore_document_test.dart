@@ -42,6 +42,8 @@ void runFirestoreDocumentTests({
       };
       var coll = firestore.collection(testsRefPath);
       var docRef = await coll.add(map);
+      var path = docRef.path;
+      expect(path, url.join(testsRefPath, docRef.id));
       var data = await docRef.get();
       await docRef.delete();
       expect(data.data, map);

@@ -1,8 +1,5 @@
-import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/firestore_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/common/firestore_mock.dart';
-import 'package:tekartik_firebase_firestore/src/common/value_key_mixin.dart';
-import 'package:tekartik_firebase_firestore/src/firestore.dart';
-import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -356,6 +353,14 @@ void main() {
     expect(
       mapWhere(documentData, WhereInfo('value', arrayContains: false)),
       false,
+    );
+  });
+  test('local', () {
+    expect(
+      localPathReferencePath(
+        'projects/my-project/databases/(default)/documents/tests/tekartik_firestore/tests/dVXstyvZOEf5ndPUCU5R',
+      ),
+      'tests/tekartik_firestore/tests/dVXstyvZOEf5ndPUCU5R',
     );
   });
 }

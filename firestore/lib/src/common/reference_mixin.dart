@@ -162,6 +162,19 @@ List<String> localPathReferenceParts(String path) {
   return parts;
 }
 
+/// Remove `projects/<project>/databases/(default)/documents` if any
+String localPathReferencePath(String path) {
+  var parts = url.split(sanitizeReferencePath(path));
+  if (parts.length > 6 &&
+      parts[0] == 'projects' &&
+      parts[2] == 'databases' &&
+      parts[4] == 'documents') {
+    parts = parts.sublist(5);
+    return url.joinAll(parts);
+  }
+  return path;
+}
+
 /// Throw if not valid - debug only
 void checkCollectionReferencePath(String path) {
   if (isDebug) {
