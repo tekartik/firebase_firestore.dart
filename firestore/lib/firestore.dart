@@ -37,6 +37,8 @@ export 'src/aggregate_query_snapshot.dart' show AggregateQuerySnapshot;
 export 'src/document_reference.dart'
     show DocumentReference, DocumentReferenceListExtension;
 export 'src/document_snapshot.dart' show DocumentSnapshot;
+export 'src/firestore_exception.dart'
+    show FirestoreErrorCode, FirestoreException;
 export 'src/firestore_logger.dart'
     show FirestoreLoggerDebugExt, FirestoreServiceLoggerDebugExt;
 export 'src/query.dart' show Query;
