@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs
 import 'package:idb_shim/idb.dart' as idb;
 import 'package:path/path.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
