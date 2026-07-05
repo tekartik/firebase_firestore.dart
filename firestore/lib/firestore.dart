@@ -500,3 +500,16 @@ abstract class Transaction {
   /// The update will fail if applied to a document that does not exist.
   void update(DocumentReference documentRef, Map<String, Object?> data);
 }
+
+/// Firebase helper extension
+extension TekartikFirestoreFirebaseAppExt on FirebaseApp {
+  /// Get firestore app product.
+  Firestore firestore() {
+    var firestore = getProduct<Firestore>();
+    if (firestore == null) {
+      throw StateError('No firestore product for app $name');
+    } else {
+      return firestore;
+    }
+  }
+}

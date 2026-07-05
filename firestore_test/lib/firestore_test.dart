@@ -167,6 +167,7 @@ void runFirestoreAppTests({
     expect(firestore.service, firestoreService);
     expect(firestoreService.firestore(app), firestore);
     expect(app.getProduct<Firestore>(), firestore);
+    expect(app.firestore(), firestore);
   });
   runFirestoreCommonTests(
     firestoreService: firestoreService,
