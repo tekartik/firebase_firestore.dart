@@ -1147,7 +1147,7 @@ void runFirestoreCommonTests({
 
           await subscription.cancel();
         }
-      });
+      }, solo: true);
 
       test('SetOptions', () async {
         var testsRef = getTestsRef();

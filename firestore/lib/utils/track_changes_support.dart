@@ -88,7 +88,8 @@ extension DocumentReferenceSnapshotSupportExtension on DocumentReference {
       return get();
     }
 
-    if (firestore.service.supportsTrackChanges) {
+    // Document level tracking only needs record track changes support.
+    if (firestore.service.supportsRecordTrackChanges) {
       return onSnapshot(includeMetadataChanges: includeMetadataChanges);
     } else {
       TrackChangesSupportOptionsController? createdController;

@@ -28,7 +28,6 @@ void utilsTest({
 
         completer = Completer();
         var subscription = onDocumentSnapshots([ref1, ref2]).listen((event) {
-          print('$ref1, $ref2');
           completer.complete();
           snapshots = event;
         });
