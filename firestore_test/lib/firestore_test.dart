@@ -36,6 +36,9 @@ bool skipConcurrentTransactionTests = false;
 /// Skip transactions tests
 bool skipFirestoreTransactionTests = false;
 
+/// Skip list collections tests.
+bool skipFirestoreListCollectionsTests = false;
+
 /// Get document keys.
 List<DocumentReference?> docsKeys(List<DocumentSnapshot> snashots) =>
     snashots.map((e) => e.ref).toList();
@@ -1147,7 +1150,7 @@ void runFirestoreCommonTests({
 
           await subscription.cancel();
         }
-      }, solo: true);
+      });
 
       test('SetOptions', () async {
         var testsRef = getTestsRef();

@@ -61,7 +61,9 @@ void runCopyUtilsTest({
           isEmpty,
         );
       },
-      skip: !firestore.service.supportsListCollections,
+      skip:
+          skipFirestoreListCollectionsTests ||
+          !firestore.service.supportsListCollections,
     );
 
     test(
@@ -90,7 +92,9 @@ void runCopyUtilsTest({
           isEmpty,
         );
       },
-      skip: !firestore.service.supportsListCollections,
+      skip:
+          skipFirestoreListCollectionsTests ||
+          !firestore.service.supportsListCollections,
     );
   });
 }

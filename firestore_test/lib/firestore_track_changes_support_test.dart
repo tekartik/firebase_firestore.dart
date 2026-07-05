@@ -178,6 +178,6 @@ void runFirestoreTrackChangesSupportTests({
       }
       unawaited(sub1.cancel());
       unawaited(sub2.cancel());
-    }, solo: true);
+    });
   });
 }

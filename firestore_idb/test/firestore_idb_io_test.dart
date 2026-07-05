@@ -14,7 +14,7 @@ void main() async {
   final idbFactory = getIdbFactorySembastIo(
     join('.dart_tool', 'tekartik_firebase_firestore_idb', 'test'),
   );
-  var firestoreService = getFirestoreService(idbFactory);
+  var firestoreService = idbFactory.firestoreService;
   var firebase = FirebaseLocal();
   idbTestInit();
   group('io', () {

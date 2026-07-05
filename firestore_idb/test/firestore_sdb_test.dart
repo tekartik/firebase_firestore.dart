@@ -1,26 +1,22 @@
 library;
 
-import 'package:idb_shim/idb_client_memory.dart';
-import 'package:tekartik_firebase_firestore_idb/firestore_idb.dart';
+import 'package:idb_shim/sdb.dart';
+import 'package:tekartik_firebase_firestore_idb/firestore_sdb.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
-void idbTestInit() {
-  skipConcurrentTransactionTests = true;
-}
-
 void main() async {
-  final idbFactory = idbFactoryMemory;
-  var firestoreService = idbFactory.firestoreService;
+  skipConcurrentTransactionTests = true;
+  final sdbFactory = sdbFactoryMemory;
+  var firestoreService = sdbFactory.firestoreService;
   var firebase = FirebaseLocal();
-  idbTestInit();
 
-  group('idb', () {
+  group('sdb', () {
     test('factory', () {
       expect(firestoreService.supportsQuerySelect, isTrue);
       expect(firestoreService.supportsTimestamps, isTrue);
-      expect(firestoreService.supportsTrackChanges, isFalse);
+      expect(firestoreService.supportsTrackChanges, isTrue);
       expect(firestoreService.supportsBlobs, isTrue);
     });
     runFirestoreTests(firebase: firebase, firestoreService: firestoreService);
