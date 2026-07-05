@@ -16,8 +16,8 @@ void firestoreMulticlientTest({
 }) {
   // ignore: unused_local_variable
   var skip =
-      !firestore1.service.supportsTrackChanges ||
-      !firestore2.service.supportsTrackChanges;
+      !firestore1.service.supportsRecordTrackChanges ||
+      !firestore2.service.supportsRecordTrackChanges;
 
   test('multi client get set', () async {
     var doc1 = firestore1.doc('$docTopPath/record/record1');

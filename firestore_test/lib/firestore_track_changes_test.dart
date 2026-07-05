@@ -45,37 +45,41 @@ void runFirestoreTrackChangesTests({
       await completer2.future;
 
       await subscription2.cancel();
-    }, skip: !firestoreService.supportsTrackChanges);
+    }, skip: !firestoreService.supportsRecordTrackChanges);
 
-    test('twoRefToSameDocOnSnapshot', () async {
-      var testsRef = getTestsRef();
-      var docRef1 = testsRef.doc('two_ref_same_doc_onSnapshot');
-      var docRef2 = testsRef.doc('two_ref_same_doc_onSnapshot');
-      await docRef1.delete();
+    test(
+      'twoRefToSameDocOnSnapshot',
+      () async {
+        var testsRef = getTestsRef();
+        var docRef1 = testsRef.doc('two_ref_same_doc_onSnapshot');
+        var docRef2 = testsRef.doc('two_ref_same_doc_onSnapshot');
+        await docRef1.delete();
 
-      await docRef1.onSnapshot().where((doc) => !doc.exists).first;
-      await docRef2.onSnapshot().where((doc) => !doc.exists).first;
-      var completer1 = Completer<void>();
-      var completer2 = Completer<void>();
-      var subscription1 = docRef1.onSnapshot().listen((event) {
-        if (event.exists && event.data['test'] == 2) {
-          completer1.complete();
-        }
-      });
-      var subscription2 = docRef2.onSnapshot().listen((event) {
-        if (event.exists && event.data['test'] == 1) {
-          completer2.complete();
-        }
-      });
-      await docRef1.set({'test': 1});
+        await docRef1.onSnapshot().where((doc) => !doc.exists).first;
+        await docRef2.onSnapshot().where((doc) => !doc.exists).first;
+        var completer1 = Completer<void>();
+        var completer2 = Completer<void>();
+        var subscription1 = docRef1.onSnapshot().listen((event) {
+          if (event.exists && event.data['test'] == 2) {
+            completer1.complete();
+          }
+        });
+        var subscription2 = docRef2.onSnapshot().listen((event) {
+          if (event.exists && event.data['test'] == 1) {
+            completer2.complete();
+          }
+        });
+        await docRef1.set({'test': 1});
 
-      await completer2.future;
-      await subscription2.cancel();
-      await docRef2.set({'test': 2});
-      await completer1.future;
+        await completer2.future;
+        await subscription2.cancel();
+        await docRef2.set({'test': 2});
+        await completer1.future;
 
-      await subscription1.cancel();
-    }, skip: !firestoreService.supportsTrackChanges);
+        await subscription1.cancel();
+      },
+      skip: !firestoreService.supportsRecordTrackChanges,
+    );
 
     test(
       'twoRefToSameCollectionOnSnapshot',

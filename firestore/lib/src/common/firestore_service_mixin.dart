@@ -27,6 +27,9 @@ mixin FirestoreServiceDefaultMixin implements FirestoreService {
   bool get supportsTrackChanges => false;
 
   @override
+  bool get supportsRecordTrackChanges => supportsTrackChanges;
+
+  @override
   bool get supportsAggregateQueries => false;
 
   @override

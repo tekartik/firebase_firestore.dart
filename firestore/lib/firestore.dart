@@ -79,8 +79,11 @@ abstract class FirestoreService implements FirebaseAppProductService {
   /// Returns `true` if the implementation supports [VectorValue].
   bool get supportsVectorValue;
 
-  /// Returns `true` if the implementation supports tracking changes.
+  /// Returns `true` if the implementation supports tracking changes (single record and queries)
   bool get supportsTrackChanges;
+
+  /// Returns `true` if the implementation supports tracking changes on single record
+  bool get supportsRecordTrackChanges;
 
   /// Returns `true` if the implementation supports [Firestore.listCollections].
   bool get supportsListCollections;

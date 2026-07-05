@@ -171,13 +171,13 @@ void runFirestoreTrackChangesSupportTests({
           .onSnapshotSupport(options: pullOptions1)
           .firstWhere((element) => element.dataOrNull?['test'] == 2);
       expect(eventList1.length, greaterThanOrEqualTo(3));
-      if (firestoreService.supportsTrackChanges) {
+      if (firestoreService.supportsRecordTrackChanges) {
         expect(eventList2.length, greaterThanOrEqualTo(3));
       } else {
         expect(eventList2.length, 1);
       }
       unawaited(sub1.cancel());
       unawaited(sub2.cancel());
-    });
+    }, solo: true);
   });
 }

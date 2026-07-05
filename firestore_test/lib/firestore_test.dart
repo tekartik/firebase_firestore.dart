@@ -452,11 +452,12 @@ void runFirestoreCommonTests({
         // devPrint('createTime ${snapshot.createTime}');
         // devPrint('updateTime ${snapshot.updateTime}');
 
-        if (firestoreService.supportsTrackChanges) {
+        if (firestoreService.supportsRecordTrackChanges) {
           // Try using stream
           snapshot = await docRef.onSnapshot().first;
           check();
-
+        }
+        if (firestoreService.supportsTrackChanges) {
           // Try using col stream
           snapshot = (await testsRef.onSnapshot().first).docs
               .where(
@@ -1093,7 +1094,7 @@ void runFirestoreCommonTests({
         var testsRef = getTestsRef();
         var docRef = testsRef.doc('simple_onSnapshot');
         await docRef.set({'test': 1});
-        if (firestoreService.supportsTrackChanges) {
+        if (firestoreService.supportsRecordTrackChanges) {
           expect((await docRef.onSnapshot().first).data, {'test': 1});
         }
       });
