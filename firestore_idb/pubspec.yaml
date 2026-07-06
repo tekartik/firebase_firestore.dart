@@ -17,7 +17,7 @@ dependencies:
       url: https://github.com/tekartik/firebase.dart
       path: firebase_local
     version: '>=0.3.7'
-  idb_shim: '>=2.9.6+1'
+  idb_shim: '>=2.9.6+2'
   uuid:
   tekartik_browser_utils:
     git:
