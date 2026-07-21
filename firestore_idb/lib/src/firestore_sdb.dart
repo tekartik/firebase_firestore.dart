@@ -83,13 +83,15 @@ class FirestoreSdb extends Object
   final docStore = SdbStoreRef<String, SdbModel>('documents');
 
   /// Database is ready future or value.
-  FutureOr<SdbDatabase>? get databaseReady {
+  FutureOr<SdbDatabase> get databaseReady {
     if (_database != null) {
-      return _database;
+      return _database!;
     }
-    return sdbFactory
-        .openDatabase(
-          appLocal.localPath,
+    return () async {
+      var dbPath = join(appLocal.localPath, 'firestore', 'firestore.sdb');
+      try {
+        var db = await sdbFactory.openDatabase(
+          dbPath,
           options: SdbOpenDatabaseOptions(
             version: 1,
             onVersionChange: (event) {
@@ -99,11 +101,14 @@ class FirestoreSdb extends Object
               }
             },
           ),
-        )
-        .then((database) {
-          _database = database;
-          return _database!;
-        });
+        );
+
+        _database = db;
+        return db;
+      } catch (e) {
+        throw Exception('Failed to open database $dbPath: $e');
+      }
+    }();
   }
 
   /// Constructor.
@@ -127,7 +132,7 @@ class FirestoreSdb extends Object
   Future<T> runTransaction<T>(
     FutureOr<T> Function(Transaction transaction) updateFunction,
   ) async {
-    var db = await databaseReady!;
+    var db = await databaseReady;
     return await db.inStoreTransaction(docStore, SdbTransactionMode.readWrite, (
       txn,
     ) async {
@@ -144,7 +149,7 @@ class FirestoreSdb extends Object
     String path,
     Map<String, Object?> data,
   ) async {
-    var db = await databaseReady!;
+    var db = await databaseReady;
     var documentRef = getDocumentRef(url.join(path, _generateId()));
     await db.inStoreTransaction(docStore, SdbTransactionMode.readWrite, (
       txn,
@@ -162,7 +167,7 @@ class FirestoreSdb extends Object
     DocumentData documentData,
     SetOptions? options,
   ) async {
-    var db = await databaseReady!;
+    var db = await databaseReady;
     await db.inStoreTransaction(docStore, SdbTransactionMode.readWrite, (
       txn,
     ) async {
@@ -178,7 +183,7 @@ class FirestoreSdb extends Object
     DocumentReferenceSdb documentRef,
     DocumentData documentData,
   ) async {
-    var db = await databaseReady!;
+    var db = await databaseReady;
     await db.inStoreTransaction(docStore, SdbTransactionMode.readWrite, (
       txn,
     ) async {
@@ -191,7 +196,7 @@ class FirestoreSdb extends Object
 
   /// Delete a document snapshot.
   Future deleteDocument(DocumentReferenceSdb documentReferenceSdb) async {
-    var db = await databaseReady!;
+    var db = await databaseReady;
     await db.inStoreTransaction(docStore, SdbTransactionMode.readWrite, (
       txn,
     ) async {
@@ -234,7 +239,7 @@ class FirestoreSdb extends Object
   Future<DocumentSnapshotSdb> getDocument(
     DocumentReferenceSdb documentRef,
   ) async {
-    var db = await databaseReady!;
+    var db = await databaseReady;
     var value = await docStore.record(documentRef.path).get(db);
     final recordMap = value?.value;
     return DocumentSnapshotSdb(
@@ -563,7 +568,7 @@ class QuerySdb extends FirestoreReferenceBase
 
   @override
   Future<List<DocumentSnapshot>> getCollectionDocuments() async {
-    var db = await firestoreSdb.databaseReady!;
+    var db = await firestoreSdb.databaseReady;
     var records = await firestoreSdb.docStore.findRecords(
       db,
       boundaries: SdbBoundaries.lowerValue(path),
@@ -680,7 +685,7 @@ class WriteBatchSdb extends WriteBatchBase implements WriteBatch {
 
   @override
   Future commit() async {
-    var db = await firestore.databaseReady!;
+    var db = await firestore.databaseReady;
     await db.inStoreTransaction(
       firestore.docStore,
       SdbTransactionMode.readWrite,
