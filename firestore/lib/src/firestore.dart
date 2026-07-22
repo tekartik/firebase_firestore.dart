@@ -1,22 +1,26 @@
 import 'package:tekartik_firebase_firestore/src/common/import_firestore_mixin.dart';
 
 // don't export it yet
-/// Field value type.
+/// Identifies which sentinel behavior a [FieldValue] represents.
 enum FieldValueType {
-  /// Server timestamp.
+  /// The field is replaced by the server's commit timestamp. See
+  /// [FieldValue.serverTimestamp].
   serverTimestamp,
 
-  /// Delete.
+  /// The field is removed from the document. See [FieldValue.delete].
   delete,
 
-  /// Array union.
+  /// Elements are added to an existing array field. See
+  /// [FieldValue.arrayUnion].
   arrayUnion,
 
-  /// Array remove.
+  /// Elements are removed from an existing array field. See
+  /// [FieldValue.arrayRemove].
   arrayRemove,
 }
 
-/// To locale time.
+/// Converts [value] to local time if it is a UTC [DateTime]; returns [value]
+/// unchanged otherwise (including when it is `null`).
 DateTime? toLocaleTime(DateTime? value) {
   if (value == null || !value.isUtc) {
     return value;
@@ -24,7 +28,11 @@ DateTime? toLocaleTime(DateTime? value) {
   return value.toLocal();
 }
 
-/// Parse a date time from a dynamic value
+/// Parses [value] as a [DateTime].
+///
+/// Accepts a [DateTime] (returned as-is), or any value accepted by
+/// [parseTimestamp] (converted through [Timestamp.toDateTime]). Returns
+/// `null` if [value] cannot be interpreted as a date/time.
 DateTime? parseDateTime(dynamic value) {
   if (value is DateTime) {
     return value;
@@ -33,7 +41,12 @@ DateTime? parseDateTime(dynamic value) {
   }
 }
 
-/// Parse a timestamp from a dynamic value
+/// Parses [value] as a [Timestamp].
+///
+/// Accepts a [Timestamp] (returned as-is), a [DateTime] (converted through
+/// [Timestamp.fromDateTime]), or a [String] parsed with [Timestamp.tryParse].
+/// Returns `null` for any other type, or if a [String] value cannot be
+/// parsed.
 Timestamp? parseTimestamp(dynamic value) {
   if (value is Timestamp) {
     return value;
@@ -46,8 +59,13 @@ Timestamp? parseTimestamp(dynamic value) {
   return null;
 }
 
-/// Convert a dynamic value to a document value
-/// Convert a dynamic value to a document value.
+/// Converts [value] to a value suitable to be stored as (or nested within) a
+/// Firestore document field.
+///
+/// Passes through `null`, [num], [bool], [String], [DateTime] and
+/// [FieldValue] unchanged, recurses into [Iterable]s (returning a [List])
+/// and [Map]s. Throws an [ArgumentError] for any other, unsupported value
+/// type.
 dynamic valueToDocumentValue(dynamic value) {
   if (value == null ||
       value is num ||
@@ -71,14 +89,18 @@ dynamic valueToDocumentValue(dynamic value) {
   }
 }
 
-/// Implementation of [DocumentData] using a map.
+/// Implementation of [DocumentData] backed by a plain
+/// `Map<String, Object?>`.
 class DocumentDataMap implements DocumentData {
-  /// Map data.
+  /// The backing map holding this document's field values.
   Map<String, Object?> get map => _map;
   late Map<String, Object?> _map;
 
   // use the given map as the data holder (so will be modified)
-  /// Constructor.
+  /// Creates a new [DocumentDataMap].
+  ///
+  /// When [map] is provided it becomes the backing store (and will be
+  /// mutated by subsequent writes); when omitted, a new empty map is used.
   DocumentDataMap({Map<String, Object?>? map}) {
     _map = map ?? {};
   }
@@ -93,10 +115,13 @@ class DocumentDataMap implements DocumentData {
   @override
   void setNull(String key) => setValue(key, null);
 
-  /// Set value.
+  /// Sets the raw, untyped [value] for the given [key] directly on the
+  /// backing map, without any type coercion.
   void setValue(String key, dynamic value) => map[key] = value;
 
-  /// Value at field path.
+  /// Returns the value found by walking [fieldPath] (dot-separated nested
+  /// keys) from the root of this document's data, or `null` if any
+  /// intermediate segment is missing or not a map.
   Object? valueAtFieldPath(String fieldPath) {
     final parts = fieldPath.split('.');
     Map parent = map;
@@ -114,7 +139,8 @@ class DocumentDataMap implements DocumentData {
     return value;
   }
 
-  /// Get value.
+  /// Returns the raw, untyped value stored for the top-level [key], without
+  /// any type coercion.
   dynamic getValue(String key) => map[key];
 
   @override
@@ -222,26 +248,31 @@ class DocumentDataMap implements DocumentData {
   String toString() => asMap().toString();
 }
 
-/// Field value map value.
+/// Sentinel kinds mirroring [FieldValueType.delete] and
+/// [FieldValueType.serverTimestamp] for map-based encodings.
 enum FieldValueMapValue {
-  /// Delete.
+  /// Mirrors [FieldValueType.delete].
   delete,
 
-  /// Server timestamp.
+  /// Mirrors [FieldValueType.serverTimestamp].
   serverTimestamp,
 }
 
-/// Special name field representing the document id (for sort order)
+/// Special field name representing the document id, usable as the
+/// [Query.orderBy] key (or in a `where` filter) to sort/filter by document
+/// id rather than by a data field.
 const String firestoreNameFieldPath = '__name__';
 
-/// Firestore settings.
+/// Custom settings used to configure a [Firestore] instance through
+/// [Firestore.settings].
 class FirestoreSettings {
   /// Enables the use of `Timestamp`s for timestamp fields in
   /// `DocumentSnapshot`s.
   @Deprecated('No longer needed')
   final bool? timestampsInSnapshots;
 
-  /// Constructor.
+  /// Creates a new [FirestoreSettings], optionally passing
+  /// [timestampsInSnapshots] (deprecated, no longer needed).
   // ignore: deprecated_member_use_from_same_package
   FirestoreSettings({
     @Deprecated('No longer needed') this.timestampsInSnapshots,

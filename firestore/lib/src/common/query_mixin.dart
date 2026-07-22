@@ -1,15 +1,22 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
-/// Every implementation should use this default mixin for missing implementation
+/// [Query] mixin providing [count], [onCount] and [orderById] in terms of
+/// the other [Query] members, for backends with no native, cheaper way to
+/// compute them.
+///
+/// Every implementation without a native aggregate/count backend should mix
+/// this in as a fallback. [count] and [onCount] are expensive: they fetch
+/// (or subscribe to) the full result set just to measure its length.
 mixin FirestoreQueryExecutorMixin implements Query {
-  /// Expensive default implementation.
+  /// Expensive default implementation: fetches the full result set with
+  /// [get] and returns its length.
   @override
   Future<int> count() async {
     return (await get()).docs.length;
   }
 
-  /// Expensive default implementation.
+  /// Expensive default implementation: derives a live count from [onSnapshot].
   @override
   Stream<int> onCount() => onSnapshot().map((snapshot) => snapshot.docs.length);
 
@@ -18,7 +25,11 @@ mixin FirestoreQueryExecutorMixin implements Query {
       orderBy(firestoreNameFieldPath, descending: descending);
 }
 
-/// Every implementation should use this default mixin for missing implementation
+/// [Query] mixin providing an [aggregate] implementation that always throws
+/// [UnimplementedError], for backends that don't support aggregate queries.
+///
+/// Every implementation without native aggregate query support should mix
+/// this in as a fallback default.
 mixin QueryDefaultMixin implements Query {
   @override
   AggregateQuery aggregate(List<AggregateField> fields) {
@@ -26,12 +37,22 @@ mixin QueryDefaultMixin implements Query {
   }
 }
 
-/// Common mixin, no executor for non firestore native implementation
+/// Common [Query] mixin implementing every refinement method (`where`,
+/// `orderBy`, `limit`, `select`, cursor methods) in terms of a mutable
+/// [queryInfo] and [clone], with no query executor of its own.
+///
+/// Used by implementations that build up a [QueryInfo] description of the
+/// query and delegate its actual execution elsewhere (for example by
+/// serializing it to a native/remote query). Compare with
+/// [FirestoreQueryMixin] in `utils/firestore_mixin.dart`, which additionally
+/// executes queries in-memory.
 mixin QueryMixin implements Query {
-  /// The query that produced this snapshot.
+  /// The mutable, cloneable description (filters, ordering, limits, cursors)
+  /// of this query, built up by the refinement methods below.
   late QueryInfo queryInfo;
 
-  /// clone a query
+  /// Returns a copy of this query, including a copy of [queryInfo], so that
+  /// refinement methods can return a new [Query] without mutating this one.
   QueryMixin clone();
 
   @override
@@ -62,7 +83,8 @@ mixin QueryMixin implements Query {
       ),
     );
 
-  /// Add order by
+  /// Appends an order-by clause on field [key] to [queryInfo], sorted
+  /// ascending unless [directionStr] equals [orderByDescending].
   void addOrderBy(String key, String directionStr) {
     var orderBy = OrderByInfo(
       fieldPath: key,
@@ -103,7 +125,14 @@ mixin QueryMixin implements Query {
     );
 }
 
-/// Apply query info to query/collection synchroneously, after/at/before snapshot is not supported.
+/// Rebuilds a [Query] on [firestore] at collection [path] applying the
+/// filters, ordering and cursors described by [queryInfo], synchronously.
+///
+/// [queryInfo] may be `null`, in which case the unfiltered collection query
+/// is returned. Unlike [applyQueryInfo], cursors expressed with
+/// `documentId` (rather than explicit `values`) are not supported: an
+/// [ArgumentError] is thrown in that case, since resolving a document id
+/// cursor requires fetching the referenced document, which is asynchronous.
 Query applyQueryInfoNoDocumentId(
   Firestore firestore,
   String path,
@@ -178,7 +207,14 @@ Query _applyQueryInfoNoLimit(
   return query;
 }
 
-/// Apply query info to query/collection
+/// Rebuilds a [Query] on [firestore] at collection [path] applying the
+/// filters, ordering and cursors described by [queryInfo].
+///
+/// [queryInfo] may be `null`, in which case the unfiltered collection query
+/// is returned. Unlike [applyQueryInfoNoDocumentId], cursors expressed with
+/// a `documentId` are supported: the referenced document is fetched (hence
+/// the asynchronous, `Future`-returning signature) and used as the cursor
+/// snapshot.
 Future<Query> applyQueryInfo(
   Firestore firestore,
   String path,

@@ -1,6 +1,12 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
-/// Firestore service mixin
+/// Base [FirestoreService] mixin defaulting every `supportsXxx` capability
+/// flag to `false`.
+///
+/// Concrete backends mix this in and override only the flags for features
+/// they actually support, so that adding a new capability flag later
+/// defaults to "unsupported" for existing implementations instead of
+/// breaking them.
 mixin FirestoreServiceDefaultMixin implements FirestoreService {
   @override
   bool get supportsListCollections => false;
@@ -41,5 +47,7 @@ mixin FirestoreServiceDefaultMixin implements FirestoreService {
   bool get supportsBlobs => false;
 }
 
-/// Firestore service mixin
+/// Marker mixin for [FirestoreService] implementations that do not need any
+/// shared bookkeeping beyond what [FirestoreServiceDefaultMixin] and the
+/// interface itself provide.
 mixin FirestoreServiceMixin implements FirestoreService {}

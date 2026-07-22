@@ -382,12 +382,19 @@ class LimitInfo {
       '${documentId ?? values} ${inclusive ? '(inclusive)' : ''}';
 }
 
-/// Where info.
+/// Serializable description of a single `where` filter clause, as built by
+/// [Query.where] and consumed by implementations that execute queries
+/// in-memory or serialize them to a remote call.
+///
+/// Exactly one of the comparison fields ([isEqualTo], [isLessThan], etc.) is
+/// expected to be non-null (enforced by an `assert` in the constructor);
+/// see [Query.where] for the meaning of each.
 class WhereInfo {
-  /// Field path.
+  /// The field path this filter applies to.
   String fieldPath;
 
-  /// Constructor.
+  /// Creates a [WhereInfo] for [fieldPath] with exactly one of the named
+  /// comparison parameters set, mirroring [Query.where]'s parameters.
   WhereInfo(
     this.fieldPath, {
     this.isEqualTo,
@@ -486,30 +493,43 @@ class WhereInfo {
 }
 
 // Mutable, must be clone before
-/// Query info.
+/// A mutable, serializable description of a [Query]'s filters, ordering,
+/// limits and cursors.
+///
+/// Built up by implementations that mix in `QueryMixin`/`FirestoreQueryMixin`
+/// as the [Query] refinement methods (`where`, `orderBy`, `limit`, `select`,
+/// cursor methods) are called. Since it is mutable, call [clone] before
+/// handing out a modified copy so the original query is left untouched.
 class QueryInfo {
-  /// Select key paths.
+  /// The field paths to restrict the returned documents to (see
+  /// [Query.select]), or `null` if no selection was applied and full
+  /// documents should be returned.
   List<String>? selectKeyPaths;
 
-  /// Order bys.
+  /// The ordering clauses applied to the query, in priority order (first
+  /// has highest sort priority). Empty if no `orderBy` was applied.
   List<OrderByInfo> orderBys = [];
 
-  /// Start limit.
+  /// The `startAt`/`startAfter` cursor, or `null` if none was applied.
   LimitInfo? startLimit;
 
-  /// End limit.
+  /// The `endAt`/`endBefore` cursor, or `null` if none was applied.
   LimitInfo? endLimit;
 
-  /// Limit.
+  /// The maximum number of documents to return (see [Query.limit]), or
+  /// `null` for no limit.
   int? limit;
 
-  /// Offset.
+  /// The number of matching documents to skip before returning results, or
+  /// `null` for no offset.
   int? offset;
 
-  /// Wheres.
+  /// The `where` filter clauses applied to the query, all of which must
+  /// match (logical AND). Empty if no `where` was applied.
   List<WhereInfo> wheres = [];
 
-  /// Clone.
+  /// Returns a deep copy of this [QueryInfo], so mutating the copy (or the
+  /// original) does not affect the other.
   QueryInfo clone() {
     return QueryInfo()
       ..limit = limit
@@ -521,40 +541,50 @@ class QueryInfo {
       ..orderBys = List.from(orderBys);
   }
 
-  /// Start at.
+  /// Sets [startLimit] to an inclusive cursor at [snapshot] (by document id)
+  /// and/or [values] (relative to [orderBys]). See [Query.startAt].
   void startAt({DocumentSnapshot? snapshot, List? values}) =>
       startLimit = (LimitInfo()
         ..documentId = snapshot?.ref.id
         ..values = values
         ..inclusive = true);
 
-  /// Start after.
+  /// Sets [startLimit] to an exclusive cursor after [snapshot] (by document
+  /// id) and/or [values] (relative to [orderBys]). See [Query.startAfter].
   void startAfter({DocumentSnapshot? snapshot, List? values}) =>
       startLimit = (LimitInfo()
         ..documentId = snapshot?.ref.id
         ..values = values
         ..inclusive = false);
 
-  /// End at.
+  /// Sets [endLimit] to an inclusive cursor at [snapshot] (by document id)
+  /// and/or [values] (relative to [orderBys]). See [Query.endAt].
   void endAt({DocumentSnapshot? snapshot, List? values}) =>
       endLimit = (LimitInfo()
         ..documentId = snapshot?.ref.id
         ..values = values
         ..inclusive = true);
 
-  /// End before.
+  /// Sets [endLimit] to an exclusive cursor before [snapshot] (by document
+  /// id) and/or [values] (relative to [orderBys]). See [Query.endBefore].
   void endBefore({DocumentSnapshot? snapshot, List? values}) =>
       endLimit = (LimitInfo()
         ..documentId = snapshot?.ref.id
         ..values = values
         ..inclusive = false);
 
-  /// Add where.
+  /// Appends [where] to [wheres].
   void addWhere(WhereInfo where) {
     wheres.add(where);
   }
 
-  /// Debug check.
+  /// Validates, in debug builds, that this query's [wheres] and cursor
+  /// [startLimit]/[endLimit] values are consistent with [orderBys].
+  ///
+  /// Throws a [StateError] if an inequality `where` filter's field is not
+  /// among [orderBys], or if a cursor's value count does not match the
+  /// number of [orderBys]. Intended to surface backend-agnostic query
+  /// mistakes early, similar to Firestore's own query validation.
   void debugCheck() {
     if (orderBys.isNotEmpty) {
       var orderByKeys = orderBys.map((e) => e.fieldPath).toSet();
@@ -714,7 +744,9 @@ LimitInfo limitInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   return limitInfo;
 }
 
-/// Query info to json map.
+/// Serializes [queryInfo] to a JSON-compatible map, omitting any field that
+/// wasn't set (limit, offset, wheres, orderBys, selectKeyPaths, startLimit,
+/// endLimit). Use [queryInfoFromJsonMap] to deserialize.
 Map<String, Object?> queryInfoToJsonMap(QueryInfo queryInfo) {
   var map = <String, Object?>{};
   if (queryInfo.limit != null) {
@@ -745,7 +777,9 @@ Map<String, Object?> queryInfoToJsonMap(QueryInfo queryInfo) {
   return map;
 }
 
-/// Query info from json map.
+/// Deserializes a [QueryInfo] from [map], as produced by
+/// [queryInfoToJsonMap]. [firestore] is used to resolve any
+/// [DocumentReference] values nested in filter/cursor values.
 QueryInfo queryInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
   final queryInfo = QueryInfo();
   if (map.containsKey('limit')) {
@@ -840,9 +874,14 @@ bool isDocumentReferencePath(String path) {
 /// Is collection reference path.
 bool isCollectionReferencePath(String path) => !isDocumentReferencePath(path);
 
-/// Write batch base.
+/// Base [WriteBatch] implementation that records [set]/[update]/[delete]
+/// calls as a list of [operations] instead of applying them immediately.
+///
+/// Concrete backends extend this and implement [commit] to replay
+/// [operations] against the actual storage/network layer.
 abstract class WriteBatchBase implements WriteBatch {
-  /// Operations.
+  /// The operations queued so far, in call order, to be applied by
+  /// [commit].
   final List<WriteBatchOperation> operations = [];
 
   @override
@@ -866,36 +905,40 @@ abstract class WriteBatchBase implements WriteBatch {
   }
 }
 
-/// Write batch operation.
+/// Base type for a single operation queued in a [WriteBatchBase], one of
+/// [WriteBatchOperationDelete], [WriteBatchOperationSet] or
+/// [WriteBatchOperationUpdate].
 abstract class WriteBatchOperation {}
 
-/// Write batch operation base.
+/// Common fields shared by every [WriteBatchOperation].
 class WriteBatchOperationBase implements WriteBatchOperation {
-  /// Document reference.
+  /// The document this operation applies to.
   final DocumentReference? docRef;
 
-  /// Constructor.
+  /// Creates a [WriteBatchOperationBase] targeting [docRef].
   WriteBatchOperationBase(this.docRef);
 
   @override
   String toString() => '$runtimeType(${docRef!.path})';
 }
 
-/// Write batch operation delete.
+/// A queued [WriteBatch.delete] operation.
 class WriteBatchOperationDelete extends WriteBatchOperationBase {
-  /// Constructor.
+  /// Creates a [WriteBatchOperationDelete] targeting [docRef].
   WriteBatchOperationDelete(super.docRef);
 }
 
-/// Write batch operation set.
+/// A queued [WriteBatch.set] operation.
 class WriteBatchOperationSet extends WriteBatchOperationBase {
-  /// Document data.
+  /// The data to write.
   final DocumentData documentData;
 
-  /// Set options.
+  /// The set options (e.g. merge behavior), or `null` for the default
+  /// (replace) behavior.
   final SetOptions? options;
 
-  /// Constructor.
+  /// Creates a [WriteBatchOperationSet] writing [documentData] to [docRef]
+  /// with the given [options].
   WriteBatchOperationSet(
     DocumentReference super.docRef,
     this.documentData,
@@ -903,21 +946,24 @@ class WriteBatchOperationSet extends WriteBatchOperationBase {
   );
 }
 
-/// Write batch operation update.
+/// A queued [WriteBatch.update] operation.
 class WriteBatchOperationUpdate extends WriteBatchOperationBase {
-  /// Document data.
+  /// The fields to update.
   final DocumentData documentData;
 
-  /// Constructor.
+  /// Creates a [WriteBatchOperationUpdate] applying [documentData] to
+  /// [docRef].
   WriteBatchOperationUpdate(DocumentReference super.docRef, this.documentData);
 }
 
-/// Write result base.
+/// Base description of the outcome of a single write (set/update/delete),
+/// used to derive [DocumentChange] notifications for listeners; see
+/// `FirestoreSubscriptionMixin.notify` in `utils/firestore_mixin.dart`.
 abstract class WriteResultBase {
-  /// The path of the document
+  /// The path of the document that was written.
   final String path;
 
-  /// Constructor
+  /// Creates a [WriteResultBase] for the document at [path].
   WriteResultBase(this.path);
 
   /// Added if previous does not exist and new exists
@@ -953,9 +999,13 @@ abstract class WriteResultBase {
   }
 }
 
-/// Document change base.
+/// Base [DocumentChange] implementation with mutable [type], used while
+/// incrementally building up a [QuerySnapshot]'s
+/// [QuerySnapshot.documentChanges] list.
 class DocumentChangeBase implements DocumentChange {
-  /// Constructor.
+  /// Creates a [DocumentChangeBase] of the given [type] for [document], with
+  /// the given [newIndex]/[oldIndex] (see [DocumentChange.newIndex] and
+  /// [DocumentChange.oldIndex]).
   DocumentChangeBase(this.type, this.document, this.newIndex, this.oldIndex);
 
   // Change later once building the array
@@ -971,23 +1021,28 @@ class DocumentChangeBase implements DocumentChange {
   @override
   final int oldIndex;
 
-  /// Document base.
+  /// [document], cast to [DocumentSnapshotBase] for access to its
+  /// [DocumentSnapshotBase.meta]/[DocumentSnapshotBase.documentData].
   DocumentSnapshotBase get documentBase => document as DocumentSnapshotBase;
 
   @override
   String toString() => '${document.ref.path} $type $oldIndex $newIndex';
 }
 
-/// Document snapshot base.
+/// Base [DocumentSnapshot] implementation built from a [DocumentData] plus
+/// [RecordMetaData] (revision/create/update times), as used by backends that
+/// model documents as record maps (see `record_data.dart`).
 abstract class DocumentSnapshotBase
     with DocumentSnapshotMixin
     implements DocumentSnapshot {
-  /// Meta data.
+  /// The revision/timestamp metadata for this document, or `null` if the
+  /// document does not exist.
   final RecordMetaData? meta;
   @override
   final DocumentReference ref;
 
-  /// Revision.
+  /// The revision number of the document, or `null` if [meta] is `null` or
+  /// has no revision.
   int? get rev => meta?.rev;
 
   @override
@@ -996,7 +1051,7 @@ abstract class DocumentSnapshotBase
   @override
   Timestamp? get createTime => meta?.createTime;
 
-  /// Document data.
+  /// The document's field data, or `null` if the document does not exist.
   final DocumentData? documentData;
 
   late bool _exists;
@@ -1004,7 +1059,11 @@ abstract class DocumentSnapshotBase
   @override
   bool get exists => _exists;
 
-  /// Constructor.
+  /// Creates a [DocumentSnapshotBase] for [ref] with the given [meta] and
+  /// [documentData].
+  ///
+  /// [exists] can be passed to explicitly control [DocumentSnapshot.exists];
+  /// when omitted, it defaults to whether [documentData] is non-`null`.
   DocumentSnapshotBase(this.ref, this.meta, this.documentData, {bool? exists}) {
     _exists = exists ?? (documentData != null);
   }
@@ -1016,9 +1075,12 @@ abstract class DocumentSnapshotBase
   SnapshotMetadata get metadata => _snapshotMetadataSembast;
 }
 
-/// Document snapshot base extension.
+/// Helper extension for reaching into nested fields of a
+/// [DocumentSnapshotBase].
 extension DocumentSnapshotBaseExtension on DocumentSnapshotBase {
-  /// Value at field path.
+  /// Returns the value found by walking [fieldPath] (dot-separated nested
+  /// keys) in [DocumentSnapshotBase.documentData], or `null` if any
+  /// intermediate segment is missing or not a map.
   Object? valueAtFieldPath(String fieldPath) {
     return (documentData as DocumentDataMap).valueAtFieldPath(fieldPath);
   }
@@ -1039,9 +1101,12 @@ class SnapshotMetadataSembast
 /// Re-use it!
 final _snapshotMetadataSembast = SnapshotMetadataSembast();
 
-/// Query snapshot base.
+/// Base [QuerySnapshot] implementation over an explicit, mutable-by-owner
+/// list of [docs] and [documentChanges].
 class QuerySnapshotBase implements QuerySnapshot {
-  /// Constructor.
+  /// Creates a [QuerySnapshotBase] with the given [docs] as the matching
+  /// documents and [documentChanges] as the changes since the previous
+  /// snapshot.
   QuerySnapshotBase(this.docs, this.documentChanges);
 
   @override
@@ -1050,7 +1115,8 @@ class QuerySnapshotBase implements QuerySnapshot {
   @override
   final List<DocumentChange> documentChanges;
 
-  /// Check if it contains a document.
+  /// Returns `true` if [docs] contains a document with the same
+  /// [DocumentReference.path] as [document].
   bool contains(DocumentSnapshotBase document) {
     for (var doc in docs) {
       if (doc.ref.path == document.ref.path) {

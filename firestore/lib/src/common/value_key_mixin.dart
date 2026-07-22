@@ -1,9 +1,12 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
-/// Backtick char code.
+/// The character code of the backtick (`` ` ``) character, used to escape
+/// field names that contain a literal `.`.
 final backtickChrCode = '`'.codeUnitAt(0);
 
-/// Check if a trick is enclosed by backticks
+/// Returns `true` if [field] is enclosed in a single pair of backticks
+/// (`` `like.this` ``), used to escape a field name containing a literal
+/// `.` so it isn't split into nested-field segments.
 bool isBacktickEnclosed(String field) {
   final length = field.length;
   if (length < 2) {
@@ -13,7 +16,11 @@ bool isBacktickEnclosed(String field) {
       field.codeUnitAt(length - 1) == backtickChrCode;
 }
 
-/// For merged values and filters
+/// Splits a field path [field] into its nested-key segments, honoring
+/// backtick-escaping (see [isBacktickEnclosed]): a backtick-enclosed field
+/// is treated as a single segment even if it contains `.`, otherwise it is
+/// split on `.` via [getRawFieldParts]. Used when building merged update
+/// maps and query filters.
 List<String> getFieldParts(String field) {
   if (isBacktickEnclosed(field)) {
     return [_unescapeKey(field)];
@@ -23,10 +30,13 @@ List<String> getFieldParts(String field) {
 
 String _unescapeKey(String field) => field.substring(1, field.length - 1);
 
-/// Get field segments.
+/// Splits [field] into segments on `.`, without any backtick handling.
 List<String> getRawFieldParts(String field) => field.split('.');
 
-/// Sanitize a map
+/// Expands every dotted-path key of [map] (e.g. `'a.b'`) into nested maps
+/// (`{'a': {'b': ...}}`), merging entries that share a prefix.
+///
+/// Returns the sanitized map, or an empty map if [map] is empty.
 Map<String, Object?>? sanitizeInputEntry(Map map) {
   Map<String, Object?>? sanitized = <String, Object?>{};
   map.forEach((k, v) {
@@ -38,7 +48,8 @@ Map<String, Object?>? sanitizeInputEntry(Map map) {
   return sanitized;
 }
 
-/// Sanitize a map entry
+/// Expands a single dotted-path [key] (e.g. `'a.b'`) associated with
+/// [value] into a nested map (`{'a': {'b': value}}`), per [getFieldParts].
 Map<String, Object?> sanitizeInputEntryKey(String key, dynamic value) {
   var sanitized = <String, Object?>{};
   var parts = getFieldParts(key);
@@ -62,14 +73,17 @@ Map<String, Object?> sanitizeInputEntryKey(String key, dynamic value) {
   return sanitized;
 }
 
-/// Expand first level keys
+/// Expands every dotted-path key of the top-level update map [value] (e.g.
+/// `'a.b'`) into nested maps, as an alias for [sanitizeInputEntry].
 Map<String, Object?>? expandUpdateData(Map value) {
   return sanitizeInputEntry(value);
 }
 
 String _escapeKey(String field) => '`$field`';
 
-/// Escape a key.
+/// Wraps [field] in backticks if it needs escaping (is already
+/// backtick-enclosed, or contains a literal `.`), so it round-trips through
+/// [getFieldParts] as a single segment. Returns [field] unchanged otherwise.
 String escapeKey(String field) {
   if (isBacktickEnclosed(field)) {
     return _escapeKey(field);
@@ -79,9 +93,11 @@ String escapeKey(String field) {
   return field;
 }
 
-/// Clone a value.
+/// Recursively deep-clones [value].
 ///
-/// No test on the value type
+/// [Map]s and [Iterable]s are cloned into new `Map<String, Object?>`/`List`
+/// instances (with elements cloned recursively); every other value is
+/// returned unchanged (no type checking is performed on leaf values).
 dynamic cloneValue(dynamic value) {
   if (value is Map) {
     return value.map<String, Object?>(
@@ -128,7 +144,13 @@ dynamic _fixValue(dynamic value) {
   return value;
 }
 
-/// Merge an existing value with a new value, Map only!
+/// Recursively merges [newValue] onto a clone of [existingValue] (maps
+/// only): nested maps are merged key by key, other values in [newValue]
+/// replace the corresponding entry, and a value equal to [FieldValue.delete]
+/// removes the corresponding key instead.
+///
+/// Returns a clone of [existingValue] (cast to `Map<String, Object?>`) when
+/// [newValue] is `null`; returns `null` when both are `null`.
 Map<String, Object?>? mergeSanitizedMap(Map? existingValue, Map? newValue) {
   //  allowDotsInKeys ??= false;
 

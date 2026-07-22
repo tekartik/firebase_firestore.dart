@@ -1,15 +1,20 @@
-/// Firestore exception
+/// An exception thrown by Firestore operations when the backend rejects a
+/// request or a request fails, for example due to a permission error or a
+/// missing document.
 abstract class FirestoreException implements Exception {
-  /// Firestore exception
+  /// Creates a [FirestoreException] with the given [code] and [message], and
+  /// optional backend-specific [details].
   FirestoreException(this.code, this.message, {this.details});
 
-  /// Error code
+  /// The error code, typically one of the values from [FirestoreErrorCode],
+  /// though some backends may surface other codes.
   final String code;
 
-  /// Error message
+  /// A human-readable description of the error.
   final String message;
 
-  /// Error details
+  /// Additional, backend-specific error details, or `null` if none were
+  /// provided.
   final Object? details;
 
   @override
@@ -43,7 +48,7 @@ Possible values:
 'unauthenticated': The request does not have valid authentication credentials for the operation.
  */
 
-/// Firestore Error code
+/// Well-known values for [FirestoreException.code].
 class FirestoreErrorCode {
   /// Unknown error or an error from a different error domain.
   static const unknown = 'unknown';

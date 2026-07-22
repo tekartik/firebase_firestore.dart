@@ -1,17 +1,21 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
-/// [AggregateQuerySnapshot] represents a response to an [AggregateQuery] request.
-///
+/// Represents the response to an [AggregateQuery] request, as returned by
+/// [AggregateQuery.get].
 abstract class AggregateQuerySnapshot {
-  /// Returns the query that produced this snapshot.
+  /// The [Query] whose result set was aggregated to produce this snapshot.
   Query get query;
 
-  /// Returns the count of the documents that match the query. if asked
+  /// The count of the documents that matched the query, or `null` if
+  /// [AggregateField.count] was not one of the requested aggregations.
   int? get count;
 
-  /// Returns the sum of the values of the documents that match the query.
+  /// The sum of the values of [field] over the documents that matched the
+  /// query, or `null` if [AggregateField.sum] was not requested for [field].
   double? getSum(String field);
 
-  /// Returns the average of the values of the documents that match the query.
+  /// The average of the values of [field] over the documents that matched
+  /// the query, or `null` if [AggregateField.average] was not requested for
+  /// [field].
   double? getAverage(String field);
 }

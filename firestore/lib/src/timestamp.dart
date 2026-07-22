@@ -1,7 +1,9 @@
-/// Explicit naming when Timestamp is already taken
+/// Alias for [Timestamp], useful when importing this package alongside
+/// another library that also exposes a `Timestamp` type.
 typedef FirestoreTimestamp = Timestamp;
 
-/// Explicit naming when Timestamp is already taken
+/// Alias for [Timestamp], useful when importing this package alongside
+/// another library that also exposes a `Timestamp` type.
 typedef TekartikFirestoreTimestamp = Timestamp;
 
 /// A Timestamp represents a point in time independent of any time zone or
@@ -39,7 +41,11 @@ class Timestamp implements Comparable<Timestamp?> {
     }
   }
 
-  /// [parse] or returns null
+  /// Parses [text], an ISO-8601/RFC-3339 formatted date/time string with up
+  /// to nanosecond precision, into a [Timestamp].
+  ///
+  /// Returns `null` if [text] cannot be parsed, instead of throwing. See
+  /// also [parse].
   static Timestamp? tryParse(String text) {
     // 2018-10-20T05:13:45.985343Z
     var dateTime = DateTime.tryParse(text);
@@ -224,7 +230,8 @@ class Timestamp implements Comparable<Timestamp?> {
 
 const _nanosPerSeconds = 1000000000;
 
-/// Timestamp extension
+/// Arithmetic helpers for [Timestamp], since it does not implement
+/// `DateTime`-style operators directly.
 extension TekartikFirestoreTimestampExt on Timestamp {
   Timestamp _addMicroseconds(int microseconds) {
     var nanoseconds = this.nanoseconds;
@@ -240,12 +247,12 @@ extension TekartikFirestoreTimestampExt on Timestamp {
     return Timestamp(seconds, nanoseconds);
   }
 
-  /// Add a duration to a timestamp
+  /// Returns a new [Timestamp] that is [duration] later than this one.
   Timestamp addDuration(Duration duration) {
     return _addMicroseconds(duration.inMicroseconds);
   }
 
-  /// Substract a duration to a timestamp
+  /// Returns a new [Timestamp] that is [duration] earlier than this one.
   Timestamp substractDuration(Duration duration) {
     return _addMicroseconds(-duration.inMicroseconds);
   }

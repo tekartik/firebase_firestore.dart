@@ -1,45 +1,53 @@
-/// AggregateField is used to specify the fields to include in the result set
+/// Describes a single aggregation (count, sum or average) to compute over
+/// the result set of a [Query], as passed to [Query.aggregate].
 abstract class AggregateField {
-  /// Create a CountAggregateField object that can be used to compute
-  /// the count of documents in the result set of a query.
+  /// Creates an [AggregateField] that computes the count of documents in
+  /// the result set of a query.
   factory AggregateField.count() => AggregateFieldCount();
 
-  /// Create an object that can be used to compute the sum of a specified field
-  /// over a range of documents in the result set of a query.
+  /// Creates an [AggregateField] that computes the sum of the numeric values
+  /// of [field] over the documents in the result set of a query.
+  ///
+  /// [field] is the field path whose values are summed; documents where it
+  /// is missing or non-numeric do not contribute to the sum.
   factory AggregateField.sum(String field) => AggregateFieldSum(field);
 
-  /// Create an object that can be used to compute the sum of a specified field
-  /// over a range of documents in the result set of a query.
+  /// Creates an [AggregateField] that computes the average of the numeric
+  /// values of [field] over the documents in the result set of a query.
+  ///
+  /// [field] is the field path whose values are averaged; documents where it
+  /// is missing or non-numeric do not contribute to the average.
   factory AggregateField.average(String field) => AggregateFieldAverage(field);
 }
 
-/// Create a CountAggregateField object that can be used to compute
-/// the count of documents in the result set of a query.
+/// An [AggregateField] that computes the count of documents in the result
+/// set of a query. Create one through [AggregateField.count].
 class AggregateFieldCount implements AggregateField {
   @override
   String toString() => 'COUNT(*)';
 }
 
-/// Create an object that can be used to compute the sum of a specified field
-/// over a range of documents in the result set of a query.
+/// An [AggregateField] that computes the sum of a field's numeric values
+/// over the result set of a query. Create one through [AggregateField.sum].
 class AggregateFieldSum implements AggregateField {
-  /// Create an object that can be used to compute the sum of a specified field
+  /// Creates an [AggregateFieldSum] summing the values of [field].
   AggregateFieldSum(this.field);
 
-  /// The field to sum
+  /// The field path whose values are summed.
   final String field;
 
   @override
   String toString() => 'SUM($field)';
 }
 
-/// Create an object that can be used to compute the average of a specified field
-/// over a range of documents in the result set of a query.
+/// An [AggregateField] that computes the average of a field's numeric values
+/// over the result set of a query. Create one through
+/// [AggregateField.average].
 class AggregateFieldAverage implements AggregateField {
-  /// Create an object that can be used to compute the average of a specified field
+  /// Creates an [AggregateFieldAverage] averaging the values of [field].
   AggregateFieldAverage(this.field);
 
-  /// The field to average
+  /// The field path whose values are averaged.
   final String field;
 
   @override

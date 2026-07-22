@@ -10,9 +10,16 @@ import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart';
 import 'common/firestore_service_mixin.dart';
 import 'common/query_mixin.dart';
 
-/// Firestore logger event.
+/// Describes a single operation (get, set, update, delete, add, query, or
+/// snapshot listener callback) performed through a [FirestoreLogger] or
+/// [FirestoreServiceLogger], as passed to [FirestoreLoggerOptions.log].
+///
+/// Concrete subclasses (internal to this library) add operation-specific
+/// details such as the affected reference, query or written data; use
+/// `toString()` on any event for a human-readable one-line summary.
 abstract class FirestoreLoggerEvent {
-  /// Set on failure
+  /// The error thrown by the operation, or `null` if it completed
+  /// successfully.
   Object? get exception;
 }
 
@@ -312,21 +319,28 @@ void _logDefault(FirestoreLoggerEvent event) {
   print(event);
 }
 
-/// Firestore logger options.
+/// Controls what a [FirestoreLogger]/[FirestoreServiceLogger] logs, and how.
 class FirestoreLoggerOptions {
-  /// True if write should be logged.
+  /// `true` if write operations (`set`, `update`, `delete`, `add`, batch and
+  /// transaction writes) should be logged.
   final bool write;
 
-  /// True if read should be logged.
+  /// `true` if single-document read operations (`get`, `onSnapshot`) should
+  /// be logged.
   final bool read;
 
-  /// True if list should be logged.
+  /// `true` if query/list operations (`Query.get`, `Query.onSnapshot`)
+  /// should be logged.
   final bool list;
 
-  /// Log function.
+  /// The function invoked with each [FirestoreLoggerEvent] to log.
   late final void Function(FirestoreLoggerEvent event) log;
 
-  /// Constructor.
+  /// Creates [FirestoreLoggerOptions] with [write], [read] and [list]
+  /// logging all enabled by default.
+  ///
+  /// [log] receives each event to record; when omitted, events are printed
+  /// with `print`.
   FirestoreLoggerOptions.all({
     void Function(FirestoreLoggerEvent event)? log,
     this.write = true,
@@ -950,23 +964,37 @@ class TransactionLogger with TransactionMixin implements Transaction {
   }
 }
 
-/// Firestore logger.
+/// A [Firestore] decorator that wraps another [Firestore] implementation and
+/// logs every read/write/query operation performed through it.
+///
+/// Wrap an existing instance (`FirestoreLogger(firestore: ..., options:
+/// ...)`) and use the returned [FirestoreLogger] wherever a [Firestore]
+/// is expected; every operation is forwarded to the wrapped instance and
+/// reported through [FirestoreLoggerOptions.log] according to which of
+/// [FirestoreLoggerOptions.read], [FirestoreLoggerOptions.write] and
+/// [FirestoreLoggerOptions.list] are enabled.
 class FirestoreLogger
     with
         FirebaseAppProductMixin<Firestore>,
         FirestoreDefaultMixin,
         FirestoreMixin
     implements Firestore {
-  /// Service logger.
+  /// The [FirestoreServiceLogger] that created (or is associated with) this
+  /// logger.
   late final FirestoreServiceLogger serviceLogger;
 
-  /// Options.
+  /// The logging options controlling what is logged and where.
   final FirestoreLoggerOptions options;
 
-  /// Firestore instance.
+  /// The wrapped [Firestore] instance that operations are forwarded to.
   final Firestore firestore;
 
-  /// Constructor.
+  /// Creates a [FirestoreLogger] wrapping [firestore] and reporting events
+  /// according to [options].
+  ///
+  /// [serviceLogger] can be supplied to share a single
+  /// [FirestoreServiceLogger] across multiple [FirestoreLogger] instances;
+  /// when omitted, a new one is created wrapping `firestore.service`.
   FirestoreLogger({
     FirestoreServiceLogger? serviceLogger,
     required this.firestore,
@@ -1012,17 +1040,24 @@ class FirestoreLogger
   FirebaseApp get app => firestore.app;
 }
 
-/// Firestore service logger.
+/// A [FirestoreService] decorator that wraps another [FirestoreService] and
+/// hands out [FirestoreLogger]-wrapped [Firestore] instances.
+///
+/// Capability flags (`supportsXxx`) are forwarded unchanged to
+/// [firestoreService].
 class FirestoreServiceLogger
     with FirebaseProductServiceMixin<Firestore>, FirestoreServiceDefaultMixin
     implements FirestoreService {
-  /// Options.
+  /// The logging options passed to every [FirestoreLogger] created by this
+  /// service.
   final FirestoreLoggerOptions options;
 
-  /// Firestore service.
+  /// The wrapped [FirestoreService] that capability checks and instance
+  /// creation are forwarded to.
   final FirestoreService firestoreService;
 
-  /// Constructor.
+  /// Creates a [FirestoreServiceLogger] wrapping [firestoreService] and
+  /// logging according to [options].
   FirestoreServiceLogger({
     required this.firestoreService,
     required this.options,

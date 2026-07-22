@@ -8,17 +8,21 @@ import 'package:tekartik_firebase_firestore/src/firestore.dart';
 
 import 'firestore_common.dart';
 
-/// Revision key.
+/// The reserved key used within a record map to store its revision number,
+/// as read/written by [recordMapRev] and [RecordMetaData].
 const revKey = r'$rev';
 
-/// Record map revision.
+/// Returns the revision number stored in [recordMap] under [revKey], or
+/// `null` if not present.
 int? recordMapRev(Map<String, Object?> recordMap) => recordMap[revKey] as int?;
 
-/// Record map update time.
+/// Returns the last-update [Timestamp] stored in [recordMap], falling back
+/// to an arbitrary minimum timestamp if not present.
 Timestamp? recordMapUpdateTime(Map<String, Object?> recordMap) =>
     mapUpdateTime(recordMap);
 
-/// Record map create time.
+/// Returns the creation [Timestamp] stored in [recordMap], falling back to
+/// an arbitrary minimum timestamp if not present.
 Timestamp? recordMapCreateTime(Map<String, Object?> recordMap) =>
     mapCreateTime(recordMap);
 
@@ -63,7 +67,14 @@ Map<String, Object?>? recordMapUpdate(
   return recordMap;
 }
 
-/// Document data from record map.
+/// Builds a [DocumentDataMap] from a backend record [recordMap], resolving
+/// its encoded values (dates, references, blobs, ...) against [firestore].
+///
+/// The reserved [revKey], `updateTimeKey` and `createTimeKey` entries are
+/// skipped (they are metadata, not document fields; use [RecordMetaData]
+/// for those). When [documentData] is passed, values are merged into it
+/// instead of a fresh [DocumentData]. Returns `null` if both [recordMap] and
+/// [documentData] are `null`.
 DocumentDataMap? documentDataFromRecordMap(
   Firestore firestore,
   Map<String, Object?>? recordMap, [
@@ -131,7 +142,8 @@ dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
   );
 }
 
-/// Document data map.
+/// Casts [documentData] to its concrete [DocumentDataMap] implementation,
+/// or returns `null` if [documentData] is `null`.
 DocumentDataMap? documentDataMap(DocumentData? documentData) =>
     documentData as DocumentDataMap?;
 
@@ -189,7 +201,9 @@ extension DocumentDataExt on DocumentData {
   }
 }
 
-/// Document data to record map.
+/// Merges [documentData] onto [recordMap] to produce an updated record map.
+///
+/// Use `DocumentData.merge` together with `toJsonRecordValueMap` instead.
 @Deprecated('Use DocumentData, merge if needed and toJsonRecordValueMap')
 Map<String, Object?>? documentDataToRecordMap(
   DocumentData? documentData, [
@@ -232,19 +246,30 @@ Map<String, Object?>? documentDataToRecordMap(
   return recordMap;
 }
 
-/// To handle arrayUnion and ArrayDelete.
+/// Concrete [FieldValue] implementation backing [FieldValue.arrayUnion] and
+/// [FieldValue.arrayRemove], carrying the [data] elements to add/remove.
 class FieldValueArray extends FieldValue {
   @override
   final List<Object?> data;
 
-  /// Constructor.
+  /// Creates a [FieldValueArray] of the given [type] (must be
+  /// [FieldValueType.arrayUnion] or [FieldValueType.arrayRemove]) carrying
+  /// [data] as the elements to add/remove.
   FieldValueArray(super.type, this.data);
 
   @override
   String toString() => 'FieldValueArray($type, $data)';
 }
 
-/// Field array value merge value.
+/// Applies [fieldValueArray] (an arrayUnion or arrayRemove sentinel) onto
+/// [existing] (the current value stored for the field, expected to be an
+/// [Iterable] or `null`) and returns the resulting list.
+///
+/// For [FieldValueType.arrayUnion], elements of
+/// [FieldValueArray.data] not already present in [existing] are appended;
+/// for [FieldValueType.arrayRemove], every occurrence of each element of
+/// [FieldValueArray.data] is removed. When [existing] is not an [Iterable],
+/// it is treated as an empty list.
 List fieldArrayValueMergeValue(
   FieldValueArray fieldValueArray,
   Object? existing,
@@ -279,7 +304,9 @@ List<Object?> fieldArrayValueToRecordMapNoMerge(
   }
 }
 
-/// Value to record value.
+/// Converts [value] to a record-map-storable value.
+///
+/// Use [valueToJsonRecordValue] instead.
 @Deprecated('Use valueToJsonRecordValue')
 dynamic valueToRecordValue(
   dynamic value, [
@@ -306,8 +333,18 @@ List listValueToJsonRecordListValue(
   return list.map((subValue) => chainConverter!(subValue)).toList();
 }
 
-/// Convert to real value for saving.
-/// Cannot be FieldValue.
+/// Recursively converts [value] (a document field value, possibly a `Map`
+/// or `List` containing nested values) into a JSON/record-map-storable
+/// representation.
+///
+/// [DateTime], [Timestamp], [DocumentReference], [Blob], [GeoPoint] and
+/// [VectorValue] are converted to their typed JSON encoding;
+/// [FieldValue.serverTimestamp] is resolved to the current time;
+/// [FieldValueArray] (arrayUnion/arrayRemove) is resolved without merging
+/// against any existing value. [chainConverter], when provided, replaces the
+/// converter used recursively for nested map/list values (defaults to this
+/// function itself). Throws an [ArgumentError] for unsupported values; must
+/// not be called with a bare [FieldValue.delete].
 dynamic valueToJsonRecordValue(
   dynamic value, [
   dynamic Function(dynamic value)? chainConverter,
@@ -372,18 +409,20 @@ DocumentReference recordValueToDocumentReference(
   Map map,
 ) => jsonValueToDocumentReference(firestore, map);
 
-/// Record meta data.
+/// The revision number and create/update timestamps extracted from a record
+/// map, as used by [DocumentSnapshotBase.meta].
 class RecordMetaData {
-  /// Revision.
+  /// The revision number of the record, or `null` if not present.
   int? rev;
 
-  /// Create time.
+  /// The time the record was created.
   Timestamp? createTime;
 
-  /// Update time.
+  /// The time the record was last updated.
   Timestamp? updateTime;
 
-  /// Constructor.
+  /// Extracts a [RecordMetaData] from the reserved keys ([revKey],
+  /// `createTimeKey`, `updateTimeKey`) of [recordMap].
   RecordMetaData.fromRecordMap(Map<String, Object?> recordMap) {
     rev = recordMapRev(recordMap);
     createTime = recordMapCreateTime(recordMap);

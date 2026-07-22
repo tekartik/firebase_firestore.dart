@@ -1,21 +1,29 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
-/// Query snapshot.
+/// The result of executing a [Query], as returned by [Query.get] or
+/// [Query.onSnapshot].
 abstract class QuerySnapshot {
-  /// Documents.
+  /// The documents currently matching the query, in the order defined by the
+  /// query (or backend-defined order if none was specified). Empty if no
+  /// document matches.
   List<DocumentSnapshot> get docs;
 
-  /// An array of the documents that changed since the last snapshot. If this
-  /// is the first snapshot, all documents will be in the list as Added changes.
+  /// The documents that changed since the previous snapshot delivered by the
+  /// same [Query.onSnapshot] stream. If this is the first snapshot, all
+  /// documents in [docs] are reported here as [DocumentChangeType.added]
+  /// changes.
   List<DocumentChange> get documentChanges;
 }
 
-/// Common helpers.
+/// Helper extension exposing document references and ids for a
+/// [QuerySnapshot].
 extension QuerySnapshotExtension on QuerySnapshot {
-  /// Document reference list.
+  /// The [DocumentReference] of each document in [QuerySnapshot.docs], in
+  /// the same order.
   List<DocumentReference> get refs =>
       docs.map((e) => e.ref).toList(growable: false);
 
-  /// Document reference ids.
+  /// The [DocumentReference.id] of each document in [QuerySnapshot.docs], in
+  /// the same order.
   List<String> get ids => refs.map((e) => e.id).toList(growable: false);
 }

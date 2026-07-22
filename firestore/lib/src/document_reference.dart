@@ -1,46 +1,82 @@
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
-/// Document reference.
+/// A reference to a document location in Firestore.
+///
+/// A [DocumentReference] can be used to read, write, delete and listen to a
+/// document, and does not necessarily require that the document exists. It
+/// is obtained through [Firestore.doc], [CollectionReference.doc] or
+/// [CollectionReference.add], and never performs network or storage access
+/// by itself; use [get] to read the document's current data.
 abstract class DocumentReference {
-  /// The Firestore instance associated with this document reference.
+  /// The [Firestore] instance this document reference belongs to.
   Firestore get firestore;
 
-  /// Document id.
+  /// The last segment of [path]: the document's id within its parent
+  /// collection.
   String get id;
 
-  /// Document path
+  /// The full, slash-separated path to this document, for example
+  /// `'users/123'`.
   String get path;
 
-  /// Parent collection, never null.
+  /// The [CollectionReference] this document belongs to. Never `null`: every
+  /// document has a parent collection.
   CollectionReference get parent;
 
-  /// Get a child collection.
+  /// Gets a [CollectionReference] for the sub-collection at [path], relative
+  /// to this document.
   CollectionReference collection(String path);
 
-  /// Delete a document.
+  /// Deletes the document referred to by this [DocumentReference].
+  ///
+  /// The returned `Future` completes once the delete has been committed.
+  /// Deleting a document that does not exist normally succeeds without
+  /// error.
   Future<void> delete();
 
-  /// Get a document.
+  /// Reads the current content of the document.
+  ///
+  /// The returned `Future` completes with a [DocumentSnapshot] whose
+  /// [DocumentSnapshot.exists] is `false` when the document does not exist.
   Future<DocumentSnapshot> get();
 
-  /// Set the document to the given data.
+  /// Writes [data] to the document referred to by this [DocumentReference].
+  ///
+  /// If the document does not yet exist, it will be created. If [options]
+  /// is passed with [SetOptions.merge] set to `true`, [data] is merged into
+  /// the existing document instead of replacing it. The returned `Future`
+  /// completes once the write has been committed.
   Future<void> set(Map<String, Object?> data, [SetOptions? options]);
 
-  /// Update the document with the given data.
+  /// Updates fields in the document referred to by this [DocumentReference]
+  /// with [data].
+  ///
+  /// The returned `Future` completes once the write has been committed, or
+  /// with an error if the update is applied to a document that does not
+  /// exist.
   Future<void> update(Map<String, Object?> data);
 
   /// Notifies of document updates at this location.
   ///
-  /// An initial event is immediately sent, and further events will be
-  /// sent whenever the document is modified.
+  /// An initial event with the document's current content is sent as soon
+  /// as it is available, and further events are sent whenever the document
+  /// is modified (created, updated or deleted). When [includeMetadataChanges]
+  /// is `true`, additional events are also sent purely for metadata changes
+  /// (see [SnapshotMetadata]). The stream stays open until its subscription
+  /// is cancelled.
   Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false});
 
-  /// If supported list sub collections
+  /// Lists the sub-collections directly under this document, if supported
+  /// by the backend.
+  ///
+  /// Returns an empty list if there are none. Check
+  /// [FirestoreService.supportsListCollections] before calling this method;
+  /// implementations that don't support it throw.
   Future<List<CollectionReference>> listCollections();
 }
 
-/// Common helpers.
+/// Helper extension for working with a list of [DocumentReference]s.
 extension DocumentReferenceListExtension on List<DocumentReference> {
-  /// Document reference ids.
+  /// The [DocumentReference.id] of each element, in the same order.
   List<String> get ids => map((e) => e.id).toList(growable: false);
 }

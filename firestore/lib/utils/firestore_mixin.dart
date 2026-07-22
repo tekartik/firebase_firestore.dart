@@ -40,7 +40,14 @@ export 'package:tekartik_firebase_firestore/src/record_data.dart'
         FieldValueArray,
         fieldArrayValueMergeValue;
 
-/// Query compare snapshot to limit.
+/// Compares [snapshot] against a cursor described by [limitInfo] (a
+/// `startAt`/`startAfter`/`endAt`/`endBefore` value), ordered according to
+/// [queryInfo]'s `orderBy` clauses.
+///
+/// Returns a negative number if [snapshot] sorts before the cursor, zero if
+/// it sorts at the same position, and a positive number if it sorts after.
+/// Used by in-memory query execution (see [FirestoreQueryMixin]) to decide
+/// which documents fall within a cursor-bounded range.
 int queryCompareSnapshotToLimit(
   QueryInfo queryInfo,
   DocumentSnapshot snapshot,
@@ -107,7 +114,12 @@ int queryCompareSnapshotToLimit(
 }
 
 // might evolve to be always true
-/// Firestore timestamps in snapshots.
+/// Returns whether date/time fields read from [firestore] snapshots should
+/// be represented as [Timestamp] (`true`) rather than [DateTime].
+///
+/// Currently always returns `true` regardless of [firestore]; kept as a
+/// function (rather than a constant) in case this becomes configurable
+/// again in the future.
 bool firestoreTimestampsInSnapshots(Firestore firestore) {
   /*
   if (firestore is FirestoreMixin) {
@@ -117,7 +129,9 @@ bool firestoreTimestampsInSnapshots(Firestore firestore) {
   return true;
 }
 
-/// Firestore default mixin.
+/// [Firestore] mixin providing [listCollections] and [collectionGroup]
+/// implementations that always throw [UnimplementedError], for backends
+/// that don't support them.
 mixin FirestoreDefaultMixin implements Firestore {
   @override
   Future<List<CollectionReference>> listCollections() {
@@ -130,9 +144,12 @@ mixin FirestoreDefaultMixin implements Firestore {
   }
 }
 
-/// Firestore mixin.
+/// [Firestore] mixin providing [settings] (storing them in
+/// [firestoreSettings] and rejecting a second call) and a naive [getAll]
+/// implementation (parallel [DocumentReference.get] calls).
 mixin FirestoreMixin implements Firestore {
-  /// Firestore settings.
+  /// The settings passed to [settings], or `null` if [settings] has not been
+  /// called yet.
   FirestoreSettings? firestoreSettings;
 
   @override
@@ -152,22 +169,35 @@ mixin FirestoreMixin implements Firestore {
   }
 }
 
-/// Firestore documents mixin.
+/// Mixin defining the factory methods a [Firestore] implementation needs to
+/// build snapshots from raw storage/backend data.
+///
+/// Implementations that use this mixin can rely on
+/// [documentFromRecordMap] to convert a raw record map into a
+/// [DocumentSnapshot] via [newSnapshot].
 mixin FirestoreDocumentsMixin on Firestore {
-  /// New snapshot.
+  /// Creates a new [DocumentSnapshot] for [ref], with the given [meta]
+  /// (revision/timestamps) and [data] (`null` if the document does not
+  /// exist).
   DocumentSnapshot newSnapshot(
     DocumentReference ref,
     RecordMetaData? meta,
     DocumentData? data,
   );
 
-  /// New query snapshot.
+  /// Creates a new [QuerySnapshot] with the given matching [docs] and
+  /// [changes] since the previous snapshot.
   QuerySnapshot newQuerySnapshot(
     List<DocumentSnapshot> docs,
     List<DocumentChange> changes,
   );
 
-  /// Document from record map.
+  /// Builds a [DocumentSnapshot] for [ref] from a raw backend [recordMap].
+  ///
+  /// [recordMap] is `null` when the document does not exist, in which case
+  /// the returned snapshot has no data and no metadata. Metadata (revision,
+  /// create/update time) is extracted from [recordMap] via
+  /// [RecordMetaData.fromRecordMap].
   DocumentSnapshot documentFromRecordMap(
     DocumentReference ref,
     Map<String, Object?>? recordMap,
@@ -179,48 +209,69 @@ mixin FirestoreDocumentsMixin on Firestore {
   }
 }
 
-/// Collection subscription.
+/// A [FirestoreSubscription] backing the listeners of a collection query
+/// (`Query.onSnapshot`), delivering [DocumentChange] events.
 class CollectionSubscription extends FirestoreSubscription<DocumentChange> {}
 
-/// Document subscription.
+/// A [FirestoreSubscription] backing the listeners of a single document
+/// (`DocumentReference.onSnapshot`), delivering [DocumentSnapshot] events.
 class DocumentSubscription extends FirestoreSubscription<DocumentSnapshot> {}
 
-/// Firestore subscription.
+/// Bookkeeping for a single active `onSnapshot` listener registration on a
+/// given [path], shared by every subscriber to that path so events are
+/// broadcast once and reference-counted via [count].
 abstract class FirestoreSubscription<T> {
-  /// Path.
+  /// The document or collection path this subscription listens to, or
+  /// `null` if not yet assigned.
   String? path;
 
-  /// Count.
+  /// The number of active listeners sharing this subscription.
   int count = 0;
 
-  /// Stream controller.
+  /// The broadcast stream controller events are published on.
   var streamController = StreamController<T>.broadcast();
 }
 
-/// Firestore subscription mixin.
+/// [Firestore] mixin implementing in-memory fan-out of document/query change
+/// notifications, used by backends without native push notifications.
+///
+/// Implementers register interest through [addDocumentSubscription] /
+/// [addCollectionSubscription] (typically from a [DocumentReference] or
+/// [Query] `onSnapshot` implementation) and call [notify] after every write
+/// to broadcast the resulting change to matching subscriptions.
 mixin FirestoreSubscriptionMixin on Firestore {
-  /// Close subscriptions.
+  /// Closes every active subscription and its stream, for example when
+  /// tearing down the [Firestore] instance in tests.
   Future closeSubscriptions() async {
     for (var subscription in subscriptions.values.toList()) {
       await _clearSubscription(subscription);
     }
   }
 
-  /// Subscriptions.
+  /// The active subscriptions, keyed by document/collection path.
   final subscriptions = <String?, FirestoreSubscription>{};
 
-  /// Find subscription.
+  /// Returns the existing subscription registered for [path], or `null` if
+  /// none is active.
   FirestoreSubscription<T?>? findSubscription<T>(String? path) {
     return subscriptions[path] as FirestoreSubscription<T?>?;
   }
 
-  /// Add collection subscription.
+  /// Registers interest in changes to the collection at [path], creating a
+  /// new [CollectionSubscription] on first call and incrementing its
+  /// reference count on subsequent calls.
+  ///
+  /// Pair every call with [removeSubscription] once the listener is done.
   CollectionSubscription addCollectionSubscription(String path) {
     return _addSubscription(path, () => CollectionSubscription())
         as CollectionSubscription;
   }
 
-  /// Add document subscription.
+  /// Registers interest in changes to the document at [path], creating a
+  /// new [DocumentSubscription] on first call and incrementing its
+  /// reference count on subsequent calls.
+  ///
+  /// Pair every call with [removeSubscription] once the listener is done.
   DocumentSubscription addDocumentSubscription(String? path) {
     return _addSubscription(path, () => DocumentSubscription())
         as DocumentSubscription;
@@ -239,7 +290,8 @@ mixin FirestoreSubscriptionMixin on Firestore {
     return subscription as FirestoreSubscription<T>;
   }
 
-  /// Remove subscription.
+  /// Decrements [subscription]'s reference count, closing and removing it
+  /// once the count reaches zero (no listener left).
   Future removeSubscription(FirestoreSubscription subscription) async {
     if (--subscription.count == 0) {
       await _clearSubscription(subscription);
@@ -253,13 +305,17 @@ mixin FirestoreSubscriptionMixin on Firestore {
 
   // DocumentSnapshot snapshotFromReferenceRevAndData(DocumentReference documentReference, int rev, DocumentData documentData, {Timestamp updateTime, Timestamp createTime});
 
-  /// Clone snapshot.
+  /// Returns a defensive copy of [documentSnapshot], safe to hand out to a
+  /// listener independently from the copy retained internally.
   DocumentSnapshot cloneSnapshot(DocumentSnapshot documentSnapshot);
 
-  /// Deleted snapshot.
+  /// Builds a non-existent [DocumentSnapshot] for [documentReference], used
+  /// to notify listeners that the document was deleted.
   DocumentSnapshot deletedSnapshot(DocumentReference documentReference);
 
-  /// Document change.
+  /// Builds a [DocumentChangeBase] of the given [type] for [document], with
+  /// [newIndex]/[oldIndex] set as per [DocumentChange.newIndex]/
+  /// [DocumentChange.oldIndex].
   DocumentChangeBase documentChange(
     DocumentChangeType type,
     DocumentSnapshot document,
@@ -267,7 +323,12 @@ mixin FirestoreSubscriptionMixin on Firestore {
     int oldIndex,
   );
 
-  /// Notify.
+  /// Broadcasts [result] (the outcome of a write) to any document
+  /// subscription on the affected path and any collection subscription on
+  /// its parent path.
+  ///
+  /// Does nothing if [WriteResultBase.shouldNotify] is `false` (write had no
+  /// visible effect, e.g. deleting an already-absent document).
   void notify(WriteResultBase result) {
     if (!result.shouldNotify) {
       return;
@@ -307,7 +368,13 @@ mixin FirestoreSubscriptionMixin on Firestore {
     }
   }
 
-  /// On snapshot.
+  /// Returns a stream of [DocumentSnapshot]s for [documentRef], suitable
+  /// for implementing [DocumentReference.onSnapshot].
+  ///
+  /// An initial event with the document's current content is fetched and
+  /// sent immediately, and further events are sent whenever [notify] is
+  /// called for a write to [documentRef]. Closing the returned stream's
+  /// subscription automatically releases the underlying subscription.
   Stream<DocumentSnapshot> onSnapshot(DocumentReference documentRef) {
     var subscription = addDocumentSubscription(documentRef.path);
     late StreamSubscription querySubscription;
@@ -334,7 +401,9 @@ mixin FirestoreSubscriptionMixin on Firestore {
   }
 }
 
-/// Map where condition.
+/// Returns `true` if [documentData] satisfies the single filter [where],
+/// used by in-memory query execution (see [FirestoreQueryMixin]) to decide
+/// whether a document matches a `where` clause.
 bool mapWhere(DocumentData? documentData, WhereInfo where) {
   // We always use Timestamp even for DateTime
   FirestoreComparable? makeComparableValue(dynamic value) {
@@ -415,7 +484,8 @@ bool mapWhere(DocumentData? documentData, WhereInfo where) {
   return false;
 }
 
-/// Safe get item.
+/// Returns the element of [list] at [index], or `null` if [list] is `null`
+/// or too short to contain that index (does not throw a range error).
 T? safeGetItem<T>(List<T>? list, int index) {
   if (list != null && list.length > index) {
     return list[index];
@@ -471,26 +541,43 @@ int _rawCompareType(Object object1, Object object2) {
   return typeOrderIndex1.compareTo(typeOrderIndex2);
 }
 
-/// Firestore comparable.
+/// Wraps a document field value for ordering/comparison purposes, following
+/// Firestore's cross-type value ordering (booleans, then numbers, then
+/// timestamps, then strings, then blobs, then references, then geo points,
+/// then arrays, then maps).
+///
+/// Values that don't implement [Comparable] (currently only [bool]) are
+/// stored in [nonComparable] instead and compared for equality only. Build
+/// one through the private `_getComparable` helper used throughout this
+/// library rather than directly.
 class FirestoreComparable {
-  /// Comparable.
+  /// The value wrapped as a [Comparable], or `null` if the wrapped value
+  /// does not implement [Comparable] (see [nonComparable]).
   final Comparable? comparable;
 
-  /// Non-comparable.
+  /// The wrapped value when it does not implement [Comparable] (currently
+  /// only [bool] values), or `null` when [comparable] is set instead.
   final Object? nonComparable;
 
   int get _boolComparable =>
       (nonComparable as bool) ? 1 : 0; // if nonComparable is bool only
-  /// Any comparable.
+  /// The wrapped value regardless of whether it is [comparable] or
+  /// [nonComparable].
   Object? get anyComparable => comparable ?? nonComparable;
 
-  /// Constructor.
+  /// Creates a [FirestoreComparable] wrapping either [comparable] or, if
+  /// the value doesn't implement [Comparable], [nonComparable].
   FirestoreComparable(this.comparable, [this.nonComparable]);
 
-  /// True if comparable.
+  /// `true` if this value implements [Comparable] (i.e. [comparable] is
+  /// non-`null`) and thus supports ordering (not just equality) comparisons.
   bool get isComparable => comparable != null;
 
-  /// Compare to.
+  /// Compares this value to [other] following Firestore's cross-type value
+  /// ordering. Returns a negative number, zero or a positive number as per
+  /// [Comparable.compareTo]; a `null` [other] sorts after this value.
+  /// Returns `-9999` (a deliberately recognizable sentinel) if comparison
+  /// fails unexpectedly, so it can be easily spotted while debugging.
   int compareTo(FirestoreComparable? other) {
     try {
       if (other == null) {
@@ -521,7 +608,8 @@ class FirestoreComparable {
     }
   }
 
-  /// Compare.
+  /// Compares [a] to [b] via [compareTo]; a `null` [a] sorts before [b]
+  /// (returns `-1`), regardless of whether [b] is `null`.
   static int compare(FirestoreComparable? a, FirestoreComparable? b) =>
       a?.compareTo(b) ?? -1;
 
@@ -550,11 +638,13 @@ FirestoreComparable? _getComparable(dynamic value) {
   return FirestoreComparable(null, value);
 }
 
-/// Comparable list.
+/// A read-only [List] view that also implements [Comparable], comparing
+/// element by element (via [FirestoreComparable]) and, if all shared
+/// elements are equal, by length. Used to order document array fields.
 class ComparableList<E> with ListMixin<E> implements Comparable<List<E>?> {
   final List<E> _list;
 
-  /// Constructor.
+  /// Creates a [ComparableList] wrapping [_list].
   ComparableList(this._list);
 
   @override
@@ -588,13 +678,15 @@ class ComparableList<E> with ListMixin<E> implements Comparable<List<E>?> {
   }
 }
 
-/// Comparable map.
+/// A read-only [Map] view that also implements [Comparable], comparing by
+/// sorted keys and then values (via [FirestoreComparable]), and finally by
+/// size. Used to order document map fields.
 class ComparableMap<K, V>
     with MapMixin<K, V>
     implements Comparable<Map<K, V>?> {
   final Map<K, V> _map;
 
-  /// Constructor.
+  /// Creates a [ComparableMap] wrapping [_map].
   ComparableMap(this._map);
 
   @override
@@ -671,7 +763,12 @@ int _compareHandleNull(
   }
 }
 
-/// Snapshot map query info.
+/// Returns `true` if [snapshot] matches every aspect of [queryInfo]: all
+/// `where` filters (via [mapWhere]), non-null `orderBy` fields, and any
+/// `startAt`/`startAfter`/`endAt`/`endBefore` cursor bound.
+///
+/// Used by in-memory query execution (see [FirestoreQueryMixin]) to filter
+/// the full set of documents down to those actually matching the query.
 bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
   var data = snapshot.documentData as DocumentDataMap?;
 
@@ -735,35 +832,47 @@ bool snapshotMapQueryInfo(DocumentSnapshotBase snapshot, QueryInfo queryInfo) {
   return true;
 }
 
-/// Firestore reference base.
+/// Convenience base class for a [FirestorePathReference] implementation,
+/// initializing its `firestore`/`path` pair at construction time.
 abstract class FirestoreReferenceBase
     with PathReferenceImplMixin, PathReferenceMixin {
-  /// Constructor.
+  /// Creates a [FirestoreReferenceBase] bound to [firestore] at [path].
   FirestoreReferenceBase(Firestore firestore, String path) {
     init(firestore, path);
   }
 }
 
-/// Firestore query mixin.
+/// [Query] mixin that executes queries entirely in memory: it filters,
+/// sorts, paginates and projects the documents returned by
+/// [getCollectionDocuments] according to [queryInfo], instead of delegating
+/// to a native/remote query engine.
+///
+/// Used by backends (such as in-memory or local-database-backed mocks) that
+/// have no query engine of their own. The [firestore] instance must also mix
+/// in [FirestoreDocumentsMixin] and [FirestoreSubscriptionMixin].
 mixin FirestoreQueryMixin implements Query {
   @override
   Firestore get firestore;
 
-  /// Path.
+  /// The collection path this query runs against.
   String get path;
 
-  /// Documents mixin.
+  /// [firestore] cast to [FirestoreDocumentsMixin], used to build result
+  /// snapshots.
   FirestoreDocumentsMixin get documentsMixin =>
       firestore as FirestoreDocumentsMixin;
 
-  /// Subscription mixin.
+  /// [firestore] cast to [FirestoreSubscriptionMixin], used to implement
+  /// [onSnapshot].
   FirestoreSubscriptionMixin get subscriptionMixin =>
       firestore as FirestoreSubscriptionMixin;
 
-  /// Query info.
+  /// The filters, ordering, limits and cursors to apply, or `null` for an
+  /// unfiltered query over the whole collection.
   QueryInfo? get queryInfo;
 
-  /// Get collection documents.
+  /// Returns every document currently in the collection at [path], before
+  /// any [queryInfo] filtering/sorting/pagination is applied.
   Future<List<DocumentSnapshot>> getCollectionDocuments();
 
   /*
@@ -909,7 +1018,8 @@ mixin FirestoreQueryMixin implements Query {
       descending == true ? orderByDescending : orderByAscending,
     );
 
-  /// Clone.
+  /// Returns a copy of this query, including a copy of [queryInfo], so that
+  /// refinement methods can return a new [Query] without mutating this one.
   FirestoreQueryMixin clone();
 
   @override
@@ -940,7 +1050,8 @@ mixin FirestoreQueryMixin implements Query {
       ),
     );
 
-  /// Add order by.
+  /// Appends an order-by clause on field [key] to [queryInfo], sorted
+  /// ascending unless [directionStr] equals [orderByDescending].
   void addOrderBy(String key, String directionStr) {
     var orderBy = OrderByInfo(
       fieldPath: key,
@@ -1020,23 +1131,28 @@ mixin FirestoreQueryMixin implements Query {
   }
 }
 
-/// Reference attributes.
+/// Path-derived attributes shared by document and collection references,
+/// independent of any particular [PathReference]/[FirestorePathReference]
+/// interface.
 abstract class ReferenceAttributes {
-  /// Parent path.
+  /// The path of the parent location, or `null` if there is no parent (a
+  /// single, root-level path segment).
   String? get parentPath;
 
-  /// Id.
+  /// The last segment of the path.
   String get id;
 
-  /// Get child path.
+  /// Joins the path with [path] into a single child path.
   String getChildPath(String path);
 }
 
-/// Attributes mixin.
+/// [ReferenceAttributes] mixin deriving [parentPath], [id] and
+/// [getChildPath] from [path] alone, using `/`-based path semantics (via
+/// `package:path`'s `url` style).
 abstract mixin class AttributesMixin implements ReferenceAttributes {
   // FirestoreReferenceBase get baseRef;
 
-  /// Path.
+  /// The full, slash-separated path this instance represents.
   String get path;
 
   @override

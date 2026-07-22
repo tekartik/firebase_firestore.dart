@@ -3,28 +3,32 @@ import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart';
 
-/// Path reference
+/// A location identified by a slash-separated [path], shared by document and
+/// collection references.
 abstract class PathReference {
-  /// Path
+  /// The full, slash-separated path to this location.
   String get path;
 
-  /// Parent path.
+  /// The path of the parent location, or `null` if [path] has no parent
+  /// (a single, root-level segment).
   String? get parentPath;
 
-  /// Id
+  /// The last segment of [path].
   String get id;
 
-  /// Child path
+  /// Joins [path] and [child] into a single path.
   String getChildPath(String child);
 }
 
-/// Firestore path reference
+/// A [PathReference] bound to a specific [Firestore] instance.
 abstract class FirestorePathReference extends PathReference {
-  /// Firestore
+  /// The [Firestore] instance this reference belongs to.
   Firestore get firestore;
 }
 
-/// Only for implementation that needs it
+/// Implementation helper mixin storing the [firestore]/[path] pair backing a
+/// [FirestorePathReference], for implementations that need mutable,
+/// late-initialized storage rather than constructor-injected fields.
 mixin PathReferenceImplMixin implements FirestorePathReference {
   late Firestore _firestore;
   late String _path;
@@ -35,14 +39,17 @@ mixin PathReferenceImplMixin implements FirestorePathReference {
   @override
   String get path => _path;
 
-  /// Init
+  /// Initializes this reference with the given [firestore] instance and
+  /// [path]. Must be called before [firestore] or [path] are read.
   void init(Firestore firestore, String path) {
     _firestore = firestore;
     _path = path;
   }
 }
 
-/// Firestore path reference
+/// [PathReference] mixin deriving [parentPath], [id] and [getChildPath] from
+/// [path] alone, using `/`-based path semantics (via `package:path`'s `url`
+/// style).
 mixin PathReferenceMixin implements PathReference {
   /// Parent path.
   @override
@@ -59,12 +66,18 @@ mixin PathReferenceMixin implements PathReference {
   String toString() => 'path: $path';
 }
 
-/// Get parent path
+/// Returns the parent path of [path] (the path with its last segment
+/// removed).
+///
+/// Throws if [path] has no parent (a single, root-level segment); use
+/// [getParentPathOrNull] for a null-safe alternative.
 String getParentPath(String path) {
   return getParentPathOrNull(path)!;
 }
 
-/// Get parent path or null
+/// Returns the parent path of [path] (the path with its last segment
+/// removed), or `null` if [path] is a single, root-level segment with no
+/// parent.
 String? getParentPathOrNull(String path) {
   var dirname = url.dirname(path);
   if (dirname == '.' || dirname == '/') {
@@ -73,10 +86,12 @@ String? getParentPathOrNull(String path) {
   return dirname;
 }
 
-/// Get path id
+/// Returns the last segment (id) of [path].
 String getPathId(String path) => url.basename(path);
 
-/// Collection reference mixin
+/// [CollectionReference] mixin providing [parent], [doc], equality and
+/// [hashCode] purely from [path] and [firestore], for backends that don't
+/// need any other shared state.
 mixin CollectionReferenceMixin
     implements CollectionReference, PathReferenceMixin, FirestorePathReference {
   @override
@@ -109,7 +124,9 @@ mixin CollectionReferenceMixin
   }
 }
 
-/// Document reference mixin
+/// [DocumentReference] mixin providing a [listCollections] implementation
+/// that always throws [UnimplementedError], for backends that don't support
+/// listing sub-collections.
 mixin DocumentReferenceDefaultMixin implements DocumentReference {
   @override
   Future<List<CollectionReference>> listCollections() {
@@ -117,7 +134,10 @@ mixin DocumentReferenceDefaultMixin implements DocumentReference {
   }
 }
 
-/// Document reference mixin
+/// [DocumentReference] mixin providing [parent], [collection], equality and
+/// [hashCode] purely from [FirestorePathReference.path] and
+/// [FirestorePathReference.firestore], for backends that don't need any
+/// other shared state.
 mixin DocumentReferenceMixin
     implements DocumentReference, FirestorePathReference {
   @override
@@ -150,7 +170,9 @@ mixin DocumentReferenceMixin
   }
 }
 
-/// Remove `projects/<project>/databases/(default)/documents` if any
+/// Splits [path] into its `/`-separated segments, stripping a leading
+/// `projects/<project>/databases/(default)/documents` prefix if present
+/// (as returned by some backend's fully-qualified resource names).
 List<String> localPathReferenceParts(String path) {
   var parts = url.split(sanitizeReferencePath(path));
   if (parts.length > 6 &&
@@ -162,7 +184,10 @@ List<String> localPathReferenceParts(String path) {
   return parts;
 }
 
-/// Remove `projects/<project>/databases/(default)/documents` if any
+/// Returns [path] with a leading
+/// `projects/<project>/databases/(default)/documents` prefix stripped, if
+/// present (as returned by some backend's fully-qualified resource names).
+/// Otherwise returns [path] unchanged.
 String localPathReferencePath(String path) {
   var parts = url.split(sanitizeReferencePath(path));
   if (parts.length > 6 &&
@@ -175,7 +200,11 @@ String localPathReferencePath(String path) {
   return path;
 }
 
-/// Throw if not valid - debug only
+/// Asserts, in debug mode only (see `isDebug`), that [path] is a valid
+/// collection path (an odd number of segments).
+///
+/// A no-op in release mode. Throws an [AssertionError] via `assert` if
+/// [path] does not have an odd number of segments.
 void checkCollectionReferencePath(String path) {
   if (isDebug) {
     var parts = localPathReferenceParts(path);
@@ -186,7 +215,11 @@ void checkCollectionReferencePath(String path) {
   }
 }
 
-/// Throw if not valid - debug only
+/// Asserts, in debug mode only (see `isDebug`), that [path] is a valid
+/// document path (an even number of segments).
+///
+/// A no-op in release mode. Throws an [AssertionError] via `assert` if
+/// [path] does not have an even number of segments.
 void checkDocumentReferencePath(String path) {
   if (isDebug) {
     var parts = localPathReferenceParts(path);
