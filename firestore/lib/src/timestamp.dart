@@ -173,7 +173,6 @@ class Timestamp implements Comparable<Timestamp?> {
 
   static String _formatMillis(int milliseconds) => _threeDigits(milliseconds);
 
-  ///
   /// Returns an ISO-8601 full-precision extended format representation.
   /// The format is `yyyy-MM-ddTHH:mm:ss.mmmuuunnnZ`
   /// nanoseconds and microseconds are omitted if null
@@ -262,7 +261,6 @@ extension TekartikFirestoreTimestampExt on Timestamp {
   ///
   /// The returned [Duration] will be negative if [other] occurs after this
   /// [DateTime].
-  ///
   ///
   /// The difference is measured in seconds and fractions of seconds.
   Duration difference(Timestamp other) {

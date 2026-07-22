@@ -17,6 +17,7 @@ class FirestoreServiceSdb
     return getInstance(app, () {
       assert(app is AppLocal, 'invalid firebase app type');
       final appLocal = app as AppLocal;
+
       return FirestoreSdb(appLocal, this);
     });
   }
@@ -155,6 +156,7 @@ class FirestoreSdb extends Object
       txn,
     ) async {
       var localTransaction = LocalTransactionSdb(this, txn);
+
       await txnSet(localTransaction, documentRef, DocumentData(data), null);
       localTransaction.notify();
     });
@@ -172,6 +174,7 @@ class FirestoreSdb extends Object
       txn,
     ) async {
       var localTransaction = LocalTransactionSdb(this, txn);
+
       await txnSet(localTransaction, documentRef, documentData, options);
       localTransaction.notify();
     });
@@ -188,6 +191,7 @@ class FirestoreSdb extends Object
       txn,
     ) async {
       var localTransaction = LocalTransactionSdb(this, txn);
+
       await txnUpdate(localTransaction, documentRef, documentData);
       localTransaction.notify();
     });
@@ -201,6 +205,7 @@ class FirestoreSdb extends Object
       txn,
     ) async {
       var localTransaction = LocalTransactionSdb(this, txn);
+
       await txnDelete(localTransaction, documentReferenceSdb);
       localTransaction.notify();
     });
@@ -231,6 +236,7 @@ class FirestoreSdb extends Object
     return DocumentSnapshotSdb(
       documentReferenceSdb,
       recordMap == null ? null : RecordMetaData.fromRecordMap(recordMap),
+
       documentDataFromRecordMap(this, recordMap),
     );
   }
@@ -245,6 +251,7 @@ class FirestoreSdb extends Object
     return DocumentSnapshotSdb(
       documentRef,
       recordMap == null ? null : RecordMetaData.fromRecordMap(recordMap),
+
       documentDataFromRecordMap(this, recordMap),
     );
   }
@@ -432,6 +439,7 @@ class TransactionSdb extends WriteBatchSdb implements Transaction {
     localTransaction.firestoreSdb.txnSet(
       localTransaction,
       documentRef as DocumentReferenceSdb,
+
       DocumentData(data),
       options,
     );
@@ -442,6 +450,7 @@ class TransactionSdb extends WriteBatchSdb implements Transaction {
     localTransaction.firestoreSdb.txnUpdate(
       localTransaction,
       documentRef as DocumentReferenceSdb,
+
       DocumentData(data),
     );
   }
@@ -691,6 +700,7 @@ class WriteBatchSdb extends WriteBatchBase implements WriteBatch {
       SdbTransactionMode.readWrite,
       (txn) async {
         var localTransaction = LocalTransactionSdb(firestore, txn);
+
         await txnCommit(localTransaction);
         localTransaction.notify();
       },

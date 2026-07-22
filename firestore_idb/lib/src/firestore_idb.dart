@@ -12,6 +12,7 @@ import 'import_firestore.dart';
 
 const String parentIndexName = 'parentIndex';
 
+/// FirestoreServiceIdb representation.
 class FirestoreServiceIdb
     with FirebaseProductServiceMixin<Firestore>, FirestoreServiceDefaultMixin
     implements FirestoreService {
@@ -20,6 +21,7 @@ class FirestoreServiceIdb
     return getInstance(app, () {
       assert(app is AppLocal, 'invalid firebase app type');
       final appLocal = app as AppLocal;
+
       return FirestoreIdb(appLocal, this);
     });
   }
@@ -59,6 +61,7 @@ class FirestoreServiceIdb
 FirestoreService getFirestoreService(idb.IdbFactory idbFactory) =>
     FirestoreServiceIdb(idbFactory);
 
+/// FirestoreIdb representation.
 class FirestoreIdb extends Object
     with
         FirebaseAppProductMixin<Firestore>,
@@ -143,6 +146,7 @@ class FirestoreIdb extends Object
     SetOptions? options,
   ) async {
     var localTransaction = await getReadWriteTransaction();
+
     await txnSet(localTransaction, documentRef, documentData, options);
     await localTransaction.completed;
     return documentRef;
@@ -153,6 +157,7 @@ class FirestoreIdb extends Object
     DocumentData documentData,
   ) async {
     var localTransaction = await getReadWriteTransaction();
+
     await txnUpdate(localTransaction, documentRef, documentData);
     await localTransaction.completed;
     return documentRef;
@@ -169,6 +174,7 @@ class FirestoreIdb extends Object
 
   Future deleteDocument(DocumentReferenceIdb documentReferenceIdb) async {
     var localTransaction = await getReadWriteTransaction();
+
     await txnDelete(localTransaction, documentReferenceIdb);
     await localTransaction.completed;
   }
@@ -203,6 +209,7 @@ class FirestoreIdb extends Object
         return DocumentSnapshotIdb(
           documentReferenceIdb,
           recordMap == null ? null : RecordMetaData.fromRecordMap(recordMap),
+
           documentDataFromRecordMap(this, recordMap),
         );
       },
@@ -213,6 +220,7 @@ class FirestoreIdb extends Object
     DocumentReferenceIdb documentRef,
   ) async {
     var localTransaction = await getReadWriteTransaction();
+
     return txnGet(localTransaction, documentRef);
   }
 
@@ -224,6 +232,7 @@ class FirestoreIdb extends Object
   ) {
     var result = WriteResultIdb(documentRef.path);
     var txn = localTransaction.transaction;
+
     return txnGet(localTransaction, documentRef).then((snapshot) {
       result.previousSnapshot = snapshot;
 
@@ -273,6 +282,7 @@ class FirestoreIdb extends Object
     DocumentData documentData,
   ) {
     var result = WriteResultIdb(documentRef.path);
+
     return txnGet(localTransaction, documentRef).then((
       DocumentSnapshotIdb snapshotIdb,
     ) {
@@ -333,6 +343,7 @@ class FirestoreIdb extends Object
   FirebaseApp get app => appLocal;
 }
 
+/// LocalTransaction representation.
 class LocalTransaction {
   final FirestoreIdb firestoreIdb;
   final idb.Transaction transaction;
@@ -350,6 +361,7 @@ class LocalTransaction {
   }
 }
 
+/// TransactionIdb representation.
 class TransactionIdb extends WriteBatchIdb implements Transaction {
   final LocalTransaction localTransaction;
 
@@ -379,6 +391,7 @@ class TransactionIdb extends WriteBatchIdb implements Transaction {
     localTransaction.firestoreIdb.txnSet(
       localTransaction,
       documentRef as DocumentReferenceIdb,
+
       DocumentData(data),
       options,
     );
@@ -389,6 +402,7 @@ class TransactionIdb extends WriteBatchIdb implements Transaction {
     localTransaction.firestoreIdb.txnUpdate(
       localTransaction,
       documentRef as DocumentReferenceIdb,
+
       DocumentData(data),
     );
   }
@@ -400,9 +414,11 @@ dynamic valueToUpdateValue(dynamic value) {
     throw UnimplementedError('TODO');
     // return sembast.FieldValue.delete;
   }
+
   return valueToRecordValue(value, valueToUpdateValue);
 }
 
+/// DocumentSnapshotIdb representation.
 class DocumentSnapshotIdb extends DocumentSnapshotBase {
   DocumentSnapshotIdb(
     super.ref,
@@ -420,6 +436,7 @@ class DocumentSnapshotIdb extends DocumentSnapshotBase {
       );
 }
 
+/// DocumentReferenceIdb representation.
 class DocumentReferenceIdb
     with
         DocumentReferenceDefaultMixin,
@@ -481,14 +498,17 @@ class DocumentReferenceIdb
   }
 }
 
+/// QuerySnapshotIdb representation.
 class QuerySnapshotIdb extends QuerySnapshotBase {
   QuerySnapshotIdb(super.docs, super.documentChanges);
 }
 
+/// DocumentChangeIdb representation.
 class DocumentChangeIdb extends DocumentChangeBase {
   DocumentChangeIdb(super.type, super.document, super.newIndex, super.oldIndex);
 }
 
+/// QueryIdb representation.
 class QueryIdb extends FirestoreReferenceBase
     with
         QueryDefaultMixin,
@@ -539,6 +559,7 @@ class QueryIdb extends FirestoreReferenceBase
   }
 }
 
+/// CollectionReferenceIdb representation.
 class CollectionReferenceIdb extends QueryIdb implements CollectionReference {
   CollectionReferenceIdb(FirestoreIdb super.firestoreIdb, super.path) {
     queryInfo = QueryInfo();
@@ -579,10 +600,12 @@ class CollectionReferenceIdb extends QueryIdb implements CollectionReference {
   }
 }
 
+/// WriteResultIdb representation.
 class WriteResultIdb extends WriteResultBase {
   WriteResultIdb(super.path);
 }
 
+/// WriteBatchIdb representation.
 class WriteBatchIdb extends WriteBatchBase implements WriteBatch {
   final FirestoreIdb firestore;
 
@@ -627,6 +650,7 @@ class WriteBatchIdb extends WriteBatchBase implements WriteBatch {
     var localTransaction = await firestore.getReadWriteTransaction();
     var results = await txnCommit(localTransaction);
     await localTransaction.completed;
+
     notify(results);
   }
 
