@@ -209,6 +209,10 @@ abstract class Firestore implements FirebaseAppProduct<Firestore> {
   /// Throws if no Firestore product was registered for the default app.
   static Firestore get instance =>
       (FirebaseApp.instance as FirebaseAppMixin).getProduct<Firestore>()!;
+
+  /// Some service might have different behavior depending on the login used
+  /// in rest email/login password does not support transaction
+  bool get supportsTransaction;
 }
 
 /// A typed, mutable view over Firestore document data (a `Map<String, Object?>`

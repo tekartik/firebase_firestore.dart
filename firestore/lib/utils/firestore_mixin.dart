@@ -142,6 +142,9 @@ mixin FirestoreDefaultMixin implements Firestore {
   Query collectionGroup(String collectionId) {
     throw UnimplementedError('collectionGroup not implemented');
   }
+
+  @override
+  bool get supportsTransaction => true;
 }
 
 /// [Firestore] mixin providing [settings] (storing them in
