@@ -1435,6 +1435,97 @@ void runFirestoreCommonTests({
           }
         });
       }, skip: skipFirestoreTransactionTests);
+
+      group('runTransactionSupport', () {
+        test('get_set_update_delete', () async {
+          var testsRef = getTestsRef();
+          var collRef = testsRef
+              .doc('transaction_support_test')
+              .collection('get_set_update_delete');
+          var ref1 = collRef.doc('item1');
+          var ref2 = collRef.doc('item2');
+
+          await ref1.set({'value': 1});
+          await ref2.set({'value': 100});
+
+          var result = await firestore.runTransactionSupport((txn) async {
+            var snapshot = await txn.get(ref1);
+            var val = (snapshot.data['value'] as int) + 1;
+            txn.set(ref1, {'value': val});
+            txn.update(ref2, {'value': 200});
+            return val;
+          });
+
+          expect(result, 2);
+          expect((await ref1.get()).data, {'value': 2});
+          expect((await ref2.get()).data, {'value': 200});
+
+          await firestore.runTransactionSupport((txn) async {
+            txn.delete(ref2);
+          });
+          expect((await ref2.get()).exists, isFalse);
+        });
+
+        test('throw in runTransactionSupport', () async {
+          var testsRef = getTestsRef();
+          var collRef = testsRef
+              .doc('transaction_support_test')
+              .collection('throw');
+          var ref = collRef.doc('item');
+          await ref.set({'value': 1});
+
+          var threw = false;
+          try {
+            await firestore.runTransactionSupport((txn) async {
+              txn.set(ref, {'value': 99});
+              throw StateError('throwing in transaction support');
+            });
+          } catch (e) {
+            threw = true;
+            expect(e, isA<StateError>());
+          }
+          expect(threw, isTrue);
+
+          if (!firestore.supportsTransaction) {
+            // When transactions are not supported, WriteBatch is not committed on throw
+            expect((await ref.get()).data, {'value': 1});
+          }
+        });
+
+        test('runNoTransaction', () async {
+          var testsRef = getTestsRef();
+          var collRef = testsRef
+              .doc('transaction_support_test')
+              .collection('no_transaction');
+          var ref = collRef.doc('item');
+          await ref.set({'value': 10});
+
+          // ignore: invalid_use_of_visible_for_testing_member
+          var result = await firestore.runNoTransaction((txn) async {
+            var snapshot = await txn.get(ref);
+            var currentVal = snapshot.data['value'] as int;
+            txn.set(ref, {'value': currentVal + 5});
+            return currentVal;
+          });
+
+          expect(result, 10);
+          expect((await ref.get()).data, {'value': 15});
+
+          var threw = false;
+          try {
+            // ignore: invalid_use_of_visible_for_testing_member
+            await firestore.runNoTransaction((txn) async {
+              txn.set(ref, {'value': 999});
+              throw StateError('throwing in runNoTransaction');
+            });
+          } catch (e) {
+            threw = true;
+            expect(e, isA<StateError>());
+          }
+          expect(threw, isTrue);
+          expect((await ref.get()).data, {'value': 15});
+        });
+      });
     });
     test('bug_limit', () async {
       var query = firestore

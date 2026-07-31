@@ -18,6 +18,15 @@ void main() async {
       expect(firestoreService.supportsTimestamps, isTrue);
       expect(firestoreService.supportsTrackChanges, isTrue);
       expect(firestoreService.supportsBlobs, isTrue);
+
+      var app = firebase.initializeApp(name: 'firestore_sdb_tests');
+      var firestore = firestoreService.firestore(app);
+      expect(firestore.app, app);
+      expect(firestore.service, firestoreService);
+      expect(firestoreService.firestore(app), firestore);
+      expect(app.getProduct<Firestore>(), firestore);
+      expect(app.firestore(), firestore);
+      expect(firestore.supportsTransaction, isTrue);
     });
     runFirestoreTests(firebase: firebase, firestoreService: firestoreService);
   });

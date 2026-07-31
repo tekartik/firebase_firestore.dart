@@ -20,6 +20,13 @@ class _MockFirestoreSupported extends FirestoreMock {
   }
 }
 
+class _MockFirestoreSupportedWithBatch extends _MockFirestoreSupported {
+  final _MockWriteBatch mockBatch = _MockWriteBatch();
+
+  @override
+  WriteBatch batch() => mockBatch;
+}
+
 class _MockFirestoreUnsupported extends FirestoreMock {
   final _MockWriteBatch mockBatch = _MockWriteBatch();
 
@@ -45,7 +52,11 @@ class _MockWriteBatch implements WriteBatch {
   }
 
   @override
-  void set(DocumentReference ref, Map<String, Object?> data, [SetOptions? options]) {
+  void set(
+    DocumentReference ref,
+    Map<String, Object?> data, [
+    SetOptions? options,
+  ]) {
     operations.add('set ${ref.path} $data');
   }
 
@@ -65,7 +76,11 @@ class _MockTransaction implements Transaction {
   }
 
   @override
-  void set(DocumentReference documentRef, Map<String, Object?> data, [SetOptions? options]) {}
+  void set(
+    DocumentReference documentRef,
+    Map<String, Object?> data, [
+    SetOptions? options,
+  ]) {}
 
   @override
   void update(DocumentReference documentRef, Map<String, Object?> data) {}
@@ -113,7 +128,11 @@ void main() {
 
     test('unsupported transaction success fallback', () async {
       var firestore = _MockFirestoreUnsupported();
-      var docRef = _MockDocumentReference(firestore, 'test/doc1', mockData: {'count': 5});
+      var docRef = _MockDocumentReference(
+        firestore,
+        'test/doc1',
+        mockData: {'count': 5},
+      );
 
       var result = await firestore.runTransactionSupport((txn) async {
         var snapshot = await txn.get(docRef);
@@ -147,6 +166,22 @@ void main() {
       }
 
       expect(firestore.mockBatch.committed, isFalse);
+    });
+
+    test('runNoTransaction on supported firestore uses WriteBatch', () async {
+      var firestore = _MockFirestoreSupportedWithBatch();
+      var executed = false;
+
+      var result = await firestore.runNoTransaction((txn) async {
+        executed = true;
+        txn.set(_MockDocumentReference(firestore, 'test/doc1'), {'a': 1});
+        return 'no_txn';
+      });
+
+      expect(firestore.runTransactionCalled, isFalse);
+      expect(executed, isTrue);
+      expect(result, 'no_txn');
+      expect(firestore.mockBatch.committed, isTrue);
     });
   });
 }
