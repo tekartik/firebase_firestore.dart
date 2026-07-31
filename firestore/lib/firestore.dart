@@ -45,6 +45,7 @@ export 'src/query.dart' show Query;
 export 'src/query_snapshot.dart' show QuerySnapshotExtension, QuerySnapshot;
 export 'src/snapshot_meta_data.dart' show SnapshotMetadata;
 export 'src/vector_value.dart' show VectorValue;
+export 'utils/run_transaction_support.dart';
 
 /// The entry point for accessing a Firestore backend implementation
 /// (REST, Node.js, Flutter native, in-memory mock, ...).
