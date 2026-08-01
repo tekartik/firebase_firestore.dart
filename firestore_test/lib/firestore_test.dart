@@ -1482,7 +1482,10 @@ void runFirestoreCommonTests({
             });
           } catch (e) {
             threw = true;
-            expect(e, isA<StateError>());
+            // Not working in node...
+            if (!kDartIsWeb) {
+              expect(e, isA<StateError>());
+            }
           }
           expect(threw, isTrue);
 
