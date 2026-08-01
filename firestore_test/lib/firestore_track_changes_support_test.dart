@@ -1,5 +1,4 @@
 // ignore_for_file: inference_failure_on_collection_literal
-import 'dart:async';
 
 import 'package:dev_test/test.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
@@ -124,14 +123,14 @@ void runFirestoreTrackChangesSupportTests({
           .onSnapshotSupport(options: pullOptions1)
           .listen((event) {
             if (event.exists) {
-              completer1.complete();
+              completer1.safeComplete();
             }
           });
       var subscription2 = docRef
           .onSnapshotSupport(options: pullOptions1)
           .listen((event) {
             if (event.exists) {
-              completer2.complete();
+              completer2.safeComplete();
             }
           });
       await docRef.set({'test': 1});
