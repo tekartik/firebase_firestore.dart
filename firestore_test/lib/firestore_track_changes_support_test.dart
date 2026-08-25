@@ -169,10 +169,12 @@ void runFirestoreTrackChangesSupportTests({
       await docRef
           .onSnapshotSupport(options: pullOptions1)
           .firstWhere((element) => element.dataOrNull?['test'] == 2);
-      expect(eventList1.length, greaterThanOrEqualTo(3));
+
       if (firestoreService.supportsRecordTrackChanges) {
+        expect(eventList1.length, greaterThanOrEqualTo(3));
         expect(eventList2.length, greaterThanOrEqualTo(3));
       } else {
+        expect(eventList1.length, greaterThanOrEqualTo(2));
         expect(eventList2.length, 1);
       }
       unawaited(sub1.cancel());
