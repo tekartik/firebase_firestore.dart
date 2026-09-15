@@ -9,6 +9,16 @@ class _FirestoreMockWithTransactionSupport extends FirestoreMock {
   final bool supportsTransaction;
 }
 
+class _FirestoreMockWithCollectionGroup extends FirestoreMock {
+  final collectionGroupIds = <String>[];
+
+  @override
+  Query collectionGroup(String collectionId) {
+    collectionGroupIds.add(collectionId);
+    return collection(collectionId);
+  }
+}
+
 void main() {
   group('firestore_logger', () {
     var firestore = FirestoreMock();
@@ -27,6 +37,27 @@ void main() {
       var coll1 = firestore.collection('test');
       var coll2 = firestoreLogger.collection('test');
       expect(coll1, coll2);
+    });
+    test('collectionGroup', () async {
+      var events = <FirestoreLoggerEvent>[];
+      var firestore = _FirestoreMockWithCollectionGroup();
+      var logger = FirestoreLogger(
+        firestore: firestore,
+        options: FirestoreLoggerOptions.all(log: events.add),
+      );
+
+      var query = logger.collectionGroup('group1');
+      expect(firestore.collectionGroupIds, ['group1']);
+      expect(query.firestore, same(logger));
+
+      // Query events are logged (even on failure, the mock cannot execute
+      // queries), for the group query and derived ones.
+      await expectLater(query.get(), throwsA(anything));
+      await expectLater(query.orderBy('name').get(), throwsA(anything));
+      expect(events.map((e) => e.toString().split('\n').first), [
+        'qry **/group1',
+        'qry **/group1',
+      ]);
     });
     test('supportsTransaction', () {
       for (var supported in [true, false]) {

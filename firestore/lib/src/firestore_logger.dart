@@ -59,7 +59,7 @@ String eventToString(FirestoreLoggerEvent event) {
   }
   late String path;
   if (event is FirestoreLoggerEventWithCollectionRefMixin) {
-    path = event.ref.path;
+    path = event.ref.logPath;
   } else if (event is FirestoreLoggerEventWithDocumentRefMixin) {
     path = event.ref.path;
   } else {
@@ -692,6 +692,9 @@ class CollectionReferenceLogger extends QueryLoggerBase
     refLogger = this;
   }
 
+  /// The path displayed in log events.
+  String get logPath => path;
+
   @override
   Future<DocumentReferenceLogger> add(Map<String, Object?> data) async {
     Object? exception;
@@ -721,6 +724,20 @@ class CollectionReferenceLogger extends QueryLoggerBase
 
   @override
   String get path => ref.path;
+}
+
+/// Anchor reference for queries created by [FirestoreLogger.collectionGroup].
+///
+/// A collection group query spans every collection named [id] at any depth,
+/// so it has no single parent collection; this reference (on the top-level
+/// collection of the same id) only serves to attach query events to a path,
+/// displayed as `**/<id>`.
+class CollectionGroupReferenceLogger extends CollectionReferenceLogger {
+  /// Constructor.
+  CollectionGroupReferenceLogger(super.ref, super.firestoreLogger);
+
+  @override
+  String get logPath => '**/$path';
 }
 
 /// Document reference logger.
@@ -1019,6 +1036,12 @@ class FirestoreLogger
   @override
   DocumentReference doc(String path) =>
       DocumentReferenceLogger(firestore.doc(path), this);
+
+  @override
+  Query collectionGroup(String collectionId) => QueryLogger(
+    firestore.collectionGroup(collectionId),
+    CollectionGroupReferenceLogger(firestore.collection(collectionId), this),
+  );
 
   @override
   Future<T> runTransaction<T>(
