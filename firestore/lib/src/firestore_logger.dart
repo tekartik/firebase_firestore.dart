@@ -1038,6 +1038,9 @@ class FirestoreLogger
 
   @override
   FirebaseApp get app => firestore.app;
+
+  @override
+  bool get supportsTransaction => firestore.supportsTransaction;
 }
 
 /// A [FirestoreService] decorator that wraps another [FirestoreService] and
