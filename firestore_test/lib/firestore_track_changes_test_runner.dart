@@ -5,7 +5,7 @@ import 'package:dev_test/test.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
 
-import 'firestore_test.dart';
+import 'firestore_test_runner.dart';
 
 /// Run firestore track changes tests.
 void runFirestoreTrackChangesTests({

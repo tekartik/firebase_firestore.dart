@@ -8,8 +8,8 @@ import 'package:tekartik_common_utils/dev_utils.dart';
 import 'package:tekartik_common_utils/lazy_runner/lazy_runner.dart';
 import 'package:tekartik_firebase_firestore/utils/track_changes_support.dart';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_track_changes_support_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_track_changes_support_test_runner.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 

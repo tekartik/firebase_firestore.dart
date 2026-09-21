@@ -1,7 +1,7 @@
 library;
 
 import 'package:tekartik_firebase_firestore_sim/firestore_sim.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 // ignore: unused_import
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 import 'package:test/test.dart';

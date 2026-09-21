@@ -2,7 +2,7 @@ library;
 
 import 'package:idb_shim/idb_client_memory.dart';
 import 'package:tekartik_firebase_firestore_idb/firestore_idb.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 

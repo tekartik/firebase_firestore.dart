@@ -6,7 +6,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
 import 'package:tekartik_firebase_firestore/utils/track_changes_support.dart';
 
-import 'firestore_test.dart';
+import 'firestore_test_runner.dart';
 
 // create a future delayed for [ms] milliseconds
 Future _sleep([int ms = 0]) {

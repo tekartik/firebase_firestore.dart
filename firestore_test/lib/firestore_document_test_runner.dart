@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 // ignore: implementation_imports
 
-import 'firestore_test.dart';
+import 'firestore_test_runner.dart';
 
 /// Run firestore document tests.
 void runFirestoreDocumentTests({

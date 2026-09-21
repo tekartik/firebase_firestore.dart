@@ -6,7 +6,7 @@ import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
 
-import 'firestore_test.dart';
+import 'firestore_test_runner.dart';
 
 /// Run aggregate query tests.
 void runAggregateQueryTest({

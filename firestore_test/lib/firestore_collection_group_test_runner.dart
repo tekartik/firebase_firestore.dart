@@ -5,7 +5,7 @@ import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
 // ignore: implementation_imports
 
-import 'firestore_test.dart';
+import 'firestore_test_runner.dart';
 
 /// Run firestore collection group tests.
 void runFirestoreCollectionGroupTests({

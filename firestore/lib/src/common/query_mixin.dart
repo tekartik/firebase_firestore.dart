@@ -46,9 +46,10 @@ mixin QueryDefaultMixin implements Query {
 /// serializing it to a native/remote query). Compare with
 /// [FirestoreQueryMixin] in `utils/firestore_mixin.dart`, which additionally
 /// executes queries in-memory.
-mixin QueryMixin implements Query {
+mixin QueryMixin implements Query, HasQueryInfo {
   /// The mutable, cloneable description (filters, ordering, limits, cursors)
   /// of this query, built up by the refinement methods below.
+  @override
   late QueryInfo queryInfo;
 
   /// Returns a copy of this query, including a copy of [queryInfo], so that

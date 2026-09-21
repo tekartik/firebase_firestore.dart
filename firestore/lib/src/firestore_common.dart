@@ -492,6 +492,12 @@ class WhereInfo {
   }
 }
 
+/// An interface for objects that provide [QueryInfo].
+abstract interface class HasQueryInfo {
+  /// The query information.
+  QueryInfo? get queryInfo;
+}
+
 // Mutable, must be clone before
 /// A mutable, serializable description of a [Query]'s filters, ordering,
 /// limits and cursors.

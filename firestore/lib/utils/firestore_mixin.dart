@@ -22,7 +22,9 @@ export 'package:tekartik_firebase_firestore/src/firestore_common.dart'
         QueryInfo,
         queryInfoFromJsonMap,
         queryInfoToJsonMap,
-        WhereInfo;
+        WhereInfo,
+        HasQueryInfo,
+        OrderByInfo;
 export 'package:tekartik_firebase_firestore/src/record_data.dart'
     show
         recordMapRev,
@@ -853,7 +855,7 @@ abstract class FirestoreReferenceBase
 /// Used by backends (such as in-memory or local-database-backed mocks) that
 /// have no query engine of their own. The [firestore] instance must also mix
 /// in [FirestoreDocumentsMixin] and [FirestoreSubscriptionMixin].
-mixin FirestoreQueryMixin implements Query {
+mixin FirestoreQueryMixin implements Query, HasQueryInfo {
   @override
   Firestore get firestore;
 
@@ -872,6 +874,7 @@ mixin FirestoreQueryMixin implements Query {
 
   /// The filters, ordering, limits and cursors to apply, or `null` for an
   /// unfiltered query over the whole collection.
+  @override
   QueryInfo? get queryInfo;
 
   /// Returns every document currently in the collection at [path], before

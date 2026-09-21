@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:dev_test/test.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/auto_id_generator.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 
 /// Run auto id generator tests.
 void utilsAutoIdTest({

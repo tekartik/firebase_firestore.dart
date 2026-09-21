@@ -1,7 +1,7 @@
 library;
 
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 

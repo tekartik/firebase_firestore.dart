@@ -73,7 +73,7 @@ and node backends, so app code does not change.
   `package:idb_shim/idb_io.dart` for persistent files on the VM.
 * When touching the implementation, run the shared compliance suite:
   `runFirestoreTests(firebase:, firestoreService:)` from
-  `package:tekartik_firebase_firestore_test/firestore_test.dart`.
+  `package:tekartik_firebase_firestore_test/firestore_test_runner.dart`.
 * Sibling `tekartik_firebase_firestore_sembast`
   (`package:tekartik_firebase_firestore_sembast/firestore_sembast.dart`:
   `firestoreServiceMemory`, `newFirestoreServiceMemory()`,
@@ -162,7 +162,7 @@ Future<void> incrementCounter() async {
 import 'package:idb_shim/idb_io.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore_idb/firestore_idb.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 

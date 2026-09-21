@@ -3,7 +3,7 @@ library;
 
 import 'package:tekartik_firebase_firestore_idb/firestore_idb_browser.dart'
     as idb;
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 

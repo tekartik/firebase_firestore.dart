@@ -93,9 +93,9 @@ development and in multi-client tests, without any Google backend.
   from `dart:io`.
 * Testing: `runFirestoreTests(firebase:, firestoreService: firestoreServiceSim)`
   or `runFirestoreAppTests(app:, firestoreService:, testContext:)` from
-  `package:tekartik_firebase_firestore_test/firestore_test.dart`, and
+  `package:tekartik_firebase_firestore_test/firestore_test_runner.dart`, and
   `firestoreMulticlientTest(firestore1:, firestore2:, docTopPath:)` from
-  `firestore_multi_client_test.dart` for cross-client snapshot propagation.
+  `firestore_multi_client_test_runner.dart` for cross-client snapshot propagation.
 
 ## Examples
 
@@ -157,7 +157,7 @@ Future<void> main() async {
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_server.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_sim/firebase_sim.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
@@ -196,7 +196,7 @@ library;
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast_io.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_server.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_multi_client_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_multi_client_test_runner.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_sim/firebase_sim.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';

@@ -1,8 +1,8 @@
 library;
 
 import 'package:tekartik_firebase_firestore_sim/firestore_sim.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_multi_client_test.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_multi_client_test_runner.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 import 'package:tekartik_firebase_sim/firebase_sim.dart';
 
 import 'package:tekartik_web_socket_io/web_socket_io.dart';

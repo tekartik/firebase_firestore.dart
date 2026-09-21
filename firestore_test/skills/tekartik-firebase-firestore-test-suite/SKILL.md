@@ -38,7 +38,7 @@ function you call from your own test file, so each implementation keeps its own
 * One call covers everything:
   `runFirestoreTests({required Firebase firebase, required FirestoreService
   firestoreService, AppOptions? options, FirestoreTestContext? testContext})`
-  from `package:tekartik_firebase_firestore_test/firestore_test.dart`. It
+  from `package:tekartik_firebase_firestore_test/firestore_test_runner.dart`. It
   initializes an app named `firestore_tests` on `firebase`, binds
   `firestoreService.firestore(app)` and declares every group. Call it at the
   top level of `main()`, not inside `setUp`.
@@ -79,34 +79,34 @@ function you call from your own test file, so each implementation keeps its own
 * Per-feature runners, each in its own library, when only part of the API is
   implemented or when a group must be isolated (all take named arguments,
   `testContext` nullable except where noted):
-  * `query_test.dart`: `runFirestoreQueryTests(firestore:, testContext:)`
+  * `query_test_runner.dart`: `runFirestoreQueryTests(firestore:, testContext:)`
     (non-null context).
-  * `firestore_document_test.dart`: `runFirestoreDocumentTests(firestore:,
+  * `firestore_document_test_runner.dart`: `runFirestoreDocumentTests(firestore:,
     testContext:)`.
-  * `firestore_collection_group_test.dart`:
+  * `firestore_collection_group_test_runner.dart`:
     `runFirestoreCollectionGroupTests(firestore:, testContext:)`.
-  * `list_collections_test.dart`: `runListCollectionsTest(firestore:,
+  * `list_collections_test_runner.dart`: `runListCollectionsTest(firestore:,
     testContext:)`.
-  * `aggregate_query_test.dart`: `runAggregateQueryTest(firestore:,
+  * `aggregate_query_test_runner.dart`: `runAggregateQueryTest(firestore:,
     testContext:)`.
-  * `copy_utils_test.dart`: `runCopyUtilsTest(firestore:, testContext:)`.
-  * `utils_collection_test.dart`: `runUtilsCollectionTests(firestoreService:,
+  * `copy_utils_test_runner.dart`: `runCopyUtilsTest(firestore:, testContext:)`.
+  * `utils_collection_test_runner.dart`: `runUtilsCollectionTests(firestoreService:,
     firestore:, testContext:)`.
-  * `utils_query_test.dart`: `runUtilsQueryTest(firestoreService:, firestore:,
+  * `utils_query_test_runner.dart`: `runUtilsQueryTest(firestoreService:, firestore:,
     testContext:)`.
-  * `utils_test.dart`: `utilsTest(firestoreService:, firestore:,
+  * `utils_test_runner.dart`: `utilsTest(firestoreService:, firestore:,
     testContext:)`.
-  * `utils_auto_id_test.dart`: `utilsAutoIdTest(firestore:, testContext:)`.
-  * `timestamp_test.dart`: `timestampGroup(service:, firestore:,
+  * `utils_auto_id_test_runner.dart`: `utilsAutoIdTest(firestore:, testContext:)`.
+  * `timestamp_test_runner.dart`: `timestampGroup(service:, firestore:,
     testContext:)`.
-  * `vector_value_test.dart`: `vectorValueGroup(firestore:, testContext:)`.
-  * `firestore_track_changes_test.dart`:
+  * `vector_value_test_runner.dart`: `vectorValueGroup(firestore:, testContext:)`.
+  * `firestore_track_changes_test_runner.dart`:
     `runFirestoreTrackChangesTests(firestoreService:, firestore:,
     testContext:)`.
-  * `firestore_track_changes_support_test.dart`:
+  * `firestore_track_changes_support_test_runner.dart`:
     `runFirestoreTrackChangesSupportTests(firestoreService:, firestore:,
     testContext:)`.
-  * `firestore_multi_client_test.dart`: `firestoreMulticlientTest(firestore1:,
+  * `firestore_multi_client_test_runner.dart`: `firestoreMulticlientTest(firestore1:,
     firestore2:, docTopPath:)` plus the `dataMatch(data1, data2)` helper, for
     two clients over one database.
 * `docsKeys(List<DocumentSnapshot>)` returns the matching
@@ -127,7 +127,7 @@ function you call from your own test file, so each implementation keeps its own
 
 ```dart
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 
 void main() {
@@ -146,7 +146,7 @@ void main() {
 ```dart
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 
 /// [firebase] and [firestoreService] come from the implementation under test
 /// (rest, grpc, node, ...), pointing at an emulator or a throw-away project.
@@ -167,9 +167,9 @@ void defineTests(Firebase firebase, FirestoreService firestoreService) {
 ```dart
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
-import 'package:tekartik_firebase_firestore_test/list_collections_test.dart';
-import 'package:tekartik_firebase_firestore_test/query_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
+import 'package:tekartik_firebase_firestore_test/list_collections_test_runner.dart';
+import 'package:tekartik_firebase_firestore_test/query_test_runner.dart';
 import 'package:test/test.dart';
 
 void defineTests(FirebaseApp app, FirestoreService firestoreService) {
@@ -196,7 +196,7 @@ void defineTests(FirebaseApp app, FirestoreService firestoreService) {
 
 ```dart
 import 'package:tekartik_firebase_firestore/firestore.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_multi_client_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_multi_client_test_runner.dart';
 
 /// [firestore1] and [firestore2] must be two clients of the same database.
 void defineTests(Firestore firestore1, Firestore firestore2) {

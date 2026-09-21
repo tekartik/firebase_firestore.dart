@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/copy_utils.dart';
 
-import 'firestore_test.dart';
+import 'firestore_test_runner.dart';
 
 /// Run copy utils tests.
 void runCopyUtilsTest({

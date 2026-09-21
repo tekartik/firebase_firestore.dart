@@ -6,7 +6,9 @@ description: >-
   endBefore), collection group queries, QuerySnapshot and document changes,
   query listeners on any backend, count and aggregate queries, transactions
   and write batches (runTransaction, runTransactionSupport, WriteBatch), bulk
-  delete/copy helpers, and FirestoreException / FirestoreErrorCode handling
+  delete/copy helpers, page-by-page iteration and join helpers
+  (queryIterate, queryStream, queryJoinIterate in utils/query_iterate.dart and
+  utils/query_join.dart), and FirestoreException / FirestoreErrorCode handling
   such as permission-denied raised by security rules.
 ---
 
@@ -20,7 +22,9 @@ all its documents. Every refinement returns a new immutable `Query`.
 
 * Import `package:tekartik_firebase_firestore/firestore.dart`. Bulk helpers
   are in `utils/query.dart`, `utils/collection.dart`, `utils/copy_utils.dart`;
-  polling listeners in `utils/track_changes_support.dart`.
+  page-by-page iteration in `utils/query_iterate.dart` and joins in
+  `utils/query_join.dart`; polling listeners in
+  `utils/track_changes_support.dart`.
 * Filter with one comparison per `where` call and chain calls for several
   conditions: `isEqualTo`, `isLessThan`, `isLessThanOrEqualTo`,
   `isGreaterThan`, `isGreaterThanOrEqualTo`, `arrayContains`,
@@ -162,6 +166,72 @@ Future<String> orderStats(Firestore firestore) async {
       'avg: ${snapshot.getAverage('total')}';
 }
 ```
+
+### Iterate a whole query, and join another collection
+
+```dart
+import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/utils/query_iterate.dart';
+import 'package:tekartik_firebase_firestore/utils/query_join.dart';
+
+/// Walks every matching document page by page (one `get()` per page), so the
+/// whole result is never held in memory and returning false stops reading.
+Future<void> archiveOldBooks(Firestore firestore) async {
+  await firestore
+      .collection('books')
+      .where('archived', isEqualTo: false)
+      .queryIterate(
+        options: QueryFindOptions(pageSize: 200),
+        onRow: (doc) async {
+          await doc.ref.update({'archived': true});
+          return true; // false to stop
+        },
+      );
+}
+
+/// Each book with its author: the authors of a whole page are fetched in one
+/// `getAll`, and an author referenced by several books is fetched once.
+Future<void> printBooksWithAuthor(Firestore firestore) async {
+  var authors = firestore.collection('authors');
+  await firestore.collection('books').queryJoinIterate(
+        options: QueryJoinFindOptions(
+          joinField: 'authorId', // holds an author document id
+          targetCollection: authors,
+          inner: true, // skip the books whose author is missing (left join by default)
+        ),
+        onRow: (row) {
+          print('${row.doc!.data['title']} by ${row.targetDoc!.data['name']}');
+          return true;
+        },
+      );
+}
+
+/// Only the authors actually referenced by a book, each one once. `withSource`
+/// false also selects just the join field on the books.
+Future<List<DocumentSnapshot>> referencedAuthors(Firestore firestore) async {
+  var rows = await firestore.collection('books').findJoinRows(
+        options: QueryJoinFindOptions(
+          joinField: 'authorId',
+          targetCollection: firestore.collection('authors'),
+          withSource: false,
+          distinct: true,
+          inner: true,
+        ),
+      );
+  return rows.map((row) => row.targetDoc!).toList();
+}
+```
+
+Notes:
+
+* Paging uses a `startAfter` cursor and appends an ordering by document id.
+  The query's existing `orderBy` fields and `limit` are automatically extracted from the query.
+* `QueryJoinFindOptions` and `QueryFindOptions` are distinct option classes: `QueryJoinFindOptions` configures
+  the join (`joinField`, `targetCollection`, `withSource`, `withTarget`, `distinct`, `inner`, `pageSize`),
+  while the query itself provides filters, ordering and limits.
+* `joinField` can hold a `DocumentReference`, a document id inside
+  `targetCollection`, or a full document path when `targetCollection` is null. A
+  dotted path (`'ref.authorId'`) reads a nested field.
 
 ### Transaction, batch and error handling
 

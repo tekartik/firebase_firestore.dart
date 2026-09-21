@@ -2,7 +2,7 @@ import 'package:dev_test/test.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 
-import 'firestore_test.dart';
+import 'firestore_test_runner.dart';
 
 /// Vector value test group.
 void vectorValueGroup({

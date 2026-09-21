@@ -242,11 +242,12 @@ class DocumentReferenceSim
 }
 
 /// Query mixin simulator.
-abstract mixin class QueryMixinSim implements Query {
+abstract mixin class QueryMixinSim implements Query, HasQueryInfo {
   /// App simulator.
   AppSim get appSim => firestoreSim.appSim;
 
   /// Query info.
+  @override
   QueryInfo? get queryInfo;
 
   /// Simulation collection reference.

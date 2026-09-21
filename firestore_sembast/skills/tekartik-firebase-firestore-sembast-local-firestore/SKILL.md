@@ -106,7 +106,7 @@ code is unchanged. This is the quickest local Firestore for pure Dart tests.
   `hide Transaction, FieldValue`.
 * Testing: set `skipConcurrentTransactionTests = true` before
   `runFirestoreTests(firebase:, firestoreService:)` from
-  `package:tekartik_firebase_firestore_test/firestore_test.dart`; concurrent
+  `package:tekartik_firebase_firestore_test/firestore_test_runner.dart`; concurrent
   transactions are not retried like on a real server. Mark io tests
   `@TestOn('vm')` and web tests `@TestOn('browser')`.
 * Sibling `tekartik_firebase_firestore_idb` is the same idea on
@@ -223,7 +223,7 @@ Future<void> main() async {
 library;
 
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast_io.dart';
-import 'package:tekartik_firebase_firestore_test/firestore_test.dart';
+import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
