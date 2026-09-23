@@ -53,6 +53,10 @@ class FirestoreServiceSim
 
   @override
   bool get supportsBlobs => true;
+
+  /// Assuming the server backend supports it (i.e. sembast).
+  @override
+  bool get supportsListMissingDocuments => true;
 }
 
 FirestoreServiceSim? _firestoreServiceSim;
@@ -561,6 +565,28 @@ class CollectionReferenceSim extends Object
     var firestorePathData = FirestorePathData()
       ..fromMap(result as Map<String, Object?>);
     return DocumentReferenceSim(firestoreSim, firestorePathData.path);
+  }
+
+  @override
+  Future<FirestoreListDocumentsResult> listDocuments({
+    FirestoreListDocumentsOptions? options,
+  }) async {
+    var simClient = await firestoreSim.simAppClient;
+    var requestData = CvFirestoreListDocumentsRequestData()
+      ..path.setValue(path)
+      ..pageSize.setValue(options?.pageSize)
+      ..pageToken.setValue(options?.pageToken)
+      ..showMissing.setValue(options?.showMissing);
+    var result = await simClient.sendRequest<Map>(
+      FirestoreSimServerService.serviceName,
+      methodFirestoreListDocuments,
+      requestData.toMap(),
+    );
+    var responseData = CvFirestoreListDocumentsResponseData()..fromMap(result);
+    return FirestoreListDocumentsResult(
+      refs: (responseData.ids.v ?? <String>[]).map((id) => doc(id)).toList(),
+      nextPageToken: responseData.nextPageToken.v,
+    );
   }
 
   @override

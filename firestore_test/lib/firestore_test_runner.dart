@@ -23,6 +23,7 @@ import 'firestore_document_test_runner.dart';
 import 'firestore_track_changes_support_test_runner.dart';
 import 'firestore_track_changes_test_runner.dart';
 import 'list_collections_test_runner.dart';
+import 'list_documents_test_runner.dart';
 import 'query_test_runner.dart';
 import 'utils_auto_id_test_runner.dart';
 
@@ -39,6 +40,9 @@ bool skipFirestoreTransactionTests = false;
 
 /// Skip list collections tests.
 bool skipFirestoreListCollectionsTests = false;
+
+/// Skip list missing documents checks (i.e. rest without admin access).
+bool skipFirestoreListMissingDocumentsTests = false;
 
 /// Get document keys.
 List<DocumentReference?> docsKeys(List<DocumentSnapshot> snashots) =>
@@ -205,6 +209,7 @@ void runFirestoreAppTests({
   );
   runFirestoreQueryTests(firestore: firestore, testContext: testContext);
   runListCollectionsTest(firestore: firestore, testContext: testContext);
+  runListDocumentsTest(firestore: firestore, testContext: testContext);
   runAggregateQueryTest(firestore: firestore, testContext: testContext);
   runFirestoreDocumentTests(firestore: firestore, testContext: testContext);
   runFirestoreCollectionGroupTests(

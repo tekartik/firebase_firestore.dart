@@ -89,9 +89,84 @@ String? getParentPathOrNull(String path) {
 /// Returns the last segment (id) of [path].
 String getPathId(String path) => url.basename(path);
 
+/// Default [CollectionReference.listDocuments] implementation, based on
+/// [Query.get] (missing documents are not included).
+///
+/// Without paging options, it returns the same documents as
+/// [CollectionReference.get]. Otherwise, the documents are ordered by id,
+/// the page token being the id of the last document of the previous page.
+Future<FirestoreListDocumentsResult> _collectionListDocumentsFromQuery(
+  CollectionReference collection,
+  FirestoreListDocumentsOptions? options,
+) async {
+  var pageSize = options?.pageSize;
+  var pageToken = options?.pageToken;
+  if (pageSize == null && pageToken == null) {
+    return FirestoreListDocumentsResult(refs: (await collection.get()).refs);
+  }
+  var query = collection.orderBy(firestoreNameFieldPath);
+  if (pageToken != null) {
+    query = query.startAfter(values: [pageToken]);
+  }
+  if (pageSize != null) {
+    query = query.limit(pageSize);
+  }
+  var refs = (await query.get()).refs;
+  return FirestoreListDocumentsResult(
+    refs: refs,
+    nextPageToken: (pageSize != null && refs.length >= pageSize)
+        ? refs.last.id
+        : null,
+  );
+}
+
+/// Builds a [CollectionReference.listDocuments] result from all the [refs]
+/// of a collection, applying the paging [options], for implementations
+/// that can only list all the documents at once.
+///
+/// When paging, the documents are ordered by id, the page token being the
+/// id of the last document of the previous page.
+FirestoreListDocumentsResult firestoreListDocumentsResultFromAllRefs(
+  List<DocumentReference> refs,
+  FirestoreListDocumentsOptions? options,
+) {
+  var pageSize = options?.pageSize;
+  var pageToken = options?.pageToken;
+  if (pageSize == null && pageToken == null) {
+    return FirestoreListDocumentsResult(refs: refs);
+  }
+  var sortedRefs = [
+    for (var ref in refs)
+      if (pageToken == null || ref.id.compareTo(pageToken) > 0) ref,
+  ]..sort((ref1, ref2) => ref1.id.compareTo(ref2.id));
+  if (pageSize != null && sortedRefs.length > pageSize) {
+    var pageRefs = sortedRefs.sublist(0, pageSize);
+    return FirestoreListDocumentsResult(
+      refs: pageRefs,
+      nextPageToken: pageRefs.last.id,
+    );
+  }
+  return FirestoreListDocumentsResult(refs: sortedRefs);
+}
+
+/// [CollectionReference] mixin providing a [listDocuments] implementation
+/// based on [get], for backends that can't list missing documents.
+///
+/// Without options, it returns the references of the documents returned by
+/// [get].
+mixin CollectionReferenceDefaultMixin implements CollectionReference {
+  @override
+  Future<FirestoreListDocumentsResult> listDocuments({
+    FirestoreListDocumentsOptions? options,
+  }) => _collectionListDocumentsFromQuery(this, options);
+}
+
 /// [CollectionReference] mixin providing [parent], [doc], equality and
 /// [hashCode] purely from [path] and [firestore], for backends that don't
 /// need any other shared state.
+///
+/// It also provides the default [listDocuments] implementation (see
+/// [CollectionReferenceDefaultMixin]).
 mixin CollectionReferenceMixin
     implements CollectionReference, PathReferenceMixin, FirestorePathReference {
   @override
@@ -102,6 +177,11 @@ mixin CollectionReferenceMixin
 
   @override
   DocumentReference doc(String path) => firestore.doc(getChildPath(path));
+
+  @override
+  Future<FirestoreListDocumentsResult> listDocuments({
+    FirestoreListDocumentsOptions? options,
+  }) => _collectionListDocumentsFromQuery(this, options);
 
   @override
   int get hashCode => path.hashCode;

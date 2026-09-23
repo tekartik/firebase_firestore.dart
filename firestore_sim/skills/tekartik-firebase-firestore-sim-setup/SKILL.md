@@ -78,6 +78,9 @@ development and in multi-client tests, without any Google backend.
   `supportsFieldValueArray`, `supportsListCollections`,
   `supportsAggregateQueries` and `supportsVectorValue` are false, whatever the
   hosted implementation supports. Branch on the flags, not on the service type.
+  `supportsListMissingDocuments` is true: `collRef.listDocuments()` runs on
+  the server, so it assumes a hosted implementation listing missing
+  documents (sembast).
 * `runTransaction` and `batch()` work, but the transaction is opened, run and
   committed through round trips: no client-side retry on contention. Set
   `skipConcurrentTransactionTests = true` when running the shared suite.

@@ -41,6 +41,8 @@ export 'src/firestore_exception.dart'
     show FirestoreErrorCode, FirestoreException;
 export 'src/firestore_logger.dart'
     show FirestoreLoggerDebugExt, FirestoreServiceLoggerDebugExt;
+export 'src/list_documents.dart'
+    show FirestoreListDocumentsOptions, FirestoreListDocumentsResult;
 export 'src/query.dart' show Query;
 export 'src/query_snapshot.dart' show QuerySnapshotExtension, QuerySnapshot;
 export 'src/snapshot_meta_data.dart' show SnapshotMetadata;
@@ -113,6 +115,14 @@ abstract class FirestoreService implements FirebaseAppProductService {
   ///
   /// When `false`, calling those methods throws.
   bool get supportsListCollections;
+
+  /// `true` if [CollectionReference.listDocuments] also returns "missing"
+  /// documents (locations without a document of their own but with
+  /// sub-collections).
+  ///
+  /// When `false`, [CollectionReference.listDocuments] only returns the
+  /// documents returned by [Query.get].
+  bool get supportsListMissingDocuments;
 
   /// `true` if the implementation supports aggregate queries created through
   /// [Query.aggregate] (count, sum, average).

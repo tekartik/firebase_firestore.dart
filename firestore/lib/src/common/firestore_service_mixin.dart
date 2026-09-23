@@ -12,6 +12,9 @@ mixin FirestoreServiceDefaultMixin implements FirestoreService {
   bool get supportsListCollections => false;
 
   @override
+  bool get supportsListMissingDocuments => false;
+
+  @override
   bool get supportsDocumentSnapshotTime => false;
 
   @override

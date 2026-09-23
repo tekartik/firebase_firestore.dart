@@ -6,8 +6,9 @@ description: >-
   compliance suite of tekartik_firebase_firestore_test: runFirestoreTests,
   runFirestoreAppTests, runFirestoreCommonTests, FirestoreTestContext,
   skipConcurrentTransactionTests, skipFirestoreTransactionTests,
-  skipFirestoreListCollectionsTests, the per-feature runners
-  (runFirestoreQueryTests, runFirestoreDocumentTests, runListCollectionsTest,
+  skipFirestoreListCollectionsTests, skipFirestoreListMissingDocumentsTests,
+  the per-feature runners (runFirestoreQueryTests, runFirestoreDocumentTests,
+  runListCollectionsTest, runListDocumentsTest,
   runAggregateQueryTest, firestoreMulticlientTest, ...) and the interactive
   firestoreMainMenu dev menu.
 ---
@@ -63,6 +64,9 @@ function you call from your own test file, so each implementation keeps its own
   * `skipFirestoreTransactionTests = true`: no transaction support at all.
   * `skipFirestoreListCollectionsTests = true`: `listCollections()` present but
     not usable in this environment (for instance rules-restricted).
+  * `skipFirestoreListMissingDocumentsTests = true`: `listDocuments()` cannot
+    list missing documents in this environment although
+    `supportsListMissingDocuments` (REST without admin access).
 * `FirestoreTestContext` tunes the suite for a real, shared backend:
   * `FirestoreTestContext(rootCollectionPath: 'tests/my_app/tests')` moves every
     document under that path (default:
@@ -86,6 +90,8 @@ function you call from your own test file, so each implementation keeps its own
   * `firestore_collection_group_test_runner.dart`:
     `runFirestoreCollectionGroupTests(firestore:, testContext:)`.
   * `list_collections_test_runner.dart`: `runListCollectionsTest(firestore:,
+    testContext:)`.
+  * `list_documents_test_runner.dart`: `runListDocumentsTest(firestore:,
     testContext:)`.
   * `aggregate_query_test_runner.dart`: `runAggregateQueryTest(firestore:,
     testContext:)`.

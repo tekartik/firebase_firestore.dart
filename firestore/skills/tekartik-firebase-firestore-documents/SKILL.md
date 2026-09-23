@@ -29,12 +29,21 @@ obtained from a `FirestoreService`, never constructed directly.
 * Check `firestore.service.supportsXxx` before relying on optional features:
   `supportsFieldValueArray`, `supportsTimestamps`, `supportsTimestampsInSnapshots`,
   `supportsDocumentSnapshotTime`, `supportsBlobs`, `supportsVectorValue`,
-  `supportsRecordTrackChanges`, `supportsTrackChanges`, `supportsListCollections`.
+  `supportsRecordTrackChanges`, `supportsTrackChanges`, `supportsListCollections`,
+  `supportsListMissingDocuments`.
 * References are cheap and do no I/O: `firestore.collection('users')`,
   `firestore.doc('users/123')`, `collRef.doc('123')`, `docRef.collection('posts')`.
   Collection paths have an odd number of segments, document paths an even
   number. `docRef.id`, `docRef.path`, `docRef.parent` (never null) and
   `collRef.parent` (null for a root collection) navigate back up.
+* `collRef.listDocuments()` returns a `FirestoreListDocumentsResult`: `refs`
+  and `nextPageToken`. When `supportsListMissingDocuments` it also lists
+  "missing" documents (no data, but sub-collections) that `get()` never
+  returns (unless `FirestoreListDocumentsOptions(showMissing: false)`);
+  otherwise it returns the same documents as `get()`. Page with
+  `listDocuments(options: FirestoreListDocumentsOptions(pageSize: 100,
+  pageToken: previous.nextPageToken))` until `nextPageToken` is null; a page
+  can be smaller than `pageSize` while more remain.
 * `collRef.add(data)` creates a document with a generated id. For a
   synchronous id use `AutoIdGenerator.autoId()` from
   `utils/auto_id_generator.dart`; inside a transaction use

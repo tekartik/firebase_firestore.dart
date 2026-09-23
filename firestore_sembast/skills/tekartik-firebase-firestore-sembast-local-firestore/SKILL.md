@@ -78,7 +78,8 @@ code is unchanged. This is the quickest local Firestore for pure Dart tests.
   `supportsFieldValueArray`, `supportsTimestamps`,
   `supportsTimestampsInSnapshots`, `supportsDocumentSnapshotTime`,
   `supportsTrackChanges`, `supportsListCollections`,
-  `supportsAggregateQueries`, `supportsVectorValue`, `supportsBlobs`. Read the
+  `supportsListMissingDocuments`, `supportsAggregateQueries`,
+  `supportsVectorValue`, `supportsBlobs`. Read the
   flags from `firestore.service`, do not hardcode them in shared code.
 * `service.sembastSupportsTrackChanges = false` (setter of
   `TekartikFirestoreServiceSembastExt`, only valid on a

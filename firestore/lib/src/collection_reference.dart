@@ -32,4 +32,25 @@ abstract class CollectionReference extends Query {
   /// The returned `Future` completes with a [DocumentReference] pointing to
   /// the newly created document once the write has been committed.
   Future<DocumentReference> add(Map<String, Object?> data);
+
+  /// Lists the references of the documents in this collection.
+  ///
+  /// When [FirestoreService.supportsListMissingDocuments] is `true`, the
+  /// returned references also include "missing" documents: locations that
+  /// have no document of their own but have sub-collections with documents.
+  /// Such documents are not returned by [get]; reading one returns a
+  /// [DocumentSnapshot] whose [DocumentSnapshot.exists] is `false`. Set
+  /// [FirestoreListDocumentsOptions.showMissing] to `false` to exclude them.
+  ///
+  /// Otherwise, it returns the references of the documents returned by
+  /// [get].
+  ///
+  /// Without [options], all the documents are returned. Set
+  /// [FirestoreListDocumentsOptions.pageSize] to get them page by page,
+  /// passing the [FirestoreListDocumentsResult.nextPageToken] of a page as
+  /// [FirestoreListDocumentsOptions.pageToken] to get the next one. The
+  /// order of the returned references is not specified.
+  Future<FirestoreListDocumentsResult> listDocuments({
+    FirestoreListDocumentsOptions? options,
+  });
 }

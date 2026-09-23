@@ -11,6 +11,8 @@ void main() {
       FirestoreService;
       FirestoreSettings;
       CollectionReference;
+      FirestoreListDocumentsOptions;
+      FirestoreListDocumentsResult;
       DocumentChange;
       DocumentReference;
       DocumentData;

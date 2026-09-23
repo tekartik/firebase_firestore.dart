@@ -560,7 +560,9 @@ class QueryIdb extends FirestoreReferenceBase
 }
 
 /// CollectionReferenceIdb representation.
-class CollectionReferenceIdb extends QueryIdb implements CollectionReference {
+class CollectionReferenceIdb extends QueryIdb
+    with CollectionReferenceDefaultMixin
+    implements CollectionReference {
   CollectionReferenceIdb(FirestoreIdb super.firestoreIdb, super.path) {
     queryInfo = QueryInfo();
   }

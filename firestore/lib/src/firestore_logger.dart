@@ -720,6 +720,19 @@ class CollectionReferenceLogger extends QueryLoggerBase
   }
 
   @override
+  Future<FirestoreListDocumentsResult> listDocuments({
+    FirestoreListDocumentsOptions? options,
+  }) async {
+    var result = await ref.listDocuments(options: options);
+    return FirestoreListDocumentsResult(
+      refs: result.refs
+          .map((docRef) => DocumentReferenceLogger(docRef, firestoreLogger))
+          .toList(),
+      nextPageToken: result.nextPageToken,
+    );
+  }
+
+  @override
   Firestore get firestore => firestoreLogger;
 
   @override
@@ -1128,6 +1141,10 @@ class FirestoreServiceLogger
 
   @override
   bool get supportsBlobs => firestoreService.supportsBlobs;
+
+  @override
+  bool get supportsListMissingDocuments =>
+      firestoreService.supportsListMissingDocuments;
 }
 
 /// Debug extension for Logger.

@@ -602,7 +602,9 @@ class QuerySdb extends FirestoreReferenceBase
 }
 
 /// Collection reference SDB.
-class CollectionReferenceSdb extends QuerySdb implements CollectionReference {
+class CollectionReferenceSdb extends QuerySdb
+    with CollectionReferenceDefaultMixin
+    implements CollectionReference {
   /// Constructor.
   CollectionReferenceSdb(FirestoreSdb super.firestoreSdb, super.path) {
     queryInfo = QueryInfo();

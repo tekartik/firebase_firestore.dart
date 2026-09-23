@@ -58,6 +58,9 @@ const methodFirestoreQueryStream =
 /// Query cancel method.
 const methodFirestoreQueryCancel = 'firestore/query/cancel';
 
+/// List documents method (collection path, returns document ids).
+const methodFirestoreListDocuments = 'firestore/listDocuments';
+
 /// Init CV builders.
 void firebaseSimFirestoreInitCvBuilders() {
   cvAddConstructors([CvFirestoreAppBaseData.new]);
@@ -361,6 +364,33 @@ class CvFirestoreGetRequestData extends CvFirestorePathData {
 
   @override
   CvFields get fields => [transactionId, ...super.fields];
+}
+
+/// Firestore list documents request data for CV.
+class CvFirestoreListDocumentsRequestData extends CvFirestorePathData {
+  /// Page size.
+  final pageSize = CvField<int>('pageSize');
+
+  /// Page token.
+  final pageToken = CvField<String>('pageToken');
+
+  /// Show missing documents (default to true).
+  final showMissing = CvField<bool>('showMissing');
+
+  @override
+  CvFields get fields => [pageSize, pageToken, showMissing, ...super.fields];
+}
+
+/// Firestore list documents response data for CV.
+class CvFirestoreListDocumentsResponseData extends CvModelBase {
+  /// Document ids, relative to the collection.
+  final ids = CvListField<String>('ids');
+
+  /// Next page token.
+  final nextPageToken = CvField<String>('nextPageToken');
+
+  @override
+  CvFields get fields => [ids, nextPageToken];
 }
 
 /// Firestore transaction response data.

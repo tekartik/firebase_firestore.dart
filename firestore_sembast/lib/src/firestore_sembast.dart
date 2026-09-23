@@ -75,6 +75,9 @@ class FirestoreServiceSembast
   bool get supportsListCollections => true;
 
   @override
+  bool get supportsListMissingDocuments => true;
+
+  @override
   bool get supportsVectorValue => true;
 
   @override
@@ -660,6 +663,30 @@ class CollectionReferenceSembast extends QuerySembast
     }
 
     return documentReference;
+  }
+
+  @override
+  Future<FirestoreListDocumentsResult> listDocuments({
+    FirestoreListDocumentsOptions? options,
+  }) async {
+    var db = await firestoreSembast.ready;
+    var showMissing = options?.showMissing ?? true;
+    // Any record under this collection, including in sub-collections of
+    // missing documents unless not shown.
+    var prefix = '$path/';
+    var ids = <String>{};
+    for (var key in await docStore.findKeys(db)) {
+      if (key.startsWith(prefix)) {
+        var parts = key.substring(prefix.length).split('/');
+        if (showMissing || parts.length == 1) {
+          ids.add(parts.first);
+        }
+      }
+    }
+    return firestoreListDocumentsResultFromAllRefs(
+      ids.map((id) => doc(id)).toList(),
+      options,
+    );
   }
 
   @override

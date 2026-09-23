@@ -94,6 +94,10 @@ class FirestoreSimServerService extends FirebaseSimServerServiceBase {
         var map = resultAsMap(parameters);
         return await firestoreSimPluginServer.handleFirestoreQueryCancel(map);
 
+      case methodFirestoreListDocuments:
+        var map = resultAsMap(parameters);
+        return await firestoreSimPluginServer.handleFirestoreListDocuments(map);
+
       case methodFirestoreUpdate:
         var map = resultAsMap(parameters);
         return await firestoreSimPluginServer.handleFirestoreUpdateRequest(map);
@@ -366,6 +370,24 @@ class _FirestoreSimPluginServer {
         data.list.add(DocumentSnapshotData.fromSnapshot(doc));
       }
       return data.toMap();
+    });
+  }
+
+  /// Handle firestore list documents.
+  Future handleFirestoreListDocuments(Map<String, Object?> params) async {
+    var requestData = CvFirestoreListDocumentsRequestData()..fromMap(params);
+    var collection = firestore.collection(requestData.path.v!);
+    var options = FirestoreListDocumentsOptions(
+      pageSize: requestData.pageSize.v,
+      pageToken: requestData.pageToken.v,
+      showMissing: requestData.showMissing.v ?? true,
+    );
+    return await transactionLock.synchronized(() async {
+      var result = await collection.listDocuments(options: options);
+      return (CvFirestoreListDocumentsResponseData()
+            ..ids.v = result.refs.map((ref) => ref.id).toList()
+            ..nextPageToken.setValue(result.nextPageToken))
+          .toMap();
     });
   }
 

@@ -57,6 +57,8 @@ and node backends, so app code does not change.
   `supportsVectorValue`, `supportsBlobs` and `Firestore.supportsTransaction`
   are true. `supportsListCollections` and `supportsAggregateQueries` are
   false: `listCollections()` throws `UnimplementedError`.
+  `supportsListMissingDocuments` is false: `collRef.listDocuments()` returns
+  the documents of `get()`.
 * Security rules are never enforced: every read and write succeeds. Test
   permission denied paths against the Firestore emulator (REST or node
   backend), not here.
