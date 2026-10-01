@@ -74,7 +74,8 @@ development and in multi-client tests, without any Google backend.
 * Capabilities of `firestoreServiceSim`: `supportsQuerySelect`,
   `supportsQuerySnapshotCursor`, `supportsTimestamps`,
   `supportsTimestampsInSnapshots`, `supportsDocumentSnapshotTime`,
-  `supportsTrackChanges` and `supportsBlobs` are true;
+  `supportsTrackChanges`, `supportsBlobs` and `supportsFieldValueIncrement`
+  (assuming the server backend supports it, e.g. sembast) are true;
   `supportsFieldValueArray`, `supportsListCollections`,
   `supportsAggregateQueries` and `supportsVectorValue` are false, whatever the
   hosted implementation supports. Branch on the flags, not on the service type.

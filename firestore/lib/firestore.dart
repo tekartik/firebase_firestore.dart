@@ -75,6 +75,10 @@ abstract class FirestoreService implements FirebaseAppProductService {
   /// [FieldValue.arrayRemove] as values passed to `set`/`update`.
   bool get supportsFieldValueArray;
 
+  /// `true` if the implementation supports [FieldValue.increment] as a value
+  /// passed to `set`/`update`.
+  bool get supportsFieldValueIncrement;
+
   /// `true` if the implementation supports cursor-based pagination using a
   /// [DocumentSnapshot], i.e. the `snapshot` parameter of [Query.startAt],
   /// [Query.startAfter], [Query.endAt] and [Query.endBefore].
@@ -367,14 +371,15 @@ extension DocumentSnapshotExt on DocumentSnapshot {
 /// Sentinel values that can be used when writing document fields with `set` or
 /// `update`.
 ///
-/// Assign one of these (via [serverTimestamp], [delete], [arrayUnion] or
-/// [arrayRemove]) as the value of a field instead of a regular value; the
-/// backend replaces it with the described behavior instead of storing it
-/// literally.
+/// Assign one of these (via [serverTimestamp], [delete], [arrayUnion],
+/// [arrayRemove] or [increment]) as the value of a field instead of a regular
+/// value; the backend replaces it with the described behavior instead of
+/// storing it literally.
 class FieldValue {
   /// The payload associated with this [FieldValue], if any (for example the
-  /// elements passed to [arrayUnion]/[arrayRemove]). `null` for sentinels
-  /// that don't carry data, such as [serverTimestamp] and [delete].
+  /// elements passed to [arrayUnion]/[arrayRemove] or the number passed to
+  /// [increment]). `null` for sentinels that don't carry data, such as
+  /// [serverTimestamp] and [delete].
   Object? get data => null;
 
   /// Identifies which sentinel behavior this [FieldValue] represents.
@@ -414,10 +419,22 @@ class FieldValue {
     return FieldValueArray(FieldValueType.arrayRemove, data);
   }
 
+  /// A sentinel value that can be used with `set(merge: true)` or `update()`
+  /// that tells the server to add [value] to the current numeric value of
+  /// the field (with a plain `set()`, the field is simply set to [value]).
+  ///
+  /// If the field is not a number or does not exist yet, it is set to
+  /// [value]. If either [value] or the current field value is a [double],
+  /// the result is a [double]; otherwise it stays an [int]. Check
+  /// [FirestoreService.supportsFieldValueIncrement] before use.
+  factory FieldValue.increment(num value) {
+    return FieldValueIncrement(value);
+  }
+
   /// Creates a new [FieldValue] sentinel of the given [type].
   ///
   /// Prefer the named constructors/statics ([serverTimestamp], [delete],
-  /// [arrayUnion], [arrayRemove]) over calling this directly.
+  /// [arrayUnion], [arrayRemove], [increment]) over calling this directly.
   FieldValue(this.type);
 
   @override

@@ -75,7 +75,7 @@ code is unchanged. This is the quickest local Firestore for pure Dart tests.
   chosen at runtime or is a Flutter one.
 * Capabilities are all true except that transactions are not retried under
   contention: `supportsQuerySelect`, `supportsQuerySnapshotCursor`,
-  `supportsFieldValueArray`, `supportsTimestamps`,
+  `supportsFieldValueArray`, `supportsFieldValueIncrement`, `supportsTimestamps`,
   `supportsTimestampsInSnapshots`, `supportsDocumentSnapshotTime`,
   `supportsTrackChanges`, `supportsListCollections`,
   `supportsListMissingDocuments`, `supportsAggregateQueries`,

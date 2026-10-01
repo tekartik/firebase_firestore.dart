@@ -48,6 +48,10 @@ class FirestoreServiceSim
   @override
   bool get supportsFieldValueArray => false;
 
+  /// Assuming the server backend supports it (i.e. sembast).
+  @override
+  bool get supportsFieldValueIncrement => true;
+
   @override
   bool get supportsTrackChanges => true;
 

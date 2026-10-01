@@ -21,6 +21,9 @@ mixin FirestoreServiceDefaultMixin implements FirestoreService {
   bool get supportsFieldValueArray => false;
 
   @override
+  bool get supportsFieldValueIncrement => false;
+
+  @override
   bool get supportsQuerySelect => false;
 
   @override

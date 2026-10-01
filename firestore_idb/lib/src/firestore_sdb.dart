@@ -47,6 +47,9 @@ class FirestoreServiceSdb
   bool get supportsFieldValueArray => true;
 
   @override
+  bool get supportsFieldValueIncrement => true;
+
+  @override
   bool get supportsTrackChanges => true;
 
   @override

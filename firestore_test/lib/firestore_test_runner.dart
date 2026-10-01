@@ -1003,6 +1003,109 @@ void runFirestoreCommonTests({
           print('supportsFieldValueArray false');
         }
       });
+      test('increment', () async {
+        if (firestoreService.supportsFieldValueIncrement) {
+          var testsRef = getTestsRef();
+          var docRef = testsRef.doc('increment');
+
+          // Test creating a document with increments (no existing value)
+          var data = <String, Object?>{
+            'count': FieldValue.increment(2),
+            'text': 'value',
+            'sub': {'count': FieldValue.increment(1)},
+          };
+          await docRef.set(data);
+          data = (await docRef.get()).data;
+          expect(data, {
+            'count': 2,
+            'text': 'value',
+            'sub': {'count': 1},
+          });
+
+          // Test update, including a dotted path, a non-numeric field
+          // (overridden) and a missing field (created)
+          data = <String, Object?>{
+            'count': FieldValue.increment(3),
+            'sub.count': FieldValue.increment(-2),
+            'text': FieldValue.increment(1),
+            'missing': FieldValue.increment(1.5),
+          };
+          await docRef.update(data);
+          data = (await docRef.get()).data;
+          expect(data, {
+            'count': 5,
+            'text': 1,
+            'sub': {'count': -1},
+            'missing': 1.5,
+          });
+
+          // Test update mixing increments and regular values
+          data = <String, Object?>{
+            'count': FieldValue.increment(1),
+            'sub.other': 'other',
+          };
+          await docRef.update(data);
+          data = (await docRef.get()).data;
+          expect(data, {
+            'count': 6,
+            'text': 1,
+            'sub': {'count': -1, 'other': 'other'},
+            'missing': 1.5,
+          });
+
+          // Test update using set with merge, including a nested increment
+          data = <String, Object?>{
+            'count': FieldValue.increment(0.5),
+            'sub': {'count': FieldValue.increment(1)},
+            'merged_missing': FieldValue.increment(4),
+          };
+          await docRef.set(data, SetOptions(merge: true));
+          data = (await docRef.get()).data;
+          expect(data, {
+            'count': 6.5,
+            'text': 1,
+            'sub': {'count': 0, 'other': 'other'},
+            'missing': 1.5,
+            'merged_missing': 4,
+          });
+
+          // Test set no merge (replaces the document)
+          data = <String, Object?>{'count': FieldValue.increment(1)};
+          await docRef.set(data);
+          data = (await docRef.get()).data;
+          expect(data, {'count': 1});
+
+          // Test in a batch and in a transaction
+          var batch = firestore.batch();
+          batch.update(docRef, {'count': FieldValue.increment(10)});
+          batch.set(docRef, {
+            'other': FieldValue.increment(1),
+          }, SetOptions(merge: true));
+          await batch.commit();
+          data = (await docRef.get()).data;
+          expect(data, {'count': 11, 'other': 1});
+          await firestore.runTransaction((txn) async {
+            txn.update(docRef, {'count': FieldValue.increment(-1)});
+          });
+          data = (await docRef.get()).data;
+          expect(data, {'count': 10, 'other': 1});
+
+          // Test add (no existing value)
+          var addedRef = await testsRef.add({
+            'count': FieldValue.increment(3),
+            'sub': {'count': FieldValue.increment(-1.5)},
+          });
+          data = (await addedRef.get()).data;
+          expect(data, {
+            'count': 3,
+            'sub': {'count': -1.5},
+          });
+          await addedRef.delete();
+        } else {
+          // ignore: avoid_print
+          print('supportsFieldValueIncrement false');
+        }
+      });
     });
 
     group('DocumentReference', () {

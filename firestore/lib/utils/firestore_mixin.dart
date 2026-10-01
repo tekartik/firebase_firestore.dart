@@ -40,7 +40,11 @@ export 'package:tekartik_firebase_firestore/src/record_data.dart'
         documentDataMap,
         recordMapCreateTime,
         FieldValueArray,
-        fieldArrayValueMergeValue;
+        fieldArrayValueMergeValue,
+        FieldValueIncrement,
+        fieldValueIncrementMergeValue,
+        recordMapValueAtFieldPath,
+        updateDataResolveIncrements;
 
 /// Compares [snapshot] against a cursor described by [limitInfo] (a
 /// `startAt`/`startAfter`/`endAt`/`endBefore` value), ordered according to

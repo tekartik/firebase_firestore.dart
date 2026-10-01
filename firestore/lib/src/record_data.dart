@@ -40,6 +40,14 @@ Map<String, Object?>? recordMapMerge(
 }
 
 /// Generic record update using documentData.
+///
+/// Applies each entry of [documentData] (an `update` map whose keys are
+/// field paths, possibly dotted, see [getFieldParts]) onto a clone of
+/// [existing]: a regular value replaces the field (a map value replaces the
+/// whole map), [FieldValue.delete] removes it, [FieldValueArray] and
+/// [FieldValueIncrement] are merged with the current value of the field.
+/// Intermediate segments that are missing (or not maps) are created as maps.
+/// Returns [existing] unchanged if [documentData] is `null`.
 Map<String, Object?>? recordMapUpdate(
   Map<String, Object?>? existing,
   DocumentData? documentData,
@@ -51,17 +59,36 @@ Map<String, Object?>? recordMapUpdate(
       ? cloneMap(existing).cast<String, Object?>()
       : <String, Object?>{};
 
-  var map = expandUpdateData(documentDataMap(documentData)!.map)!;
-  map.forEach((String key, value) {
-    // devPrint('key $key');
+  documentDataMap(documentData)!.map.forEach((String key, value) {
+    var parts = getFieldParts(key);
+    // Find (or create) the map holding the leaf field.
+    var parent = recordMap;
+    for (var i = 0; i < parts.length - 1; i++) {
+      var part = parts[i];
+      var child = parent[part];
+      Map<String, Object?> childMap;
+      if (child is Map<String, Object?>) {
+        childMap = child;
+      } else if (child is Map) {
+        childMap = child.cast<String, Object?>();
+        parent[part] = childMap;
+      } else {
+        childMap = <String, Object?>{};
+        parent[part] = childMap;
+      }
+      parent = childMap;
+    }
+    var leaf = parts.last;
     // special delete field
     if (value == FieldValue.delete) {
       // remove
-      recordMap.remove(key);
+      parent.remove(leaf);
     } else if (value is FieldValueArray) {
-      recordMap[key] = fieldArrayValueMergeValue(value, recordMap[key]);
+      parent[leaf] = fieldArrayValueMergeValue(value, parent[leaf]);
+    } else if (value is FieldValueIncrement) {
+      parent[leaf] = fieldValueIncrementMergeValue(value, parent[leaf]);
     } else {
-      recordMap[key] = valueToJsonRecordValue(value);
+      parent[leaf] = valueToJsonRecordValue(value);
     }
   });
   return recordMap;
@@ -136,6 +163,8 @@ dynamic recordValueToValue(Firestore firestore, dynamic recordValue) {
     } else {
       return recordValue.data;
     }
+  } else if (recordValue is FieldValueIncrement) {
+    return recordValue.data;
   }
   throw ArgumentError(
     'recordValueToValue not supported $recordValue ${recordValue.runtimeType}',
@@ -166,6 +195,8 @@ extension DocumentDataExt on DocumentData {
         map.remove(key);
       } else if (value is FieldValueArray) {
         map[key.toString()] = fieldArrayValueMergeValue(value, map[key]);
+      } else if (value is FieldValueIncrement) {
+        map[key.toString()] = fieldValueIncrementMergeValue(value, map[key]);
       } else {
         if (value is Map) {
           var overrideMap = value;
@@ -230,6 +261,8 @@ Map<String, Object?>? documentDataToRecordMap(
         map.remove(key);
       } else if (value is FieldValueArray) {
         map[key] = fieldArrayValueMergeValue(value, map[key]);
+      } else if (value is FieldValueIncrement) {
+        map[key] = fieldValueIncrementMergeValue(value, map[key]);
       } else {
         /// recursive
         if (value is Map && map[key] is Map) {
@@ -304,6 +337,83 @@ List<Object?> fieldArrayValueToRecordMapNoMerge(
   }
 }
 
+/// Concrete [FieldValue] implementation backing [FieldValue.increment],
+/// carrying the number [data] to add to the current value of the field.
+class FieldValueIncrement extends FieldValue {
+  @override
+  final num data;
+
+  /// Creates a [FieldValueIncrement] adding [data] to the current value of
+  /// the field.
+  FieldValueIncrement(this.data) : super(FieldValueType.increment);
+
+  @override
+  String toString() => 'FieldValueIncrement($data)';
+}
+
+/// Applies [fieldValueIncrement] (an increment sentinel) onto [existing]
+/// (the current value stored for the field) and returns the resulting
+/// number.
+///
+/// When [existing] is a [num], the result is `existing + data` (a [double]
+/// if either operand is a [double], an [int] otherwise). When [existing] is
+/// not a number (including `null` for a missing field), the result is
+/// [FieldValueIncrement.data] itself, as on the Firestore server.
+num fieldValueIncrementMergeValue(
+  FieldValueIncrement fieldValueIncrement,
+  Object? existing,
+) {
+  if (existing is num) {
+    return existing + fieldValueIncrement.data;
+  }
+  return fieldValueIncrement.data;
+}
+
+/// Returns the value stored in [recordMap] at [fieldPath], a dotted field
+/// path (`'a.b'`, with backtick-escaping of segments containing a dot, see
+/// [getFieldParts]), or `null` if any segment is missing or if an
+/// intermediate segment is not a map.
+Object? recordMapValueAtFieldPath(Map recordMap, String fieldPath) {
+  var parts = getFieldParts(fieldPath);
+  Object? value = recordMap;
+  for (var part in parts) {
+    if (value is Map) {
+      value = value[part];
+    } else {
+      return null;
+    }
+  }
+  return value;
+}
+
+/// Resolves the [FieldValueIncrement] values of [updateData] (an `update`
+/// map whose keys are field paths, possibly dotted) against the current
+/// values of [recordMap] (see [fieldValueIncrementMergeValue] and
+/// [recordMapValueAtFieldPath]).
+///
+/// Returns a new map where each top-level increment is replaced by the
+/// resulting number; the other entries are kept as is (including increments
+/// nested in a map value, which replace the whole map and are therefore
+/// resolved without merging by [valueToJsonRecordValue]). [recordMap] is the
+/// existing record map, `null` if the document does not exist.
+Map<String, Object?> updateDataResolveIncrements(
+  Map<String, Object?> updateData,
+  Map<String, Object?>? recordMap,
+) {
+  return updateData.map((key, value) {
+    if (value is FieldValueIncrement) {
+      return MapEntry(
+        key,
+        fieldValueIncrementMergeValue(
+          value,
+          recordMap == null ? null : recordMapValueAtFieldPath(recordMap, key),
+        ),
+      );
+    }
+    return MapEntry(key, value);
+  });
+}
+
 /// Converts [value] to a record-map-storable value.
 ///
 /// Use [valueToJsonRecordValue] instead.
@@ -340,8 +450,9 @@ List listValueToJsonRecordListValue(
 /// [DateTime], [Timestamp], [DocumentReference], [Blob], [GeoPoint] and
 /// [VectorValue] are converted to their typed JSON encoding;
 /// [FieldValue.serverTimestamp] is resolved to the current time;
-/// [FieldValueArray] (arrayUnion/arrayRemove) is resolved without merging
-/// against any existing value. [chainConverter], when provided, replaces the
+/// [FieldValueArray] (arrayUnion/arrayRemove) and [FieldValueIncrement] are
+/// resolved without merging against any existing value (an increment yields
+/// its own number). [chainConverter], when provided, replaces the
 /// converter used recursively for nested map/list values (defaults to this
 /// function itself). Throws an [ArgumentError] for unsupported values; must
 /// not be called with a bare [FieldValue.delete].
@@ -377,6 +488,9 @@ dynamic valueToJsonRecordValue(
     } else if (value.type == FieldValueType.arrayRemove) {
       return <Object>[];
     }
+  } else if (value is FieldValueIncrement) {
+    // No existing value to add to.
+    return value.data;
   } else if (value is VectorValue) {
     return vectorToRecordValue(value);
   }

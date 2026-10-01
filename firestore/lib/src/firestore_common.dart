@@ -45,6 +45,10 @@ const String valueFieldValueDelete = '~delete';
 /// FieldValue server timestamp value.
 const String valueFieldValueServerTimestamp = '~serverTimestamp';
 
+/// FieldValue increment value: the json value is a map with this single key
+/// and the number to add as its value.
+const String valueFieldValueIncrement = '~increment';
+
 /// Type value to json.
 Map<String, Object?> typeValueToJson(String type, dynamic value) {
   return <String, Object?>{jsonTypeField: type, jsonValueField: value};
@@ -77,6 +81,10 @@ Map<String, Object?> fieldValueToJsonValue(FieldValue fieldValue) {
     return typeValueToJson(typeFieldValue, valueFieldValueDelete);
   } else if (fieldValue == FieldValue.serverTimestamp) {
     return typeValueToJson(typeFieldValue, valueFieldValueServerTimestamp);
+  } else if (fieldValue is FieldValueIncrement) {
+    return typeValueToJson(typeFieldValue, {
+      valueFieldValueIncrement: fieldValue.data,
+    });
   }
   throw ArgumentError.value(
     fieldValue,
@@ -91,6 +99,11 @@ FieldValue fieldValueFromJsonValue(dynamic value) {
     return FieldValue.delete;
   } else if (value == valueFieldValueServerTimestamp) {
     return FieldValue.serverTimestamp;
+  } else if (value is Map) {
+    var increment = value[valueFieldValueIncrement];
+    if (increment is num) {
+      return FieldValue.increment(increment);
+    }
   }
   throw ArgumentError.value(
     value,

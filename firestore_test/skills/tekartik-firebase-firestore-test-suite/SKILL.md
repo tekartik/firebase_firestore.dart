@@ -53,7 +53,8 @@ function you call from your own test file, so each implementation keeps its own
   `run(...)` and the top-level `testsRefPath` variable are deprecated.
 * The suite reads the capability flags of the service
   (`supportsQuerySelect`, `supportsTimestamps`, `supportsListCollections`,
-  `supportsAggregateQueries`, `supportsFieldValueArray`, `supportsBlobs`,
+  `supportsAggregateQueries`, `supportsFieldValueArray`,
+  `supportsFieldValueIncrement`, `supportsBlobs`,
   `supportsVectorValue`, `supportsTrackChanges`,
   `supportsRecordTrackChanges`, `Firestore.supportsTransaction`, ...) and
   skips what is unsupported. Report the flags honestly in the implementation

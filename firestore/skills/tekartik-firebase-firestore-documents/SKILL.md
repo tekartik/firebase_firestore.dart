@@ -27,8 +27,9 @@ obtained from a `FirestoreService`, never constructed directly.
   `Firestore.instance` (default app; throws if no Firestore product was
   registered). Prefer passing the `Firestore` explicitly to your classes.
 * Check `firestore.service.supportsXxx` before relying on optional features:
-  `supportsFieldValueArray`, `supportsTimestamps`, `supportsTimestampsInSnapshots`,
-  `supportsDocumentSnapshotTime`, `supportsBlobs`, `supportsVectorValue`,
+  `supportsFieldValueArray`, `supportsFieldValueIncrement`, `supportsTimestamps`,
+  `supportsTimestampsInSnapshots`, `supportsDocumentSnapshotTime`, `supportsBlobs`,
+  `supportsVectorValue`,
   `supportsRecordTrackChanges`, `supportsTrackChanges`, `supportsListCollections`,
   `supportsListMissingDocuments`.
 * References are cheap and do no I/O: `firestore.collection('users')`,
@@ -60,7 +61,11 @@ obtained from a `FirestoreService`, never constructed directly.
   are null unless `supportsDocumentSnapshotTime`.
 * Sentinels are static fields, not functions: `FieldValue.serverTimestamp`,
   `FieldValue.delete` (update/merge only), `FieldValue.arrayUnion([...])`,
-  `FieldValue.arrayRemove([...])` (the last two need `supportsFieldValueArray`).
+  `FieldValue.arrayRemove([...])` (the last two need `supportsFieldValueArray`),
+  `FieldValue.increment(n)` (needs `supportsFieldValueIncrement`): adds `n` to
+  the current number of the field, sets the field to `n` if it is missing or
+  not a number (a plain `set` stores `n`); the result is a `double` if `n` or
+  the current value is one.
 * Store dates as `Timestamp` (`Timestamp.now()`, `Timestamp.fromDateTime(dt)`,
   `Timestamp(seconds, nanoseconds)`, `Timestamp.parse(text)`) or `DateTime`.
   Read them back with `Timestamp.tryAnyAsTimestamp(value)` or
@@ -123,6 +128,8 @@ Future<void> userCrud(Firestore firestore, String userId) async {
     'email': FieldValue.delete,
     if (firestore.service.supportsFieldValueArray)
       'tags': FieldValue.arrayUnion(['flutter']),
+    if (firestore.service.supportsFieldValueIncrement)
+      'loginCount': FieldValue.increment(1),
   });
 
   var snapshot = await userRef.get();

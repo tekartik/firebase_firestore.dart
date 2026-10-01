@@ -49,6 +49,9 @@ class FirestoreServiceIdb
   bool get supportsFieldValueArray => true;
 
   @override
+  bool get supportsFieldValueIncrement => true;
+
+  @override
   bool get supportsTrackChanges => false;
 
   @override
@@ -131,12 +134,11 @@ class FirestoreIdb extends Object
   ) async {
     var documentData = DocumentData(data);
     var localTransaction = await getReadWriteTransaction();
-    var txn = localTransaction.transaction;
     var documentRef = getDocumentRef(url.join(path, _generateId()));
-    await txn
-        .objectStore(storeName)
-        .add(documentDataToJsonMap(documentData)!, documentRef.path);
-    await txn.completed;
+    // Like set: resolves the sentinel values (serverTimestamp, increment...)
+    // and writes the revision and times.
+    await txnSet(localTransaction, documentRef, documentData, null);
+    await localTransaction.completed;
     return documentRef;
   }
 

@@ -17,6 +17,10 @@ enum FieldValueType {
   /// Elements are removed from an existing array field. See
   /// [FieldValue.arrayRemove].
   arrayRemove,
+
+  /// A number is added to the current numeric value of the field. See
+  /// [FieldValue.increment].
+  increment,
 }
 
 /// Converts [value] to local time if it is a UTC [DateTime]; returns [value]

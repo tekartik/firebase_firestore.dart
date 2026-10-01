@@ -11,10 +11,14 @@ import 'package:tekartik_firebase_firestore/src/firestore_common.dart'
         documentDataMapFromJsonMap,
         documentDataMapToJsonMap,
         documentDataToJsonMap,
+        fieldValueFromJsonValue,
         fieldValueToJsonValue,
+        jsonToDocumentDataValueNoFirestore,
         jsonValueToDateTime,
         jsonValueToTimestamp,
         timestampToJsonValue;
+import 'package:tekartik_firebase_firestore/src/record_data.dart'
+    show FieldValueIncrement;
 import 'package:tekartik_firebase_firestore/utils/document_data.dart';
 import 'package:test/test.dart';
 
@@ -62,6 +66,33 @@ void main() {
         r'$t': 'FieldValue',
         r'$v': '~serverTimestamp',
       });
+      expect(fieldValueToJsonValue(FieldValue.increment(2)), {
+        r'$t': 'FieldValue',
+        r'$v': {'~increment': 2},
+      });
+      expect(fieldValueToJsonValue(FieldValue.increment(-1.5)), {
+        r'$t': 'FieldValue',
+        r'$v': {'~increment': -1.5},
+      });
+      expect(fieldValueFromJsonValue('~delete'), FieldValue.delete);
+      expect(
+        fieldValueFromJsonValue('~serverTimestamp'),
+        FieldValue.serverTimestamp,
+      );
+      var increment = fieldValueFromJsonValue({'~increment': 2});
+      expect(increment, isA<FieldValueIncrement>());
+      expect(increment.data, 2);
+      expect(fieldValueFromJsonValue({'~increment': 1.5}).data, 1.5);
+      expect(() => fieldValueFromJsonValue({'~other': 2}), throwsArgumentError);
+      expect(
+        jsonToDocumentDataValueNoFirestore({
+          'count': {
+            r'$t': 'FieldValue',
+            r'$v': {'~increment': 3},
+          },
+        }),
+        {'count': isA<FieldValueIncrement>()},
+      );
     });
   });
 

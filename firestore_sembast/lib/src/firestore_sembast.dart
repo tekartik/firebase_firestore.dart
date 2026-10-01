@@ -66,6 +66,9 @@ class FirestoreServiceSembast
   @override
   bool get supportsFieldValueArray => true;
 
+  @override
+  bool get supportsFieldValueIncrement => true;
+
   /// Visible for testing
   var _supportTrackChanges = true;
   @override
@@ -112,7 +115,10 @@ Map<String, Object?> firestoreDocumentDataToSembastUpdateMap(
   Map<String, Object?> recordMap,
 ) {
   var updateMap = <String, Object?>{};
-  documentDataMap(documentData)!.map.forEach((String key, value) {
+  updateDataResolveIncrements(
+    documentDataMap(documentData)!.map,
+    recordMap,
+  ).forEach((String key, value) {
     if (value is FieldValueArray) {
       updateMap[key] = fieldArrayValueMergeValue(value, recordMap[key]);
     } else {

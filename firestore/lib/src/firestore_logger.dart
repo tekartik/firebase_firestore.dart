@@ -1119,6 +1119,10 @@ class FirestoreServiceLogger
   bool get supportsFieldValueArray => firestoreService.supportsFieldValueArray;
 
   @override
+  bool get supportsFieldValueIncrement =>
+      firestoreService.supportsFieldValueIncrement;
+
+  @override
   bool get supportsQuerySelect => firestoreService.supportsQuerySelect;
 
   @override

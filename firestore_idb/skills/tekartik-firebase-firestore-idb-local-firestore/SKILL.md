@@ -52,7 +52,7 @@ and node backends, so app code does not change.
   and `Firestore.instance` (default app) return that instance afterwards.
 * Capabilities (check the `FirestoreService` flags, do not hardcode):
   `supportsQuerySelect`, `supportsQuerySnapshotCursor`,
-  `supportsFieldValueArray`, `supportsTimestamps`,
+  `supportsFieldValueArray`, `supportsFieldValueIncrement`, `supportsTimestamps`,
   `supportsTimestampsInSnapshots`, `supportsDocumentSnapshotTime`,
   `supportsVectorValue`, `supportsBlobs` and `Firestore.supportsTransaction`
   are true. `supportsListCollections` and `supportsAggregateQueries` are
