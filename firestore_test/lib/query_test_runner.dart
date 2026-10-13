@@ -249,6 +249,58 @@ void runFirestoreQueryTests({
       expect(querySnapshot.ids, [threeRef, twoRef, oneRef].ids);
     });
 
+    test('cursor_snapshot', () async {
+      var testsRef = getTestsRef();
+      var collRef = testsRef
+          .doc('collection_test')
+          .collection('cursor_snapshot');
+      await deleteCollection(firestore, collRef);
+      // The id order is not the value order.
+      var oneRef = collRef.doc('2_1');
+      await oneRef.set({'value': 1});
+      var twoRef = collRef.doc('3_2');
+      await twoRef.set({'value': 2});
+      var threeRef = collRef.doc('1_3');
+      await threeRef.set({'value': 3});
+
+      var query = collRef.orderBy('value');
+      var two = (await query.get()).docs[1];
+      expect(two.ref.path, twoRef.path);
+      expect(
+        (await query.startAt(snapshot: two).get()).ids,
+        [twoRef, threeRef].ids,
+      );
+      expect((await query.startAfter(snapshot: two).get()).ids, [threeRef].ids);
+      expect(
+        (await query.endAt(snapshot: two).get()).ids,
+        [oneRef, twoRef].ids,
+      );
+      expect((await query.endBefore(snapshot: two).get()).ids, [oneRef].ids);
+      var descendingQuery = collRef.orderBy('value', descending: true);
+      expect(
+        (await descendingQuery.startAfter(snapshot: two).get()).ids,
+        [oneRef].ids,
+      );
+    }, skip: !firestore.service.supportsQuerySnapshotCursor);
+
+    test('order_desc_ties', () async {
+      var testsRef = getTestsRef();
+      var collRef = testsRef
+          .doc('collection_test')
+          .collection('order_desc_ties');
+      await deleteCollection(firestore, collRef);
+      var aRef = collRef.doc('a');
+      await aRef.set({'value': 1});
+      var bRef = collRef.doc('b');
+      await bRef.set({'value': 1});
+      // The implicit document id order follows the last order by direction.
+      expect(
+        (await collRef.orderBy('value', descending: true).get()).ids,
+        [bRef, aRef].ids,
+      );
+      expect((await collRef.orderBy('value').get()).ids, [aRef, bRef].ids);
+    });
+
     test('complex', () async {
       var testsRef = getTestsRef();
       var collRef = testsRef.doc('collection_test').collection('many');
@@ -375,7 +427,7 @@ void runFirestoreQueryTests({
 
       // where == timestamp
       querySnapshot = await collRef
-          .where('timestamp', isGreaterThanOrEqualTo: Timestamp(2, 0))
+          .where('timestamp', isEqualTo: Timestamp(2, 0))
           .get();
       list = querySnapshot.docs;
 
@@ -430,6 +482,10 @@ void runFirestoreQueryTests({
         expect(list.length, 1);
         expect(list.first.ref.id, 'one');
       } catch (e) {
+        // The expectations must not be ignored.
+        if (e is TestFailure) {
+          rethrow;
+        }
         // ignore: avoid_print
         print('Allow rest failure: $e');
       }

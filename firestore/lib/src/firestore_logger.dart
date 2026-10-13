@@ -1149,6 +1149,16 @@ class FirestoreServiceLogger
   @override
   bool get supportsListMissingDocuments =>
       firestoreService.supportsListMissingDocuments;
+
+  @override
+  bool get supportsListCollections => firestoreService.supportsListCollections;
+
+  @override
+  bool get supportsVectorValue => firestoreService.supportsVectorValue;
+
+  @override
+  bool get supportsRecordTrackChanges =>
+      firestoreService.supportsRecordTrackChanges;
 }
 
 /// Debug extension for Logger.

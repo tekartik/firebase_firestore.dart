@@ -33,6 +33,21 @@ void main() {
     });
     expect(events.length, 1);
   });
+  test('supports flags', () {
+    var service = newFirestoreServiceMemory();
+    var logger = FirestoreServiceLogger(
+      firestoreService: service,
+      options: FirestoreLoggerOptions.all(log: (_) {}),
+    );
+    expect(logger.supportsListCollections, service.supportsListCollections);
+    expect(logger.supportsListCollections, isTrue);
+    expect(logger.supportsVectorValue, service.supportsVectorValue);
+    expect(logger.supportsVectorValue, isTrue);
+    expect(
+      logger.supportsRecordTrackChanges,
+      service.supportsRecordTrackChanges,
+    );
+  });
   runFirestoreTests(
     firebase: firebase,
     firestoreService: FirestoreServiceLogger(

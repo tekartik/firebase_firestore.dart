@@ -133,7 +133,7 @@ void runFirestoreTrackChangesTests({
           .collection('test');
       var docRef = collRef1.doc('doc1');
       var query1 = collRef1.limit(10);
-      var query2 = collRef1.limit(5);
+      var query2 = collRef2.limit(5);
       await deleteCollection(firestore, collRef1);
 
       await query1
@@ -146,7 +146,7 @@ void runFirestoreTrackChangesTests({
           .first;
       var completer1 = Completer<void>();
       var completer2 = Completer<void>();
-      var subscription1 = collRef1.onSnapshot().listen((snapshot) {
+      var subscription1 = query1.onSnapshot().listen((snapshot) {
         var docSnapshot = snapshot.docs
             .where((doc) => doc.ref.id == docRef.id)
             .firstOrNull;
@@ -154,7 +154,7 @@ void runFirestoreTrackChangesTests({
           completer1.complete();
         }
       });
-      var subscription2 = collRef2.onSnapshot().listen((snapshot) {
+      var subscription2 = query2.onSnapshot().listen((snapshot) {
         var docSnapshot = snapshot.docs
             .where((doc) => doc.ref.id == docRef.id)
             .firstOrNull;
@@ -170,5 +170,62 @@ void runFirestoreTrackChangesTests({
 
       await subscription1.cancel();
     }, skip: !firestoreService.supportsTrackChanges);
+
+    test('query document leaving the query', () async {
+      var collRef = getTestsRef()
+          .doc('query_document_leaving')
+          .collection('test');
+      var docRef = collRef.doc('doc1');
+      await deleteCollection(firestore, collRef);
+      var query = collRef.where('value', isEqualTo: 1);
+      var removedCompleter = Completer<void>();
+      var added = false;
+      var subscription = query.onSnapshot().listen((snapshot) {
+        for (var change in snapshot.documentChanges) {
+          if (change.document.ref.path != docRef.path) {
+            continue;
+          }
+          if (change.type == DocumentChangeType.added) {
+            added = true;
+          } else if (change.type == DocumentChangeType.removed && added) {
+            if (!removedCompleter.isCompleted) {
+              removedCompleter.complete();
+            }
+          }
+        }
+      });
+      await query.onSnapshot().where((s) => s.docs.isEmpty).first;
+      await docRef.set({'value': 1});
+      await query.onSnapshot().where((s) => s.docs.length == 1).first;
+      // No longer matching the query
+      await docRef.update({'value': 2});
+      await removedCompleter.future.timeout(const Duration(seconds: 30));
+      await subscription.cancel();
+    }, skip: !firestoreService.supportsTrackChanges);
+
+    test(
+      'transaction write notifies',
+      () async {
+        var docRef = getTestsRef().doc('transaction_write_notifies');
+        await docRef.delete();
+        var completer = Completer<void>();
+        var subscription = docRef.onSnapshot().listen((snapshot) {
+          if (snapshot.exists && snapshot.data['value'] == 1) {
+            if (!completer.isCompleted) {
+              completer.complete();
+            }
+          }
+        });
+        await firestore.runTransaction((txn) async {
+          await txn.get(docRef);
+          txn.set(docRef, {'value': 1});
+        });
+        await completer.future.timeout(const Duration(seconds: 30));
+        await subscription.cancel();
+      },
+      skip:
+          !firestoreService.supportsRecordTrackChanges ||
+          !firestore.supportsTransaction,
+    );
   });
 }

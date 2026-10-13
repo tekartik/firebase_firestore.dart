@@ -5,6 +5,8 @@ import 'dart:math';
 
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/firestore_mixin.dart'
+    show HasQueryInfo;
 
 /// Returns -1 to abort (existing count, 0 or more is returned)
 typedef TekartikFirestoreQueryActionFunction =
@@ -36,13 +38,10 @@ extension TekartikFirestoreQueryExt on Query {
 
     var maxRemainingCount = limit;
 
+    var keptIds = keepIds?.toSet() ?? <String>{};
     var deletedIds = <String>{};
-    if (keepIds != null) {
-      deletedIds.addAll(keepIds);
-    }
     var query = this;
-    int snapshotSize;
-    do {
+    while (true) {
       if (maxRemainingCount != null) {
         stepSize = min(stepSize, maxRemainingCount);
         if (stepSize <= 0) {
@@ -50,42 +49,49 @@ extension TekartikFirestoreQueryExt on Query {
         }
       }
 
-      var snapshot = await query.limit(stepSize).get();
-      snapshotSize = snapshot.docs.length;
+      // The kept documents can be returned again, get enough documents to
+      // have a full batch to delete (the kept ones cannot fill the page).
+      var pageSize = stepSize + keptIds.length;
+      var snapshot = await query.limit(pageSize).get();
 
-      // When there are no documents left, we are done
-      if (snapshotSize == 0) {
+      var refsToDelete = <DocumentReference>[];
+      var remainingCount = 0;
+      for (var doc in snapshot.docs) {
+        var id = doc.ref.id;
+        if (keptIds.contains(id) || deletedIds.contains(id)) {
+          continue;
+        }
+        remainingCount++;
+        if (refsToDelete.length < stepSize) {
+          refsToDelete.add(doc.ref);
+        }
+      }
+
+      // When there are no documents left to delete, we are done
+      if (refsToDelete.isEmpty) {
         break;
       }
 
-      var refsToDelete = <DocumentReference>[];
-
-      for (var doc in snapshot.docs) {
-        var ref = doc.ref;
-        var id = ref.id;
-        if (deletedIds.contains(id)) {
-          //devPrint('already deleted $path');
-          continue;
-        }
-        refsToDelete.add(ref);
+      // Delete documents in a batch
+      var batch = firestore.batch();
+      for (var ref in refsToDelete) {
+        batch.delete(ref);
       }
+      await batch.commit();
+
       var idsToDelete = refsToDelete.ids;
-      if (idsToDelete.isNotEmpty) {
-        // Delete documents in a batch
-        var batch = firestore.batch();
-        for (var ref in refsToDelete) {
-          batch.delete(ref);
-        }
-
-        await batch.commit();
-        deletedIds.addAll(idsToDelete);
-      }
+      deletedIds.addAll(idsToDelete);
       var docCount = idsToDelete.length;
       count += docCount;
       if (maxRemainingCount != null) {
         maxRemainingCount -= docCount;
       }
-    } while (snapshotSize >= stepSize);
+
+      // Not a full page and everything deleted, we are done.
+      if (snapshot.docs.length < pageSize && remainingCount == docCount) {
+        break;
+      }
+    }
 
     return count;
   }
@@ -105,6 +111,18 @@ extension TekartikFirestoreQueryExt on Query {
     CollectionReference dstCollectionRef, {
     int? batchSize,
   }) async {
+    // The existing order by fields (needed to start after the last document)
+    // if known.
+    var queryInfo = this is HasQueryInfo
+        ? (this as HasQueryInfo).queryInfo
+        : null;
+    var orderByFields = <String>[
+      if (queryInfo != null)
+        for (var orderBy in queryInfo.orderBys)
+          if (orderBy.fieldPath != firestoreNameFieldPath) orderBy.fieldPath!,
+    ];
+    var useSnapshotCursor =
+        queryInfo == null && firestore.service.supportsQuerySnapshotCursor;
     var query = orderBy(firestoreNameFieldPath);
     batchSize ??= 10;
     var count = 0;
@@ -129,7 +147,19 @@ extension TekartikFirestoreQueryExt on Query {
       await batch.commit();
       count += snapshot.docs.length;
 
-      query = query.startAfter(values: [snapshot.docs.last.ref.id]);
+      var lastDoc = snapshot.docs.last;
+      if (useSnapshotCursor) {
+        // Unknown order by, the snapshot gives the values.
+        query = query.startAfter(snapshot: lastDoc);
+      } else {
+        // Like queryAction, the existing order by values come first.
+        query = query.startAfter(
+          values: [
+            for (var field in orderByFields) lastDoc.data[field],
+            lastDoc.ref.id,
+          ],
+        );
+      }
     } while (snapshotSize >= batchSize);
 
     return count;

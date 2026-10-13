@@ -22,6 +22,7 @@ import 'firestore_collection_group_test_runner.dart';
 import 'firestore_document_test_runner.dart';
 import 'firestore_track_changes_support_test_runner.dart';
 import 'firestore_track_changes_test_runner.dart';
+import 'firestore_write_test_runner.dart';
 import 'list_collections_test_runner.dart';
 import 'list_documents_test_runner.dart';
 import 'query_test_runner.dart';
@@ -260,6 +261,11 @@ void runFirestoreCommonTests({
   group('firestore', () {
     vectorValueGroup(firestore: firestore, testContext: testContext);
     timestampGroup(
+      service: firestoreService,
+      firestore: firestore,
+      testContext: testContext,
+    );
+    firestoreWriteTestGroup(
       service: firestoreService,
       firestore: firestore,
       testContext: testContext,

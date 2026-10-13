@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:cv/cv.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_common_utils/map_utils.dart';
@@ -56,7 +57,7 @@ Map<String, Object?>? recordMapUpdate(
     return existing;
   }
   final recordMap = (existing != null)
-      ? cloneMap(existing).cast<String, Object?>()
+      ? _recordMapClone(existing)
       : <String, Object?>{};
 
   documentDataMap(documentData)!.map.forEach((String key, value) {
@@ -84,7 +85,7 @@ Map<String, Object?>? recordMapUpdate(
       // remove
       parent.remove(leaf);
     } else if (value is FieldValueArray) {
-      parent[leaf] = fieldArrayValueMergeValue(value, parent[leaf]);
+      parent[leaf] = _recordArrayMergeValue(value, parent[leaf]);
     } else if (value is FieldValueIncrement) {
       parent[leaf] = fieldValueIncrementMergeValue(value, parent[leaf]);
     } else {
@@ -92,6 +93,47 @@ Map<String, Object?>? recordMapUpdate(
     }
   });
   return recordMap;
+}
+
+/// Deep copy of a stored [recordMap] with typed maps and lists (some
+/// stores do not accept untyped nested maps).
+Map<String, Object?> _recordMapClone(Map recordMap) => recordMap.map(
+  (key, value) => MapEntry(key.toString(), _recordValueClone(value)),
+);
+
+Object? _recordValueClone(Object? value) {
+  if (value is Map) {
+    return _recordMapClone(value);
+  } else if (value is List) {
+    return value.map(_recordValueClone).toList();
+  }
+  return value;
+}
+
+/// arrayUnion/arrayRemove of [fieldValueArray] on [existing], a stored
+/// (record) value: the elements are encoded then compared deeply, so that
+/// typed values (Timestamp, reference...) and maps can be matched.
+List<Object?> _recordArrayMergeValue(
+  FieldValueArray fieldValueArray,
+  Object? existing,
+) {
+  const equality = DeepCollectionEquality();
+  bool contains(List<Object?> list, Object? value) =>
+      list.any((item) => equality.equals(item, value));
+  var list = existing is Iterable
+      ? existing.toList().cast<Object?>()
+      : <Object?>[];
+  var data = fieldValueArray.data.map(valueToJsonRecordValue).toList();
+  if (fieldValueArray.type == FieldValueType.arrayUnion) {
+    for (var value in data) {
+      if (!contains(list, value)) {
+        list.add(value);
+      }
+    }
+  } else if (fieldValueArray.type == FieldValueType.arrayRemove) {
+    list.removeWhere((item) => contains(data, item));
+  }
+  return list;
 }
 
 /// Builds a [DocumentDataMap] from a backend record [recordMap], resolving

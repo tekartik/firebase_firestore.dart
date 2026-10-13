@@ -63,7 +63,44 @@ int queryCompareSnapshotToLimit(
   var orderBys = queryInfo.orderBys;
   var documentId = limitInfo.documentId;
   if (documentId != null) {
-    return snapshot.ref.id.compareTo(documentId);
+    // The implicit document id order follows the last order by.
+    var idAscending = _queryIdAscending(queryInfo);
+    var cursorSnapshot = limitInfoCursorSnapshot(limitInfo);
+    if (cursorSnapshot != null && cursorSnapshot.exists) {
+      // Compare the order by values of the cursor snapshot first.
+      var nameOrdered = false;
+      for (var orderBy in orderBys) {
+        var fieldPath = orderBy.fieldPath!;
+        int cmp;
+        if (fieldPath == firestoreNameFieldPath) {
+          nameOrdered = true;
+          cmp = _compareHandleNull(
+            _getComparable(snapshot.ref.id),
+            _getComparable(documentId),
+            orderBy.ascending,
+          );
+        } else {
+          cmp = _compareHandleNull(
+            _getComparable(_snapshotValueAtFieldPath(snapshot, fieldPath)),
+            _getComparable(
+              _snapshotValueAtFieldPath(cursorSnapshot, fieldPath),
+            ),
+            orderBy.ascending,
+          );
+        }
+        if (cmp != 0) {
+          return cmp;
+        }
+      }
+      if (nameOrdered) {
+        return 0;
+      }
+    }
+    return _compareHandleNull(
+      _getComparable(snapshot.ref.id),
+      _getComparable(documentId),
+      idAscending,
+    );
   } else {
     var values = limitInfo.values!;
     var cmp = 0;
@@ -116,6 +153,45 @@ int queryCompareSnapshotToLimit(
       }
     }
     return cmp;
+  }
+}
+
+/// The direction of the implicit document id order: the one of the last
+/// order by (ascending if none).
+bool _queryIdAscending(QueryInfo queryInfo) =>
+    queryInfo.orderBys.isEmpty || queryInfo.orderBys.last.ascending;
+
+Object? _snapshotValueAtFieldPath(DocumentSnapshot snapshot, String fieldPath) {
+  if (snapshot is DocumentSnapshotBase) {
+    return (snapshot.documentData as DocumentDataMap?)?.valueAtFieldPath(
+      fieldPath,
+    );
+  }
+  return (DocumentData(snapshot.data) as DocumentDataMap).valueAtFieldPath(
+    fieldPath,
+  );
+}
+
+/// Resolve the snapshot of the cursors set from a document id only (i.e.
+/// received from a remote client) from [docs], so that the order by values
+/// can be compared.
+void _queryResolveCursorSnapshots(
+  QueryInfo queryInfo,
+  List<DocumentSnapshot> docs,
+) {
+  for (var limitInfo in [queryInfo.startLimit, queryInfo.endLimit]) {
+    if (limitInfo == null) {
+      continue;
+    }
+    var documentId = limitInfo.documentId;
+    if (documentId != null && limitInfoCursorSnapshot(limitInfo) == null) {
+      for (var doc in docs) {
+        if (doc.ref.id == documentId) {
+          limitInfoSetCursorSnapshot(limitInfo, doc);
+          break;
+        }
+      }
+    }
   }
 }
 
@@ -901,6 +977,7 @@ mixin FirestoreQueryMixin implements Query, HasQueryInfo {
     // Get and filter
     var docs = <DocumentSnapshot>[];
     var allDocs = await getCollectionDocuments();
+    _queryResolveCursorSnapshots(queryInfo, allDocs);
     for (var doc in allDocs) {
       if (snapshotMapQueryInfo(doc as DocumentSnapshotBase, queryInfo)) {
         docs.add(doc);
@@ -918,14 +995,18 @@ mixin FirestoreQueryMixin implements Query, HasQueryInfo {
       }
     }
 
+    if (!fieldPathFound) {
+      // The implicit document id order follows the last order by.
+      orderBys.add(
+        OrderByInfo(
+          fieldPath: firestoreNameFieldPath,
+          ascending: _queryIdAscending(queryInfo),
+        ),
+      );
+    }
+
     docs.sort((DocumentSnapshot snapshot1, DocumentSnapshot snapshot2) {
       var cmp = 0;
-
-      if (!fieldPathFound) {
-        orderBys.add(
-          OrderByInfo(fieldPath: firestoreNameFieldPath, ascending: true),
-        );
-      }
 
       for (var orderBy in orderBys) {
         final keyPath = orderBy.fieldPath!;
@@ -1098,21 +1179,41 @@ mixin FirestoreQueryMixin implements Query, HasQueryInfo {
       },
     );
 
+    // The paths of the documents of the last snapshot.
+    var lastPaths = <String>{};
+    Set<String> snapshotPaths(QuerySnapshot querySnapshot) =>
+        querySnapshot.docs.map((doc) => doc.ref.path).toSet();
     querySubscription = collectionSubscription.streamController.stream.listen(
       (DocumentChange collectionDocumentChange) async {
         final documentChange = collectionDocumentChange as DocumentChangeBase;
         // get the base data
         var querySnapshot = await get() as QuerySnapshotBase;
-        if (snapshotMapQueryInfo(
-          documentChange.document as DocumentSnapshotBase,
-          queryInfo!,
-        )) {
-          querySnapshot.documentChanges.add(documentChange);
-        } else if (documentChange.type == DocumentChangeType.removed) {
-          if (querySnapshot.contains(documentChange.documentBase)) {
-            querySnapshot.documentChanges.add(documentChange);
-          }
+        var path = documentChange.document.ref.path;
+        var wasInQuery = lastPaths.contains(path);
+        var isInQuery = querySnapshot.contains(documentChange.documentBase);
+        if (isInQuery) {
+          querySnapshot.documentChanges.add(
+            subscriptionMixin.documentChange(
+              wasInQuery
+                  ? DocumentChangeType.modified
+                  : DocumentChangeType.added,
+              documentChange.document,
+              documentChange.newIndex,
+              documentChange.oldIndex,
+            ),
+          );
+        } else if (wasInQuery) {
+          // Deleted or no longer matching the query.
+          querySnapshot.documentChanges.add(
+            subscriptionMixin.documentChange(
+              DocumentChangeType.removed,
+              documentChange.document,
+              documentChange.newIndex,
+              documentChange.oldIndex,
+            ),
+          );
         }
+        lastPaths = snapshotPaths(querySnapshot);
         controller.add(querySnapshot);
       },
       onDone: () {
@@ -1122,6 +1223,7 @@ mixin FirestoreQueryMixin implements Query, HasQueryInfo {
 
     // Get the first batch
     get().then((QuerySnapshot querySnaphost) {
+      lastPaths = snapshotPaths(querySnaphost);
       var querySnapshotBase = querySnaphost as QuerySnapshotBase;
       // set index
       var index = 0;

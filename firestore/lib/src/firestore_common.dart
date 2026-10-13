@@ -365,6 +365,37 @@ class OrderByInfo {
   String toString() => '$fieldPath ${ascending ? 'ASC' : 'DESC'}';
 }
 
+/// The snapshot of a cursor set from a snapshot (not serialized, only used
+/// by the in-memory query execution to compare the order by values).
+final _limitInfoCursorSnapshots = Expando<DocumentSnapshot>();
+
+/// The snapshot of [limitInfo] set from a snapshot, if known.
+DocumentSnapshot? limitInfoCursorSnapshot(LimitInfo limitInfo) =>
+    _limitInfoCursorSnapshots[limitInfo];
+
+/// Set the snapshot of [limitInfo].
+void limitInfoSetCursorSnapshot(
+  LimitInfo limitInfo,
+  DocumentSnapshot? snapshot,
+) {
+  _limitInfoCursorSnapshots[limitInfo] = snapshot;
+}
+
+LimitInfo _cursorLimitInfo(
+  DocumentSnapshot? snapshot,
+  List? values,
+  bool inclusive,
+) {
+  var limitInfo = LimitInfo()
+    ..documentId = snapshot?.ref.id
+    ..values = values
+    ..inclusive = inclusive;
+  if (snapshot != null) {
+    limitInfoSetCursorSnapshot(limitInfo, snapshot);
+  }
+  return limitInfo;
+}
+
 /// Limit info.
 class LimitInfo {
   /// Document id.
@@ -384,10 +415,12 @@ class LimitInfo {
 
   /// Clone.
   LimitInfo clone() {
-    return LimitInfo()
+    var clone = LimitInfo()
       ..documentId = documentId
       ..values = values
       ..inclusive = inclusive;
+    _limitInfoCursorSnapshots[clone] = _limitInfoCursorSnapshots[this];
+    return clone;
   }
 
   @override
@@ -563,34 +596,22 @@ class QueryInfo {
   /// Sets [startLimit] to an inclusive cursor at [snapshot] (by document id)
   /// and/or [values] (relative to [orderBys]). See [Query.startAt].
   void startAt({DocumentSnapshot? snapshot, List? values}) =>
-      startLimit = (LimitInfo()
-        ..documentId = snapshot?.ref.id
-        ..values = values
-        ..inclusive = true);
+      startLimit = _cursorLimitInfo(snapshot, values, true);
 
   /// Sets [startLimit] to an exclusive cursor after [snapshot] (by document
   /// id) and/or [values] (relative to [orderBys]). See [Query.startAfter].
   void startAfter({DocumentSnapshot? snapshot, List? values}) =>
-      startLimit = (LimitInfo()
-        ..documentId = snapshot?.ref.id
-        ..values = values
-        ..inclusive = false);
+      startLimit = _cursorLimitInfo(snapshot, values, false);
 
   /// Sets [endLimit] to an inclusive cursor at [snapshot] (by document id)
   /// and/or [values] (relative to [orderBys]). See [Query.endAt].
   void endAt({DocumentSnapshot? snapshot, List? values}) =>
-      endLimit = (LimitInfo()
-        ..documentId = snapshot?.ref.id
-        ..values = values
-        ..inclusive = true);
+      endLimit = _cursorLimitInfo(snapshot, values, true);
 
   /// Sets [endLimit] to an exclusive cursor before [snapshot] (by document
   /// id) and/or [values] (relative to [orderBys]). See [Query.endBefore].
   void endBefore({DocumentSnapshot? snapshot, List? values}) =>
-      endLimit = (LimitInfo()
-        ..documentId = snapshot?.ref.id
-        ..values = values
-        ..inclusive = false);
+      endLimit = _cursorLimitInfo(snapshot, values, false);
 
   /// Appends [where] to [wheres].
   void addWhere(WhereInfo where) {

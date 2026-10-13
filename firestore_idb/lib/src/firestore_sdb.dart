@@ -1,7 +1,7 @@
 import 'package:idb_shim/sdb.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
-import 'package:tekartik_firebase_firestore/utils/document_data.dart';
+import 'package:tekartik_firebase_firestore/src/common/local_record_write.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:uuid/uuid.dart';
 
@@ -137,15 +137,40 @@ class FirestoreSdb extends Object
     FutureOr<T> Function(Transaction transaction) updateFunction,
   ) async {
     var db = await databaseReady;
-    return await db.inStoreTransaction(docStore, SdbTransactionMode.readWrite, (
+    late T result;
+    late LocalTransactionSdb localTransaction;
+    await db.inStoreTransaction(docStore, SdbTransactionMode.readWrite, (
       txn,
     ) async {
-      var localTransaction = LocalTransactionSdb(this, txn);
-      var txnSdb = TransactionSdb(this, localTransaction);
-      var result = await updateFunction(txnSdb);
-      localTransaction.notify();
-      return result;
+      localTransaction = LocalTransactionSdb(this, txn);
+      var transaction = TransactionSdb(this, localTransaction);
+      result = await updateFunction(transaction);
+      // Like a batch, the writes are done after the transaction function.
+      await txnWrite(localTransaction, transaction.operations);
     });
+    // Notified once committed.
+    localTransaction.notify();
+    return result;
+  }
+
+  /// Commit [operations] in a new transaction and notifies the listeners.
+  ///
+  /// Nothing is written if an operation fails (update of a missing document).
+  Future<List<WriteResultSdb>> _commit(
+    Iterable<WriteBatchOperation> operations,
+  ) async {
+    var db = await databaseReady;
+    late LocalTransactionSdb localTransaction;
+    var results = await db.inStoreTransaction(
+      docStore,
+      SdbTransactionMode.readWrite,
+      (txn) async {
+        localTransaction = LocalTransactionSdb(this, txn);
+        return await txnWrite(localTransaction, operations);
+      },
+    );
+    localTransaction.notify();
+    return results;
   }
 
   /// Add a document.
@@ -153,16 +178,10 @@ class FirestoreSdb extends Object
     String path,
     Map<String, Object?> data,
   ) async {
-    var db = await databaseReady;
     var documentRef = getDocumentRef(url.join(path, _generateId()));
-    await db.inStoreTransaction(docStore, SdbTransactionMode.readWrite, (
-      txn,
-    ) async {
-      var localTransaction = LocalTransactionSdb(this, txn);
-
-      await txnSet(localTransaction, documentRef, DocumentData(data), null);
-      localTransaction.notify();
-    });
+    await _commit([
+      WriteBatchOperationSet(documentRef, DocumentData(data), null),
+    ]);
     return documentRef;
   }
 
@@ -172,15 +191,7 @@ class FirestoreSdb extends Object
     DocumentData documentData,
     SetOptions? options,
   ) async {
-    var db = await databaseReady;
-    await db.inStoreTransaction(docStore, SdbTransactionMode.readWrite, (
-      txn,
-    ) async {
-      var localTransaction = LocalTransactionSdb(this, txn);
-
-      await txnSet(localTransaction, documentRef, documentData, options);
-      localTransaction.notify();
-    });
+    await _commit([WriteBatchOperationSet(documentRef, documentData, options)]);
     return documentRef;
   }
 
@@ -189,43 +200,39 @@ class FirestoreSdb extends Object
     DocumentReferenceSdb documentRef,
     DocumentData documentData,
   ) async {
-    var db = await databaseReady;
-    await db.inStoreTransaction(docStore, SdbTransactionMode.readWrite, (
-      txn,
-    ) async {
-      var localTransaction = LocalTransactionSdb(this, txn);
-
-      await txnUpdate(localTransaction, documentRef, documentData);
-      localTransaction.notify();
-    });
+    await _commit([WriteBatchOperationUpdate(documentRef, documentData)]);
     return documentRef;
   }
 
   /// Delete a document snapshot.
   Future deleteDocument(DocumentReferenceSdb documentReferenceSdb) async {
-    var db = await databaseReady;
-    await db.inStoreTransaction(docStore, SdbTransactionMode.readWrite, (
-      txn,
-    ) async {
-      var localTransaction = LocalTransactionSdb(this, txn);
-
-      await txnDelete(localTransaction, documentReferenceSdb);
-      localTransaction.notify();
-    });
+    await _commit([WriteBatchOperationDelete(documentReferenceSdb)]);
   }
 
-  /// Transaction delete.
-  Future<WriteResultSdb> txnDelete(
+  /// Write [operations] in [localTransaction].
+  ///
+  /// The writes are computed first so that nothing is written if an
+  /// operation fails (update of a missing document).
+  Future<List<WriteResultSdb>> txnWrite(
     LocalTransactionSdb localTransaction,
-    DocumentReferenceSdb ref,
+    Iterable<WriteBatchOperation> operations,
   ) async {
-    var result = WriteResultSdb(ref.path);
     var txn = localTransaction.transaction;
-    var snapshot = await txnGet(localTransaction, ref);
-    result.previousSnapshot = snapshot;
-    await docStore.record(ref.path).delete(txn);
-    localTransaction.results.add(result);
-    return result;
+    var results = await localCommitWrites(
+      this,
+      operations,
+      read: (path) async => (await docStore.record(path).get(txn))?.value,
+      write: (path, recordMap) async {
+        if (recordMap == null) {
+          await docStore.record(path).delete(txn);
+        } else {
+          await docStore.record(path).put(txn, recordMap);
+        }
+      },
+      newResult: WriteResultSdb.new,
+    );
+    localTransaction.results.addAll(results);
+    return results;
   }
 
   /// Transaction get.
@@ -257,89 +264,6 @@ class FirestoreSdb extends Object
 
       documentDataFromRecordMap(this, recordMap),
     );
-  }
-
-  /// Transaction set.
-  Future<WriteResultSdb> txnSet(
-    LocalTransactionSdb localTransaction,
-    DocumentReferenceSdb documentRef,
-    DocumentData documentData,
-    SetOptions? options,
-  ) async {
-    var result = WriteResultSdb(documentRef.path);
-    var txn = localTransaction.transaction;
-    var snapshot = await txnGet(localTransaction, documentRef);
-    result.previousSnapshot = snapshot;
-
-    Map<String, Object?>? recordMap;
-
-    // Update rev
-    final rev = (snapshot.rev ?? 0) + 1;
-
-    DocumentData newDocumentData;
-    // merging?
-    if (options?.merge == true) {
-      if (snapshot.exists) {
-        newDocumentData = DocumentData(
-          cloneMap(snapshot.data).cast<String, Object?>(),
-        );
-      } else {
-        newDocumentData = DocumentData();
-      }
-      newDocumentData.merge(documentData);
-      recordMap = newDocumentData.toJsonRecordValueMap();
-    } else {
-      recordMap = documentData.toJsonRecordValueMap();
-    }
-
-    recordMap[revKey] = rev;
-
-    // set update Time
-    var now = Timestamp.now();
-    recordMap[createTimeKey] = (result.previousSnapshot?.createTime ?? now)
-        .toIso8601String();
-    recordMap[updateTimeKey] = now.toIso8601String();
-
-    result.newSnapshot = documentFromRecordMap(documentRef, recordMap);
-
-    await docStore.record(documentRef.path).put(txn, recordMap);
-    localTransaction.results.add(result);
-    return result;
-  }
-
-  /// Transaction update.
-  Future<WriteResultSdb> txnUpdate(
-    LocalTransactionSdb localTransaction,
-    DocumentReferenceSdb documentRef,
-    DocumentData documentData,
-  ) async {
-    var result = WriteResultSdb(documentRef.path);
-    var txn = localTransaction.transaction;
-    var snapshot = await txnGet(localTransaction, documentRef);
-    if (!snapshot.exists) {
-      throw Exception(
-        'update failed, record ${documentRef.path} does not exist',
-      );
-    }
-    result.previousSnapshot = snapshot;
-
-    var map = cloneMap(snapshot.data);
-    map = recordMapUpdate(map, documentData)!;
-
-    // Update rev
-    final rev = (snapshot.rev ?? 0) + 1;
-    map[revKey] = rev;
-
-    var now = Timestamp.now();
-    map[createTimeKey] = (result.previousSnapshot?.createTime ?? now)
-        .toIso8601String();
-    map[updateTimeKey] = now.toIso8601String();
-
-    result.newSnapshot = documentFromRecordMap(documentRef, map);
-
-    await docStore.record(documentRef.path).put(txn, map);
-    localTransaction.results.add(result);
-    return result;
   }
 
   @override
@@ -411,6 +335,8 @@ class LocalTransactionSdb {
 }
 
 /// Transaction SDB.
+///
+/// Like a batch, the writes are committed after the transaction function.
 class TransactionSdb extends WriteBatchSdb implements Transaction {
   /// Local transaction.
   final LocalTransactionSdb localTransaction;
@@ -419,44 +345,11 @@ class TransactionSdb extends WriteBatchSdb implements Transaction {
   TransactionSdb(super.firestore, this.localTransaction);
 
   @override
-  void delete(DocumentReference documentRef) {
-    localTransaction.firestoreSdb.txnDelete(
-      localTransaction,
-      documentRef as DocumentReferenceSdb,
-    );
-  }
-
-  @override
   Future<DocumentSnapshot> get(DocumentReference documentRef) async =>
       localTransaction.firestoreSdb.txnGet(
         localTransaction,
         documentRef as DocumentReferenceSdb,
       );
-
-  @override
-  void set(
-    DocumentReference documentRef,
-    Map<String, Object?> data, [
-    SetOptions? options,
-  ]) {
-    localTransaction.firestoreSdb.txnSet(
-      localTransaction,
-      documentRef as DocumentReferenceSdb,
-
-      DocumentData(data),
-      options,
-    );
-  }
-
-  @override
-  void update(DocumentReference documentRef, Map<String, Object?> data) {
-    localTransaction.firestoreSdb.txnUpdate(
-      localTransaction,
-      documentRef as DocumentReferenceSdb,
-
-      DocumentData(data),
-    );
-  }
 }
 
 /// Document snapshot SDB.
@@ -663,53 +556,12 @@ class WriteBatchSdb extends WriteBatchBase implements WriteBatch {
   WriteBatchSdb(this.firestore);
 
   /// Transaction commit.
-  Future<List<WriteResultSdb>> txnCommit(LocalTransactionSdb txn) async {
-    final results = <WriteResultSdb>[];
-    for (var operation in operations) {
-      if (operation is WriteBatchOperationDelete) {
-        results.add(
-          await firestore.txnDelete(
-            txn,
-            operation.docRef as DocumentReferenceSdb,
-          ),
-        );
-      } else if (operation is WriteBatchOperationSet) {
-        results.add(
-          await firestore.txnSet(
-            txn,
-            operation.docRef as DocumentReferenceSdb,
-            operation.documentData,
-            operation.options,
-          ),
-        );
-      } else if (operation is WriteBatchOperationUpdate) {
-        results.add(
-          await firestore.txnUpdate(
-            txn,
-            operation.docRef as DocumentReferenceSdb,
-            operation.documentData,
-          ),
-        );
-      } else {
-        throw UnsupportedError('not supported $operation');
-      }
-    }
-    return results;
-  }
+  Future<List<WriteResultSdb>> txnCommit(LocalTransactionSdb txn) =>
+      firestore.txnWrite(txn, operations);
 
   @override
   Future commit() async {
-    var db = await firestore.databaseReady;
-    await db.inStoreTransaction(
-      firestore.docStore,
-      SdbTransactionMode.readWrite,
-      (txn) async {
-        var localTransaction = LocalTransactionSdb(firestore, txn);
-
-        await txnCommit(localTransaction);
-        localTransaction.notify();
-      },
-    );
+    await firestore._commit(operations);
   }
 }
 

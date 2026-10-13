@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
+import 'package:tekartik_firebase_firestore/utils/auto_id_generator.dart';
 import 'package:tekartik_firebase_firestore_sim/src/firestore_sim_common.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
 import 'package:tekartik_firebase_sim/src/firebase_sim_client.dart'; // ignore: implementation_imports
@@ -594,8 +595,11 @@ class CollectionReferenceSim extends Object
   }
 
   @override
-  DocumentReference doc([String? path]) =>
-      DocumentReferenceSim(firestoreSim, url.join(this.path, path));
+  DocumentReference doc([String? path]) => DocumentReferenceSim(
+    firestoreSim,
+    // Like the other implementations, an id is generated if none.
+    url.join(this.path, path ?? AutoIdGenerator.autoId()),
+  );
 
   @override
   String get id => url.basename(path);

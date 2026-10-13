@@ -118,6 +118,53 @@ void runUtilsQueryTest({
       expect(await query.queryDelete(limit: 7, batchSize: 3), 7);
       expect(await getCount(), 3);
     });
+    test('queryDelete keepIds', () async {
+      var ref = firestore.collection(
+        url.join(testsRefPath, 'utils_query', 'delete_keep_ids'),
+      );
+      await ref.queryDelete();
+      for (var i = 0; i < 5; i++) {
+        await ref.doc('item$i').set({'value': i});
+      }
+      // The kept documents fill the first batch.
+      var count = await ref.queryDelete(
+        batchSize: 2,
+        keepIds: ['item0', 'item1'],
+      );
+      expect(count, 3);
+      expect((await ref.get()).docs.map((doc) => doc.ref.id).toSet(), {
+        'item0',
+        'item1',
+      });
+      await ref.queryDelete();
+    });
+
+    test('queryCopyTo ordered query', () async {
+      var srcRef = firestore.collection(
+        url.join(testsRefPath, 'utils_query', 'copy_ordered_src'),
+      );
+      var dstRef = firestore.collection(
+        url.join(testsRefPath, 'utils_query', 'copy_ordered_dst'),
+      );
+      await srcRef.queryDelete();
+      await dstRef.queryDelete();
+      // The id order is not the value order.
+      await srcRef.doc('b').set({'value': 1});
+      await srcRef.doc('a').set({'value': 2});
+      await srcRef.doc('c').set({'value': 3});
+      var count = await srcRef
+          .orderBy('value')
+          .queryCopyTo(dstRef, batchSize: 1);
+      expect(count, 3);
+      expect((await dstRef.get()).docs.map((doc) => doc.ref.id).toSet(), {
+        'a',
+        'b',
+        'c',
+      });
+      await srcRef.queryDelete();
+      await dstRef.queryDelete();
+    });
+
     test('actionQuery batchSize and limit', () async {
       var collRef = firestore.collection(
         url.join(testsRefPath, 'utils_query', 'action_query'),

@@ -2,7 +2,7 @@
 import 'package:idb_shim/idb.dart' as idb;
 import 'package:path/path.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
-import 'package:tekartik_firebase_firestore/utils/document_data.dart';
+import 'package:tekartik_firebase_firestore/src/common/local_record_write.dart'; // ignore: implementation_imports
 
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:uuid/uuid.dart';
@@ -121,10 +121,16 @@ class FirestoreIdb extends Object
     FutureOr<T> Function(Transaction transaction) updateFunction,
   ) async {
     var localTransaction = await getReadWriteTransaction();
-    var txn = TransactionIdb(this, localTransaction);
-    var result = await updateFunction(txn);
-    await localTransaction.completed;
-    localTransaction.notify();
+    var transaction = TransactionIdb(this, localTransaction);
+    T result;
+    try {
+      result = await updateFunction(transaction);
+    } catch (_) {
+      // The writes are only done on commit, nothing was written.
+      await localTransaction.completedIgnoringErrors;
+      rethrow;
+    }
+    await txnCommit(localTransaction, transaction.operations);
     return result;
   }
 
@@ -132,13 +138,10 @@ class FirestoreIdb extends Object
     String path,
     Map<String, Object?> data,
   ) async {
-    var documentData = DocumentData(data);
-    var localTransaction = await getReadWriteTransaction();
     var documentRef = getDocumentRef(url.join(path, _generateId()));
-    // Like set: resolves the sentinel values (serverTimestamp, increment...)
-    // and writes the revision and times.
-    await txnSet(localTransaction, documentRef, documentData, null);
-    await localTransaction.completed;
+    await _commit([
+      WriteBatchOperationSet(documentRef, DocumentData(data), null),
+    ]);
     return documentRef;
   }
 
@@ -147,10 +150,7 @@ class FirestoreIdb extends Object
     DocumentData documentData,
     SetOptions? options,
   ) async {
-    var localTransaction = await getReadWriteTransaction();
-
-    await txnSet(localTransaction, documentRef, documentData, options);
-    await localTransaction.completed;
+    await _commit([WriteBatchOperationSet(documentRef, documentData, options)]);
     return documentRef;
   }
 
@@ -158,10 +158,7 @@ class FirestoreIdb extends Object
     DocumentReferenceIdb documentRef,
     DocumentData documentData,
   ) async {
-    var localTransaction = await getReadWriteTransaction();
-
-    await txnUpdate(localTransaction, documentRef, documentData);
-    await localTransaction.completed;
+    await _commit([WriteBatchOperationUpdate(documentRef, documentData)]);
     return documentRef;
   }
 
@@ -175,46 +172,85 @@ class FirestoreIdb extends Object
   }
 
   Future deleteDocument(DocumentReferenceIdb documentReferenceIdb) async {
-    var localTransaction = await getReadWriteTransaction();
-
-    await txnDelete(localTransaction, documentReferenceIdb);
-    await localTransaction.completed;
+    await _commit([WriteBatchOperationDelete(documentReferenceIdb)]);
   }
 
-  Future<WriteResultIdb> txnDelete(
+  /// Commit [operations] in a new transaction.
+  Future<List<WriteResultIdb>> _commit(
+    Iterable<WriteBatchOperation> operations,
+  ) async => txnCommit(await getReadWriteTransaction(), operations);
+
+  /// Write [operations] in [localTransaction], waits for its completion and
+  /// notifies the listeners.
+  ///
+  /// Nothing is written if an operation fails (update of a missing document).
+  Future<List<WriteResultIdb>> txnCommit(
     LocalTransaction localTransaction,
-    DocumentReferenceIdb ref,
-  ) {
-    var result = WriteResultIdb(ref.path);
-    var txn = localTransaction.transaction;
-    // read the previous one for the notifications
-    return txnGet(localTransaction, ref)
-        .then((snapshot) {
-          result.previousSnapshot = snapshot;
-          return txn.objectStore(storeName).delete(ref.path);
-        })
-        .then((_) {
-          return result;
-        });
+    Iterable<WriteBatchOperation> operations,
+  ) async {
+    List<WriteResultIdb> results;
+    try {
+      results = await txnWrite(localTransaction, operations);
+    } catch (_) {
+      await localTransaction.completedIgnoringErrors;
+      rethrow;
+    }
+    await localTransaction.completed;
+    localTransaction.notify();
+    return results;
+  }
+
+  /// Write [operations] in [localTransaction] (without waiting for its
+  /// completion).
+  ///
+  /// The writes are computed first so that nothing is written if an
+  /// operation fails (update of a missing document).
+  Future<List<WriteResultIdb>> txnWrite(
+    LocalTransaction localTransaction,
+    Iterable<WriteBatchOperation> operations,
+  ) async {
+    var store = localTransaction.transaction.objectStore(storeName);
+    var results = await localCommitWrites(
+      this,
+      operations,
+      read: (path) => txnGetRecordMap(localTransaction, path),
+      write: (path, recordMap) async {
+        if (recordMap == null) {
+          await store.delete(path);
+        } else {
+          await store.put(recordMap, path);
+        }
+      },
+      newResult: WriteResultIdb.new,
+    );
+    localTransaction.results.addAll(results);
+    return results;
+  }
+
+  /// The stored record map of [path], `null` if none.
+  Future<Map<String, Object?>?> txnGetRecordMap(
+    LocalTransaction localTransaction,
+    String path,
+  ) async {
+    var value = await localTransaction.transaction
+        .objectStore(storeName)
+        .getObject(path);
+    // we assume it is always a map
+    return (value as Map?)?.cast<String, Object?>();
   }
 
   Future<DocumentSnapshotIdb> txnGet(
     LocalTransaction localTransaction,
     DocumentReferenceIdb documentReferenceIdb,
-  ) {
-    var txn = localTransaction.transaction;
-    return txn.objectStore(storeName).getObject(documentReferenceIdb.path).then(
-      (value) {
-        // we assume it is always a map
-        final recordMap = (value as Map?)?.cast<String, Object?>();
-
-        return DocumentSnapshotIdb(
-          documentReferenceIdb,
-          recordMap == null ? null : RecordMetaData.fromRecordMap(recordMap),
-
-          documentDataFromRecordMap(this, recordMap),
-        );
-      },
+  ) async {
+    final recordMap = await txnGetRecordMap(
+      localTransaction,
+      documentReferenceIdb.path,
+    );
+    return DocumentSnapshotIdb(
+      documentReferenceIdb,
+      recordMap == null ? null : RecordMetaData.fromRecordMap(recordMap),
+      documentDataFromRecordMap(this, recordMap),
     );
   }
 
@@ -224,79 +260,6 @@ class FirestoreIdb extends Object
     var localTransaction = await getReadWriteTransaction();
 
     return txnGet(localTransaction, documentRef);
-  }
-
-  Future<WriteResultIdb> txnSet(
-    LocalTransaction localTransaction,
-    DocumentReferenceIdb documentRef,
-    DocumentData documentData,
-    SetOptions? options,
-  ) {
-    var result = WriteResultIdb(documentRef.path);
-    var txn = localTransaction.transaction;
-
-    return txnGet(localTransaction, documentRef).then((snapshot) {
-      result.previousSnapshot = snapshot;
-
-      Map<String, Object?>? recordMap;
-
-      // Update rev
-      final rev = (snapshot.rev ?? 0) + 1;
-
-      DocumentData newDocumentData;
-      // merging?
-      if (options?.merge == true) {
-        if (snapshot.exists) {
-          newDocumentData = DocumentData(
-            cloneMap(snapshot.data).cast<String, Object?>(),
-          );
-        } else {
-          newDocumentData = DocumentData();
-        }
-        newDocumentData.merge(documentData);
-        recordMap = newDocumentData.toJsonRecordValueMap();
-      } else {
-        recordMap = documentData.toJsonRecordValueMap();
-      }
-
-      recordMap[revKey] = rev;
-
-      // set update Time
-      var now = Timestamp.now();
-      recordMap[createTimeKey] = (result.previousSnapshot?.createTime ?? now)
-          .toIso8601String();
-      recordMap[updateTimeKey] = now.toIso8601String();
-
-      result.newSnapshot = documentFromRecordMap(documentRef, recordMap);
-
-      // TODO
-      return txn.objectStore(storeName).put(recordMap, documentRef.path).then((
-        _,
-      ) {
-        return result;
-      });
-    });
-  }
-
-  Future<WriteResultIdb> txnUpdate(
-    LocalTransaction localTransaction,
-    DocumentReferenceIdb documentRef,
-    DocumentData documentData,
-  ) {
-    var result = WriteResultIdb(documentRef.path);
-
-    return txnGet(localTransaction, documentRef).then((
-      DocumentSnapshotIdb snapshotIdb,
-    ) {
-      Map<String, Object?>? map = snapshotIdb.data;
-      map = recordMapUpdate(map, documentData);
-      return localTransaction.transaction
-          .objectStore(storeName)
-          .put(map!, documentRef.path)
-          .then((_) {
-            return result;
-          });
-    });
   }
 
   @override
@@ -355,6 +318,13 @@ class LocalTransaction {
 
   Future get completed => transaction.completed;
 
+  /// Wait for the completion, ignoring any error (already reported).
+  Future<void> get completedIgnoringErrors async {
+    try {
+      await transaction.completed;
+    } catch (_) {}
+  }
+
   void notify() {
     // To use after txtCommit
     for (var result in results) {
@@ -364,18 +334,12 @@ class LocalTransaction {
 }
 
 /// TransactionIdb representation.
+///
+/// Like a batch, the writes are committed after the transaction function.
 class TransactionIdb extends WriteBatchIdb implements Transaction {
   final LocalTransaction localTransaction;
 
   TransactionIdb(super.firestoreIdb, this.localTransaction);
-
-  @override
-  void delete(DocumentReference documentRef) {
-    localTransaction.firestoreIdb.txnDelete(
-      localTransaction,
-      documentRef as DocumentReferenceIdb,
-    );
-  }
 
   @override
   Future<DocumentSnapshot> get(DocumentReference documentRef) async =>
@@ -383,31 +347,6 @@ class TransactionIdb extends WriteBatchIdb implements Transaction {
         localTransaction,
         documentRef as DocumentReferenceIdb,
       );
-
-  @override
-  void set(
-    DocumentReference documentRef,
-    Map<String, Object?> data, [
-    SetOptions? options,
-  ]) {
-    localTransaction.firestoreIdb.txnSet(
-      localTransaction,
-      documentRef as DocumentReferenceIdb,
-
-      DocumentData(data),
-      options,
-    );
-  }
-
-  @override
-  void update(DocumentReference documentRef, Map<String, Object?> data) {
-    localTransaction.firestoreIdb.txnUpdate(
-      localTransaction,
-      documentRef as DocumentReferenceIdb,
-
-      DocumentData(data),
-    );
-  }
 }
 
 @Deprecated('Unused')
@@ -615,54 +554,16 @@ class WriteBatchIdb extends WriteBatchBase implements WriteBatch {
 
   WriteBatchIdb(this.firestore);
 
-  Future<List<WriteResultIdb>> txnCommit(LocalTransaction txn) async {
-    final results = <WriteResultIdb>[];
-    for (var operation in operations) {
-      if (operation is WriteBatchOperationDelete) {
-        results.add(
-          await firestore.txnDelete(
-            txn,
-            operation.docRef as DocumentReferenceIdb,
-          ),
-        );
-      } else if (operation is WriteBatchOperationSet) {
-        results.add(
-          await firestore.txnSet(
-            txn,
-            operation.docRef as DocumentReferenceIdb,
-            operation.documentData,
-            operation.options,
-          ),
-        );
-      } else if (operation is WriteBatchOperationUpdate) {
-        results.add(
-          await firestore.txnUpdate(
-            txn,
-            operation.docRef as DocumentReferenceIdb,
-            operation.documentData,
-          ),
-        );
-      } else {
-        throw UnsupportedError('not supported $operation');
-      }
-    }
-    return results;
-  }
+  /// Write the operations in [txn] (without waiting for its completion).
+  Future<List<WriteResultIdb>> txnCommit(LocalTransaction txn) =>
+      firestore.txnWrite(txn, operations);
 
   @override
   Future commit() async {
-    var localTransaction = await firestore.getReadWriteTransaction();
-    var results = await txnCommit(localTransaction);
-    await localTransaction.completed;
-
-    notify(results);
-  }
-
-  // To use after txtCommit
-  void notify(List<WriteResultIdb> results) {
-    for (var result in results) {
-      firestore.notify(result);
-    }
+    await firestore.txnCommit(
+      await firestore.getReadWriteTransaction(),
+      operations,
+    );
   }
 }
 

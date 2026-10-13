@@ -2,12 +2,11 @@ import 'package:path/path.dart';
 
 import 'package:sembast/sembast.dart' hide Transaction, FieldValue;
 import 'package:sembast/sembast_memory.dart' as sembast;
-import 'package:sembast/utils/value_utils.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
+import 'package:tekartik_firebase_firestore/src/common/local_record_write.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_firestore/src/firestore_common.dart'; // ignore: implementation_imports
-import 'package:tekartik_firebase_firestore/utils/document_data.dart';
 
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart'
     show newFirestoreServiceSembast;
@@ -107,25 +106,6 @@ Object? firestoreValueToSembastUpdateValue(Object? value) {
     return sembast.FieldValue.delete;
   }
   return valueToJsonRecordValue(value, firestoreValueToSembastUpdateValue);
-}
-
-/// Document data to sebmast update map
-Map<String, Object?> firestoreDocumentDataToSembastUpdateMap(
-  DocumentData documentData,
-  Map<String, Object?> recordMap,
-) {
-  var updateMap = <String, Object?>{};
-  updateDataResolveIncrements(
-    documentDataMap(documentData)!.map,
-    recordMap,
-  ).forEach((String key, value) {
-    if (value is FieldValueArray) {
-      updateMap[key] = fieldArrayValueMergeValue(value, recordMap[key]);
-    } else {
-      updateMap[key] = firestoreValueToSembastUpdateValue(value);
-    }
-  });
-  return updateMap;
 }
 
 /// Initial version
@@ -272,34 +252,12 @@ class FirestoreSembast extends Object
     var result = WriteResultSembast(ref.path);
     var existingRecordMap = await txnGetRecordMap(txn, ref.path);
     result.previousSnapshot = documentFromRecordMap(ref, existingRecordMap);
-    Map<String, Object?>? recordMap;
-
-    // Update rev
-    final rev = (result.previousSnapshotSembast?.rev ?? 0) + 1;
-
-    DocumentData newDocumentData;
-    if (options?.merge == true) {
-      if (existingRecordMap != null) {
-        newDocumentData = DocumentData(
-          cloneMap(existingRecordMap).cast<String, Object?>(),
-        );
-      } else {
-        newDocumentData = DocumentData();
-      }
-      newDocumentData.merge(documentData);
-      recordMap = newDocumentData.toJsonRecordValueMap();
-    } else {
-      recordMap = documentData.toJsonRecordValueMap();
-    }
-
-    recordMap[revKey] = rev;
-
-    // set update Time
-    var now = Timestamp.now();
-    recordMap[createTimeKey] = (result.previousSnapshot?.createTime ?? now)
-        .toIso8601String();
-    recordMap[updateTimeKey] = now.toIso8601String();
-
+    var recordMap = localRecordMapSet(
+      this,
+      existingRecordMap,
+      documentData,
+      options,
+    );
     result.newSnapshot = documentFromRecordMap(ref, recordMap);
     await docStore.record(ref.path).put(txn, recordMap);
     return result;
@@ -312,35 +270,14 @@ class FirestoreSembast extends Object
     DocumentData documentData,
   ) async {
     var result = WriteResultSembast(ref.path);
-
-    // Need to get first to change rev
     var existingRecordMap = await txnGetRecordMap(txn, ref.path);
     if (existingRecordMap == null) {
-      throw Exception('No document found at $ref');
+      throw localUpdateNotFoundException(ref.path);
     }
     result.previousSnapshot = documentFromRecordMap(ref, existingRecordMap);
-
-    // Update rev
-    var rev = (result.previousSnapshotSembast?.rev ?? 0) + 1;
-
-    var updateMap = <String, Object?>{};
-    updateMap[revKey] = rev;
-    var now = Timestamp.now();
-    updateMap[createTimeKey] = (result.previousSnapshot?.createTime ?? now)
-        .toIso8601String();
-    updateMap[updateTimeKey] = now.toIso8601String();
-
-    var recordMap = await docStore
-        .record(ref.path)
-        .update(
-          txn,
-          firestoreDocumentDataToSembastUpdateMap(
-            documentData,
-            existingRecordMap,
-          ),
-        );
-
+    var recordMap = localRecordMapUpdate(existingRecordMap, documentData);
     result.newSnapshot = documentFromRecordMap(ref, recordMap);
+    await docStore.record(ref.path).put(txn, recordMap);
     return result;
   }
 
@@ -583,18 +520,12 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
     firestoreSembast.notify(result);
   }
 
-  String get _key => path;
-
   @override
   Future update(Map<String, Object?> data) async {
     late WriteResultSembast result;
 
     var db = await firestoreSembast.ready;
     await db.transaction((txn) async {
-      var record = await docStore.record(_key).get(txn);
-      if (record == null) {
-        throw Exception('update failed, record $path does not exit');
-      }
       result = await firestoreSembast.txnUpdate(txn, this, DocumentData(data));
     });
 
