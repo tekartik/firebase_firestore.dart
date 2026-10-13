@@ -775,6 +775,38 @@ void runFirestoreQueryTests({
       expect(querySnapshotDocIds(querySnapshot), ['one', 'two']);
     });
 
+    test('where several conditions', () async {
+      var testsRef = getTestsRef();
+      var collRef = testsRef.doc('where_several_test').collection('simple');
+      await collRef.doc('one').set({'value': 1});
+      await collRef.doc('two').set({'value': 3});
+      await collRef.doc('three').set({'value': 5});
+      await collRef.doc('four').set({'value': null});
+      await collRef.doc('five').set({'other': 1});
+
+      // Several conditions in one where() call, all of them apply.
+      var querySnapshot = await collRef
+          .where('value', isGreaterThan: 1, isLessThan: 5)
+          .get();
+      expect(querySnapshotDocIds(querySnapshot), ['two']);
+      querySnapshot = await collRef
+          .where('value', isGreaterThanOrEqualTo: 1, isLessThanOrEqualTo: 3)
+          .get();
+      expect(querySnapshotDocIds(querySnapshot), ['one', 'two']);
+
+      // isNull: false is not null (a missing field does not match either),
+      // isNull: true needs the field set to null.
+      // (an inequality, Firestore orders by the field: compare as a set)
+      querySnapshot = await collRef.where('value', isNull: false).get();
+      expect(querySnapshotDocIds(querySnapshot)..sort(), [
+        'one',
+        'three',
+        'two',
+      ]);
+      querySnapshot = await collRef.where('value', isNull: true).get();
+      expect(querySnapshotDocIds(querySnapshot), ['four']);
+    });
+
     test('onQuerySnapshot', () async {
       var testsRef = getTestsRef();
       var collRef = testsRef.doc('query_test').collection('onSnapshot');

@@ -486,9 +486,12 @@ mixin FirestoreSubscriptionMixin on Firestore {
   }
 }
 
-/// Returns `true` if [documentData] satisfies the single filter [where],
-/// used by in-memory query execution (see [FirestoreQueryMixin]) to decide
-/// whether a document matches a `where` clause.
+/// Returns `true` if [documentData] satisfies the filter [where], used by
+/// in-memory query execution (see [FirestoreQueryMixin]) to decide whether a
+/// document matches a `where` clause.
+///
+/// Every condition set in [where] must match (like several conditions passed
+/// in one `where()` call to Firestore).
 bool mapWhere(DocumentData? documentData, WhereInfo where) {
   // We always use Timestamp even for DateTime
   FirestoreComparable? makeComparableValue(dynamic value) {
@@ -505,68 +508,105 @@ bool mapWhere(DocumentData? documentData, WhereInfo where) {
     return comparableFieldValue?.isComparable ?? false;
   }
 
-  if (where.isNull == true) {
-    return rawValue == null;
-  } else if (where.isNull == false) {
-    return rawValue != null;
-  } else if (where.isEqualTo != null) {
-    // Use comparable
-    if (comparableFieldValue == null) {
-      return false;
-    }
-    var equalsToValue = makeComparableValue(where.isEqualTo);
-    return (comparableFieldValue.compareTo(equalsToValue) == 0);
-  } else if (where.isGreaterThan != null) {
+  /// [test] on the comparison of the field value with [value].
+  bool compare(Object? value, bool Function(int compare) test) {
     if (!isFieldValueComparable()) {
       return false;
     }
-    return (comparableFieldValue!.compareTo(
-          makeComparableValue(where.isGreaterThan),
-        ) >
-        0);
-  } else if (where.isGreaterThanOrEqualTo != null) {
-    if (!isFieldValueComparable()) {
-      return false;
-    }
-    return (comparableFieldValue!.compareTo(
-          makeComparableValue(where.isGreaterThanOrEqualTo),
-        ) >=
-        0);
-  } else if (where.isLessThan != null) {
-    if (!isFieldValueComparable()) {
-      return false;
-    }
-    return (comparableFieldValue!.compareTo(
-          makeComparableValue(where.isLessThan),
-        ) <
-        0);
-  } else if (where.isLessThanOrEqualTo != null) {
-    if (!isFieldValueComparable()) {
-      return false;
-    }
-    return (comparableFieldValue!.compareTo(
-          makeComparableValue(where.isLessThanOrEqualTo),
-        ) <=
-        0);
-  } else if (where.arrayContains != null) {
-    // Handle liste
-    if (rawValue is Iterable) {
-      return rawValue.contains(where.arrayContains);
-    }
-  } else if (where.arrayContainsAny != null) {
-    if (rawValue is Iterable) {
-      for (var any in where.arrayContainsAny!) {
-        if (rawValue.contains(any)) {
-          return true;
-        }
-      }
-    }
-  } else if (where.whereIn != null) {
-    return where.whereIn!.contains(rawValue);
-  } else {
-    // devWarning(throw UnsupportedError('where: $where on $documentData'));
+    return test(comparableFieldValue!.compareTo(makeComparableValue(value)));
   }
-  return false;
+
+  var matched = false;
+  if (where.isNull != null) {
+    // Like Firestore, isNull: true needs the field (set to null), a missing
+    // field does not match.
+    var isNullMatch = where.isNull!
+        ? (rawValue == null &&
+              _mapHasFieldPath(
+                documentDataMap(documentData)!.map,
+                where.fieldPath,
+              ))
+        : rawValue != null;
+    if (!isNullMatch) {
+      return false;
+    }
+    matched = true;
+  }
+  if (where.isEqualTo != null) {
+    // Use comparable
+    if (comparableFieldValue == null ||
+        comparableFieldValue.compareTo(makeComparableValue(where.isEqualTo)) !=
+            0) {
+      return false;
+    }
+    matched = true;
+  }
+  if (where.isGreaterThan != null) {
+    if (!compare(where.isGreaterThan, (compare) => compare > 0)) {
+      return false;
+    }
+    matched = true;
+  }
+  if (where.isGreaterThanOrEqualTo != null) {
+    if (!compare(where.isGreaterThanOrEqualTo, (compare) => compare >= 0)) {
+      return false;
+    }
+    matched = true;
+  }
+  if (where.isLessThan != null) {
+    if (!compare(where.isLessThan, (compare) => compare < 0)) {
+      return false;
+    }
+    matched = true;
+  }
+  if (where.isLessThanOrEqualTo != null) {
+    if (!compare(where.isLessThanOrEqualTo, (compare) => compare <= 0)) {
+      return false;
+    }
+    matched = true;
+  }
+  if (where.arrayContains != null) {
+    if (!(rawValue is Iterable && rawValue.contains(where.arrayContains))) {
+      return false;
+    }
+    matched = true;
+  }
+  if (where.arrayContainsAny != null) {
+    if (!(rawValue is Iterable &&
+        where.arrayContainsAny!.any((any) => rawValue.contains(any)))) {
+      return false;
+    }
+    matched = true;
+  }
+  if (where.whereIn != null) {
+    if (!where.whereIn!.contains(rawValue)) {
+      return false;
+    }
+    matched = true;
+  }
+  if (where.notIn != null) {
+    // Like Firestore, a missing or null field does not match.
+    if (rawValue == null || where.notIn!.contains(rawValue)) {
+      return false;
+    }
+    matched = true;
+  }
+  // devWarning(throw UnsupportedError('where: $where on $documentData'));
+  return matched;
+}
+
+/// True if [fieldPath] (dot-separated) exists in [map], even with a null
+/// value.
+bool _mapHasFieldPath(Map map, String fieldPath) {
+  var parts = fieldPath.split('.');
+  Object? current = map;
+  for (var part in parts) {
+    if (current is! Map || !current.containsKey(part)) {
+      return false;
+    }
+    current = current[part];
+  }
+  return true;
 }
 
 /// Returns the element of [list] at [index], or `null` if [list] is `null`

@@ -23,6 +23,8 @@ void vectorValueGroup({
         await docRef.set({'foo': const VectorValue([])});
         fail('Should have thrown an exception');
       } catch (e) {
+        // The fail() above must not be swallowed.
+        expect(e, isNot(isA<TestFailure>()));
         // ignore: avoid_print
         print(e);
         /*
@@ -34,9 +36,11 @@ void vectorValueGroup({
       }
       final maxPlusOneDimensions = List<double>.filled(2049, 1);
       try {
-        await docRef.set({'foo': maxPlusOneDimensions});
+        await docRef.set({'foo': VectorValue(maxPlusOneDimensions)});
         fail('Should have thrown an exception');
       } catch (e) {
+        // The fail() above must not be swallowed.
+        expect(e, isNot(isA<TestFailure>()));
         // ignore: avoid_print
         print(e);
         /*
@@ -54,6 +58,8 @@ void vectorValueGroup({
         });
         fail('Should have thrown an exception');
       } catch (e) {
+        // The fail() above must not be swallowed.
+        expect(e, isNot(isA<TestFailure>()));
         // ignore: avoid_print
         print(e);
         /*

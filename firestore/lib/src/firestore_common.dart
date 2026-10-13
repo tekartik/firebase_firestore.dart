@@ -671,7 +671,9 @@ WhereInfo whereInfoFromJsonMap(Firestore firestore, Map<String, Object?> map) {
     } else {
       isEqualTo = value;
     }
-  } else if (operator == operatorLessThan) {}
+  } else if (operator == _operatorNotEqual && value == null) {
+    isNull = false;
+  }
   var whereInfo = WhereInfo(
     map['fieldPath'] as String,
     isEqualTo: isEqualTo,
@@ -705,41 +707,72 @@ OrderByInfo orderByInfoFromJsonMap(Map<String, Object?> map) {
 const _operatorKey = 'operator';
 const _valueKey = 'value';
 
-/// Where info to json map.
-Map<String, Object?> whereInfoToJsonMap(WhereInfo whereInfo) {
-  var map = <String, Object?>{'fieldPath': whereInfo.fieldPath};
-  if (whereInfo.isEqualTo != null) {
-    map[_operatorKey] = operatorEqual;
-    map[_valueKey] = documentDataValueToJson(whereInfo.isEqualTo);
-  } else if (whereInfo.isLessThanOrEqualTo != null) {
-    map[_operatorKey] = operatorLessThanOrEqual;
-    map[_valueKey] = documentDataValueToJson(whereInfo.isLessThanOrEqualTo);
-  } else if (whereInfo.isLessThan != null) {
-    map[_operatorKey] = operatorLessThan;
-    map[_valueKey] = documentDataValueToJson(whereInfo.isLessThan);
-  } else if (whereInfo.isGreaterThanOrEqualTo != null) {
-    map[_operatorKey] = operatorGreaterThanOrEqual;
-    map[_valueKey] = documentDataValueToJson(whereInfo.isGreaterThanOrEqualTo);
-  } else if (whereInfo.isGreaterThan != null) {
-    map[_operatorKey] = operatorGreaterThan;
-    map[_valueKey] = documentDataValueToJson(whereInfo.isGreaterThan);
-  } else if (whereInfo.arrayContains != null) {
-    map[_operatorKey] = operatorArrayContains;
-    map[_valueKey] = documentDataValueToJson(whereInfo.arrayContains);
-  } else if (whereInfo.isNull != null) {
-    map[_operatorKey] = operatorEqual;
-    map[_valueKey] = null;
-  } else if (whereInfo.arrayContainsAny != null) {
-    map[_operatorKey] = operatorArrayContainsAny;
-    map[_valueKey] = documentDataValueToJson(whereInfo.arrayContainsAny);
-  } else if (whereInfo.whereIn != null) {
-    map[_operatorKey] = operatorIn;
-    map[_valueKey] = documentDataValueToJson(whereInfo.whereIn);
-  } else if (whereInfo.notIn != null) {
-    map[_operatorKey] = operatorNotIn;
-    map[_valueKey] = documentDataValueToJson(whereInfo.notIn);
+/// The not-null form of a where (`isNull: false`) in the json map, the
+/// operator with a null value.
+const _operatorNotEqual = '!=';
+
+/// One json map per condition set in [whereInfo] (several conditions can be
+/// set by one `where()` call), all of them must match.
+List<Map<String, Object?>> _whereInfoToJsonMaps(WhereInfo whereInfo) {
+  var maps = <Map<String, Object?>>[];
+  void add(String operator, Object? value) {
+    maps.add(<String, Object?>{
+      'fieldPath': whereInfo.fieldPath,
+      _operatorKey: operator,
+      _valueKey: value,
+    });
   }
-  return map;
+
+  if (whereInfo.isEqualTo != null) {
+    add(operatorEqual, documentDataValueToJson(whereInfo.isEqualTo));
+  }
+  if (whereInfo.isLessThanOrEqualTo != null) {
+    add(
+      operatorLessThanOrEqual,
+      documentDataValueToJson(whereInfo.isLessThanOrEqualTo),
+    );
+  }
+  if (whereInfo.isLessThan != null) {
+    add(operatorLessThan, documentDataValueToJson(whereInfo.isLessThan));
+  }
+  if (whereInfo.isGreaterThanOrEqualTo != null) {
+    add(
+      operatorGreaterThanOrEqual,
+      documentDataValueToJson(whereInfo.isGreaterThanOrEqualTo),
+    );
+  }
+  if (whereInfo.isGreaterThan != null) {
+    add(operatorGreaterThan, documentDataValueToJson(whereInfo.isGreaterThan));
+  }
+  if (whereInfo.arrayContains != null) {
+    add(
+      operatorArrayContains,
+      documentDataValueToJson(whereInfo.arrayContains),
+    );
+  }
+  if (whereInfo.isNull != null) {
+    add(whereInfo.isNull! ? operatorEqual : _operatorNotEqual, null);
+  }
+  if (whereInfo.arrayContainsAny != null) {
+    add(
+      operatorArrayContainsAny,
+      documentDataValueToJson(whereInfo.arrayContainsAny),
+    );
+  }
+  if (whereInfo.whereIn != null) {
+    add(operatorIn, documentDataValueToJson(whereInfo.whereIn));
+  }
+  if (whereInfo.notIn != null) {
+    add(operatorNotIn, documentDataValueToJson(whereInfo.notIn));
+  }
+  return maps;
+}
+
+/// Where info to json map, its first condition (see [queryInfoToJsonMap]
+/// for all of them).
+Map<String, Object?> whereInfoToJsonMap(WhereInfo whereInfo) {
+  var maps = _whereInfoToJsonMaps(whereInfo);
+  return maps.isEmpty ? {'fieldPath': whereInfo.fieldPath} : maps.first;
 }
 
 /// Order by info to json map.
@@ -796,9 +829,8 @@ Map<String, Object?> queryInfoToJsonMap(QueryInfo queryInfo) {
     map['offset'] = queryInfo.offset;
   }
   if (queryInfo.wheres.isNotEmpty) {
-    map['wheres'] = queryInfo.wheres
-        .map((whereInfo) => whereInfoToJsonMap(whereInfo))
-        .toList();
+    // One map per condition, a where with several conditions gives several.
+    map['wheres'] = queryInfo.wheres.expand(_whereInfoToJsonMaps).toList();
   }
   if (queryInfo.orderBys.isNotEmpty) {
     map['orderBys'] = queryInfo.orderBys
