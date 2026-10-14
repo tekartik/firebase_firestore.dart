@@ -21,7 +21,9 @@ class AutoIdGenerator {
   static const String _autoIdAlphabet =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-  static final Random _random = Random();
+  /// Secure: generated ids are often the only key to a document (links,
+  /// shares), they must not be predictable from the ids already given.
+  static final Random _random = Random.secure();
 
   /// Automatically Generates a random new Id
   static String autoId() {
