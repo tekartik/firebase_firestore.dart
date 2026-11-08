@@ -178,28 +178,39 @@ void runFirestoreTrackChangesTests({
       var docRef = collRef.doc('doc1');
       await deleteCollection(firestore, collRef);
       var query = collRef.where('value', isEqualTo: 1);
+      var firstSnapshotCompleter = Completer<void>();
+      var addedCompleter = Completer<void>();
       var removedCompleter = Completer<void>();
-      var added = false;
       var subscription = query.onSnapshot().listen((snapshot) {
+        if (!firstSnapshotCompleter.isCompleted) {
+          firstSnapshotCompleter.complete();
+        }
         for (var change in snapshot.documentChanges) {
           if (change.document.ref.path != docRef.path) {
             continue;
           }
           if (change.type == DocumentChangeType.added) {
-            added = true;
-          } else if (change.type == DocumentChangeType.removed && added) {
+            if (!addedCompleter.isCompleted) {
+              addedCompleter.complete();
+            }
+          } else if (change.type == DocumentChangeType.removed &&
+              addedCompleter.isCompleted) {
             if (!removedCompleter.isCompleted) {
               removedCompleter.complete();
             }
           }
         }
       });
-      await query.onSnapshot().where((s) => s.docs.isEmpty).first;
+      // The listener itself must see each state before the next write:
+      // another listener can be ahead, and a listener can skip a state (the
+      // set and the update seen as one snapshot), as in Firestore.
+      const timeout = Duration(seconds: 30);
+      await firstSnapshotCompleter.future.timeout(timeout);
       await docRef.set({'value': 1});
-      await query.onSnapshot().where((s) => s.docs.length == 1).first;
+      await addedCompleter.future.timeout(timeout);
       // No longer matching the query
       await docRef.update({'value': 2});
-      await removedCompleter.future.timeout(const Duration(seconds: 30));
+      await removedCompleter.future.timeout(timeout);
       await subscription.cancel();
     }, skip: !firestoreService.supportsTrackChanges);
 
