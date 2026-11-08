@@ -5,6 +5,7 @@
 import 'dart:math';
 
 import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/src/secure_random.dart';
 
 /// Utility class for generating Firebase child node keys.
 ///
@@ -23,7 +24,8 @@ class AutoIdGenerator {
 
   /// Secure: generated ids are often the only key to a document (links,
   /// shares), they must not be predictable from the ids already given.
-  static final Random _random = Random.secure();
+  /// Not `Random.secure()` directly, which throws in dart2js node.
+  static final Random _random = newSecureRandom();
 
   /// Automatically Generates a random new Id
   static String autoId() {

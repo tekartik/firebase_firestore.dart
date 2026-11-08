@@ -13,6 +13,18 @@ Future _sleep([int ms = 0]) {
   return Future<void>.delayed(Duration(milliseconds: ms));
 }
 
+/// Wait until [condition] is true, at most [timeout] (the expectations that
+/// follow then fail).
+Future<void> _waitFor(
+  bool Function() condition, {
+  Duration timeout = const Duration(seconds: 10),
+}) async {
+  var sw = Stopwatch()..start();
+  while (!condition() && sw.elapsed < timeout) {
+    await _sleep(50);
+  }
+}
+
 /// Run firestore track changes support tests.
 void runFirestoreTrackChangesSupportTests({
   required FirestoreService firestoreService,
@@ -162,15 +174,26 @@ void runFirestoreTrackChangesSupportTests({
         eventList2.add(event);
       });
 
-      await _sleep(300);
-      await docRef.set({'test': 1});
-      await _sleep(300);
-      await docRef.set({'test': 2});
-      await docRef
-          .onSnapshotSupport(options: pullOptions1)
-          .firstWhere((element) => element.dataOrNull?['test'] == 2);
+      // Each listener must see each state (missing, 1, 2): on firestore a
+      // listener can get its first snapshot or a change late, a fixed delay
+      // is not enough. With first(), sub2 only pulls once without track
+      // changes.
+      var trackChanges = firestoreService.supportsRecordTrackChanges;
+      bool seen(List<DocumentSnapshot> events, int? value) =>
+          events.isNotEmpty && events.last.dataOrNull?['test'] == value;
+      Future<void> waitSeen(int? value) => _waitFor(
+        () =>
+            seen(eventList1, value) &&
+            (trackChanges ? seen(eventList2, value) : eventList2.isNotEmpty),
+      );
 
-      if (firestoreService.supportsRecordTrackChanges) {
+      await waitSeen(null);
+      await docRef.set({'test': 1});
+      await waitSeen(1);
+      await docRef.set({'test': 2});
+      await waitSeen(2);
+
+      if (trackChanges) {
         expect(eventList1.length, greaterThanOrEqualTo(3));
         expect(eventList2.length, greaterThanOrEqualTo(3));
       } else {

@@ -50,25 +50,8 @@ void vectorValueGroup({
           isTrue,
         );*/
       }
-      try {
-        await docRef.set({
-          'foo': [
-            const VectorValue([1]),
-          ],
-        });
-        fail('Should have thrown an exception');
-      } catch (e) {
-        // The fail() above must not be swallowed.
-        expect(e, isNot(isA<TestFailure>()));
-        // ignore: avoid_print
-        print(e);
-        /*
-        expect(e, isA<FirebaseException>());
-        expect(
-          (e as FirebaseException).code.contains('invalid-argument'),
-          isTrue,
-        );*/
-      }
+      // A vector as an array item is not a bad vector: Firestore accepts it
+      // (node admin sdk, the write commits).
     });
     test('All vector value', () async {
       var docPath = vectorValueGetTestPath('vectorValue/vectorValue');

@@ -514,10 +514,7 @@ dynamic valueToJsonRecordValue(
   } else if (value is Map) {
     return mapValueToJsonRecordMapValue(value, chainConverter);
   } else if (value is List) {
-    // Like Firestore, a vector cannot be an array item.
-    if (value.any((item) => item is VectorValue)) {
-      throw ArgumentError.value(value, 'value', 'VectorValue in an array');
-    }
+    // Like Firestore, a vector can be an array item.
     return listValueToJsonRecordListValue(value, chainConverter);
   } else if (value is DocumentDataMap) {
     // this happens when it is a list item
