@@ -214,6 +214,91 @@ void runFirestoreTrackChangesTests({
       await subscription.cancel();
     }, skip: !firestoreService.supportsTrackChanges);
 
+    test('document snapshots in order', () async {
+      var docRef = getTestsRef().doc('document_snapshots_in_order');
+      await docRef.delete();
+      var values = <int>[];
+      var lastValueCompleter = Completer<void>();
+      var subscription = docRef.onSnapshot().listen((snapshot) {
+        // 0 for a missing document.
+        var value = snapshot.exists ? snapshot.data['value'] as int : 0;
+        values.add(value);
+        if (value == 3 && !lastValueCompleter.isCompleted) {
+          lastValueCompleter.complete();
+        }
+      });
+      // Written without waiting for the first snapshot.
+      for (var value in [1, 2, 3]) {
+        await docRef.set({'value': value});
+      }
+      await lastValueCompleter.future.timeout(const Duration(seconds: 30));
+      await subscription.cancel();
+      // A state can be skipped, never sent after a newer one.
+      for (var i = 1; i < values.length; i++) {
+        expect(
+          values[i],
+          greaterThanOrEqualTo(values[i - 1]),
+          reason: 'values $values',
+        );
+      }
+    }, skip: !firestoreService.supportsRecordTrackChanges);
+
+    test('query snapshots in order', () async {
+      var collRef = getTestsRef()
+          .doc('query_snapshots_in_order')
+          .collection('test');
+      await deleteCollection(firestore, collRef);
+      var query = collRef.where('value', isEqualTo: 1);
+      var docA = collRef.doc('a');
+      var docB = collRef.doc('b');
+      var docC = collRef.doc('c');
+      Set<String> snapshotPaths(QuerySnapshot snapshot) =>
+          snapshot.docs.map((doc) => doc.ref.path).toSet();
+      var snapshots = <QuerySnapshot>[];
+      var finalStateCompleter = Completer<void>();
+      var subscription = query.onSnapshot().listen((snapshot) {
+        snapshots.add(snapshot);
+        // Only the last write leads to this state.
+        var paths = snapshotPaths(snapshot);
+        if (paths.length == 1 &&
+            paths.contains(docC.path) &&
+            !finalStateCompleter.isCompleted) {
+          finalStateCompleter.complete();
+        }
+      });
+      // Written without waiting for the first snapshot, the query matches
+      // {a}, {a, b}, {b}, {b, c} then {c}.
+      await docA.set({'value': 1});
+      await docB.set({'value': 1});
+      await docA.update({'value': 2});
+      await docC.set({'value': 1});
+      await docB.delete();
+      await finalStateCompleter.future.timeout(const Duration(seconds: 30));
+      await subscription.cancel();
+
+      // Each snapshot is the previous one with its changes applied.
+      var previousPaths = <String>{};
+      for (var (index, snapshot) in snapshots.indexed) {
+        var reason = 'snapshot $index';
+        var paths = {...previousPaths};
+        for (var change in snapshot.documentChanges) {
+          var path = change.document.ref.path;
+          switch (change.type) {
+            case DocumentChangeType.added:
+              expect(previousPaths, isNot(contains(path)), reason: reason);
+              paths.add(path);
+            case DocumentChangeType.removed:
+              expect(previousPaths, contains(path), reason: reason);
+              paths.remove(path);
+            case DocumentChangeType.modified:
+              expect(previousPaths, contains(path), reason: reason);
+          }
+        }
+        expect(snapshotPaths(snapshot), paths, reason: reason);
+        previousPaths = paths;
+      }
+    }, skip: !firestoreService.supportsTrackChanges);
+
     test(
       'transaction write notifies',
       () async {

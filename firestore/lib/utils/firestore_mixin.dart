@@ -463,26 +463,65 @@ mixin FirestoreSubscriptionMixin on Firestore {
   Stream<DocumentSnapshot> onSnapshot(DocumentReference documentRef) {
     var subscription = addDocumentSubscription(documentRef.path);
     late StreamSubscription querySubscription;
+    late _SnapshotSerializer serializer;
     var controller = StreamController<DocumentSnapshot>(
       onCancel: () {
+        serializer.cancel();
         querySubscription.cancel();
       },
     );
+    serializer = _SnapshotSerializer(controller);
+
+    // Get the first snapshot, sent before any change.
+    serializer.run(() async {
+      controller.add(await documentRef.get());
+    });
 
     querySubscription = subscription.streamController.stream.listen(
-      (DocumentSnapshot snapshot) async {
-        controller.add(snapshot);
+      (DocumentSnapshot snapshot) {
+        serializer.run(() => controller.add(snapshot));
       },
       onDone: () {
         removeSubscription(subscription);
       },
     );
-
-    // Get the first batch
-    documentRef.get().then((DocumentSnapshot snapshot) {
-      controller.add(snapshot);
-    });
     return controller.stream;
+  }
+}
+
+/// Runs the work of one `onSnapshot` listener one action at a time, in the
+/// order queued, and sends the errors to [controller].
+///
+/// Run concurrently, the first snapshot and each change (which can read the
+/// database) could send an older snapshot after a newer one.
+class _SnapshotSerializer {
+  _SnapshotSerializer(this.controller);
+
+  /// The controller of the listener.
+  final StreamController<Object?> controller;
+
+  var _pending = Future<void>.value();
+  var _cancelled = false;
+
+  /// Skips the actions not run yet, once the listener is cancelled.
+  void cancel() {
+    _cancelled = true;
+  }
+
+  /// Queues [action], run once the previous ones are done.
+  void run(FutureOr<void> Function() action) {
+    _pending = _pending.then((_) async {
+      if (_cancelled) {
+        return;
+      }
+      try {
+        await action();
+      } catch (e, st) {
+        if (!_cancelled) {
+          controller.addError(e, st);
+        }
+      }
+    });
   }
 }
 
@@ -1213,62 +1252,25 @@ mixin FirestoreQueryMixin implements Query, HasQueryInfo {
       path,
     );
     late StreamSubscription querySubscription;
+    late _SnapshotSerializer serializer;
     var controller = StreamController<QuerySnapshot>(
       onCancel: () {
+        serializer.cancel();
         querySubscription.cancel();
       },
     );
+    serializer = _SnapshotSerializer(controller);
 
-    // The paths of the documents of the last snapshot.
-    var lastPaths = <String>{};
-    Set<String> snapshotPaths(QuerySnapshot querySnapshot) =>
-        querySnapshot.docs.map((doc) => doc.ref.path).toSet();
-    querySubscription = collectionSubscription.streamController.stream.listen(
-      (DocumentChange collectionDocumentChange) async {
-        final documentChange = collectionDocumentChange as DocumentChangeBase;
-        // get the base data
-        var querySnapshot = await get() as QuerySnapshotBase;
-        var path = documentChange.document.ref.path;
-        var wasInQuery = lastPaths.contains(path);
-        var isInQuery = querySnapshot.contains(documentChange.documentBase);
-        if (isInQuery) {
-          querySnapshot.documentChanges.add(
-            subscriptionMixin.documentChange(
-              wasInQuery
-                  ? DocumentChangeType.modified
-                  : DocumentChangeType.added,
-              documentChange.document,
-              documentChange.newIndex,
-              documentChange.oldIndex,
-            ),
-          );
-        } else if (wasInQuery) {
-          // Deleted or no longer matching the query.
-          querySnapshot.documentChanges.add(
-            subscriptionMixin.documentChange(
-              DocumentChangeType.removed,
-              documentChange.document,
-              documentChange.newIndex,
-              documentChange.oldIndex,
-            ),
-          );
-        }
-        lastPaths = snapshotPaths(querySnapshot);
-        controller.add(querySnapshot);
-      },
-      onDone: () {
-        subscriptionMixin.removeSubscription(collectionSubscription);
-      },
-    );
+    // The documents of the last snapshot sent, by path.
+    var lastDocs = <String, DocumentSnapshot>{};
 
-    // Get the first batch
-    get().then((QuerySnapshot querySnaphost) {
-      lastPaths = snapshotPaths(querySnaphost);
-      var querySnapshotBase = querySnaphost as QuerySnapshotBase;
+    // Get the first batch, sent before any change.
+    serializer.run(() async {
+      var querySnapshot = await get() as QuerySnapshotBase;
       // set index
       var index = 0;
-      for (var doc in querySnaphost.docs) {
-        querySnapshotBase.documentChanges.add(
+      for (var doc in querySnapshot.docs) {
+        querySnapshot.documentChanges.add(
           subscriptionMixin.documentChange(
             DocumentChangeType.added,
             doc,
@@ -1277,10 +1279,79 @@ mixin FirestoreQueryMixin implements Query, HasQueryInfo {
           ),
         );
       }
-      controller.add(querySnapshotBase);
+      lastDocs = _docsByPath(querySnapshot);
+      controller.add(querySnapshot);
     });
+
+    // On each change, read the query again and send the changes from the last
+    // snapshot sent, as Firestore does: the read can already include the next
+    // writes. One at a time, so that the snapshots are sent in order.
+    querySubscription = collectionSubscription.streamController.stream.listen(
+      (_) {
+        serializer.run(() async {
+          var querySnapshot = await get() as QuerySnapshotBase;
+          var docs = _docsByPath(querySnapshot);
+          var changes = querySnapshot.documentChanges;
+          for (var lastDoc in lastDocs.values) {
+            if (!docs.containsKey(lastDoc.ref.path)) {
+              // Deleted or no longer matching the query.
+              changes.add(
+                subscriptionMixin.documentChange(
+                  DocumentChangeType.removed,
+                  lastDoc,
+                  -1,
+                  -1,
+                ),
+              );
+            }
+          }
+          for (var doc in querySnapshot.docs) {
+            var lastDoc = lastDocs[doc.ref.path];
+            if (lastDoc == null || !_sameDocumentVersion(lastDoc, doc)) {
+              changes.add(
+                subscriptionMixin.documentChange(
+                  lastDoc == null
+                      ? DocumentChangeType.added
+                      : DocumentChangeType.modified,
+                  doc,
+                  -1,
+                  -1,
+                ),
+              );
+            }
+          }
+          lastDocs = docs;
+          // No snapshot when nothing changed for this query: a write to
+          // another document, or a change already sent.
+          if (changes.isNotEmpty) {
+            controller.add(querySnapshot);
+          }
+        });
+      },
+      onDone: () {
+        subscriptionMixin.removeSubscription(collectionSubscription);
+      },
+    );
     return controller.stream;
   }
+}
+
+/// The documents of [querySnapshot] by path.
+Map<String, DocumentSnapshot> _docsByPath(QuerySnapshot querySnapshot) => {
+  for (var doc in querySnapshot.docs) doc.ref.path: doc,
+};
+
+/// True if [a] and [b] are the same version of a document (same revision,
+/// create and update time), false when unknown.
+bool _sameDocumentVersion(DocumentSnapshot a, DocumentSnapshot b) {
+  int? rev(DocumentSnapshot doc) =>
+      doc is DocumentSnapshotBase ? doc.rev : null;
+  if (rev(a) == null && a.updateTime == null) {
+    return false;
+  }
+  return rev(a) == rev(b) &&
+      a.createTime == b.createTime &&
+      a.updateTime == b.updateTime;
 }
 
 /// Path-derived attributes shared by document and collection references,
