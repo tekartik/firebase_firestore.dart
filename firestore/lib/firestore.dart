@@ -179,9 +179,10 @@ abstract class Firestore implements FirebaseAppProduct<Firestore> {
   ///
   /// You can use the [Transaction] object passed to [action] to read and
   /// modify Firestore documents under lock. Transactions are committed once
-  /// [action] resolves and are retried (attempted up to five times) if the
-  /// commit fails, for example because a document read by the transaction was
-  /// concurrently modified.
+  /// [action] resolves. On Firestore they are retried (up to five attempts)
+  /// when the commit fails, for example because a document read by the
+  /// transaction was concurrently modified: [action] can run several times,
+  /// keep it free of side effects.
   ///
   /// Returns the same value as the `Future`/value returned by [action] if the
   /// transaction completed successfully. If [action] throws, or if the
@@ -236,8 +237,8 @@ abstract class Firestore implements FirebaseAppProduct<Firestore> {
 ///
 /// All `getXxx`/`setXxx` typed accessors operate on top-level fields only; use
 /// [getData]/[setData] to work with nested maps. Every getter returns `null`
-/// (rather than throwing) when [key] is absent or holds a value that does not
-/// match the requested type.
+/// when [key] is absent (or set to null) and throws a [TypeError] when it
+/// holds a value of another type.
 abstract class DocumentData {
   /// Creates a new [DocumentData], optionally initialized from [map].
   ///
@@ -251,7 +252,7 @@ abstract class DocumentData {
   void setString(String key, String value);
 
   /// Returns the value for the given [key] as a [String], or `null` if the
-  /// key is absent or not a [String].
+  /// key is absent, throws a [TypeError] if it holds another type.
   String? getString(String key);
 
   /// Sets the value for the given [key] to `null`.
@@ -265,7 +266,7 @@ abstract class DocumentData {
   void setInt(String key, int value);
 
   /// Returns the value for the given [key] as an [int], or `null` if the key
-  /// is absent or not an [int].
+  /// is absent, throws a [TypeError] if it holds another type.
   int? getInt(String key);
 
   /// Sets the value for the given [key] to the [num] [value].
@@ -275,11 +276,11 @@ abstract class DocumentData {
   void setBool(String key, bool value);
 
   /// Returns the value for the given [key] as a [num], or `null` if the key
-  /// is absent or not a [num].
+  /// is absent, throws a [TypeError] if it holds another type.
   num? getNum(String key);
 
   /// Returns the value for the given [key] as a [bool], or `null` if the key
-  /// is absent or not a [bool].
+  /// is absent, throws a [TypeError] if it holds another type.
   bool? getBool(String key);
 
   /// Sets the value for the given [key] to the [DateTime] [value].
@@ -301,7 +302,7 @@ abstract class DocumentData {
   void setList<T>(String key, List<T> list);
 
   /// Returns the value for the given [key] as a `List<T>`, or `null` if the
-  /// key is absent or not a [List].
+  /// key is absent, throws a [TypeError] if it holds another type.
   List<T>? getList<T>(String key);
 
   /// Returns the value for the given [key] as a nested [DocumentData], or
@@ -343,21 +344,22 @@ abstract class DocumentData {
   void setDocumentReference(String key, DocumentReference doc);
 
   /// Returns the value for the given [key] as a [DocumentReference], or
-  /// `null` if the key is absent or not a document reference.
+  /// `null` if the key is absent, throws a [TypeError] if it holds another
+  /// type.
   DocumentReference? getDocumentReference(String key);
 
   /// Sets the value for the given [key] to the [Blob] [blob].
   void setBlob(String key, Blob blob);
 
   /// Returns the value for the given [key] as a [Blob], or `null` if the key
-  /// is absent or not a [Blob].
+  /// is absent, throws a [TypeError] if it holds another type.
   Blob? getBlob(String key);
 
   /// Sets the value for the given [key] to the [GeoPoint] [geoPoint].
   void setGeoPoint(String key, GeoPoint geoPoint);
 
   /// Returns the value for the given [key] as a [GeoPoint], or `null` if the
-  /// key is absent or not a [GeoPoint].
+  /// key is absent, throws a [TypeError] if it holds another type.
   GeoPoint? getGeoPoint(String key);
 }
 

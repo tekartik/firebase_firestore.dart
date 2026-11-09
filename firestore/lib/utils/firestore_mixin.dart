@@ -105,7 +105,9 @@ int queryCompareSnapshotToLimit(
     var values = limitInfo.values!;
     var cmp = 0;
 
-    for (var i = 0; i < orderBys.length; i++) {
+    // Like Firestore, the cursor can have fewer values than order bys, only
+    // the given ones are compared.
+    for (var i = 0; i < orderBys.length && i < values.length; i++) {
       var orderBy = orderBys[i];
 
       final keyPath = orderBy.fieldPath!;
@@ -384,7 +386,10 @@ mixin FirestoreSubscriptionMixin on Firestore {
   }
 
   Future _clearSubscription(FirestoreSubscription subscription) async {
-    subscriptions.remove(subscription.path);
+    // Not a newer subscription for the same path.
+    if (identical(subscriptions[subscription.path], subscription)) {
+      subscriptions.remove(subscription.path);
+    }
     await subscription.streamController.close();
   }
 
@@ -462,12 +467,14 @@ mixin FirestoreSubscriptionMixin on Firestore {
   /// subscription automatically releases the underlying subscription.
   Stream<DocumentSnapshot> onSnapshot(DocumentReference documentRef) {
     var subscription = addDocumentSubscription(documentRef.path);
+    var release = _subscriptionReleaser(this, subscription);
     late StreamSubscription querySubscription;
     late _SnapshotSerializer serializer;
     var controller = StreamController<DocumentSnapshot>(
-      onCancel: () {
+      onCancel: () async {
         serializer.cancel();
-        querySubscription.cancel();
+        await querySubscription.cancel();
+        await release();
       },
     );
     serializer = _SnapshotSerializer(controller);
@@ -482,11 +489,27 @@ mixin FirestoreSubscriptionMixin on Firestore {
         serializer.run(() => controller.add(snapshot));
       },
       onDone: () {
-        removeSubscription(subscription);
+        release();
       },
     );
     return controller.stream;
   }
+}
+
+/// Releases [subscription] (see
+/// [FirestoreSubscriptionMixin.removeSubscription]) once only, whether the
+/// listener is cancelled or the subscription closed first.
+Future<void> Function() _subscriptionReleaser(
+  FirestoreSubscriptionMixin firestore,
+  FirestoreSubscription subscription,
+) {
+  var released = false;
+  return () async {
+    if (!released) {
+      released = true;
+      await firestore.removeSubscription(subscription);
+    }
+  };
 }
 
 /// Runs the work of one `onSnapshot` listener one action at a time, in the
@@ -604,28 +627,33 @@ bool mapWhere(DocumentData? documentData, WhereInfo where) {
     }
     matched = true;
   }
+  // Like isEqualTo, the values are compared as Firestore does (a DateTime as
+  // a Timestamp, maps and lists by content), not with ==.
   if (where.arrayContains != null) {
-    if (!(rawValue is Iterable && rawValue.contains(where.arrayContains))) {
+    if (!(rawValue is Iterable &&
+        _iterableContainsValue(rawValue, where.arrayContains))) {
       return false;
     }
     matched = true;
   }
   if (where.arrayContainsAny != null) {
     if (!(rawValue is Iterable &&
-        where.arrayContainsAny!.any((any) => rawValue.contains(any)))) {
+        where.arrayContainsAny!.any(
+          (any) => _iterableContainsValue(rawValue, any),
+        ))) {
       return false;
     }
     matched = true;
   }
   if (where.whereIn != null) {
-    if (!where.whereIn!.contains(rawValue)) {
+    if (!_iterableContainsValue(where.whereIn!, rawValue)) {
       return false;
     }
     matched = true;
   }
   if (where.notIn != null) {
     // Like Firestore, a missing or null field does not match.
-    if (rawValue == null || where.notIn!.contains(rawValue)) {
+    if (rawValue == null || _iterableContainsValue(where.notIn!, rawValue)) {
       return false;
     }
     matched = true;
@@ -633,6 +661,45 @@ bool mapWhere(DocumentData? documentData, WhereInfo where) {
   // devWarning(throw UnsupportedError('where: $where on $documentData'));
   return matched;
 }
+
+/// True if [a] and [b] are equal for Firestore: a [DateTime] equals the same
+/// [Timestamp], maps and lists are compared by content, numbers by value.
+bool _firestoreValueEquals(Object? a, Object? b) {
+  if (a == null || b == null) {
+    return a == b;
+  }
+  if (a is List && b is List) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (var i = 0; i < a.length; i++) {
+      if (!_firestoreValueEquals(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  if (a is Map && b is Map) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (var entry in a.entries) {
+      if (!b.containsKey(entry.key) ||
+          !_firestoreValueEquals(entry.value, b[entry.key])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  if (a is List || a is Map || b is List || b is Map) {
+    return false;
+  }
+  return _getComparable(a)!.compareTo(_getComparable(b)) == 0;
+}
+
+/// True if [iterable] contains [value] (see [_firestoreValueEquals]).
+bool _iterableContainsValue(Iterable iterable, Object? value) =>
+    iterable.any((item) => _firestoreValueEquals(item, value));
 
 /// True if [fieldPath] (dot-separated) exists in [map], even with a null
 /// value.
@@ -1251,12 +1318,17 @@ mixin FirestoreQueryMixin implements Query, HasQueryInfo {
     var collectionSubscription = subscriptionMixin.addCollectionSubscription(
       path,
     );
+    var release = _subscriptionReleaser(
+      subscriptionMixin,
+      collectionSubscription,
+    );
     late StreamSubscription querySubscription;
     late _SnapshotSerializer serializer;
     var controller = StreamController<QuerySnapshot>(
-      onCancel: () {
+      onCancel: () async {
         serializer.cancel();
-        querySubscription.cancel();
+        await querySubscription.cancel();
+        await release();
       },
     );
     serializer = _SnapshotSerializer(controller);
@@ -1329,7 +1401,7 @@ mixin FirestoreQueryMixin implements Query, HasQueryInfo {
         });
       },
       onDone: () {
-        subscriptionMixin.removeSubscription(collectionSubscription);
+        release();
       },
     );
     return controller.stream;

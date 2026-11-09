@@ -775,6 +775,80 @@ void runFirestoreQueryTests({
       expect(querySnapshotDocIds(querySnapshot), ['one', 'two']);
     });
 
+    test('array and in filters compare values like isEqualTo', () async {
+      var testsRef = getTestsRef();
+      var collRef = testsRef.doc('where_value_test').collection('by_value');
+      await deleteCollection(firestore, collRef);
+      var dateTime = DateTime.fromMillisecondsSinceEpoch(1000000, isUtc: true);
+      await collRef.doc('one').set({
+        'tags': [
+          {'k': 1},
+          'text',
+        ],
+        'map': {'k': 1},
+        'date': dateTime,
+      });
+      await collRef.doc('two').set({
+        'tags': [
+          {'k': 2},
+        ],
+        'map': {'k': 2},
+        'date': DateTime.fromMillisecondsSinceEpoch(2000000, isUtc: true),
+      });
+
+      // A map is compared by content.
+      var querySnapshot = await collRef
+          .where('tags', arrayContains: {'k': 1})
+          .get();
+      expect(querySnapshotDocIds(querySnapshot), ['one']);
+      querySnapshot = await collRef
+          .where(
+            'tags',
+            arrayContainsAny: [
+              {'k': 2},
+              'none',
+            ],
+          )
+          .get();
+      expect(querySnapshotDocIds(querySnapshot), ['two']);
+      querySnapshot = await collRef
+          .where(
+            'map',
+            whereIn: [
+              {'k': 1},
+            ],
+          )
+          .get();
+      expect(querySnapshotDocIds(querySnapshot), ['one']);
+
+      // A DateTime is compared as the stored timestamp, like isEqualTo.
+      querySnapshot = await collRef.where('date', isEqualTo: dateTime).get();
+      expect(querySnapshotDocIds(querySnapshot), ['one']);
+      querySnapshot = await collRef.where('date', whereIn: [dateTime]).get();
+      expect(querySnapshotDocIds(querySnapshot), ['one']);
+    });
+
+    test('cursor with fewer values than order bys', () async {
+      var testsRef = getTestsRef();
+      var collRef = testsRef.doc('cursor_test').collection('fewer_values');
+      await deleteCollection(firestore, collRef);
+      await collRef.doc('one').set({'a': 1, 'b': 2});
+      await collRef.doc('two').set({'a': 2, 'b': 1});
+      await collRef.doc('three').set({'a': 2, 'b': 2});
+
+      // Only the given values are compared (here the first order by; the
+      // document id order needs no composite index).
+      var query = collRef.orderBy('a').orderBy(firestoreNameFieldPath);
+      var querySnapshot = await query.startAt(values: [2]).get();
+      expect(querySnapshotDocIds(querySnapshot), ['three', 'two']);
+      querySnapshot = await query.startAfter(values: [1]).get();
+      expect(querySnapshotDocIds(querySnapshot), ['three', 'two']);
+      querySnapshot = await query.endBefore(values: [2]).get();
+      expect(querySnapshotDocIds(querySnapshot), ['one']);
+      querySnapshot = await query.endAt(values: [2]).get();
+      expect(querySnapshotDocIds(querySnapshot), ['one', 'three', 'two']);
+    });
+
     test('where several conditions', () async {
       var testsRef = getTestsRef();
       var collRef = testsRef.doc('where_several_test').collection('simple');

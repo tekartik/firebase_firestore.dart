@@ -110,7 +110,16 @@ extension DocumentReferenceSnapshotSupportExtension on DocumentReference {
               if (snapshotController.isClosed) {
                 return Future.value();
               }
-              var snapshot = await getSnapshot();
+              DocumentSnapshot snapshot;
+              try {
+                snapshot = await getSnapshot();
+              } catch (e, st) {
+                // The lazy runner does not rethrow, the listener gets it.
+                if (!snapshotController.isClosed) {
+                  snapshotController.addError(e, st);
+                }
+                return;
+              }
               if (snapshotController.isClosed) {
                 return;
               }
@@ -200,7 +209,16 @@ extension QuerySnapshotSupportExtension on Query {
               if (snapshotController.isClosed) {
                 return Future.value();
               }
-              var snapshot = await getSnapshot();
+              QuerySnapshot snapshot;
+              try {
+                snapshot = await getSnapshot();
+              } catch (e, st) {
+                // The lazy runner does not rethrow, the listener gets it.
+                if (!snapshotController.isClosed) {
+                  snapshotController.addError(e, st);
+                }
+                return;
+              }
               if (snapshotController.isClosed) {
                 return;
               }

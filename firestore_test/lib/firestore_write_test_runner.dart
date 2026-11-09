@@ -98,6 +98,51 @@ void firestoreWriteTestGroup({
       });
     }, skip: !service.supportsFieldValueArray);
 
+    test('merge array union and remove compare values', () async {
+      var ref = getCollection('merge').doc('array_values');
+      var dateTime = DateTime.fromMillisecondsSinceEpoch(1000000, isUtc: true);
+      await ref.set({
+        'maps': [
+          {'a': 1},
+          {'b': 2},
+        ],
+        'dates': [dateTime],
+      });
+      // An element equal by content (a map, a DateTime as the stored
+      // timestamp) is already there: not added again, removed.
+      await ref.set({
+        'maps': FieldValue.arrayUnion([
+          {'a': 1},
+          {'c': 3},
+        ]),
+        'dates': FieldValue.arrayUnion([dateTime]),
+      }, SetOptions(merge: true));
+      await runTestAndIfNeededAllowDelay(testContext, () async {
+        var data = (await ref.get()).data;
+        expect(data['maps'], [
+          {'a': 1},
+          {'b': 2},
+          {'c': 3},
+        ]);
+        expect(data['dates'], hasLength(1));
+      });
+      await ref.set({
+        'maps': FieldValue.arrayRemove([
+          {'b': 2},
+        ]),
+        'dates': FieldValue.arrayRemove([dateTime]),
+      }, SetOptions(merge: true));
+      await runTestAndIfNeededAllowDelay(testContext, () async {
+        expect((await ref.get()).data, {
+          'maps': [
+            {'a': 1},
+            {'c': 3},
+          ],
+          'dates': <Object?>[],
+        });
+      });
+    }, skip: !service.supportsFieldValueArray);
+
     test('merge a map onto a typed value', () async {
       var ref = getCollection('merge').doc('onto_typed_value');
       await ref.set({

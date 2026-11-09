@@ -76,13 +76,18 @@ void runCopyUtilsTest({
 
         var doc1 = firestore.doc('$parent/sub/doc');
         await doc1.set({});
+        // doc1/c1/d2 is a "missing" document (no data, a sub-collection).
         var doc2 = doc1.collection('c1').doc('d2').collection('c3').doc('d3');
         await doc2.set({});
         var collection = doc1.parent;
+        // Found when the missing documents can be listed and doc1/c1 (holding
+        // only a missing document) is listed, as Firestore does.
+        var found =
+            firestore.service.supportsListMissingDocuments &&
+            (await doc1.listCollections()).isNotEmpty;
         expect((await collection.recursiveListDocuments()).map((e) => e.path), [
           doc1.path,
-          // Missing? bug or feature?
-          //doc2.path
+          if (found) doc2.path,
         ]);
 
         await doc1.delete();
@@ -95,6 +100,46 @@ void runCopyUtilsTest({
       skip:
           skipFirestoreListCollectionsTests ||
           !firestore.service.supportsListCollections,
+    );
+
+    test(
+      'copy/list/delete documents under a missing document',
+      () async {
+        var parent = url.join(testsRefPath, 'tekartik_test_recursive_missing');
+        var collection = firestore.collection('$parent/coll');
+        var dstCollection = firestore.collection('$parent/dst');
+        await collection.recursiveDelete(firestore);
+        await dstCollection.recursiveDelete(firestore);
+        var doc1 = collection.doc('doc1');
+        await doc1.set({'value': 1});
+        // coll/missing is a "missing" document (no data, a sub-collection),
+        // a query does not return it.
+        var doc2 = collection.doc('missing').collection('sub').doc('doc2');
+        await doc2.set({'value': 2});
+        expect((await collection.recursiveListDocuments()).map((e) => e.path), [
+          doc1.path,
+          doc2.path,
+        ]);
+        expect(await collection.recursiveCopyTo(firestore, dstCollection), 2);
+        expect(
+          (await dstCollection.recursiveListDocuments()).map((e) => e.path),
+          [
+            dstCollection.doc('doc1').path,
+            dstCollection.doc('missing/sub/doc2').path,
+          ],
+        );
+        expect(await dstCollection.recursiveDelete(firestore), 2);
+        expect(await collection.recursiveDelete(firestore), 2);
+        expect((await doc2.get()).exists, isFalse);
+        expect(
+          (await collection.recursiveListDocuments()).map((e) => e.path),
+          isEmpty,
+        );
+      },
+      skip:
+          skipFirestoreListCollectionsTests ||
+          !firestore.service.supportsListCollections ||
+          !firestore.service.supportsListMissingDocuments,
     );
   });
 }

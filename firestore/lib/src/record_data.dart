@@ -111,27 +111,44 @@ Object? _recordValueClone(Object? value) {
 }
 
 /// arrayUnion/arrayRemove of [fieldValueArray] on [existing], a stored
-/// (record) value: the elements are encoded then compared deeply, so that
-/// typed values (Timestamp, reference...) and maps can be matched.
+/// (record) value: the added elements are encoded.
 List<Object?> _recordArrayMergeValue(
   FieldValueArray fieldValueArray,
   Object? existing,
-) {
+) => _arrayMergeValue(fieldValueArray, existing, encodeData: true);
+
+/// arrayUnion/arrayRemove of [fieldValueArray] on [existing] (a stored or a
+/// decoded value).
+///
+/// The elements are compared encoded (deep equality), so that typed values
+/// (Timestamp, DateTime, reference...) and maps are matched by content, as
+/// in Firestore. The added elements are encoded when [encodeData] is true.
+List<Object?> _arrayMergeValue(
+  FieldValueArray fieldValueArray,
+  Object? existing, {
+  required bool encodeData,
+}) {
   const equality = DeepCollectionEquality();
-  bool contains(List<Object?> list, Object? value) =>
-      list.any((item) => equality.equals(item, value));
+  bool contains(List<Object?> encodedList, Object? encoded) =>
+      encodedList.any((item) => equality.equals(item, encoded));
   var list = existing is Iterable
       ? existing.toList().cast<Object?>()
       : <Object?>[];
-  var data = fieldValueArray.data.map(valueToJsonRecordValue).toList();
+  var encodedList = list.map(valueToJsonRecordValue).toList();
   if (fieldValueArray.type == FieldValueType.arrayUnion) {
-    for (var value in data) {
-      if (!contains(list, value)) {
-        list.add(value);
+    for (var value in fieldValueArray.data) {
+      var encoded = valueToJsonRecordValue(value);
+      if (!contains(encodedList, encoded)) {
+        list.add(encodeData ? encoded : value);
+        encodedList.add(encoded);
       }
     }
   } else if (fieldValueArray.type == FieldValueType.arrayRemove) {
-    list.removeWhere((item) => contains(data, item));
+    var encodedData = fieldValueArray.data.map(valueToJsonRecordValue).toList();
+    return [
+      for (var i = 0; i < list.length; i++)
+        if (!contains(encodedData, encodedList[i])) list[i],
+    ];
   }
   return list;
 }
@@ -345,28 +362,14 @@ class FieldValueArray extends FieldValue {
 /// for [FieldValueType.arrayRemove], every occurrence of each element of
 /// [FieldValueArray.data] is removed. When [existing] is not an [Iterable],
 /// it is treated as an empty list.
+///
+/// Like Firestore, the elements are compared by content: a map or a list
+/// equal to an existing one, or a [DateTime] equal to an existing
+/// [Timestamp], is the same element.
 List fieldArrayValueMergeValue(
   FieldValueArray fieldValueArray,
   Object? existing,
-) {
-  // get the list
-  var existingIterable = existing;
-  List list;
-  if (existingIterable is Iterable) {
-    list = existingIterable.toList().cast<Object?>();
-  } else {
-    list = [];
-  }
-  if (fieldValueArray.type == FieldValueType.arrayUnion) {
-    list.addAll(
-      List.from(fieldValueArray.data)
-        ..removeWhere((value) => list.contains(value)),
-    );
-  } else if (fieldValueArray.type == FieldValueType.arrayRemove) {
-    list.removeWhere((item) => fieldValueArray.data.contains(item));
-  }
-  return list;
-}
+) => _arrayMergeValue(fieldValueArray, existing, encodeData: false);
 
 /// Handle merge when no existing.
 List<Object?> fieldArrayValueToRecordMapNoMerge(

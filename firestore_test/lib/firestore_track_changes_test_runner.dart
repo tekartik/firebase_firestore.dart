@@ -4,6 +4,8 @@ import 'dart:async';
 import 'package:dev_test/test.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
+import 'package:tekartik_firebase_firestore/utils/firestore_mixin.dart'
+    show FirestoreSubscriptionMixin;
 
 import 'firestore_test_runner.dart';
 
@@ -298,6 +300,27 @@ void runFirestoreTrackChangesTests({
         previousPaths = paths;
       }
     }, skip: !firestoreService.supportsTrackChanges);
+
+    test('cancel releases the listener', () async {
+      // Implementation specific (FirestoreSubscriptionMixin: in memory,
+      // sembast, idb, sdb): a cancelled listener no longer holds its path.
+      var collRef = getTestsRef().doc('cancel_releases').collection('listened');
+      var docRef = collRef.doc('doc');
+      await docRef.set({'value': 1});
+      for (var listen in [
+        () => docRef.onSnapshot().listen((_) {}),
+        () => collRef.onSnapshot().listen((_) {}),
+        () => collRef.where('value', isEqualTo: 1).onSnapshot().listen((_) {}),
+      ]) {
+        var subscription = listen();
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        await subscription.cancel();
+      }
+      var subscriptions =
+          (firestore as FirestoreSubscriptionMixin).subscriptions;
+      expect(subscriptions.keys, isNot(contains(docRef.path)));
+      expect(subscriptions.keys, isNot(contains(collRef.path)));
+    }, skip: firestore is! FirestoreSubscriptionMixin);
 
     test(
       'transaction write notifies',

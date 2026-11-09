@@ -81,6 +81,34 @@ Future<int> recursiveCopyPath(
   return count;
 }
 
+/// The "missing" documents of [collection] (no data, but sub-collections:
+/// a query does not return them) not in [visitedIds], when the service can
+/// list them, so that their sub-collections are visited too.
+Future<List<DocumentReference>> _collectionMissingDocuments(
+  CollectionReference collection,
+  Set<String> visitedIds, {
+  required int pageSize,
+}) async {
+  if (!collection.firestore.service.supportsListMissingDocuments) {
+    return const [];
+  }
+  var refs = <DocumentReference>[];
+  var pageTokens = <String>{};
+  String? pageToken;
+  do {
+    var result = await collection.listDocuments(
+      options: FirestoreListDocumentsOptions(
+        pageSize: pageSize,
+        pageToken: pageToken,
+      ),
+    );
+    refs.addAll(result.refs.where((ref) => !visitedIds.contains(ref.id)));
+    pageToken = result.nextPageToken;
+    // Never loop on a page token already used.
+  } while (pageToken != null && pageTokens.add(pageToken));
+  return refs;
+}
+
 Future<int> _recursiveCopyCollection(
   CollectionReference srcRef,
   Firestore dstFirestore,
@@ -90,6 +118,7 @@ Future<int> _recursiveCopyCollection(
   var count = 0;
   var query = srcRef.orderBy(firestoreNameFieldPath);
   batchSize ??= 10;
+  var visitedIds = <String>{};
 
   int snapshotSize;
   do {
@@ -103,6 +132,7 @@ Future<int> _recursiveCopyCollection(
 
     // Delete documents in a batch
     for (var doc in snapshot.docs) {
+      visitedIds.add(doc.ref.id);
       count += await _recursiveCopyDocument(
         doc.ref,
         dstFirestore,
@@ -113,6 +143,18 @@ Future<int> _recursiveCopyCollection(
 
     query = query.startAfter(values: [snapshot.docs.last.ref.id]);
   } while (snapshotSize >= batchSize);
+  for (var missingRef in await _collectionMissingDocuments(
+    srcRef,
+    visitedIds,
+    pageSize: batchSize,
+  )) {
+    count += await _recursiveCopyDocument(
+      missingRef,
+      dstFirestore,
+      dstRef.doc(missingRef.id),
+      batchSize: batchSize,
+    );
+  }
   return count;
 }
 
@@ -124,6 +166,7 @@ Future<List<DocumentReference>> _recursiveCollListDocuments(
 
   var query = srcRef.orderBy(firestoreNameFieldPath);
   pageSize ??= 10;
+  var visitedIds = <String>{};
 
   int snapshotSize;
   do {
@@ -138,6 +181,7 @@ Future<List<DocumentReference>> _recursiveCollListDocuments(
     // Delete documents in a batch
     for (var doc in snapshot.docs) {
       list.add(doc.ref);
+      visitedIds.add(doc.ref.id);
       list.addAll(
         await _recursiveDocListDocuments(doc.ref, pageSize: pageSize),
       );
@@ -145,6 +189,15 @@ Future<List<DocumentReference>> _recursiveCollListDocuments(
 
     query = query.startAfter(values: [snapshot.docs.last.ref.id]);
   } while (snapshotSize >= pageSize);
+  for (var missingRef in await _collectionMissingDocuments(
+    srcRef,
+    visitedIds,
+    pageSize: pageSize,
+  )) {
+    list.addAll(
+      await _recursiveDocListDocuments(missingRef, pageSize: pageSize),
+    );
+  }
   return list;
 }
 
@@ -156,6 +209,7 @@ Future<int> _recursiveCollDelete(
   var count = 0;
   var query = ref.orderBy(firestoreNameFieldPath);
   batchSize ??= 10;
+  var visitedIds = <String>{};
 
   int snapshotSize;
   do {
@@ -169,6 +223,7 @@ Future<int> _recursiveCollDelete(
 
     // Delete documents in a batch
     for (var doc in snapshot.docs) {
+      visitedIds.add(doc.ref.id);
       count += await _recursiveDocDelete(
         firestore,
         doc.ref,
@@ -178,6 +233,17 @@ Future<int> _recursiveCollDelete(
 
     query = query.startAfter(values: [snapshot.docs.last.ref.id]);
   } while (snapshotSize >= batchSize);
+  for (var missingRef in await _collectionMissingDocuments(
+    ref,
+    visitedIds,
+    pageSize: batchSize,
+  )) {
+    count += await _recursiveDocDelete(
+      firestore,
+      missingRef,
+      batchSize: batchSize,
+    );
+  }
   return count;
 }
 

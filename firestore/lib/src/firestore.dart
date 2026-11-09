@@ -66,20 +66,26 @@ Timestamp? parseTimestamp(dynamic value) {
 /// Converts [value] to a value suitable to be stored as (or nested within) a
 /// Firestore document field.
 ///
-/// Passes through `null`, [num], [bool], [String], [DateTime] and
-/// [FieldValue] unchanged, recurses into [Iterable]s (returning a [List])
-/// and [Map]s. Throws an [ArgumentError] for any other, unsupported value
-/// type.
+/// Passes through `null`, [num], [bool], [String], [DateTime], [FieldValue]
+/// and the typed values accepted by `set`/`update` ([Timestamp],
+/// [DocumentReference], [Blob], [GeoPoint], [VectorValue]) unchanged,
+/// recurses into [Iterable]s (returning a [List]) and [Map]s. Throws an
+/// [ArgumentError] for any other, unsupported value type.
 dynamic valueToDocumentValue(dynamic value) {
   if (value == null ||
       value is num ||
       value is bool ||
       value is String ||
       value is DateTime ||
-      value is FieldValue) {
+      value is FieldValue ||
+      value is Timestamp ||
+      value is DocumentReference ||
+      value is Blob ||
+      value is GeoPoint ||
+      value is VectorValue) {
     return value;
   } else if (value is Iterable) {
-    return value.map((item) => valueToDocumentValue(value)).toList();
+    return value.map((item) => valueToDocumentValue(item)).toList();
   } else if (value is Map) {
     return value
         .map((key, value) => MapEntry(key, valueToDocumentValue(value)))

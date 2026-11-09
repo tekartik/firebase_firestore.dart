@@ -29,7 +29,9 @@ all its documents. Every refinement returns a new immutable `Query`.
   conditions: `isEqualTo`, `isLessThan`, `isLessThanOrEqualTo`,
   `isGreaterThan`, `isGreaterThanOrEqualTo`, `arrayContains`,
   `arrayContainsAny: [...]`, `whereIn: [...]`, `isNull: true`. Field paths
-  can be dotted (`'sub.value'`); map and `Timestamp` values compare fine.
+  can be dotted (`'sub.value'`); map and `Timestamp` values compare fine,
+  in `arrayContains`, `arrayContainsAny` and `whereIn` too (by content, a
+  `DateTime` as the stored `Timestamp`).
   There is no `isNotEqualTo`/`whereNotIn` in this abstraction: filter in Dart.
 * Sort with `orderBy(field, descending: true)` (chain for multi-field sort),
   `orderById()` (must be the last `orderBy`) or `orderBy(firestoreNameFieldPath)`
@@ -39,7 +41,8 @@ all its documents. Every refinement returns a new immutable `Query`.
   where values follow the `orderBy` order. The `snapshot:` variant requires
   `supportsQuerySnapshotCursor`; `values:` ending with the last document id
   after an `orderBy(firestoreNameFieldPath)` works everywhere and is the
-  pattern used by the package helpers. There is no `offset`.
+  pattern used by the package helpers. A cursor can have fewer values than
+  `orderBy` fields (only those are compared), not more. There is no `offset`.
 * `select(['field'])` restricts returned fields only when
   `supportsQuerySelect`; the full document comes back otherwise.
 * `query.get()` returns a `QuerySnapshot`: `docs` (`DocumentSnapshot` list,
@@ -78,7 +81,11 @@ all its documents. Every refinement returns a new immutable `Query`.
   `collRef.delete()`, `collRef.copyTo(dstCollRef, clearExisting: true)`,
   `deleteCollection(firestore, collRef)`. `docRef.recursiveDelete(firestore)`,
   `docRef.recursiveCopyTo(dstFirestore, dstRef)` and
-  `collRef.recursiveListDocuments()` need `supportsListCollections`.
+  `collRef.recursiveListDocuments()` need `supportsListCollections`; they
+  also visit the documents under a "missing" document (no data, only
+  sub-collections, never returned by a query) when
+  `supportsListMissingDocuments`. `queryStream` reads its pages lazily and
+  stops reading when its listener cancels (`first`, `take`, `break`).
 * Errors: backends throw a `FirestoreException` (`code`, `message`,
   `details`). Compare `code` with the `FirestoreErrorCode` string constants:
   `permissionDenied` (security rules denial, or missing auth on REST),

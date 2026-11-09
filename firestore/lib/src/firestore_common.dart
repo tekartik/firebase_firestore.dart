@@ -622,9 +622,10 @@ class QueryInfo {
   /// [startLimit]/[endLimit] values are consistent with [orderBys].
   ///
   /// Throws a [StateError] if an inequality `where` filter's field is not
-  /// among [orderBys], or if a cursor's value count does not match the
-  /// number of [orderBys]. Intended to surface backend-agnostic query
-  /// mistakes early, similar to Firestore's own query validation.
+  /// among [orderBys], or if a cursor has more values than [orderBys] (like
+  /// Firestore, fewer values are allowed, only those are compared). Intended
+  /// to surface backend-agnostic query mistakes early, similar to
+  /// Firestore's own query validation.
   void debugCheck() {
     if (orderBys.isNotEmpty) {
       var orderByKeys = orderBys.map((e) => e.fieldPath).toSet();
@@ -648,9 +649,9 @@ class QueryInfo {
       }
       for (var valuesList in [startLimit?.values, endLimit?.values]) {
         if (valuesList != null) {
-          if (orderBys.length != valuesList.length) {
+          if (valuesList.length > orderBys.length) {
             throw StateError(
-              'Value count in $valuesList not matching order list $orderByKeys',
+              'Too many values in $valuesList for order list $orderByKeys',
             );
           }
         }

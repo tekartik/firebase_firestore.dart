@@ -61,7 +61,9 @@ obtained from a `FirestoreService`, never constructed directly.
   are null unless `supportsDocumentSnapshotTime`.
 * Sentinels are static fields, not functions: `FieldValue.serverTimestamp`,
   `FieldValue.delete` (update/merge only), `FieldValue.arrayUnion([...])`,
-  `FieldValue.arrayRemove([...])` (the last two need `supportsFieldValueArray`),
+  `FieldValue.arrayRemove([...])` (the last two need `supportsFieldValueArray`;
+  the elements are compared by content: a map, a `DateTime` and the same
+  stored `Timestamp` are the same element),
   `FieldValue.increment(n)` (needs `supportsFieldValueIncrement`): adds `n` to
   the current number of the field, sets the field to `n` if it is missing or
   not a number (a plain `set` stores `n`); the result is a `double` if `n` or
@@ -79,16 +81,19 @@ obtained from a `FirestoreService`, never constructed directly.
   throws an `ArgumentError` at write time.
 * `DocumentData(map)` wraps a `Map<String, Object?>` with typed accessors
   (`getString`, `getInt`, `getTimestamp`, `getDocumentReference`, `getData`
-  for nested maps, `setTimestamp`, `setFieldValue`, `asMap()`). Prefer the
-  typed setters over `setProperty`, which only accepts JSON-like values. For
-  real typed models use `tekartik_app_cv_firestore` (cv) instead of ad-hoc maps.
+  for nested maps, `setTimestamp`, `setFieldValue`, `asMap()`). A typed getter
+  throws a `TypeError` when the field holds another type (null only when
+  absent). `setProperty` accepts the values of `set` (lists and maps
+  converted). For real typed models use `tekartik_app_cv_firestore` (cv) instead of ad-hoc maps.
 * Listen with `docRef.onSnapshot()` (first event is the current state, also
   fires with `exists == false`). Backends without `supportsRecordTrackChanges`
   (REST) throw `UnsupportedError`: use
   `docRef.onSnapshotSupport(options: TrackChangesSupportOptions(...))` from
   `utils/track_changes_support.dart`, which polls (`refreshDelay`), reads once
   (`TrackChangesSupportOptions.first()`) or refreshes on demand
-  (`TrackChangesSupportOptionsController().trigger()`). Cancel subscriptions.
+  (`TrackChangesSupportOptionsController().trigger()`); a read error goes to
+  the stream (`first()` then closes it). Cancel subscriptions: a cancel
+  releases the listener.
 * Path helpers exported by `firestore.dart`: `firestorePathGetParent`,
   `firestorePathGetChild`, `firestorePathGetId`, `firestorePathGetGenericPath`.
 * A security rules denial surfaces as a `FirestoreException` with

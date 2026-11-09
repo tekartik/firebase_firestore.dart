@@ -1,7 +1,7 @@
 import 'package:dev_test/test.dart';
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
-import 'package:tekartik_firebase_firestore/firestore.dart';
+import 'package:tekartik_firebase_firestore/firestore_logger.dart';
 import 'package:tekartik_firebase_firestore/utils/collection.dart';
 import 'package:tekartik_firebase_firestore/utils/query_iterate.dart';
 import 'package:tekartik_firebase_firestore/utils/query_join.dart';
@@ -131,6 +131,30 @@ void runUtilsQueryIterateTest({
         }
       }
       expect(ids, ['b1', 'b2']);
+    });
+
+    test('queryStream cancel stops reading', () async {
+      // Count the query reads (pages).
+      var pageReadCount = 0;
+      var loggedFirestore = FirestoreLogger(
+        // A logger cannot wrap a logger.
+        firestore: firestore is FirestoreLogger
+            ? firestore.firestore
+            : firestore,
+        options: FirestoreLoggerOptions.all(
+          read: false,
+          write: false,
+          log: (_) => pageReadCount++,
+        ),
+      );
+      var query = loggedFirestore.collection(booksRef.path);
+      var first = await query
+          .queryStream(options: QueryFindOptions(pageSize: 2))
+          .first;
+      expect(first.ref.id, 'b1');
+      // Leave time to a background iteration (it read the 4 pages).
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      expect(pageReadCount, lessThanOrEqualTo(2));
     });
 
     test('findDocs', () async {

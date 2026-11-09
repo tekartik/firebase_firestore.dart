@@ -74,12 +74,15 @@ extension TekartikFirestoreQueryIterateExt on Query {
   Stream<DocumentSnapshot> queryStream({QueryFindOptions? options}) {
     late StreamController<DocumentSnapshot> controller;
     Completer<void>? resumeCompleter;
+    // A cancel does not close the controller, stop the iteration (and its
+    // reads) on it.
+    var cancelled = false;
     controller = StreamController<DocumentSnapshot>(
       onListen: () {
         queryIterate(
           options: options,
           onRow: (doc) async {
-            if (controller.isClosed) {
+            if (cancelled || controller.isClosed) {
               return false;
             }
             controller.add(doc);
@@ -89,7 +92,7 @@ extension TekartikFirestoreQueryIterateExt on Query {
               }
               await resumeCompleter!.future;
             }
-            return !controller.isClosed;
+            return !cancelled && !controller.isClosed;
           },
         ).then(
           (_) {
@@ -117,6 +120,7 @@ extension TekartikFirestoreQueryIterateExt on Query {
         resumeCompleter = null;
       },
       onCancel: () {
+        cancelled = true;
         if (resumeCompleter != null && !resumeCompleter!.isCompleted) {
           resumeCompleter!.complete();
         }

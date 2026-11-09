@@ -69,11 +69,20 @@ Stream<DocumentSnapshots> onDocumentSnapshots(
         final index = i;
         final reference = references[index];
         // ignore: cancel_subscriptions
-        var subscription = reference.onSnapshot().listen((snapshot) {
-          docs[index] = snapshot;
-          remainings.remove(reference);
-          notify();
-        });
+        var subscription = reference.onSnapshot().listen(
+          (snapshot) {
+            docs[index] = snapshot;
+            remainings.remove(reference);
+            notify();
+          },
+          // An error of a document listener goes to the listener of all of
+          // them (it would be an uncaught error otherwise).
+          onError: (Object error, StackTrace stackTrace) {
+            if (!controller.isClosed) {
+              controller.addError(error, stackTrace);
+            }
+          },
+        );
         subscriptions![index] = subscription;
       }
     },
