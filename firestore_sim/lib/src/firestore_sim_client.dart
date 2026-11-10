@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:path/path.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
@@ -68,7 +66,7 @@ FirestoreServiceSim? _firestoreServiceSim;
 
 /// Firestore simulator service.
 FirestoreServiceSim get firestoreServiceSim =>
-    _firestoreServiceSim ?? FirestoreServiceSim();
+    _firestoreServiceSim ??= FirestoreServiceSim();
 
 /// Document data simulator.
 class DocumentDataSim extends DocumentDataMap {}
@@ -178,75 +176,18 @@ class DocumentReferenceSim
     Map<String, Object?> map,
   ) => firestoreSim.documentSnapshotFromDataMap(path, map);
 
-  // do until cancelled
-  Future _getStream(
-    FirebaseSimAppClient? simClient,
-    String path,
-    ServerSubscriptionSim subscription,
-  ) async {
-    var subscriptionId = subscription.id;
-    while (true) {
-      if (firestoreSim._subscriptions.containsKey(subscriptionId)) {
-        var result = resultAsMap(
-          await simClient!.sendRequest<Object?>(
-            FirestoreSimServerService.serviceName,
-            methodFirestoreGetStream,
-            {paramSubscriptionId: subscriptionId},
-          ),
-        );
-        // devPrint(result);
-        // null means cancelled
-        if (result[paramDone] == true) {
-          break;
-        }
-        subscription.add(
-          firestoreSim.documentSnapshotFromMessageMap(
-            path,
-            (result[paramSnapshot] as Map).cast<String, dynamic>(),
-          ),
-        );
-      } else {
-        break;
-      }
-    }
-    subscription.doneCompleter.complete();
-  }
-
   @override
   Stream<DocumentSnapshot> onSnapshot({bool includeMetadataChanges = false}) {
-    late ServerSubscriptionSim<DocumentSnapshot> subscription;
-    FirebaseSimAppClient? simClient;
-    subscription = ServerSubscriptionSim<DocumentSnapshot>(
-      StreamController(
-        onCancel: () async {
-          await firestoreSim.removeSubscription(subscription);
-          await simClient!.sendRequest<void>(
-            FirestoreSimServerService.serviceName,
-            methodFirestoreGetCancel,
-            {paramSubscriptionId: subscription.id},
-          );
-          await subscription.done;
-        },
+    return firestoreSim._serverStream<DocumentSnapshot>(
+      listenMethod: methodFirestoreGetListen,
+      listenParam: {paramPath: path},
+      streamMethod: methodFirestoreGetStream,
+      cancelMethod: methodFirestoreGetCancel,
+      fromResult: (result) => firestoreSim.documentSnapshotFromMessageMap(
+        path,
+        (result[paramSnapshot] as Map).cast<String, dynamic>(),
       ),
     );
-
-    () async {
-      simClient = await firestoreSim.simAppClient;
-      var result = resultAsMap(
-        await simClient!.sendRequest<Object>(
-          FirestoreSimServerService.serviceName,
-          methodFirestoreGetListen,
-          {paramPath: path},
-        ),
-      );
-
-      subscription.id = result[paramSubscriptionId] as int?;
-      firestoreSim.addSubscription(subscription);
-
-      // Loop until cancelled
-      await _getStream(simClient, path, subscription);
-    }();
-    return subscription.stream;
   }
 }
 
@@ -371,106 +312,53 @@ abstract mixin class QueryMixinSim implements Query, HasQueryInfo {
     );
   }
 
-  // do until cancelled
-  Future _getStream(
-    FirebaseSimAppClient? simClient,
-    ServerSubscriptionSim subscription,
-  ) async {
-    var subscriptionId = subscription.id;
-    while (true) {
-      if (firestoreSim._subscriptions.containsKey(subscriptionId)) {
-        var result = resultAsMap(
-          await simClient!.sendRequest<Map>(
-            FirestoreSimServerService.serviceName,
-            methodFirestoreQueryStream,
-            {paramSubscriptionId: subscriptionId},
-          ),
+  QuerySnapshotSim _querySnapshotFromResult(Map<String, Object?> result) {
+    var querySnapshotData = FirestoreQuerySnapshotData()
+      ..fromMap((result[paramSnapshot] as Map).cast<String, dynamic>());
+
+    var docs = querySnapshotData.list
+        .map(
+          (DocumentSnapshotData documentSnapshotData) =>
+              documentSnapshotFromData(documentSnapshotData),
+        )
+        .toList();
+
+    var changes = <DocumentChangeSim>[];
+    for (var changeData in querySnapshotData.changes!) {
+      // snapshot present?
+      DocumentSnapshotSim? snapshot;
+      if (changeData.data != null) {
+        snapshot = firestoreSim.documentSnapshotFromDataMap(
+          url.join(simCollectionReference.path, changeData.id),
+          changeData.data,
         );
-        // null means cancelled
-        if (result[paramDone] == true) {
-          break;
-        }
-
-        var querySnapshotData = FirestoreQuerySnapshotData()
-          ..fromMap((result[paramSnapshot] as Map).cast<String, dynamic>());
-
-        var docs = querySnapshotData.list
-            .map(
-              (DocumentSnapshotData documentSnapshotData) =>
-                  documentSnapshotFromData(documentSnapshotData),
-            )
-            .toList();
-
-        var changes = <DocumentChangeSim>[];
-        for (var changeData in querySnapshotData.changes!) {
-          // snapshot present?
-          DocumentSnapshotSim? snapshot;
-          if (changeData.data != null) {
-            snapshot = firestoreSim.documentSnapshotFromDataMap(
-              url.join(simCollectionReference.path, changeData.id),
-              changeData.data,
-            );
-          } else {
-            // find in doc
-            snapshot = snapshotsFindById(docs, changeData.id);
-          }
-          final change = DocumentChangeSim(
-            documentChangeTypeFromString(changeData.type!)!,
-            snapshot!,
-            changeData.newIndex ?? -1, // -1 for removed event
-            changeData.oldIndex ?? -1, // -1 for added event
-          );
-          changes.add(change);
-        }
-        var snapshot = QuerySnapshotSim(docs, changes);
-        subscription.add(snapshot);
       } else {
-        break;
+        // find in doc
+        snapshot = snapshotsFindById(docs, changeData.id);
       }
+      final change = DocumentChangeSim(
+        documentChangeTypeFromString(changeData.type!)!,
+        snapshot!,
+        changeData.newIndex ?? -1, // -1 for removed event
+        changeData.oldIndex ?? -1, // -1 for added event
+      );
+      changes.add(change);
     }
-    subscription.doneCompleter.complete();
+    return QuerySnapshotSim(docs, changes);
   }
 
   @override
   Stream<QuerySnapshot> onSnapshot({bool includeMetadataChanges = false}) {
-    FirebaseSimAppClient? simClient;
-    late ServerSubscriptionSim<QuerySnapshot> subscription;
-    subscription = ServerSubscriptionSim<QuerySnapshot>(
-      StreamController(
-        onCancel: () async {
-          await firestoreSim.removeSubscription(subscription);
-          await simClient!.sendRequest<void>(
-            FirestoreSimServerService.serviceName,
-            methodFirestoreQueryCancel,
-            {paramSubscriptionId: subscription.id},
-          );
-          await subscription.done;
-        },
-      ),
+    var data = FirestoreQueryData()
+      ..path = simCollectionReference.path
+      ..queryInfo = queryInfo;
+    return firestoreSim._serverStream<QuerySnapshot>(
+      listenMethod: methodFirestoreQueryListen,
+      listenParam: data.toMap(),
+      streamMethod: methodFirestoreQueryStream,
+      cancelMethod: methodFirestoreQueryCancel,
+      fromResult: _querySnapshotFromResult,
     );
-
-    () async {
-      simClient = await firestoreSim.simAppClient;
-
-      var data = FirestoreQueryData()
-        ..path = simCollectionReference.path
-        ..queryInfo = queryInfo;
-
-      var result = resultAsMap(
-        await simClient!.sendRequest<Map>(
-          FirestoreSimServerService.serviceName,
-          methodFirestoreQueryListen,
-          data.toMap(),
-        ),
-      );
-
-      subscription.id = result[paramSubscriptionId] as int?;
-      firestoreSim.addSubscription(subscription);
-
-      // Loop until cancelled
-      await _getStream(simClient, subscription);
-    }();
-    return subscription.stream;
   }
 }
 
@@ -673,6 +561,101 @@ class FirestoreSim extends Object
     for (var subscription in subscriptions) {
       await removeSubscription(subscription);
     }
+  }
+
+  /// The listeners end (done), the app connection is closed with the app.
+  @override
+  void dispose() {
+    super.dispose();
+    close().ignore();
+  }
+
+  /// A server stream (document or query listener): the subscription is asked
+  /// with [listenMethod], its events read one at a time with [streamMethod]
+  /// (long poll) until cancelled with [cancelMethod].
+  ///
+  /// When the connection closes (app deleted, server gone), the stream ends,
+  /// with the error unless it was cancelled or the firestore disposed.
+  Stream<T> _serverStream<T>({
+    required String listenMethod,
+    required Map<String, Object?> listenParam,
+    required String streamMethod,
+    required String cancelMethod,
+    required T Function(Map<String, Object?> result) fromResult,
+  }) {
+    late ServerSubscriptionSim<T> subscription;
+    FirebaseSimAppClient? simClient;
+    // The listen request first, then the cancel.
+    final lock = Lock();
+    late final StreamController<T> controller;
+    controller = StreamController<T>(
+      onCancel: () async {
+        await lock.synchronized(() async {
+          if (!_subscriptions.containsKey(subscription.id)) {
+            // Ended (closed connection, disposed) or never started.
+            return;
+          }
+          await removeSubscription(subscription);
+          try {
+            await simClient!.sendRequest<void>(
+              FirestoreSimServerService.serviceName,
+              cancelMethod,
+              {paramSubscriptionId: subscription.id},
+            );
+          } catch (_) {
+            // The connection closed.
+          }
+          await subscription.done;
+        });
+      },
+    );
+    subscription = ServerSubscriptionSim<T>(controller);
+
+    () async {
+      try {
+        await lock.synchronized(() async {
+          simClient = await simAppClient;
+          var result = resultAsMap(
+            await simClient!.sendRequest<Object?>(
+              FirestoreSimServerService.serviceName,
+              listenMethod,
+              listenParam,
+            ),
+          );
+          subscription.id = result[paramSubscriptionId] as int?;
+          addSubscription(subscription);
+        });
+        // Loop until cancelled
+        var subscriptionId = subscription.id;
+        while (_subscriptions.containsKey(subscriptionId)) {
+          var result = resultAsMap(
+            await simClient!.sendRequest<Object?>(
+              FirestoreSimServerService.serviceName,
+              streamMethod,
+              {paramSubscriptionId: subscriptionId},
+            ),
+          );
+          // done means cancelled
+          if (result[paramDone] == true) {
+            break;
+          }
+          subscription.add(fromResult(result));
+        }
+        subscription.doneCompleter.complete();
+      } catch (e, st) {
+        // The connection closed: done first, a pending cancel waits for it,
+        // and removed, the cancel of the close below has nothing to do.
+        subscription.doneCompleter.complete();
+        _subscriptions.remove(subscription.id);
+        if (!controller.isClosed) {
+          if (!disposed) {
+            controller.addError(e, st);
+          }
+          controller.close().ignore();
+        }
+      }
+    }();
+    return subscription.stream;
   }
 
   /// Internal document snapshot from data.

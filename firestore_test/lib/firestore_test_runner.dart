@@ -1554,6 +1554,41 @@ void runFirestoreCommonTests({
             }
           }
         });
+        test('parallel transactions', () async {
+          var testsRef = getTestsRef();
+          var collRef = testsRef.doc('transaction_test').collection('parallel');
+          var ref1 = collRef.doc('item1');
+          var ref2 = collRef.doc('item2');
+          await ref1.set({'value': 1});
+          await ref2.set({'value': 1});
+          Future<void> increment(DocumentReference ref) =>
+              firestore.runTransaction((txn) async {
+                var value = (await txn.get(ref)).data['value'] as int;
+                txn.update(ref, {'value': value + 1});
+              });
+          // Started together (on 2 documents: no contention, that a rest
+          // client does not retry), both complete.
+          await Future.wait([
+            increment(ref1),
+            increment(ref2),
+          ]).timeout(const Duration(seconds: 30));
+
+          Future<void> check() async {
+            expect((await ref1.get()).data, {'value': 2});
+            expect((await ref2.get()).data, {'value': 2});
+          }
+
+          try {
+            await check();
+          } catch (_) {
+            if (testContext?.allowedDelayInReadMs != null) {
+              await testContext?.sleepReadDelay();
+              await check();
+            } else {
+              rethrow;
+            }
+          }
+        }, timeout: const Timeout(Duration(seconds: 60)));
       }, skip: skipFirestoreTransactionTests);
 
       group('runTransactionSupport', () {

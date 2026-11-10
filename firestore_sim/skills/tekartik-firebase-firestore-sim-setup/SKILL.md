@@ -83,10 +83,17 @@ development and in multi-client tests, without any Google backend.
   the server, so it assumes a hosted implementation listing missing
   documents (sembast).
 * `runTransaction` and `batch()` work, but the transaction is opened, run and
-  committed through round trips: no client-side retry on contention. Set
-  `skipConcurrentTransactionTests = true` when running the shared suite.
-* Lifecycle: `await app.delete()` on the client drops the connection for that
-  app (a new `initializeApp()` reconnects and sees the same server data);
+  committed through round trips: no client-side retry on contention. The
+  transactions of a client run one at a time (a second one waits for the
+  first one's commit); a non transactional write awaited inside the update
+  function waits forever, and the transactions of two clients are not
+  isolated from each other. Set `skipConcurrentTransactionTests = true` when
+  running the shared suite.
+* Lifecycle: `await app.delete()` on the client ends its listeners (done) but
+  leaves the connection of the app open: keep `await (app as FirebaseAppSim)
+  .simClient` and `close()` it after the delete, or a program does not exit
+  (a new `initializeApp()` reconnects and sees the same server data). When
+  the connection closes (server gone), a listener ends with the error;
   `await simServer.close()` stops the server. Close the server in
   `tearDownAll`, otherwise the test process hangs on an open socket.
 * Debugging the protocol: set `debugFirebaseSimClient = true` (from
@@ -110,7 +117,6 @@ import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';
 import 'package:tekartik_firebase_firestore_sim/firestore_sim_server.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
-import 'package:tekartik_web_socket_io/web_socket_io.dart';
 
 Future<void> main(List<String> args) async {
   var simServer = await firebaseSimServe(
@@ -151,7 +157,10 @@ Future<void> main() async {
     transaction.update(ref, {'hit': ((snapshot.data['hit'] as int?) ?? 0) + 1});
   });
   await subscription.cancel();
+  // delete() leaves the connection of the app open: close it to exit.
+  var simClient = await (app as FirebaseAppSim).simClient;
   await app.delete();
+  await simClient.close();
 }
 ```
 

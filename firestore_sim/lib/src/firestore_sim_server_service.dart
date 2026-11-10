@@ -513,17 +513,20 @@ class _FirestoreSimPluginServer {
   // Transaction
   /// Handle firestore transaction.
   Future handleFirestoreTransaction(Map<String, Object?>? params) async {
-    var responseData = FirestoreTransactionResponseData()
-      ..transactionId = ++lastTransactionId;
-
-    // start locking but don't wait
+    // The transaction holds the lock until its commit or cancel. Its id is
+    // given once it holds it: a transaction started meanwhile waits (two
+    // transactions in parallel used to wait for each other forever).
+    var started = Completer<int>();
     unawaited(
       transactionLock.synchronized(() async {
-        transactionCompleter = Completer();
-        await transactionCompleter!.future;
+        var completer = transactionCompleter = Completer<void>();
+        started.complete(++lastTransactionId);
+        await completer.future;
         transactionCompleter = null;
       }),
     );
+    var responseData = FirestoreTransactionResponseData()
+      ..transactionId = await started.future;
     return responseData.toMap();
   }
 
