@@ -351,18 +351,11 @@ class FirestoreSembast extends Object
   @override
   Future<List<CollectionReference>> listCollections() async {
     var db = await ready;
-
+    // Any document, even in a sub-collection of a missing document, makes
+    // its root collection listed, as on Firestore.
     var ids = <String>{};
-    for (var record in await docStore.find(db)) {
-      final recordPath = record.key;
-
-      final parentPath = url.dirname(recordPath);
-      // print(parentPath);
-      var collParentPath = url.dirname(parentPath);
-      // print(collParentPath);
-      if (collParentPath == '.') {
-        ids.add(basename(parentPath));
-      }
+    for (var key in await docStore.findKeys(db)) {
+      ids.add(key.split('/').first);
     }
     return ids.map((e) => collection(e)).toList();
   }
@@ -544,16 +537,14 @@ class DocumentReferenceSembast extends FirestoreReferenceBase
   @override
   Future<List<CollectionReference>> listCollections() async {
     var db = await firestoreSembast.ready;
-
-    // print('path: $path');
+    // Any document under this one, even under a missing document, makes
+    // its sub-collection listed, as on Firestore (and as listDocuments
+    // lists the missing documents).
+    var prefix = '$path/';
     var ids = <String>{};
-    for (var record in await docStore.find(db)) {
-      final recordPath = record.key;
-      // print('recordPath: $recordPath');
-      final parentPath = url.dirname(recordPath);
-      var collParentPath = url.dirname(parentPath);
-      if (collParentPath == path) {
-        ids.add(basename(parentPath));
+    for (var key in await docStore.findKeys(db)) {
+      if (key.startsWith(prefix)) {
+        ids.add(key.substring(prefix.length).split('/').first);
       }
     }
     return ids.map((e) => collection(e)).toList();

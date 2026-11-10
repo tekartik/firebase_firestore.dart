@@ -66,6 +66,14 @@ and node backends, so app code does not change.
   read-write transaction. Concurrent transactions are not retried like on
   the server (the test suite sets `skipConcurrentTransactionTests = true`);
   do not rely on contention semantics.
+* In a browser (IndexedDB: `firestoreServiceIdbBrowser`,
+  `firestoreServiceSdbWeb`, a web `getSdbFactory()`), the update function of
+  `runTransaction` must only await its own `txn.get` calls: awaiting an http
+  call, a delay or another firestore read lets IndexedDB commit the
+  transaction, the writes then fail (`TransactionInactiveError` on the idb
+  variant; the sdb variant currently never completes, idb_shim 2.11.3). Read
+  what you need before `runTransaction`, or with `txn.get`. The memory and io
+  factories accept any await.
 * Do not use the deprecated `getFirestoreService(idbFactory)` nor the
   deprecated `firestoreService` getter of `firestore_idb_browser.dart`.
 * Factories: `idbFactoryMemory` and `newIdbFactoryMemory()` from
@@ -81,7 +89,8 @@ and node backends, so app code does not change.
   `firestoreServiceMemory`, `newFirestoreServiceMemory()`,
   `newFirestoreMemory()`, `newFirestoreServiceSembast(databaseFactory:)`) is
   the same idea on sembast and the quickest choice for pure Dart unit tests.
-  Pick idb when the app already stores its data with idb_shim/sdb.
+  For an app storing its data locally, use the sdb variant here (new local
+  database code is on sdb, not on the legacy sembast layer).
 * Dependency (not on pub.dev): git url
   `https://github.com/tekartik/firebase_firestore.dart`, path `firestore_idb`.
 

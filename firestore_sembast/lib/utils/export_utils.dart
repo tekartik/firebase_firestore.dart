@@ -22,7 +22,8 @@ extension TekartikSembastUtils on Firestore {
       }
       var firestore = newFirestoreMemory();
       if (collections != null || documents == null) {
-        collections ??= await firestore.listCollections();
+        // The collections of this firestore (not of the memory copy).
+        collections ??= await listCollections();
         for (var collection in collections) {
           await collection.recursiveCopyTo(
             firestore,

@@ -1,3 +1,4 @@
+import 'package:tekartik_firebase_firestore/firestore_logger.dart';
 import 'package:tekartik_firebase_firestore_sembast/firestore_sembast.dart';
 import 'package:tekartik_firebase_firestore_sembast/utils/export_utils.dart';
 import 'package:test/test.dart';
@@ -33,6 +34,22 @@ void main() {
       //               }
       //             ]
       //           ]
+    });
+    test('export another firestore without collections', () async {
+      // Not a sembast firestore: the documents are copied first.
+      var firestore = FirestoreLogger(
+        firestore: newFirestoreMemory(),
+        options: FirestoreLoggerOptions.all(log: (_) {}),
+      );
+      await firestore.doc('test/doc').set({'test': 1});
+      await firestore.doc('other/doc').set({'test': 2});
+      var export = await firestore.exportLines();
+      expect(export, hasLength(4));
+      expect(export[1], {'store': 'doc'});
+      expect(
+        [(export[2] as List)[0], (export[3] as List)[0]],
+        ['other/doc', 'test/doc'],
+      );
     });
   });
 }

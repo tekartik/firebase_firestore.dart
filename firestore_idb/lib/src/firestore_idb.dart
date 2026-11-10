@@ -314,14 +314,24 @@ class LocalTransaction {
   final idb.Transaction transaction;
   final List<WriteResultIdb> results = [];
 
-  LocalTransaction(this.firestoreIdb, this.transaction);
+  /// Listened as soon as the transaction is created: on IndexedDB a
+  /// transaction auto-commits once the caller awaits something else than
+  /// its requests (an http call in a runTransaction update function), and a
+  /// `completed` asked after its `complete` event never completes.
+  late final Future<void> _completed;
 
-  Future get completed => transaction.completed;
+  LocalTransaction(this.firestoreIdb, this.transaction) {
+    _completed = transaction.completed;
+    // The errors are reported to whoever awaits [completed].
+    _completed.ignore();
+  }
+
+  Future get completed => _completed;
 
   /// Wait for the completion, ignoring any error (already reported).
   Future<void> get completedIgnoringErrors async {
     try {
-      await transaction.completed;
+      await _completed;
     } catch (_) {}
   }
 

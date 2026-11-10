@@ -63,7 +63,7 @@ void runListCollectionsTest({
         collections = await firestore.doc(parent).listCollections();
         expect(collections.map((e) => e.id), contains(collectionId));
         await doc.delete();
-        collections = await firestore.listCollections();
+        collections = await firestore.doc(parent).listCollections();
         expect(collections.map((e) => e.id), isNot(contains(collectionId)));
         expect(
           (await collection.recursiveListDocuments()).map((e) => e.path),
@@ -73,6 +73,75 @@ void runListCollectionsTest({
       skip:
           skipFirestoreListCollectionsTests ||
           !firestore.service.supportsListCollections,
+    );
+
+    var skipMissing =
+        skipFirestoreListCollectionsTests ||
+        skipFirestoreListMissingDocumentsTests ||
+        !firestore.service.supportsListCollections ||
+        !firestore.service.supportsListMissingDocuments;
+    test(
+      'list doc collections holding only missing documents',
+      () async {
+        // parent/sub/missing is a "missing" document (no data, a
+        // sub-collection): sub is still a collection of parent, as
+        // listDocuments lists sub/missing.
+        var parent = url.join(testsRefPath, 'tekartik_test_collection_missing');
+        var doc = firestore.doc(
+          url.join(parent, 'sub', 'missing', 'sub2', 'doc'),
+        );
+        await doc.set({});
+        try {
+          expect(
+            (await firestore.doc(parent).listCollections()).map((e) => e.id),
+            contains('sub'),
+          );
+          expect(
+            (await firestore
+                    .doc(url.join(parent, 'sub', 'missing'))
+                    .listCollections())
+                .map((e) => e.id),
+            contains('sub2'),
+          );
+          expect(
+            (await firestore.doc(parent).recursiveListDocuments()).map(
+              (e) => e.path,
+            ),
+            contains(doc.path),
+          );
+        } finally {
+          await doc.delete();
+        }
+        expect(
+          (await firestore.doc(parent).listCollections()).map((e) => e.id),
+          isNot(contains('sub')),
+        );
+      },
+      skip: skipMissing,
+      timeout: const Timeout(Duration(minutes: 1)),
+    );
+
+    test(
+      'list root collections holding only missing documents',
+      () async {
+        var collectionId = 'tekartik_test_root_collection_missing';
+        var doc = firestore.doc('$collectionId/missing/sub/doc');
+        await doc.set({});
+        try {
+          expect(
+            (await firestore.listCollections()).map((e) => e.id),
+            contains(collectionId),
+          );
+        } finally {
+          await doc.delete();
+        }
+        expect(
+          (await firestore.listCollections()).map((e) => e.id),
+          isNot(contains(collectionId)),
+        );
+      },
+      skip: skipMissing,
+      timeout: const Timeout(Duration(minutes: 1)),
     );
   });
 }

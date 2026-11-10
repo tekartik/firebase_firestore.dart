@@ -97,8 +97,17 @@ code is unchanged. This is the quickest local Firestore for pure Dart tests.
   `{'sembast_export': 1, 'version': 1}`), plus re-exports `exportDatabase`,
   `exportDatabaseLines`, `importDatabase`, `importDatabaseLines` from sembast.
   It also works on a non-sembast `Firestore` that supports
-  `listCollections()`: the documents are copied into a temporary memory
-  Firestore first.
+  `listCollections()`: the given collections and documents (all the
+  collections by default) are copied into a temporary memory Firestore
+  first. On a sembast `Firestore` the whole database is exported,
+  `collections` and `documents` are ignored.
+* `listCollections()` (root and document) also lists a collection holding
+  only "missing" documents (no data, sub-collections), as Firestore and as
+  `listDocuments()` do, so the recursive utils (`recursiveDelete`,
+  `recursiveListDocuments`) reach every document.
+* The sembast database is never closed (`app.delete()` disposes the
+  product, the database stays open until the process ends); in debug runs
+  opening it prints an `opening database ...` line.
 * Security rules are never enforced: every read and write succeeds. Test
   permission-denied paths against the Firestore emulator (REST or node
   backend), not here.
@@ -206,9 +215,9 @@ Future<void> main() async {
   await firestore.doc('test/doc').set({'test': 1});
 
   // [{'sembast_export': 1, 'version': 1}, {'store': 'doc'}, [...]]
-  var lines = await firestore.exportLines(
-    collections: [firestore.collection('test')],
-  );
+  // The whole database on sembast (collections only filters on another
+  // backend).
+  var lines = await firestore.exportLines();
   print(lines);
 
   // Raw sembast access, opening the database if needed.
