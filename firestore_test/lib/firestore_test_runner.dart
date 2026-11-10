@@ -1,4 +1,9 @@
 // ignore_for_file: inference_failure_on_collection_literal
+/// The shared firestore tests: [runFirestoreTests] (on its own app),
+/// [runFirestoreAppTests] (on your app), [FirestoreTestContext] and the
+/// global skip flags.
+library;
+
 import 'dart:typed_data';
 
 import 'package:dev_test/test.dart';
@@ -66,7 +71,8 @@ void run({
   );
 }
 
-/// Run firestore tests.
+/// Declares every test on the firestore of a new app of [firebase] (named
+/// `firestore_tests`, with [options]), deleted in `tearDownAll`.
 void runFirestoreTests({
   required Firebase firebase,
   required FirestoreService firestoreService,
@@ -158,12 +164,15 @@ void _runFirestoreTests({
     options: options,
     testContext: testContext ?? FirestoreTestContext(),
   );
-  tearDownAll(() {
-    return app?.delete();
+  tearDownAll(() async {
+    // The app created here is deleted here, a given app is the caller's.
+    if (app == null) {
+      await localApp.delete();
+    }
   });
 }
 
-/// Run firestore app tests.
+/// Declares every test on the firestore of [app] (not deleted).
 void runFirestoreAppTests({
   required FirebaseApp app,
   required FirestoreService firestoreService,
@@ -1544,15 +1553,17 @@ void runFirestoreCommonTests({
           await firestore.runTransaction((txn) async {});
         });
         test('throw in transaction', () async {
+          // The caller gets the error thrown by the update function, not a
+          // wrapper of the implementation (firestore_node gave a JSObject).
+          Object? error;
           try {
             await firestore.runTransaction((txn) async {
               throw StateError('throwing');
             });
           } catch (e) {
-            if (!kDartIsWeb) {
-              expect(e, isA<StateError>());
-            }
+            error = e;
           }
+          expect(error, isA<StateError>());
         });
         test('parallel transactions', () async {
           var testsRef = getTestsRef();

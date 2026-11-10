@@ -18,7 +18,8 @@ description: >-
 Backend-agnostic `package:test` suite that every implementation of the
 `tekartik_firebase_firestore` API is expected to pass: documents, queries,
 cursors, transactions, batches, snapshot streams, timestamps, blobs, vector
-values, collection groups and the `utils/` helpers. Every test is defined as a
+values, aggregates and the `utils/` helpers (the collection group test is
+always skipped: no local implementation supports `collectionGroup`). Every test is defined as a
 function you call from your own test file, so each implementation keeps its own
 `test/` directory and its own setup.
 
@@ -41,8 +42,8 @@ function you call from your own test file, so each implementation keeps its own
   firestoreService, AppOptions? options, FirestoreTestContext? testContext})`
   from `package:tekartik_firebase_firestore_test/firestore_test_runner.dart`. It
   initializes an app named `firestore_tests` on `firebase`, binds
-  `firestoreService.firestore(app)` and declares every group. Call it at the
-  top level of `main()`, not inside `setUp`.
+  `firestoreService.firestore(app)`, declares every group and deletes the app
+  in `tearDownAll`. Call it at the top level of `main()`, not inside `setUp`.
 * When the app already exists (a simulator client, an authenticated app, a
   shared connection), use
   `runFirestoreAppTests({required FirebaseApp app, required FirestoreService
@@ -59,9 +60,11 @@ function you call from your own test file, so each implementation keeps its own
   `supportsRecordTrackChanges`, `Firestore.supportsTransaction`, ...) and
   skips what is unsupported. Report the flags honestly in the implementation
   rather than skipping tests here.
-* Three global flags, set **before** calling a runner:
-  * `skipConcurrentTransactionTests = true`: local backends that do not retry
-    transactions under contention (sembast, idb, sim).
+* Four global flags, set **before** calling a runner:
+  * `skipConcurrentTransactionTests = true`: backends that do not run the
+    update function again under contention (sembast, idb, sdb, sim, rest).
+    Forgotten on sembast, `concurrent_get_update` waits on its own lock for
+    30 s, then every later transaction test fails.
   * `skipFirestoreTransactionTests = true`: no transaction support at all.
   * `skipFirestoreListCollectionsTests = true`: `listCollections()` present but
     not usable in this environment (for instance rules-restricted).
@@ -151,7 +154,6 @@ void main() {
 ### Remote backend: own root path and read delay
 
 ```dart
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 
@@ -172,7 +174,6 @@ void defineTests(Firebase firebase, FirestoreService firestoreService) {
 ### Existing app, plus only the groups that make sense
 
 ```dart
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_firestore/firestore.dart';
 import 'package:tekartik_firebase_firestore_test/firestore_test_runner.dart';
 import 'package:tekartik_firebase_firestore_test/list_collections_test_runner.dart';

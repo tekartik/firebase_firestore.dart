@@ -540,7 +540,8 @@ void runFirestoreQueryTests({
           await collRef.where('array', arrayContainsAny: []).get();
           fail('should fail');
         } catch (e) {
-          // devPrint(e);
+          // The fail() above must not be swallowed.
+          expect(e, isNot(isA<TestFailure>()));
           // FirebaseError: [code=invalid-argument]: Invalid Query. A non-empty array is required for 'array-contains-any' filters.
         }
 
@@ -565,6 +566,10 @@ void runFirestoreQueryTests({
         expect(list.length, 2);
         expect(list.first.ref.id, 'one');
       } catch (e) {
+        // The expectations must not be ignored.
+        if (e is TestFailure) {
+          rethrow;
+        }
         // ignore: avoid_print
         print('Allow REST failure for: $e');
       }

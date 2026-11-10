@@ -38,6 +38,10 @@ void runAggregateQueryTest({
         ]).get();
         expect(snapshot.getAverage('value'), isNull);
       } catch (e) {
+        // The expectation must not be ignored.
+        if (e is TestFailure) {
+          rethrow;
+        }
         // ignore: avoid_print
         print('Failing OK for flutter here: $e');
       }
